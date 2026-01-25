@@ -27,11 +27,34 @@
     
     <!-- Element nawigacji z menu rozwijanym (dropdown) -->
     <li class="main-nav__item dropdown">
-      <a href="<?= url('#egzaminy') ?>" class="main-nav__link">
+      <a href="<?= url('#inf02') ?>" class="main-nav__link">
+        <i class="main-nav__icon fas fa-microchip"></i>
+        <span>INF.02</span>
+      </a>
+      <ul class="dropdown__menu">
+        <li class="dropdown__item">
+          <a href="<?= url('jedno-pytanie/INF.02') ?>" class="dropdown__link">
+            <i class="dropdown__icon fas fa-question-circle"></i> Jedno Pytanie
+          </a>
+        </li>
+        <li class="dropdown__item">
+          <a href="<?= url('personalizowany-test/INF.02') ?>" class="dropdown__link">
+            <i class="dropdown__icon fas fa-sliders-h"></i> Spersonalizowany Test
+          </a>
+        </li>
+        <li class="dropdown__item">
+          <a href="<?= url('test/INF.02') ?>" class="dropdown__link">
+            <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="main-nav__item dropdown">
+      <a href="<?= url('#inf03') ?>" class="main-nav__link">
         <i class="main-nav__icon fas fa-laptop-code"></i>
         <span>INF.03</span>
       </a>
-      <!-- Kontener menu rozwijanego; jego widoczność jest kontrolowana przez CSS/JS -->
       <ul class="dropdown__menu">
         <li class="dropdown__item">
           <a href="<?= url('jedno-pytanie/INF.03') ?>" class="dropdown__link">
@@ -45,6 +68,30 @@
         </li>
         <li class="dropdown__item">
           <a href="<?= url('test/INF.03') ?>" class="dropdown__link">
+            <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="main-nav__item dropdown">
+      <a href="<?= url('#inf04') ?>" class="main-nav__link">
+        <i class="main-nav__icon fas fa-code"></i>
+        <span>INF.04</span>
+      </a>
+      <ul class="dropdown__menu">
+        <li class="dropdown__item">
+          <a href="<?= url('jedno-pytanie/INF.04') ?>" class="dropdown__link">
+            <i class="dropdown__icon fas fa-question-circle"></i> Jedno Pytanie
+          </a>
+        </li>
+        <li class="dropdown__item">
+          <a href="<?= url('personalizowany-test/INF.04') ?>" class="dropdown__link">
+            <i class="dropdown__icon fas fa-sliders-h"></i> Spersonalizowany Test
+          </a>
+        </li>
+        <li class="dropdown__item">
+          <a href="<?= url('test/INF.04') ?>" class="dropdown__link">
             <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
           </a>
         </li>

@@ -142,6 +142,15 @@ class QuizPageController extends BaseController
         'desc_test' => 'Pełny egzamin próbny INF.02.',
         'title_personalized' => 'INF.02 - Test Spersonalizowany | Examly',
         'desc_personalized' => 'Skonfiguruj swój test z INF.02.'
+      ],
+      'INF.04' => [
+        'formatted_name' => 'E.14 / INF.04',
+        'title_one_question' => 'INF.04 - Jedno pytanie - Trening | Examly',
+        'desc_one_question' => 'Poćwicz z INF.04. Jedno pytanie losowe.',
+        'title_test' => 'INF.04 - Egzamin próbny - Test Online | Examly',
+        'desc_test' => 'Pełny egzamin próbny INF.04.',
+        'title_personalized' => 'INF.04 - Test Spersonalizowany | Examly',
+        'desc_personalized' => 'Skonfiguruj swój test z INF.04.'
       ]
     ];
 
