@@ -163,10 +163,12 @@ CREATE TABLE attempt_topics (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Zapis konkretnych odpowiedzi udzielonych przez użytkownika.
+-- answer_id może być NULL jeśli użytkownik pominął pytanie (skip)
 CREATE TABLE attempt_answers (
   attempt_id INT UNSIGNED NOT NULL,
   question_version_id INT UNSIGNED NOT NULL,      -- Referencja do wersji (wiemy co widział user)
-  answer_id INT UNSIGNED NOT NULL,                -- Wybrana odpowiedź
+  answer_id INT UNSIGNED DEFAULT NULL,            -- Wybrana odpowiedź (NULL = pominięte pytanie)
+  is_correct TINYINT(1) NOT NULL DEFAULT 0,       -- Cache: czy odpowiedź była poprawna (0 dla skipped)
   answered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (attempt_id, question_version_id),
   FOREIGN KEY (attempt_id) REFERENCES attempts(id) ON DELETE CASCADE,
@@ -181,6 +183,8 @@ CREATE TABLE user_progress (
   question_id INT UNSIGNED NOT NULL,
   attempts_count INT NOT NULL DEFAULT 0,          -- Ile razy user widział to pytanie
   correct_count INT NOT NULL DEFAULT 0,           -- Ile razy odpowiedział poprawnie
+  incorrect_count INT NOT NULL DEFAULT 0,         -- Ile razy odpowiedział błędnie
+  skipped_count INT NOT NULL DEFAULT 0,           -- Ile razy user pominął to pytanie
   last_result TINYINT(1) NOT NULL,                -- Wynik ostatniej próby (0 = błędna, 1 = poprawna)
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

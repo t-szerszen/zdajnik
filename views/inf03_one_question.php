@@ -86,7 +86,7 @@ $extraScripts = [
           <legend class="topic-selector__sub-legend">Główne kategorie</legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label">
-              <input type="checkbox" value="inf03" id="select-all-inf03">
+              <input type="checkbox" value="inf03" id="select-all-inf03" <?= (isset($_GET['selectAll']) && $_GET['selectAll'] === 'true') ? 'checked' : '' ?>>
               <span>Cały materiał INF.03</span>
             </label>
             <label class="topic-selector__label">
@@ -125,7 +125,7 @@ $extraScripts = [
               <span>Nieodkryte pytania</span>
             </label>
             <label class="topic-selector__label premium-option">
-              <input type="checkbox" name="premium_option" value="toImprove" class="premium-checkbox">
+              <input type="checkbox" name="premium_option" value="toImprove" class="premium-checkbox" <?= (isset($_GET['premium']) && $_GET['premium'] === 'toImprove') ? 'checked' : '' ?>>
               <span>Pytania, które gorzej Ci idą</span>
             </label>
             <label class="topic-selector__label premium-option">
@@ -133,7 +133,7 @@ $extraScripts = [
               <span>Pytania najdawniej powtórzone</span>
             </label>
             <label class="topic-selector__label premium-option">
-              <input type="checkbox" name="premium_option" value="lastMistakes" class="premium-checkbox">
+              <input type="checkbox" name="premium_option" value="lastMistakes" class="premium-checkbox" <?= (isset($_GET['premium']) && $_GET['premium'] === 'lastMistakes') ? 'checked' : '' ?>>
               <span>Ostatnio błędne</span>
             </label>
           </div>

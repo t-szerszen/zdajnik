@@ -167,16 +167,19 @@ async finishTest() {
       userAnswersMap[question_version_id] = selectedAnswerId;
 
       const correctAnswer = qData.answers.find(a => a.is_correct === 1);
-      if (selectedAnswerId && correctAnswer && selectedAnswerId === correctAnswer.id) {
+      const isCorrect = selectedAnswerId && correctAnswer && selectedAnswerId === correctAnswer.id;
+      
+      if (isCorrect) {
         correctAnswersCount++;
       }
 
-      if (selectedAnswerId) {
-        answersDetails.push({
-          question_version_id: question_version_id,
-          answer_id: selectedAnswerId
-        });
-      }
+      // ZAWSZE dodajemy do answersDetails - nawet jeśli pominięte (selectedAnswerId = null)
+      // Backend wymaga tego do śledzenia pominiętych pytań
+      answersDetails.push({
+        question_version_id: question_version_id,
+        answer_id: selectedAnswerId, // może być null dla pominiętych
+        is_correct: isCorrect ? 1 : 0
+      });
     });
 
     const totalQuestions = this.questionsData.length;

@@ -52,14 +52,19 @@ class Attempt
 			}
 
 			// 3. Zapis odpowiedzi (Multi-insert dla wydajności)
+			// Obsługuje również pominięte pytania (answer_id = NULL, is_correct = 0)
 			if (!empty($answersDetails)) {
 				$values = [];
 				$params = [];
 				foreach ($answersDetails as $ans) {
-					$values[] = "(?, ?, ?)";
-					array_push($params, $attemptId, $ans['question_version_id'], $ans['answer_id']);
+					$values[] = "(?, ?, ?, ?)";
+					// Jeśli answer_id jest NULL (pominięte), is_correct = 0
+					$isCorrect = isset($ans['is_correct']) ? (int)$ans['is_correct'] : 0;
+					$answerId = $ans['answer_id'] ?? null;
+					
+					array_push($params, $attemptId, $ans['question_version_id'], $answerId, $isCorrect);
 				}
-				$sqlAnswers = "INSERT INTO attempt_answers (attempt_id, question_version_id, answer_id) VALUES " . implode(',', $values);
+				$sqlAnswers = "INSERT INTO attempt_answers (attempt_id, question_version_id, answer_id, is_correct) VALUES " . implode(',', $values);
 				if (!$this->db->execute($sqlAnswers, $params)) throw new \Exception('Błąd zapisu odpowiedzi.');
 			}
 

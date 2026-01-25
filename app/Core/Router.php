@@ -12,6 +12,8 @@ use App\Controllers\SettingsController;
 use App\Controllers\StatisticsController;
 use App\Controllers\VerificationController;
 use App\Controllers\UserController;
+use App\Controllers\DashboardController;
+use App\Controllers\HistoryController;
 
 /**
  * Klasa Router - centralny punkt aplikacji kierujący ruchem (wzorzec Front Controller).
@@ -64,6 +66,26 @@ class Router
 
     // Usuwamy ewentualne ukośniki z początku i końca dla spójności.
     $uri = trim($uri, '/');
+    
+    // --- Routing dynamiczny dla stron review (zobacz pytanie) ---
+    if (strpos($uri, 'test-pytanie/') === 0) {
+        $parts = explode('/', $uri);
+        $questionId = end($parts);
+        if (is_numeric($questionId)) {
+            (new QuizPageController())->showQuestionReview((int)$questionId);
+            return;
+        }
+    }
+    
+    // --- Routing dynamiczny dla podglądu egzaminu ---
+    if (strpos($uri, 'wyniki/') === 0) {
+        $parts = explode('/', $uri);
+        $attemptId = end($parts);
+        if (is_numeric($attemptId)) {
+            (new QuizPageController())->showExamReview((int)$attemptId);
+            return;
+        }
+    }
 
     // Krok 2: Decyzja o strategii routingu na podstawie prefiksu URI.
     if (strpos($uri, 'api/') === 0) {
@@ -238,6 +260,12 @@ class Router
         break;
       case 'usun-konto':
         (new SettingsController())->handleAccountDeletion();
+        break;
+      case 'statystyki':
+        (new DashboardController())->index();
+        break;
+      case 'historia':
+        (new HistoryController())->index();
         break;
       // --- Domyślna obsługa błędu ---
       default:
