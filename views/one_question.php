@@ -2,9 +2,9 @@
 /**
  * Konfiguracja komponentu head
  */
-$pageTitle = 'INF.03 - Jedno pytanie - Inteligentna Powtórka Online | Examly';
-$pageDescription = 'Nie masz czasu na cały test? Wylosuj jedno pytanie z bazy egzaminacyjnej INF.03 i sprawdź swoją wiedzę w mniej niż minutę. Ucz się skutecznie z Examly.';
-$canonicalUrl = 'https://www.examly.pl/inf03-jedno-pytanie';
+$pageTitle = $exam['title_one_question'];
+$pageDescription = $exam['desc_one_question'];
+$canonicalUrl = 'https://www.examly.pl/jedno-pytanie/' . htmlspecialchars($examCode);
 $extraScripts = [
   'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
   'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js'
@@ -56,7 +56,7 @@ $extraScripts = [
   -->
   <header class="page-header">
     <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient">EE.09 / INF.03</span> - Jedno pytanie</h1>
+      <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span> - Jedno pytanie</h1>
       <p class="page-header__text">
         Nie masz czasu na pełny test? Spoko! Ten tryb jest idealny, żeby w kilka minut wbić do głowy coś nowego. Wybierz dział, wylosuj pytanie prosto z oficjalnych egzaminów i sprawdź, czy dasz radę.
       </p>
@@ -86,33 +86,15 @@ $extraScripts = [
           <legend class="topic-selector__sub-legend">Główne kategorie</legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label">
-              <input type="checkbox" value="inf03" id="select-all-inf03" <?= (isset($_GET['selectAll']) && $_GET['selectAll'] === 'true') ? 'checked' : '' ?>>
-              <span>Cały materiał INF.03</span>
+              <input type="checkbox" value="<?= htmlspecialchars($examCode) ?>" id="select-all-codes">
+              <span>Cały materiał <?= htmlspecialchars($exam['formatted_name']) ?></span>
             </label>
-            <label class="topic-selector__label">
-              <input type="checkbox" name="subject[]" value="1" class="topic-checkbox">
-              <span>HTML</span>
-            </label>
-            <label class="topic-selector__label">
-              <input type="checkbox" name="subject[]" value="2" class="topic-checkbox">
-              <span>CSS</span>
-            </label>
-            <label class="topic-selector__label">
-              <input type="checkbox" name="subject[]" value="3" class="topic-checkbox">
-              <span>JS</span>
-            </label>
-            <label class="topic-selector__label">
-              <input type="checkbox" name="subject[]" value="4" class="topic-checkbox">
-              <span>PHP</span>
-            </label>
-            <label class="topic-selector__label">
-              <input type="checkbox" name="subject[]" value="5" class="topic-checkbox">
-              <span>SQL</span>
-            </label>
-            <label class="topic-selector__label">
-              <input type="checkbox" name="subject[]" value="6" class="topic-checkbox">
-              <span>Inne pytania teoretyczne</span>
-            </label>
+            <?php foreach ($categories as $category): ?>
+              <label class="topic-selector__label">
+                <input type="checkbox" name="subject[]" value="<?= htmlspecialchars($category['id']) ?>" class="topic-checkbox" <?= (isset($_GET['subject']) && in_array($category['id'], is_array($_GET['subject']) ? $_GET['subject'] : [$_GET['subject']])) ? 'checked' : '' ?>>
+                <span><?= htmlspecialchars($category['name']) ?></span>
+              </label>
+            <?php endforeach; ?>
           </div>
         </fieldset>
 

@@ -78,6 +78,7 @@ class Test {
         finishBtn: document.getElementById('finish-test-btn'),
         resultsDetailsContainer: document.getElementById('results-details'),
         isFullExam: true, // Ten tryb to zawsze pełny egzamin.
+        examCode: this.examCode,
       });
 
       // Krok 5: Uruchom `TestRunner` z pobranymi pytaniami.

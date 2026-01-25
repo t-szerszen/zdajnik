@@ -34,17 +34,17 @@
       <!-- Kontener menu rozwijanego; jego widoczność jest kontrolowana przez CSS/JS -->
       <ul class="dropdown__menu">
         <li class="dropdown__item">
-          <a href="<?= url('inf03-jedno-pytanie') ?>" class="dropdown__link">
+          <a href="<?= url('jedno-pytanie/INF.03') ?>" class="dropdown__link">
             <i class="dropdown__icon fas fa-question-circle"></i> Jedno Pytanie
           </a>
         </li>
         <li class="dropdown__item">
-          <a href="<?= url('inf03-personalizowany-test') ?>" class="dropdown__link">
+          <a href="<?= url('personalizowany-test/INF.03') ?>" class="dropdown__link">
             <i class="dropdown__icon fas fa-sliders-h"></i> Spersonalizowany Test
           </a>
         </li>
         <li class="dropdown__item">
-          <a href="<?= url('inf03-test') ?>" class="dropdown__link">
+          <a href="<?= url('test/INF.03') ?>" class="dropdown__link">
             <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
           </a>
         </li>

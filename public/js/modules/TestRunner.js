@@ -46,6 +46,7 @@ export class TestRunner {
     this.resultsDetailsContainer = config.resultsDetailsContainer;
 
     // Krok 2: Zainicjuj wewnętrzny stan komponentu.
+    this.examCode = config.examCode || 'INF.03'; // Fallback to avoid breaking legacy calls
     this.isFullExam = config.isFullExam || false;
     this.questionsData = [];
     this.timerInterval = null;

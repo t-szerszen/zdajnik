@@ -67,25 +67,25 @@ class Router
 
     // Usuwamy ewentualne ukośniki z początku i końca dla spójności.
     $uri = trim($uri, '/');
-    
+
     // --- Routing dynamiczny dla stron review (zobacz pytanie) ---
     if (strpos($uri, 'test-pytanie/') === 0) {
-        $parts = explode('/', $uri);
-        $questionId = end($parts);
-        if (is_numeric($questionId)) {
-            (new ReviewController())->showQuestionReview((int)$questionId);
-            return;
-        }
+      $parts = explode('/', $uri);
+      $questionId = end($parts);
+      if (is_numeric($questionId)) {
+        (new ReviewController())->showQuestionReview((int)$questionId);
+        return;
+      }
     }
-    
+
     // --- Routing dynamiczny dla podglądu egzaminu ---
     if (strpos($uri, 'wyniki/') === 0) {
-        $parts = explode('/', $uri);
-        $attemptId = end($parts);
-        if (is_numeric($attemptId)) {
-            (new ReviewController())->showExamReview((int)$attemptId);
-            return;
-        }
+      $parts = explode('/', $uri);
+      $attemptId = end($parts);
+      if (is_numeric($attemptId)) {
+        (new ReviewController())->showExamReview((int)$attemptId);
+        return;
+      }
     }
 
     // Krok 2: Decyzja o strategii routingu na podstawie prefiksu URI.
@@ -197,7 +197,28 @@ class Router
    */
   private function handleWebRequest(string $uri): void
   {
-    switch ($uri) {
+    $parts = explode('/', $uri);
+    $slug = $parts[0];
+    $param = $parts[1] ?? null;
+
+    // Obsługa parametrów w formacie key=value (np. ?code=XY, ale w URL path)
+    foreach ($parts as $part) {
+      if (strpos($part, '=') !== false) {
+        [$key, $value] = explode('=', $part, 2);
+        $_GET[$key] = $value;
+      }
+    }
+
+    // Helper do pobierania kodu egzaminu:
+    // 1. Sprawdza $_GET['code'] (format ?code=... lub param=...)
+    // 2. Sprawdza drugi segment URI (format /slug/CODE)
+    $getExamCode = function () use ($param) {
+      if (isset($_GET['code'])) return $_GET['code'];
+      if ($param && strpos($param, '=') === false) return $param;
+      return null;
+    };
+
+    switch ($slug) {
       case '':
         (new HomeController())->show();
         break;
@@ -216,7 +237,6 @@ class Router
         break;
       case 'autoryzacja-email':
         $controller = new RegisterController();
-        // Sub-routing na podstawie parametru GET dla tej samej ścieżki.
         if (isset($_GET['send']) && $_GET['send'] === 'true') {
           $controller->handleSendVerificationEmail();
         } else {
@@ -246,14 +266,32 @@ class Router
         }
         break;
       // --- Grupa Quizów ---
-      case 'inf03-jedno-pytanie':
-        (new QuizPageController())->showOneQuestionPage();
+      case 'jedno-pytanie':
+        $code = $getExamCode();
+        if ($code) {
+          (new QuizPageController())->showOneQuestionPage($code);
+        } else {
+          http_response_code(404);
+          echo "Brak kodu egzaminu.";
+        }
         break;
-      case 'inf03-personalizowany-test':
-        (new QuizPageController())->showPersonalizedTestPage();
+      case 'personalizowany-test':
+        $code = $getExamCode();
+        if ($code) {
+          (new QuizPageController())->showPersonalizedTestPage($code);
+        } else {
+          http_response_code(404);
+          echo "Brak kodu egzaminu.";
+        }
         break;
-      case 'inf03-test':
-        (new QuizPageController())->showTestPage();
+      case 'test':
+        $code = $getExamCode();
+        if ($code) {
+          (new QuizPageController())->showTestPage($code);
+        } else {
+          http_response_code(404);
+          echo "Brak kodu egzaminu.";
+        }
         break;
       // --- Grupa Użytkownika ---
       case 'ustawienia':
@@ -271,8 +309,6 @@ class Router
       // --- Domyślna obsługa błędu ---
       default:
         http_response_code(404);
-        // W przyszłości można tu wywołać dedykowany ErrorController.
-        // (new ErrorController())->show404();
         echo "Strona o adresie '$uri' nie istnieje.";
         break;
     }

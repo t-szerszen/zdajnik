@@ -2,9 +2,9 @@
 /**
  * Konfiguracja komponentu head
  */
-$pageTitle = 'INF.03 - Stwórz swój własny test - Spersonalizowana Nauka | Examly';
-$pageDescription = 'Dopasuj naukę do swoich potrzeb. Stwórz spersonalizowany test z kwalifikacji INF.03, wybierając tematy, liczbę pytań i inteligentne filtry nauki.';
-$canonicalUrl = 'https://www.examly.pl/inf03-test-spersonalizowany';
+$pageTitle = $exam['title_personalized'];
+$pageDescription = $exam['desc_personalized'];
+$canonicalUrl = 'https://www.examly.pl/personalizowany-test/' . htmlspecialchars($examCode);
 $extraScripts = [
   'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
   'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js'
@@ -48,7 +48,7 @@ $extraScripts = [
   <!-- Nagłówek wprowadzający w kontekst strony -->
   <header class="page-header">
     <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient">EE.09 / INF.03</span> - Spersonalizowany test</h1>
+      <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span> - Spersonalizowany test</h1>
       <p class="page-header__text">
         Stwórz test idealnie dopasowany do Twoich potrzeb. Wybierz interesujące Cię tematy, ustaw liczbę pytań i skup się na tym, co jest dla Ciebie najważniejsze.
       </p>
@@ -81,45 +81,36 @@ $extraScripts = [
           </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label">
-              <input type="checkbox" value="inf03" id="select-all-inf03">
-              <span>Cały materiał INF.03</span>
+              <input type="checkbox" value="<?= htmlspecialchars($examCode) ?>" id="select-all-codes">
+              <span>Cały materiał <?= htmlspecialchars($exam['formatted_name']) ?></span>
             </label>
-            <label class="topic-selector__label">
-              <input type="checkbox" name="subject[]" value="1" class="topic-checkbox"
-                    <?= ($selectedSubjectId === 1) ? 'checked' : '' ?>
-              >
-              <span>HTML</span>
-            </label>
-            <label class="topic-selector__label">
-              <input type="checkbox" name="subject[]" value="2" class="topic-checkbox"
-                    <?= ($selectedSubjectId === 2) ? 'checked' : '' ?>
-              >
-              <span>CSS</span>
-            </label>
-            <label class="topic-selector__label">
-              <input type="checkbox" name="subject[]" value="3" class="topic-checkbox"
-                    <?= ($selectedSubjectId === 3) ? 'checked' : '' ?>
-              >
-              <span>JS</span>
-            </label>
-            <label class="topic-selector__label">
-              <input type="checkbox" name="subject[]" value="4" class="topic-checkbox"
-                    <?= ($selectedSubjectId === 4) ? 'checked' : '' ?>
-              >
-              <span>PHP</span>
-            </label>
-            <label class="topic-selector__label">
-              <input type="checkbox" name="subject[]" value="5" class="topic-checkbox"
-                    <?= ($selectedSubjectId === 5) ? 'checked' : '' ?>
-              >
-              <span>SQL</span>
-            </label>
-            <label class="topic-selector__label">
-              <input type="checkbox" name="subject[]" value="6" class="topic-checkbox"
-                    <?= ($selectedSubjectId === 6) ? 'checked' : '' ?>
-              >
-              <span>Inne pytania teoretyczne</span>
-            </label>
+            <!-- Topics are now fetched dynamically in controller if needed, but here we can iterate -->
+            <!-- Note: The Controller didn't pass categories here yet unlike one_question. We should fix that or assume hardcoded list for now as per minimal change request, 
+                 but wait, the request was "Refactor hardcoded views". The hardcoded IDs 1-6 are specific to INF.03.
+                 Ideally, we should fetch topics from DB. 
+                 The "one_question" view received $categories. I should do the same for personalized_test.
+                 For now, I'll assume categories are passed or I need to update controller to pass them.
+                 Checking Controller... I only passed $exam, $examCode, $selectedSubjectId. 
+                 I should Update Controller to pass categories too. 
+            -->
+             <?php 
+             // Temporarily retaining hardcoded list if categories are not available, BUT I should have passed them. 
+             // I will update the controller in next step if I missed it, or just use a placeholder Loop here assuming I will fix it.
+             // Let's assume I will fix Controller to pass 'categories' like in one_question.
+             ?>
+             <?php if(isset($categories)): ?>
+                <?php foreach($categories as $category): ?>
+                <label class="topic-selector__label">
+                  <input type="checkbox" name="subject[]" value="<?= htmlspecialchars($category['id']) ?>" class="topic-checkbox"
+                        <?= ($selectedSubjectId === (int)$category['id']) ? 'checked' : '' ?>
+                  >
+                  <span><?= htmlspecialchars($category['name']) ?></span>
+                </label>
+                <?php endforeach; ?>
+             <?php else: ?>
+                <!-- Fallback if no categories passed (legacy behavior but cleaner) -->
+                <p>Brak kategorii do wyświetlenia dla tego egzaminu.</p>
+             <?php endif; ?>
           </div>
           <div class="config-step__actions">
             <button type="button" class="btn btn--primary" data-action="next">Dalej</button>

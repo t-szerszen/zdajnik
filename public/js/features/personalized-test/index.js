@@ -163,7 +163,7 @@ class PersonalizedTest {
         </div>
         <div id="test-view" class="hidden">
           <header class="test-header">
-            <h1 class="test-header__title">Test Spersonalizowany - <span class="text-gradient">INF.03</span></h1>
+            <h1 class="test-header__title">Test Spersonalizowany - <span class="text-gradient">${this.examCode}</span></h1>
             <div class="test-header__meta"><div id="timer">00:00</div></div>
           </header>
           <div id="questions-wrapper" class="questions-wrapper"></div>
@@ -205,8 +205,10 @@ class PersonalizedTest {
         questionsWrapper: document.getElementById('questions-wrapper'),
         resultsScreen: document.getElementById('results-screen'),
         finishBtn: document.getElementById('finish-test-btn'),
+        finishBtn: document.getElementById('finish-test-btn'),
         resultsDetailsContainer: document.getElementById('results-details'),
         isFullExam: isConsideredFullExam,
+        examCode: this.examCode,
       });
       testRunner.run(response.data.questions);
     } else {

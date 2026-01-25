@@ -2,9 +2,9 @@
 /**
  * Konfiguracja komponentu head
  */
-$pageTitle = 'INF.03 - Egzamin próbny - Test Online 40 Pytań | Examly';
-$pageDescription = 'Sprawdź swoją wiedzę przed egzaminem zawodowym INF.03. Rozwiąż pełny test próbny online, który symuluje prawdziwy egzamin i składa się z 40 pytań.';
-$canonicalUrl = 'https://www.examly.pl/inf03-test-probny';
+$pageTitle = $exam['title_test'];
+$pageDescription = $exam['desc_test'];
+$canonicalUrl = 'https://www.examly.pl/test/' . htmlspecialchars($examCode);
 $extraScripts = [
   'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
   'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js'
@@ -47,7 +47,7 @@ $extraScripts = [
   <!-- Nagłówek wprowadzający w kontekst strony -->
   <header class="page-header">
     <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient">EE.09 / INF.03</span> - Pełny Egzamin Próbny</h1>
+      <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span> - Pełny Egzamin Próbny</h1>
       <p class="page-header__text">
         Zmierz się z pełnym egzaminem próbnym składającym się z 40 losowych pytań z naszej bazy.
         To najlepszy sposób, by sprawdzić swoją wiedzę, zidentyfikować słabe punkty i śledzić postępy w nauce.
@@ -84,7 +84,7 @@ $extraScripts = [
       <!-- Stan 2: Widok aktywnego testu (początkowo ukryty) -->
       <div id="test-view" class="hidden">
         <header class="test-header">
-          <h1 class="test-header__title">Test Całościowy - <span class="text-gradient">INF.03</span></h1>
+          <h1 class="test-header__title">Test Całościowy - <span class="text-gradient"><?= htmlspecialchars($examCode) ?></span></h1>
           <div class="test-header__meta">
             <!-- Minutnik, zarządzany przez JS -->
             <div id="timer" class="timer">60:00</div>

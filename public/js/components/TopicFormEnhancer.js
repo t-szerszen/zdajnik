@@ -53,7 +53,7 @@ class TopicFormEnhancer {
     }
 
     /** @private @type {HTMLInputElement|null} */
-    this.selectAllCheckbox = this.form.querySelector('#select-all-inf03');
+    this.selectAllCheckbox = this.form.querySelector('#select-all-codes');
     /** @private @type {NodeListOf<HTMLInputElement>} */
     this.topicCheckboxes = this.form.querySelectorAll('.topic-checkbox');
     /** @private @type {NodeListOf<HTMLInputElement>} */
