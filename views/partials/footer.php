@@ -83,8 +83,11 @@
       <div class="theme-switcher">
         <input type="checkbox" id="theme-toggle-checkbox">
         <label for="theme-toggle-checkbox" class="theme-toggle-label" aria-label="Zmień motyw">
-          <i class="fas fa-moon"></i>
-          <i class="fas fa-sun"></i>
+          <span class="cloud cloud--1"></span>
+          <span class="cloud cloud--2"></span>
+          <span class="star star--1"></span>
+          <span class="star star--2"></span>
+          <span class="star star--3"></span>
           <span class="ball"></span>
         </label>
       </div>

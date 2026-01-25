@@ -5,79 +5,68 @@
  *
  * @description
  * Główny plik SCSS, będący punktem wejściowym dla całego projektu stylów.
- * Nie zawiera żadnych reguł CSS, a jego jedynym zadaniem jest importowanie
- * wszystkich plików częściowych (partials) w odpowiedniej kolejności,
- * zgodnie z architekturą ITCSS (Inverted Triangle CSS).
+ * Używa składni @use dla modularności (SASS Modules).
  */
 
 // =============================================================================
 // 1. USTAWIENIA (SETTINGS)
-// Globalne zmienne, mapy kolorów, konfiguracja czcionek.
-// Nic nie powinno generować tutaj kodu CSS.
 // =============================================================================
-@import '1-settings/variables';
+@use '1-settings/variables';
 
 // =============================================================================
 // 2. NARZĘDZIA (TOOLS)
-// Globalne mixiny i funkcje.
-// Nic nie powinno generować tutaj kodu CSS.
 // =============================================================================
-@import '2-tools/animations';
+@use '2-tools/animations';
+@use '2-tools/mixins';
 
 // =============================================================================
 // 3. OGÓLNE (GENERIC)
-// Resetowanie stylów (reset, normalize), box-sizing.
-// Generuje pierwsze reguły CSS.
 // =============================================================================
-// @import '3-generic/reset';
+// @use '3-generic/reset';
 
 // =============================================================================
 // 4. ELEMENTY (ELEMENTS)
-// Style dla czystych, niestylowanych tagów HTML (body, h1, a, p).
 // =============================================================================
-@import '4-elements/base';
-@import '4-elements/typography';
+@use '4-elements/base';
+@use '4-elements/typography';
 
 // =============================================================================
 // 5. OBIEKTY (OBJECTS)
-// Niestylowane wzorce projektowe, np. layouty, siatki (grid).
 // =============================================================================
-// @import '5-objects/layout';
+// @use '5-objects/layout';
 
 // =============================================================================
 // 6. KOMPONENTY (COMPONENTS)
-// Konkretne, ostylowane elementy interfejsu użytkownika.
-// Największa część projektu.
 // =============================================================================
-@import '6-components/button';
-@import '6-components/nav';
-@import '6-components/footer';
-@import '6-components/form-card';
-@import '6-components/alert';
-@import '6-components/info-card';
-@import '6-components/topic-selector';
-@import '6-components/quiz-card';
-@import '6-components/quiz-page-layout';
-@import '6-components/test-page';
-@import '6-components/slider';
-@import '6-components/hero-section';
-@import '6-components/features-grid';
-@import '6-components/exam-card';
-@import '6-components/topic-card';
-@import '6-components/topics-section';
-@import '6-components/exam-info';
-@import '6-components/page-header';
-@import '6-components/test-configurator';
-@import '6-components/toast';
-@import '6-components/theme-switcher';
-@import '6-components/settings-page';
+@use '6-components/button';
+@use '6-components/nav';
+@use '6-components/footer';
+@use '6-components/form-card';
+@use '6-components/alert';
+@use '6-components/info-card';
+@use '6-components/topic-selector';
+@use '6-components/quiz-card';
+@use '6-components/quiz-page-layout';
+@use '6-components/test-page';
+@use '6-components/slider';
+@use '6-components/hero-section';
+@use '6-components/features-grid';
+@use '6-components/exam-card';
+@use '6-components/topic-card';
+@use '6-components/topics-section';
+@use '6-components/exam-info';
+@use '6-components/page-header';
+@use '6-components/test-configurator';
+@use '6-components/toast';
+@use '6-components/theme-switcher';
+@use '6-components/settings-page';
+@use '6-components/statistics-page';
 
 // =============================================================================
 // 7. NARZĘDZIA POMOCNICZE (UTILITIES)
-// Klasy pomocnicze nadpisujące inne style, np. .text-center, .margin-top-large.
 // =============================================================================
-// @import '7-utilities/spacing';
-@import '7-utilities/home';
-@import '7-utilities/auth-page';
-@import '7-utilities/text';
-@import '7-utilities/helpers';
+// @use '7-utilities/spacing';
+@use '7-utilities/home';
+@use '7-utilities/auth-page';
+@use '7-utilities/text';
+@use '7-utilities/helpers';
