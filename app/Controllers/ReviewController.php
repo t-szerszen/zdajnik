@@ -1,10 +1,18 @@
 <?php
+namespace App\Controllers;
+
+use App\Services\StatisticsService;
 
 class ReviewController extends BaseController
 {
+
+  private StatisticsService $statsService;
+
   public function __construct()
   {
     parent::__construct();
+    $this->requireAuth();
+    $this->statsService = new StatisticsService();
   }
 
   /**

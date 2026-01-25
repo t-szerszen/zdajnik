@@ -14,6 +14,7 @@ use App\Controllers\VerificationController;
 use App\Controllers\UserController;
 use App\Controllers\DashboardController;
 use App\Controllers\HistoryController;
+use App\Controllers\ReviewController;
 
 /**
  * Klasa Router - centralny punkt aplikacji kierujący ruchem (wzorzec Front Controller).
@@ -72,7 +73,7 @@ class Router
         $parts = explode('/', $uri);
         $questionId = end($parts);
         if (is_numeric($questionId)) {
-            (new QuizPageController())->showQuestionReview((int)$questionId);
+            (new ReviewController())->showQuestionReview((int)$questionId);
             return;
         }
     }
@@ -82,7 +83,7 @@ class Router
         $parts = explode('/', $uri);
         $attemptId = end($parts);
         if (is_numeric($attemptId)) {
-            (new QuizPageController())->showExamReview((int)$attemptId);
+            (new ReviewController())->showExamReview((int)$attemptId);
             return;
         }
     }
