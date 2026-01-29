@@ -18,7 +18,7 @@ class DashboardController extends BaseController
   /**
    * Wyświetla stronę statystyk użytkownika (Dashboard).
    */
-  public function index(): void
+  public function showDashboard(): void
   {
     $this->requireAuth();
 

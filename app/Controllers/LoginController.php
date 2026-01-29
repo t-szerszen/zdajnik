@@ -37,46 +37,37 @@ class LoginController extends BaseController
   }
 
   /**
-   * Główna metoda kontrolera, zarządzająca całą logiką strony logowania.
-   * 2. Jeśli żądanie jest typu POST, przetwarza dane z formularza, wywołując serwis `auth->login()`.
-   * 3. W przypadku sukcesu: regeneruje ID sesji (ze względów bezpieczeństwa) i przekierowuje na stronę główną.
-   * 4. W przypadku błędu: zbiera komunikaty o błędach.
-   * 5. Na koniec renderuje widok `login.php`, przekazując do niego ewentualne błędy
-   *    oraz dane wprowadzone przez użytkownika w formularzu.
-   * 
-   * @return void
+   * Wyświetla formularz logowania.
    */
-  public function handleRequest(): void
+  public function showLoginForm(): void
   {
-    $errors = [];
-    $formData = [];
+    $this->renderView('login', [
+      'errors' => [],
+      'formData' => [],
+    ]);
+  }
 
-    // 2. Obsłuż dane z formularza
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-      $formData = $_POST;
-      $result = $this->auth->login($formData);
+  /**
+   * Przetwarza dane logowania (POST).
+   */
+  public function processLogin(): void
+  {
+    $formData = $_POST;
+    $result = $this->auth->login($formData);
 
-      // 3. Reakcja na sukces
-      if ($result['success']) {
-        session_regenerate_id(true); // Zabezpieczenie przed atakiem session fixation
-        unset($_SESSION['verify_user_id']); // Sprzątanie po procesie rejestracji
-
-        header('Location: ' . url('/'));
-        exit();
-      } else {
-        // 4. Reakcja na błąd
-        if (isset($result['error_type']) && $result['error_type'] === 'not_verified') {
-          // Stwórz link, który uruchomi ponowne wysłanie e-maila
-          $resendLink = '<a href="' . url('autoryzacja-email?send=true') . '">Kliknij tutaj, aby wysłać link weryfikacyjny ponownie.</a>';
-          $errors[] = 'Konto nie zostało jeszcze zweryfikowane. ' . $resendLink;
-        } else {
-          // W przeciwnym razie, obsłuż standardowe błędy
-          $errors = $result['errors'];
-        }
-      }
+    if ($result['success']) {
+      session_regenerate_id(true);
+      unset($_SESSION['verify_user_id']);
+      header('Location: ' . url('/'));
+      exit();
     }
 
-    // 5. Renderowanie widoku
+    $errors = $result['errors'] ?? [];
+    if (isset($result['error_type']) && $result['error_type'] === 'not_verified') {
+      $resendLink = '<a href="' . url('autoryzacja-email?send=true') . '">Kliknij tutaj, aby wysłać link weryfikacyjny ponownie.</a>';
+      $errors[] = 'Konto nie zostało jeszcze zweryfikowane. ' . $resendLink;
+    }
+
     $this->renderView('login', [
       'errors' => $errors,
       'formData' => $formData,

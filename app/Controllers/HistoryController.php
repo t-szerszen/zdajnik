@@ -18,7 +18,7 @@ class HistoryController extends BaseController
   /**
    * Wyświetla pełną historię dla danego typu.
    */
-  public function index(): void
+  public function showHistory(): void
   {
     $this->requireAuth();
 

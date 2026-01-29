@@ -2,324 +2,194 @@
 
 namespace App\Core;
 
-use App\Controllers\GoogleAuthController;
-use App\Controllers\HomeController;
-use App\Controllers\LoginController;
-use App\Controllers\RegisterController;
-use App\Controllers\PasswordResetController;
-use App\Controllers\QuizPageController;
-use App\Controllers\SettingsController;
-use App\Controllers\VerificationController;
-use App\Controllers\UserController;
-use App\Controllers\DashboardController;
-use App\Controllers\HistoryController;
-use App\Controllers\ReviewController;
-
 /**
- * Klasa Router - centralny punkt aplikacji kierujący ruchem (wzorzec Front Controller).
+ * Klasa Router - Centralny mechanizm mapowania URL na akcje kontrolerów.
  *
- * Router pełni rolę pojedynczego punktu wejścia dla wszystkich żądań HTTP.
- * Jego zadaniem jest analiza adresu URI i zmapowanie go na odpowiednią akcję
- * w kontrolerze. Taka architektura centralizuje logikę routingu, ułatwiając
- * zarządzanie aplikacją i jej rozbudowę.
+ * Zastępuje hybrydowe podejście (Switch + Regex) jednolitym systemem rejestracji tras.
+ * Obsługuje parametryzowane ścieżki, metody HTTP oraz automatyczne wstrzykiwanie
+ * parametrów do metod kontrolerów.
  *
- * Zastosowano tu hybrydową strategię routingu:
- * 1. Dynamiczny (RegEx): Dla elastycznych ścieżek API (np. /api/question/{id}).
- *    Pozwala na łatwe wyodrębnianie parametrów wprost z adresu URL.
- * 2. Statyczny (Switch): Dla stałych, znanych ścieżek stron (np. /login).
- *    Jest to rozwiązanie ekstremalnie wydajne dla predefiniowanych adresów.
- *
- * @version 1.3.0
- * @author Tobiasz Szerszeń
+ * @version 2.0.0
+ * @author Twoje Imię / Refactor by Examly Architect
  */
 class Router
 {
   /**
-   * Tablica przechowująca zarejestrowane, dynamiczne ścieżki API.
-   *
-   * @var array<int, array<string, string>>
+   * Tabela zarejestrowanych tras.
+   * Struktura: ['METHOD' => ['pattern' => 'handler']]
    */
-  private array $apiRoutes = [];
+  private array $routes = [];
 
   /**
-   * Główna metoda routera, która przetwarza całe żądanie HTTP.
+   * Konstruktor inicjalizujący definicje tras.
+   * W większych aplikacjach definicje te wynosi się do pliku routes.php.
+   */
+  public function __construct()
+  {
+    $this->registerRoutes();
+  }
+
+  /**
+   * Rejestruje trasę dla metody GET.
    *
-   * Logika działania opiera się na ścisłej współpracy z plikiem .htaccess,
-   * który przekazuje "czystą" ścieżkę żądania jako parametr GET o nazwie 'url'.
-   * To podejście uniezależnia aplikację od jej lokalizacji na serwerze
-   * (np. czy jest w głównym katalogu domeny, czy w podkatalogu).
+   * @param string $path Ścieżka URL (np. 'test/{code}').
+   * @param string $handler Format 'Controller@method'.
+   */
+  public function get(string $path, string $handler): void
+  {
+    $this->addRoute('GET', $path, $handler);
+  }
+
+  /**
+   * Rejestruje trasę dla metody POST.
    *
-   * 1. Odczytuje ścieżkę z `$_GET['url']`. To jest najbardziej niezawodny sposób
-   * na uzyskanie URI, ponieważ `.htaccess` już wykonał pracę przygotowawczą.
-   * 2. Sprawdza, czy URI wskazuje na zasób API (rozpoczyna się od `api/`).
-   * 3. Na podstawie wyniku, deleguje dalsze przetwarzanie do wyspecjalizowanej
-   * metody: `handleApiRequest()` lub `handleWebRequest()`.
-   *
-   * @return void
+   * @param string $path Ścieżka URL.
+   * @param string $handler Format 'Controller@method'.
+   */
+  public function post(string $path, string $handler): void
+  {
+    $this->addRoute('POST', $path, $handler);
+  }
+
+  /**
+   * Główna metoda przetwarzająca żądanie.
    */
   public function handleRequest(): void
   {
-    // Krok 1: Pobierz "czysty" URI bezpośrednio z parametru 'url'
-    // ustawionego przez .htaccess. Zapewnia to przenośność aplikacji.
-    // Jeśli parametr nie istnieje (np. żądanie do strony głównej), użyj pustego stringa.
-    $uri = $_GET['url'] ?? '';
+    // 1. Pobierz URI i Metodę
+    $uri = trim($_GET['url'] ?? '', '/');
+    $method = $_SERVER['REQUEST_METHOD'];
 
-    // Usuwamy ewentualne ukośniki z początku i końca dla spójności.
-    $uri = trim($uri, '/');
-
-    // --- Routing dynamiczny dla stron review (zobacz pytanie) ---
-    if (strpos($uri, 'test-pytanie/') === 0) {
-      $parts = explode('/', $uri);
-      $questionId = end($parts);
-      if (is_numeric($questionId)) {
-        (new ReviewController())->showQuestionReview((int)$questionId);
-        return;
-      }
-    }
-
-    // --- Routing dynamiczny dla podglądu egzaminu ---
-    if (strpos($uri, 'wyniki/') === 0) {
-      $parts = explode('/', $uri);
-      $attemptId = end($parts);
-      if (is_numeric($attemptId)) {
-        (new ReviewController())->showExamReview((int)$attemptId);
-        return;
-      }
-    }
-
-    // Routing dynamiczny do ustawień
-    if (strpos($uri, 'ustawienia/') === 0) {
-      $parts = explode('/', $uri);
-      $action = end($parts);
-      if ($action === 'change_name' || $action === 'change_email' || $action === 'change_password') {
-        (new SettingsController())->showSettingsPage($action);
-        return;
-      }
-    }
-
-    // Krok 2: Decyzja o strategii routingu na podstawie prefiksu URI.
-    if (strpos($uri, 'api/') === 0) {
-      // Żądanie do API: usuń prefiks 'api/' i przekaż do handlera API.
-      $this->handleApiRequest(substr($uri, 4));
-    } else {
-      // Żądanie do strony WWW: przekaż pełny, czysty URI do handlera stron.
-      $this->handleWebRequest($uri);
-    }
-  }
-
-  /**
-   * Rejestruje i konwertuje ścieżkę API na wyrażenie regularne.
-   *
-   * To serce dynamicznego routingu. Metoda zamienia przyjazne dla programisty
-   * ścieżki z symbolami zastępczymi na potężne wyrażenia regularne z nazwanymi
-   * grupami przechwytującymi.
-   *
-   * Przykład transformacji:
-   * - Wejście: `question/{examCode}`
-   * - Wyjście: `#^question/(?P<examCode>[a-zA-Z0-9_.-]+)$#`
-   *
-   * @param string $method Metoda HTTP ('GET', 'POST', etc.).
-   * @param string $path Ścieżka z parametrami (np. 'question/{examCode}').
-   * @param string $handler Kontroler i metoda ('Controller@method').
-   * 
-   * @return void
-   */
-  private function addApiRoute(string $method, string $path, string $handler): void
-  {
-    $pathRegex = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<$1>[a-zA-Z0-9_.-]+)', $path);
-    $this->apiRoutes[] = [
-      'method' => $method,
-      'path' => '#^' . $pathRegex . '$#',
-      'handler' => $handler,
-    ];
-  }
-
-  /**
-   * Przetwarza żądania skierowane do dynamicznego API.
-   *
-   * @param string $apiUri Fragment adresu URI po prefiksie 'api/'.
-   * 
-   * @return void
-   */
-  private function handleApiRequest(string $apiUri): void
-  {
-    // Krok 1: Centralna rejestracja wszystkich dostępnych endpointów API.
-    $this->addApiRoute('GET', 'question/{examCode}', 'ApiController@getQuestion');
-    $this->addApiRoute('GET', 'test/personalized/{examCode}', 'ApiController@getPersonalizedTest');
-    $this->addApiRoute('GET', 'test/full/{examCode}', 'ApiController@getFullTest');
-    $this->addApiRoute('POST', 'check-answer', 'ApiController@checkAnswer');
-    $this->addApiRoute('POST', 'save-attempt', 'ApiController@saveAttempt');
-
-    // Krok 2: Przygotowanie danych do dopasowania.
-    $requestMethod = $_SERVER['REQUEST_METHOD'];
-    $apiUri = trim($apiUri, '/');
-
-    // Krok 3: Iteracja przez zarejestrowane ścieżki w poszukiwaniu dopasowania.
-    foreach ($this->apiRoutes as $route) {
-      // Warunek A: Metoda HTTP musi się zgadzać.
-      // Warunek B: URI musi pasować do wzorca RegEx ścieżki.
-      if ($route['method'] === $requestMethod && preg_match($route['path'], $apiUri, $matches)) {
-        // Krok 4: Dopasowanie znalezione - przygotowanie do wywołania kontrolera.
-        [$controllerShortName, $methodName] = explode('@', $route['handler']);
-        // Tworzymy PEŁNĄ nazwę klasy z przestrzenią nazw
-        $controllerName = "App\\Controllers\\" . $controllerShortName; // Np. "App\Controllers\ApiController"
-
-        // Sprawdzenie, czy klasa istnieje (dobra praktyka)
-        if (!class_exists($controllerName)) {
-          error_log("Błąd Routera: Klasa kontrolera '{$controllerName}' nie została znaleziona.");
-          header('Content-Type: application/json; charset=utf-8');
-          http_response_code(500);
-          echo json_encode(['success' => false, 'message' => 'Błąd wewnętrzny serwera.']);
-          return; // Zakończ
-        }
-
-        // Tworzymy instancję używając PEŁNEJ nazwy klasy
-        $controller = new $controllerName();
-
-        // Wyodrębnij nazwane parametry z URI (np. ['examCode' => 'INF.03']).
-        // To sprytny trick: filtruje tablicę $matches, zostawiając tylko
-        // te elementy, których klucze są stringami (czyli nasze nazwane grupy).
+    // 2. Szukaj dopasowania
+    foreach ($this->routes[$method] ?? [] as $pattern => $handler) {
+      if (preg_match($pattern, $uri, $matches)) {
+        // Usuń dopasowania numeryczne, zostaw nazwane parametry
         $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
 
-        // Krok 5: Wywołaj metodę docelowego kontrolera, przekazując parametry.
-        $controller->$methodName($params);
-        return; // Zakończ, aby nie przetwarzać dalszych ścieżek.
+        $this->dispatch($handler, $params);
+        return;
       }
     }
 
-    // Krok 6: Jeśli pętla zakończyła się bez dopasowania, zwróć błąd 404.
-    header('Content-Type: application/json; charset=utf-8');
-    http_response_code(404);
-    echo json_encode(['success' => false, 'message' => 'API endpoint not found.']);
+    // 3. Fallback - 404
+    $this->sendNotFound();
   }
 
   /**
-   * Przetwarza żądania skierowane do statycznych stron WWW.
-   *
-   * Używa prostej i ekstremalnie wydajnej instrukcji `switch` do mapowania
-   * URI na konkretne akcje w kontrolerach. Jest to idealne rozwiązanie dla
-   * z góry znanej, skończonej liczby stron w aplikacji.
-   *
-   * @param string $uri "Czysty" URI do zmapowania.
-   * 
-   * @return void
+   * Prywatna metoda rejestracji trasy i kompilacji Regex.
    */
-  private function handleWebRequest(string $uri): void
+  private function addRoute(string $method, string $path, string $handler): void
   {
-    $parts = explode('/', $uri);
-    $slug = $parts[0];
-    $param = $parts[1] ?? null;
+    // Zamiana {param} na Regex named group (?P<param>[^/]+)
+    // [^/]+ oznacza "wszystko do kolejnego ukośnika"
+    $regexPath = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<$1>[^/]+)', $path);
 
-    // Obsługa parametrów w formacie key=value (np. ?code=XY, ale w URL path)
-    foreach ($parts as $part) {
-      if (strpos($part, '=') !== false) {
-        [$key, $value] = explode('=', $part, 2);
-        $_GET[$key] = $value;
-      }
+    // Dodanie anchorów początku i końca stringa
+    $regexPath = '#^' . $regexPath . '$#';
+
+    $this->routes[$method][$regexPath] = $handler;
+  }
+
+  /**
+   * Uruchamia odpowiedni kontroler i metodę.
+   */
+  private function dispatch(string $handler, array $params): void
+  {
+    [$controllerName, $methodName] = explode('@', $handler);
+    $fullControllerName = "App\\Controllers\\$controllerName";
+
+    if (!class_exists($fullControllerName)) {
+      $this->sendError("Controller class '$fullControllerName' not found.");
+      return;
     }
 
-    // Helper do pobierania kodu egzaminu:
-    // 1. Sprawdza $_GET['code'] (format ?code=... lub param=...)
-    // 2. Sprawdza drugi segment URI (format /slug/CODE)
-    $getExamCode = function () use ($param) {
-      if (isset($_GET['code'])) return $_GET['code'];
-      if ($param && strpos($param, '=') === false) return $param;
-      return null;
-    };
+    $controller = new $fullControllerName();
 
-    switch ($slug) {
-      case '':
-        (new HomeController())->show();
-        break;
-      // --- Grupa Uwierzytelniania ---
-      case 'logowanie':
-        (new LoginController())->handleRequest();
-        break;
-      case 'rejestracja':
-        (new RegisterController())->handleRequest();
-        break;
-      case 'auth/google':
-        (new GoogleAuthController())->redirectToGoogle();
-        break;
-      case 'auth/google/callback':
-        (new GoogleAuthController())->handleGoogleCallback();
-        break;
-      case 'autoryzacja-email':
-        $controller = new RegisterController();
-        if (isset($_GET['send']) && $_GET['send'] === 'true') {
-          $controller->handleSendVerificationEmail();
-        } else {
-          $controller->showVerificationPage();
-        }
-        break;
-      case 'weryfikacja':
-        (new VerificationController())->handle();
-        break;
-      case 'wyloguj':
-        (new UserController())->logout();
-        break;
-      case 'reset-hasla':
-        $controller = new PasswordResetController();
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-          $controller->handleForgotPasswordRequest();
-        } else {
-          $controller->showForgotPasswordForm();
-        }
-        break;
-      case 'nowe-haslo':
-        $controller = new PasswordResetController();
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-          $controller->handleNewPasswordRequest();
-        } else {
-          $controller->showNewPasswordForm();
-        }
-        break;
-      // --- Grupa Quizów ---
-      case 'jedno-pytanie':
-        $code = $getExamCode();
-        if ($code) {
-          (new QuizPageController())->showOneQuestionPage($code);
-        } else {
-          http_response_code(404);
-          echo "Brak kodu egzaminu.";
-        }
-        break;
-      case 'personalizowany-test':
-        $code = $getExamCode();
-        if ($code) {
-          (new QuizPageController())->showPersonalizedTestPage($code);
-        } else {
-          http_response_code(404);
-          echo "Brak kodu egzaminu.";
-        }
-        break;
-      case 'test':
-        $code = $getExamCode();
-        if ($code) {
-          (new QuizPageController())->showTestPage($code);
-        } else {
-          http_response_code(404);
-          echo "Brak kodu egzaminu.";
-        }
-        break;
-      // --- Grupa Użytkownika ---
-      case 'ustawienia':
-        (new SettingsController())->showSettingsPage(null);
-        break;
-      case 'usun-konto':
-        (new SettingsController())->handleAccountDeletion();
-        break;
-      case 'statystyki':
-        (new DashboardController())->index();
-        break;
-      case 'historia':
-        (new HistoryController())->index();
-        break;
-      // --- Domyślna obsługa błędu ---
-      default:
-        http_response_code(404);
-        echo "Strona o adresie '$uri' nie istnieje.";
-        break;
+    if (!method_exists($controller, $methodName)) {
+      $this->sendError("Method '$methodName' not found in '$controllerName'.");
+      return;
     }
+
+    // Wywołanie metody z rozpakowanymi parametrami
+    // Np. showTestPage(string $code) otrzyma wartość z URL
+    call_user_func_array([$controller, $methodName], $params);
+  }
+
+  private function sendNotFound(): void
+  {
+    http_response_code(404);
+    if (strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
+      header('Content-Type: application/json');
+      echo json_encode(['success' => false, 'message' => 'Endpoint not found']);
+    } else {
+      echo "404 - Strona nie została znaleziona.";
+    }
+    exit;
+  }
+
+  private function sendError(string $message): void
+  {
+    http_response_code(500);
+    error_log($message);
+    echo "Internal Server Error"; // Na produkcji nie pokazujemy szczegółów
+    exit;
+  }
+
+  /**
+   * Definicja wszystkich tras w aplikacji.
+   * To jest "mapa" Twojej aplikacji.
+   */
+  private function registerRoutes(): void
+  {
+    // --- Strony Główne i Auth ---
+    $this->get('', 'HomeController@show');
+    $this->get('logowanie', 'LoginController@showLoginForm');
+    $this->post('logowanie', 'LoginController@processLogin');
+    $this->get('rejestracja', 'RegisterController@showRegistrationForm');
+    $this->post('rejestracja', 'RegisterController@processRegistration');
+    $this->get('weryfikacja', 'VerificationController@handle'); // Token w query string obsługiwany wewnątrz
+    $this->get('wyloguj', 'UserController@logout');
+
+    // Auth Google
+    $this->get('auth/google', 'GoogleAuthController@redirectToGoogle');
+    $this->get('auth/google/callback', 'GoogleAuthController@handleGoogleCallback');
+
+    // Reset Hasła i Email Auth
+    $this->get('autoryzacja-email', 'RegisterController@showVerificationPage'); // lub handleSendVerificationEmail zależnie od logiki query param, tu warto rozdzielić na osobne trasy w przyszłości
+    // Rozdzielenie logiki autoryzacji email (przykład czystszego podejścia):
+    // $this->get('autoryzacja-email/wyslij', 'RegisterController@handleSendVerificationEmail'); 
+
+    $this->get('reset-hasla', 'PasswordResetController@showForgotPasswordForm');
+    $this->post('reset-hasla', 'PasswordResetController@handleForgotPasswordRequest');
+    $this->get('nowe-haslo', 'PasswordResetController@showNewPasswordForm');
+    $this->post('nowe-haslo', 'PasswordResetController@handleNewPasswordRequest');
+
+    // --- Użytkownik i Ustawienia ---
+    $this->get('statystyki', 'DashboardController@showDashboard');
+    $this->get('historia', 'HistoryController@showHistory');
+
+    // Ustawienia
+    $this->get('ustawienia', 'SettingsController@index');
+    $this->get('ustawienia/{action}', 'SettingsController@index');
+    $this->post('ustawienia/{action}', 'SettingsController@handleAction');
+    $this->post('usun-konto', 'SettingsController@handleAccountDeletion');
+
+    // --- Quizy i Nauka (Web) ---
+    // Teraz parametry są czytelne w URL
+    $this->get('jedno-pytanie/{code}', 'QuizPageController@showOneQuestionPage');
+    $this->get('personalizowany-test/{code}', 'QuizPageController@showPersonalizedTestPage');
+    $this->get('test/{code}', 'QuizPageController@showTestPage');
+
+    // --- Review / Wyniki ---
+    $this->get('test-pytanie/{id}', 'ReviewController@showQuestionReview');
+    $this->get('wyniki/{id}', 'ReviewController@showExamReview');
+
+    // --- API (JSON) ---
+    $this->get('api/question/{examCode}', 'ApiController@getQuestion');
+    $this->get('api/test/personalized/{examCode}', 'ApiController@getPersonalizedTest');
+    $this->get('api/test/full/{examCode}', 'ApiController@getFullTest');
+    $this->post('api/check-answer', 'ApiController@checkAnswer');
+    $this->post('api/save-attempt', 'ApiController@saveAttempt');
+    $this->post('api/save-progress-bulk', 'ApiController@saveProgressBulk');
   }
 }

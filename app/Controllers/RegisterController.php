@@ -50,42 +50,31 @@ class RegisterController extends BaseController
   }
 
   /**
-   * Endpoint: Obsługuje stronę rejestracji (/register).
-   *
-   * Logika działania:
-   * 2. Dla żądań POST, przekazuje dane do serwisu `auth->register()`.
-   * 3. W przypadku sukcesu rejestracji, przekierowuje na stronę weryfikacji e-mail,
-   *    dodając parametr `?send=true`, który zainicjuje wysyłkę e-maila.
-   * 4. W razie błędów, ponownie renderuje formularz, przekazując do niego błędy
-   *    oraz dane wprowadzone przez użytkownika w celu ich zachowania.
-   * 5. Dla żądań GET, po prostu renderuje pusty formularz.
-   *
-   * @return void
+   * Wyświetla formularz rejestracji.
    */
-  public function handleRequest(): void
+  public function showRegistrationForm(): void
   {
-    $errors = [];
-    $formData = [];
+    $this->renderView('register', [
+      'errors' => [],
+      'formData' => [],
+    ]);
+  }
 
-    // Krok 2: Obsługa danych z formularza (żądanie POST).
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-      $formData = $_POST;
-      $result = $this->auth->register($formData);
+  /**
+   * Przetwarza dane rejestracyjne (POST).
+   */
+  public function processRegistration(): void
+  {
+    $formData = $_POST;
+    $result = $this->auth->register($formData);
 
-      // Krok 3: Reakcja na wynik operacji rejestracji.
-      if ($result['success']) {
-        // Sukces: przekieruj na stronę weryfikacji z flagą do wysłania e-maila.
-        header('Location: ' . url('autoryzacja-email?send=true'));
-        exit();
-      } else {
-        // Porażka: zbierz błędy walidacji.
-        $errors = $result['errors'];
-      }
+    if ($result['success']) {
+      header('Location: ' . url('autoryzacja-email?send=true'));
+      exit();
     }
 
-    // Krok 4: Renderowanie widoku z odpowiednimi danymi.
     $this->renderView('register', [
-      'errors' => $errors,
+      'errors' => $result['errors'] ?? [],
       'formData' => $formData,
     ]);
   }
