@@ -69,7 +69,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
           <i class="fas fa-chevron-down settings-card__icon"></i>
         </div>
         <div class="settings-card__content">
-          <form method="POST" action="<?= url('ustawienia') ?>">
+          <form method="POST" action="<?= url('ustawienia/change_name') ?>">
             <input type="hidden" name="form_type" value="change_name">
             <div class="form-card__group">
               <label for="first_name" class="form-card__label">Imię</label>
@@ -114,7 +114,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
             <p class="info-card__message" style="text-align: left; font-size: 0.9rem; margin-bottom: 1.5rem;">
               Po zmianie adresu konieczna będzie ponowna weryfikacja konta.
             </p>
-            <form method="POST" action="<?= url('ustawienia') ?>">
+            <form method="POST" action="<?= url('ustawienia/change_email') ?>">
               <input type="hidden" name="form_type" value="change_email">
               <div class="form-card__group">
                 <label for="new_email" class="form-card__label">Nowy adres e-mail</label>
@@ -155,7 +155,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
               <li>Co najmniej jeden znak specjalny (np. !@#$%)</li>
             </ul>
             </p>
-            <form method="POST" action="<?= url('ustawienia') ?>">
+            <form method="POST" action="<?= url('ustawienia/change_password') ?>">
               <input type="hidden" name="form_type" value="change_password">
               <div class="form-card__group">
                 <label for="current_password" class="form-card__label">Obecne hasło</label>

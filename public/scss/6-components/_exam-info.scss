@@ -1,69 +1,98 @@
+@use '../2-tools/mixins' as *;
+
 .info-grid {
   display: grid;
-  grid-template-columns: 1fr; // Domyślnie jedna kolumna
-  gap: 1.5rem;
-  max-width: 900px;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 1000px;
   margin: 0 auto;
 
-  // Dwie kolumny na większych ekranach
+  @include media-down(md) {
+    // Na komórkach 1 kolumna (wymuszone przez grid-template-columns powyżej, 
+    // ale media-down może służyć do ewentualnych korekt)
+  }
+
   @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; // Wymuszamy dokładnie 2 kolumny
   }
 }
 
 .info-block {
-  background-color: var(--bg);
-  padding: 2rem;
-  border-radius: var(--border-radius-large, 12px);
-  border: 1px solid var(--subtle-border);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+  @include glass-card(2rem, 20px);
+  display: flex;
+  flex-direction: column;
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  &__icon {
+    font-size: 1.75rem;
+    @include text-gradient;
+    flex-shrink: 0;
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  &:hover &__icon {
+    transform: scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.4));
   }
 
   &__question {
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0;
     color: var(--text);
+    line-height: 1.3;
+    transition: color 0.3s ease;
+  }
+
+  // Efekt gradientu na tytule po najechaniu na kartę
+  &:hover &__question {
+    @include text-gradient;
   }
 
   &__answer {
     color: var(--muted-text);
     line-height: 1.7;
     margin: 0;
+    font-size: 1rem;
 
-    // Kluczowe informacje wyróżniamy kolorem akcentowym
     strong {
-      color: var(--accent);
-      font-weight: 600;
+      @include text-gradient;
+      font-weight: 700;
+      display: inline; // Fix for background-clip on multiline
+      white-space: inherit;
     }
   }
 }
 
 .info-block__list {
-  list-style: none; // Usuwamy domyślne kropki
+  list-style: none;
   padding: 0;
-  margin-top: 1rem; // Odstęp od tekstu powyżej
+  margin-top: 1.5rem;
 
   li {
     position: relative;
-    padding-left: 1.75rem; // Robimy miejsce na ikonę
-    margin-bottom: 0.5rem;
+    padding-left: 2rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.05rem;
+    color: var(--muted-text);
 
-    // Dodajemy "ptaszek" jako ikonę punktu listy
     &::before {
-      content: '✔';
+      content: '\f00c'; // FontAwesome check
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
       position: absolute;
       left: 0;
-      top: -1px;
+      top: 2px;
+      // Gradient for icon? Hard to do on font icons simply, let's use a solid accent or a SVG if needed. 
+      // Let's use accent but make it stand out.
       color: var(--accent);
-      font-weight: 700;
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
   }
 }

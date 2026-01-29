@@ -27,11 +27,14 @@ class SettingsController extends BaseController
   /**
    * Wyświetla stronę ustawień (GET) lub obsługuje formularze (POST).
    */
-  public function showSettingsPage(): void
+  public function showSettingsPage(?string $action): void
   {
-    // Jeśli metoda to POST, obsłuż dane i przekieruj
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-      $this->handlePostRequest();
+    if ($action == 'change_name') {
+      $this->handleNameChange();
+    } elseif ($action == 'change_password') {
+      $this->handlePasswordChange();
+    } elseif ($action == 'change_email') {
+      $this->handleEmailChange();
     }
 
     $remainingCooldown = 0;
@@ -45,30 +48,6 @@ class SettingsController extends BaseController
       'activeForm' => $_GET['active'] ?? null,
       'emailChangeRemaining' => $remainingCooldown // Przekazujemy do widoku
     ]);
-  }
-
-  /**
-   * Przetwarza dane POST, ustawia komunikaty flash i przekierowuje.
-   */
-  private function handlePostRequest(): void
-  {
-    $formType = $_POST['form_type'] ?? null;
-    $redirectSuffix = '';
-
-    if ($formType === 'change_name') {
-      $this->handleNameChange();
-      $redirectSuffix = '?active=name';
-    } elseif ($formType === 'change_password') {
-      $this->handlePasswordChange();
-      $redirectSuffix = '?active=password';
-    } elseif ($formType === 'change_email') {
-      $this->handleEmailChange();
-      $redirectSuffix = '?active=email';
-    }
-
-    // Przekieruj z powrotem na stronę ustawień, aby pokazać komunikat
-    header('Location: ' . url("ustawienia$redirectSuffix"));
-    exit();
   }
 
   /**

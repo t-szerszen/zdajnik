@@ -8,8 +8,6 @@ class StatisticsService
 {
 	private Database $db;
 
-	private int $defaultLimit = 5;
-
 	public function __construct()
 	{
 		$this->db = Database::getInstance();

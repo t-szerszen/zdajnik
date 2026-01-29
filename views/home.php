@@ -183,8 +183,9 @@ $canonicalUrl = 'https://www.examly.pl/';
     -->
     <section class="exams-section" id="egzaminy">
       <h2 class="section-title">Rozwiąż test z swojej kwalifikacji już teraz</h2>
+      <p class="section-subtitle">Wybierz swoją specjalizację i sprawdź się w symulacji prawdziwego egzaminu państwowego.</p>
       <div class="exams-grid">
-        <a href="<?= url('inf03-test') ?>" class="exam-card">
+        <a href="<?= url('test/INF.03') ?>" class="exam-card">
           <div class="exam-card__background" style="background-image: url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop');"></div>
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
@@ -193,13 +194,24 @@ $canonicalUrl = 'https://www.examly.pl/';
           </div>
         </a>
         <!-- Karta nieaktywna, z modyfikatorem BEM `--disabled` -->
-        <a href="#" class="exam-card exam-card--disabled">
-          <div class="exam-card__background" style="background-image: url('https://images.unsplash.com/photo-1593720213428-28a5b9e94613?q=80&w=2070&auto=format&fit=crop');"></div>
+        <a href="<?= url('test/INF.02') ?>" class="exam-card exam-card--disabled">
+          <div class="exam-card__background" style="background-image: url('https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop');"></div>
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.02 (dawniej EE.08)</h3>
             <p class="exam-card__subtitle">
               Sprzęt, systemy i sieci<br>
+              <span class="exam-card__soon">Wkrótce!</span>
+            </p>
+          </div>
+        </a>
+        <a href="<?= url('test/INF.04') ?>" class="exam-card exam-card--disabled">
+          <div class="exam-card__background" style="background-image: url('https://images.unsplash.com/photo-1605379399642-870262d3d051?q=80&w=2106&auto=format&fit=crop');"></div>
+          <div class="exam-card__overlay"></div>
+          <div class="exam-card__content">
+            <h3 class="exam-card__title">INF.04 (dawniej E.14)</h3>
+            <p class="exam-card__subtitle">
+              Projektowanie i programowanie aplikacji<br>
               <span class="exam-card__soon">Wkrótce!</span>
             </p>
           </div>
@@ -217,9 +229,13 @@ $canonicalUrl = 'https://www.examly.pl/';
     -->
     <section class="exam-info-section">
       <h2 class="section-title">Podstawowe informacje o egzaminie zawodowym</h2>
+      <p class="section-subtitle">To musisz wiedzieć o egzaminie!</p>
       <div class="info-grid">
         <div class="info-block">
-          <h3 class="info-block__question">Z czego składa się egzamin?</h3>
+          <div class="info-block__header">
+            <i class="info-block__icon fas fa-file-invoice"></i>
+            <h3 class="info-block__question">Z czego składa się egzamin?</h3>
+          </div>
           <p class="info-block__answer">
             Egzamin podzielony jest na dwie kluczowe części: pisemną i praktyczną. Etap pisemny to test
             wyboru trwający <strong>60 minut</strong>, składający się z 40 pytań z jedną prawidłową odpowiedzią.
@@ -228,7 +244,10 @@ $canonicalUrl = 'https://www.examly.pl/';
           </p>
         </div>
         <div class="info-block">
-          <h3 class="info-block__question">Jakie są progi zdawalności?</h3>
+          <div class="info-block__header">
+            <i class="info-block__icon fas fa-bullseye"></i>
+            <h3 class="info-block__question">Jakie są progi zdawalności?</h3>
+          </div>
           <div class="info-block__answer">
             <p>Aby uzyskać kwalifikację zawodową, musisz osiągnąć dwa progi punktowe:</p>
             <ul class="info-block__list">
@@ -238,7 +257,10 @@ $canonicalUrl = 'https://www.examly.pl/';
           </div>
         </div>
         <div class="info-block">
-          <h3 class="info-block__question">Co w przypadku niepowodzenia?</h3>
+          <div class="info-block__header">
+            <i class="info-block__icon fas fa-rotate-right"></i>
+            <h3 class="info-block__question">Co w przypadku niepowodzenia?</h3>
+          </div>
           <p class="info-block__answer">
             Warunkiem zdania całego egzaminu jest zaliczenie obu jego części.
             Jeśli nie powiedzie Ci się tylko w jednej z nich,
@@ -247,7 +269,10 @@ $canonicalUrl = 'https://www.examly.pl/';
           </p>
         </div>
         <div class="info-block">
-          <h3 class="info-block__question">Czy muszę podchodzić do egzaminu?</h3>
+          <div class="info-block__header">
+            <i class="info-block__icon fas fa-graduation-cap"></i>
+            <h3 class="info-block__question">Czy muszę podchodzić do egzaminu?</h3>
+          </div>
           <p class="info-block__answer">
             Dla uczniów technikum w nowej formule (od 2019 r., kwalifikacje INF.02 i INF.03),
             <strong>podejście do egzaminu jest obowiązkowe</strong> w celu ukończenia szkoły.
@@ -268,25 +293,12 @@ $canonicalUrl = 'https://www.examly.pl/';
     -->
     <section class="topics-section">
       <h2 class="section-title">Ucz się z konkretnych działów</h2>
+      <p class="section-subtitle">Skup się na wybranych zagadnieniach i szlifuj wiedzę tam, gdzie potrzebujesz tego najbardziej.</p>
       <div class="topics-wrapper">
+        <!-- Grupa INF.02 -->
         <div class="topics-group">
           <h3 class="topics-group__subheading">
-            <i class="topics-group__icon fas fa-laptop-code"></i>
-            <span>Kwalifikacja INF.03</span>
-          </h3>
-          <div class="topics-grid">
-            <a href="<?= url('inf03-personalizowany-test?subject[]=1') ?>" class="topic-card">HTML</a>
-            <a href="<?= url('inf03-personalizowany-test?subject[]=2') ?>" class="topic-card">CSS</a>
-            <a href="<?= url('inf03-personalizowany-test?subject[]=3') ?>" class="topic-card">JavaScript</a>
-            <a href="<?= url('inf03-personalizowany-test?subject[]=4') ?>" class="topic-card">PHP</a>
-            <a href="<?= url('inf03-personalizowany-test?subject[]=5') ?>" class="topic-card">SQL</a>
-            <a href="<?= url('inf03-personalizowany-test?subject[]=6') ?>" class="topic-card">Teoria</a>
-          </div>
-        </div>
-
-        <div class="topics-group">
-          <h3 class="topics-group__subheading">
-            <i class="topics-group__icon fas fa-cogs"></i>
+            <i class="topics-group__icon fas fa-microchip"></i>
             <span>Kwalifikacja INF.02</span>
             <span class="soon-badge">Wkrótce!</span>
           </h3>
@@ -294,6 +306,37 @@ $canonicalUrl = 'https://www.examly.pl/';
             <a href="#" class="topic-card topic-card--disabled">Sprzęt komputerowy</a>
             <a href="#" class="topic-card topic-card--disabled">Systemy operacyjne</a>
             <a href="#" class="topic-card topic-card--disabled">Sieci komputerowe</a>
+          </div>
+        </div>
+
+        <!-- Grupa INF.03 -->
+        <div class="topics-group">
+          <h3 class="topics-group__subheading">
+            <i class="topics-group__icon fas fa-laptop-code"></i>
+            <span>Kwalifikacja INF.03</span>
+          </h3>
+          <div class="topics-grid">
+            <a href="<?= url('personalizowany-test/INF.03?subject[]=1') ?>" class="topic-card">HTML</a>
+            <a href="<?= url('personalizowany-test/INF.03?subject[]=2') ?>" class="topic-card">CSS</a>
+            <a href="<?= url('personalizowany-test/INF.03?subject[]=3') ?>" class="topic-card">JavaScript</a>
+            <a href="<?= url('personalizowany-test/INF.03?subject[]=4') ?>" class="topic-card">PHP</a>
+            <a href="<?= url('personalizowany-test/INF.03?subject[]=5') ?>" class="topic-card">SQL</a>
+            <a href="<?= url('personalizowany-test/INF.03?subject[]=6') ?>" class="topic-card">Teoria</a>
+          </div>
+        </div>
+
+        <!-- Grupa INF.04 -->
+        <div class="topics-group">
+          <h3 class="topics-group__subheading">
+            <i class="topics-group__icon fas fa-code"></i>
+            <span>Kwalifikacja INF.04</span>
+            <span class="soon-badge">Wkrótce!</span>
+          </h3>
+          <div class="topics-grid">
+            <a href="#" class="topic-card topic-card--disabled">Algorytmika</a>
+            <a href="#" class="topic-card topic-card--disabled">Programowanie obiektowe</a>
+            <a href="#" class="topic-card topic-card--disabled">Aplikacje mobilne</a>
+            <a href="#" class="topic-card topic-card--disabled">Aplikacje desktopowe</a>
           </div>
         </div>
       </div>

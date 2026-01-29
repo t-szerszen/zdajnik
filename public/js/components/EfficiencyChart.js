@@ -61,8 +61,8 @@ class EfficiencyChart {
                         const {ctx, chartArea} = chart;
                         if (!chartArea) return null;
                         const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                        gradient.addColorStop(0, accentColor + '33'); // 20% opacity
-                        gradient.addColorStop(1, accentColor + '00'); // 0% opacity
+                        gradient.addColorStop(0, accentColor + 'CC'); // 80% opacity
+                        gradient.addColorStop(1, accentColor + '1A'); // 10% opacity
                         return gradient;
                     },
                     borderWidth: 3,

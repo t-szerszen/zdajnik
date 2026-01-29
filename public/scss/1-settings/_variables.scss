@@ -57,7 +57,7 @@ html.dark {
   // --- Motyw Ciemny ---------------------------------------------------------
 
   // Podstawowe kolory
-  --bg: #212325;
+  --bg: #0d0f11;
   --text: #fff;
 
   // Kolory akcentowe
@@ -65,7 +65,7 @@ html.dark {
   --accent-hover: #2563eb;
 
   // Kolory formularzy i obramowań
-  --field-bg: #2a2d30;
+  --field-bg: #161a1d;
   --border: #3f3f46;
 
   // Kolory statusów i komunikatów
@@ -79,4 +79,8 @@ html.dark {
   // Kolory specyficzne dla komponentów
   --footer-bg: #1a1c1e;
   --footer-icon: #9ca3af;
+
+  --bg-overlay: rgba(0, 0, 0, 0.9);
+  --card-bg: rgba(22, 26, 29, 0.8);
+  --card-border: rgba(255, 255, 255, 0.1);
 }

@@ -1,32 +1,73 @@
+@use '../2-tools/mixins' as *;
+
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .hero-section {
+  position: relative;
   text-align: center;
-  padding: 6rem 1.5rem;
+  padding: 8rem 1.5rem 6rem; // Więcej przestrzeni u góry
+  overflow: hidden; // Zabezpieczenie przed wychodzeniem elementów poza sekcję
+
+  @include media-down(md) {
+    padding: 6rem 1.5rem 4rem;
+  }
 
   &__content {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
+    position: relative;
+    z-index: 2;
   }
 
   &__title {
-    font-size: 3.5rem;
+    // Responsywna wielkość czcionki: min 2.5rem, max 4.5rem
+    font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
     font-weight: 800;
-    line-height: 1.2;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
     margin: 0 0 1.5rem 0;
+    color: var(--text);
+    
+    // Animacja wejścia
+    opacity: 0;
+    animation: hero-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.1s;
   }
 
   &__subtitle {
-    font-size: 1.25rem;
+    font-size: clamp(1.1rem, 2vw + 0.5rem, 1.35rem);
+    line-height: 1.6;
     color: var(--muted-text);
-    margin-bottom: 2.5rem;
-    max-width: 650px;
+    margin-bottom: 3rem;
+    max-width: 700px;
     margin-left: auto;
     margin-right: auto;
+
+    // Animacja wejścia z opóźnieniem
+    opacity: 0;
+    animation: hero-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.2s;
   }
 
   &__cta-group {
     display: flex;
     justify-content: center;
-    gap: 1rem;
+    align-items: center;
+    gap: 1.25rem;
     flex-wrap: wrap;
+
+    // Animacja wejścia z większym opóźnieniem
+    opacity: 0;
+    animation: hero-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.3s;
   }
 }

@@ -9,7 +9,6 @@ use App\Controllers\RegisterController;
 use App\Controllers\PasswordResetController;
 use App\Controllers\QuizPageController;
 use App\Controllers\SettingsController;
-use App\Controllers\StatisticsController;
 use App\Controllers\VerificationController;
 use App\Controllers\UserController;
 use App\Controllers\DashboardController;
@@ -84,6 +83,16 @@ class Router
       $attemptId = end($parts);
       if (is_numeric($attemptId)) {
         (new ReviewController())->showExamReview((int)$attemptId);
+        return;
+      }
+    }
+
+    // Routing dynamiczny do ustawień
+    if (strpos($uri, 'ustawienia/') === 0) {
+      $parts = explode('/', $uri);
+      $action = end($parts);
+      if ($action === 'change_name' || $action === 'change_email' || $action === 'change_password') {
+        (new SettingsController())->showSettingsPage($action);
         return;
       }
     }
@@ -295,7 +304,7 @@ class Router
         break;
       // --- Grupa Użytkownika ---
       case 'ustawienia':
-        (new SettingsController())->showSettingsPage();
+        (new SettingsController())->showSettingsPage(null);
         break;
       case 'usun-konto':
         (new SettingsController())->handleAccountDeletion();

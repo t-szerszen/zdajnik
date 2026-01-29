@@ -100,14 +100,14 @@
 
     <!-- Kolejny element nawigacji z menu rozwijanym -->
     <li class="main-nav__item dropdown">
-      <a href="<?= url('kursy') ?>" class="main-nav__link">
+      <a href="<?= url('/') ?>" class="main-nav__link">
         <i class="main-nav__icon fas fa-graduation-cap"></i>
         <span>Kursy</span>
       </a>
       <!-- Modyfikator BEM `--right` może służyć do wyrównania tego menu do prawej krawędzi rodzica -->
       <ul class="dropdown__menu dropdown__menu--right">
         <li class="dropdown__item">
-          <a href="<?= url('kurs-inf03') ?>" class="dropdown__link">
+          <a href="<?= url('/') ?>" class="dropdown__link">
             <i class="dropdown__icon fas fa-chalkboard-teacher"></i> Kurs INF.03
           </a>
         </li>

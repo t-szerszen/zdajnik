@@ -2,16 +2,32 @@
 .section-title {
   text-align: center;
   font-size: 2.25rem;
-  margin-bottom: 3rem;
-  font-weight: 700;
+  margin-bottom: 1rem; // Zmniejszone z 3rem
+  font-weight: 800;
   color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.section-subtitle {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--muted-text);
+  max-width: 600px;
+  margin: 0 auto 3.5rem auto; // Dolny margines zastępuje ten z tytułu
+  line-height: 1.6;
 }
 
 // Style, które będą aktywne tylko na stronie głównej
 body.home-page-background {
   // --- STYLE TŁA ---
+  // Nadpisujemy overlay lokalnie dla tej podstrony, aby zwiększyć widoczność tła
+  --bg-overlay: rgba(255, 255, 255, 0.6);
+
   background-image:
-    linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('../images/background.png'); // <-- Pamiętaj o poprawnej nazwie pliku!
+    radial-gradient(circle at 0% 50%, rgba(59, 130, 246, 0.25), transparent 40%),
+    radial-gradient(circle at 100% 50%, rgba(139, 92, 246, 0.25), transparent 40%),
+    linear-gradient(var(--bg-overlay), var(--bg-overlay)),
+    url('../images/background.png');
 
   background-size: cover;
   background-position: center center;
@@ -19,14 +35,48 @@ body.home-page-background {
   background-attachment: fixed;
 }
 
+// Obsługa ciemnego motywu dla tła strony głównej
+@at-root html.dark body.home-page-background {
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+  background-image:
+    radial-gradient(circle at 0% 50%, rgba(59, 130, 246, 0.25), transparent 40%),
+    radial-gradient(circle at 100% 50%, rgba(139, 92, 246, 0.25), transparent 40%),
+    linear-gradient(var(--bg-overlay), var(--bg-overlay)),
+    url('../images/background_dark.png');
+}
+
 // Zmniejszone odstępy między sekcjami
 .home-page section {
   padding: 4rem 1.5rem;
 }
 
-// Style sekcji - definiują tylko ich tło i padding
+
+
+.exams-section {
+  position: relative;
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.07) 0%, transparent 70%);
+  padding: 6rem 1.5rem !important; // Więcej miejsca
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15%;
+    right: 15%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--subtle-border), transparent);
+  }
+}
+
+.features-section,
+.exam-info-section {
+  background: linear-gradient(180deg, transparent 0%, rgba(59, 130, 246, 0.05) 50%, transparent 100%);
+  position: relative;
+}
+
 .features-section,
 .exams-section,
+.exam-info-section,
 .topics-section {
-  padding: 1rem 1.5rem;
+  padding: 4rem 1.5rem;
 }

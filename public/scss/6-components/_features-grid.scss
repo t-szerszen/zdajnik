@@ -1,4 +1,4 @@
-// Plik: scss/6-components/_features-grid.scss
+@use '../2-tools/mixins' as *;
 
 .features-grid {
   display: grid;
@@ -10,77 +10,86 @@
 }
 
 .feature-card {
-  background-color: var(--card-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px); // Dla przeglądarki Safari
-  border: 1px solid var(--card-border);
-  border-radius: var(--border-radius-large, 12px);
-  padding: 2rem;
-  transition: all 0.4s ease-in-out;
-  overflow: hidden; // Kluczowe dla animacji rozwijania
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-    border-color: var(--accent);
-  }
+  @include glass-card(2.5rem 2rem, 16px);
 
   &__header {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    gap: 1.25rem;
+    margin-bottom: 1rem;
   }
 
   &__icon {
-    font-size: 1.75rem;
-    color: var(--accent);
+    font-size: 2rem;
+    // Kolor gradientowy dla ikony
+    @include text-gradient;
+    
     flex-shrink: 0;
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  // Ikona "świeci" i lekko się obraca przy najechaniu na kartę
+  &:hover &__icon {
+    transform: scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
   }
 
   &__title {
-    font-size: 1.3rem;
+    font-size: 1.35rem;
     margin: 0;
     font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    transition: color 0.3s ease;
+  }
+
+  // Efekt gradientu na tytule po najechaniu na kartę
+  &:hover &__title {
+    @include text-gradient;
   }
 
   &__text {
     color: var(--muted-text);
     line-height: 1.6;
     margin: 0;
+    font-size: 1rem;
   }
 
   // Kontener na rozwijany opis
   &__details {
-    // Stan domyślny (zwinięty)
     max-height: 0;
     opacity: 0;
-    transition: all 0.4s ease-in-out;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     color: var(--text);
     line-height: 1.6;
     font-size: 0.95rem;
-
-    p {
-      margin: 0;
-    }
+    
+    // Reset marginesów
+    margin-top: 0;
+    padding-left: 0;
   }
 
-  // Stan aktywny (rozwinięty) po najechaniu
+  // Stan aktywny (rozwinięty) - dodajemy akcent z lewej strony
   &:hover &__details {
-    max-height: 240px; // Wystarczająco duża wartość, aby pomieścić tekst
+    max-height: 300px;
     opacity: 1;
-    margin-top: 1rem; // Dodajemy odstęp, gdy tekst się pojawi
+    margin-top: 1.5rem;
+    
+    // Wyróżnienie rozwiniętej treści paskiem z boku
+    padding-left: 1rem;
+    border-left: 3px solid var(--accent);
   }
 
   &__list {
     text-align: left;
-    padding-left: 1.5rem; // Wcięcie dla listy
-    margin-top: 1rem;
+    padding-left: 1rem;
+    margin-top: 0.75rem;
     color: var(--muted-text);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 
     li {
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
     }
   }
 }

@@ -3,7 +3,7 @@
 .btn {
   display: inline-block;
   padding: 0.85rem 2rem; // Zwiększony padding dla lepszego wyglądu
-  border: 2px solid transparent; // Dodajemy border dla spójności
+  border: none;
   border-radius: 50px; // Zaokrąglone rogi dla nowoczesnego feelingu
   font-size: 1rem;
   font-weight: 700; // Pogrubiona czcionka
@@ -14,7 +14,7 @@
   // Modyfikator: Przycisk główny (domyślny)
   &--primary {
     text-decoration: none;
-    background-color: var(--accent);
+    background-image: linear-gradient(to right, var(--accent), #8b5cf6);
     color: white;
 
     &:hover {
@@ -42,6 +42,11 @@
   &--large {
     padding: 1rem 2.5rem;
     font-size: 1.1rem;
+  }
+
+  &--sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
   }
 
   &:disabled,
