@@ -52,7 +52,8 @@ class Mailer
     // E-mail do wysyłania wiadomości.
     $this->mailer->Username = $_ENV['SMTP_USER'];
     // To jest hasło aplikacji Google, a nie hasło do konta.
-    $this->mailer->Password = $_ENV['SMTP_PASS'];
+    // Usuwamy spacje, jeśli użytkownik je wkleił.
+    $this->mailer->Password = str_replace(' ', '', $_ENV['SMTP_PASS']);
     // Włącz szyfrowanie TLS.
     $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     // Port TCP do połączenia.
@@ -94,7 +95,8 @@ class Mailer
 
       // Krok 3: Wyślij e-mail.
       return $this->mailer->send();
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       // W przypadku błędu wysyłki, zapisz go w logu serwera
       // i zwróć `false`, informując, że operacja się nie powiodła.
       error_log('Błąd wysyłki e-maila: ' . $this->mailer->ErrorInfo);

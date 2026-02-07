@@ -4,17 +4,18 @@
  * Front controller — punkt wejściowy aplikacji.
  */
 
-// Wczytanie pliku konfiguracyjnego.
-require_once __DIR__ . '/../config.php';
-
 // Wczytanie autoloadera z composera.
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load(); // To MUSI być tutaj
 
-// Wczytanie globalnych funkcji pomocniczych.
-require_once __DIR__ . '/../app/Core/helpers.php';
+// Wczytanie pliku konfiguracyjnego.
+// Config.php teraz będzie widział zmienne ze środowiska (.env),
+// bo ładujemy go PO załadowaniu Dotenv.
+require_once __DIR__ . '/../config.php';
+
+// helpers.php jest ładowane w config.php, więc nie musimy tego robić tutaj ponownie.
 
 use App\Core\Router;
 

@@ -29,7 +29,7 @@ class RegisterController extends BaseController
   private AuthService $auth;
 
   private UserModel $userModel;
-  private TokenService $tokenService; 
+  private TokenService $tokenService;
   private Mailer $mailer;
 
   /**
@@ -99,6 +99,13 @@ class RegisterController extends BaseController
     if (!isset($_SESSION['verify_user_id'])) {
       header('Location: ' . url('rejestracja'));
       exit();
+    }
+
+    // Krok 2.5: Jeśli w URL znajduje się flaga ?send=true (np. po rejestracji lub kliknięciu "Wyślij ponownie"),
+    // wywołaj metodę wysyłającą e-mail.
+    if (isset($_GET['send']) && $_GET['send'] === 'true') {
+      $this->handleSendVerificationEmail();
+    // Metoda handleSendVerificationEmail wykonuje przekierowanie i exit, więc kod poniżej się nie wykona.
     }
 
     // Krok 3: Pobierz dane użytkownika i sprawdź, czy w międzyczasie nie zweryfikował już konta
@@ -199,7 +206,8 @@ class RegisterController extends BaseController
         'type' => 'success',
         'text' => "Nowa wiadomość weryfikacyjna została wysłana na adres {$user->getEmail()}.",
       ];
-    } else {
+    }
+    else {
       // Porażka: zapisz komunikat o błędzie.
       $_SESSION['flash_message'] = [
         'type' => 'error',
