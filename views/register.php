@@ -53,6 +53,9 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
     -->
     <form method="POST" class="form-card">
       <div class="form-card__header">
+        <div class="form-card__icon-circle">
+          <i class="fas fa-user-plus"></i>
+        </div>
         <h1 class="form-card__title">Stwórz nowe konto</h1>
         <p class="form-card__subtitle">Dołącz do nas i zacznij przygotowania do egzaminu!</p>
       </div>
@@ -66,57 +69,63 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
         <div class="alert alert--error" role="alert">
           <ul class="alert__list">
             <?php foreach ($errors as $error): ?>
-              <li class="alert__item"><?= htmlspecialchars($error) ?></li>
+              <li class="alert__item"><i class="fas fa-exclamation-circle" style="margin-right: 0.5rem;"></i><?= htmlspecialchars($error) ?></li>
             <?php endforeach; ?>
           </ul>
         </div>
       <?php endif; ?>
 
-      <!-- Grupa: Pole "Imię" -->
-      <div class="form-card__group">
-        <label for="first_name" class="form-card__label">Imię</label>
-        <!-- 
-          PHP: Wypełnia pole poprzednio wprowadzoną wartością w przypadku
-               błędu, aby użytkownik nie musiał wpisywać danych ponownie.
-        -->
-        <input type="text" id="first_name" name="first_name" class="form-card__input"
-          value="<?= htmlspecialchars($formData['first_name'] ?? '') ?>"
-          placeholder="Jan" required>
-      </div>
+      <div class="form-card__grid-2">
+        <!-- Grupa: Pole "Imię" -->
+        <div class="form-card__group">
+          <label for="first_name" class="form-card__label">Imię</label>
+          <div class="form-card__input-wrapper">
+            <i class="fas fa-user form-card__input-icon"></i>
+            <input type="text" id="first_name" name="first_name" class="form-card__input form-card__input--with-icon"
+              value="<?= htmlspecialchars($formData['first_name'] ?? '') ?>"
+              placeholder="Jan" required>
+          </div>
+        </div>
 
-      <!-- Grupa: Pole "Nazwisko" -->
-      <div class="form-card__group">
-        <label for="last_name" class="form-card__label">Nazwisko</label>
-        <input type="text" id="last_name" name="last_name" class="form-card__input"
-          value="<?= htmlspecialchars($formData['last_name'] ?? '') ?>"
-          placeholder="Kowalski" required>
+        <!-- Grupa: Pole "Nazwisko" -->
+        <div class="form-card__group">
+          <label for="last_name" class="form-card__label">Nazwisko</label>
+          <input type="text" id="last_name" name="last_name" class="form-card__input"
+            value="<?= htmlspecialchars($formData['last_name'] ?? '') ?>"
+            placeholder="Kowalski" required>
+        </div>
       </div>
 
       <!-- Grupa: Pole "Adres e-mail" -->
       <div class="form-card__group">
         <label for="email" class="form-card__label">Adres e-mail</label>
-        <input type="email" id="email" name="email" class="form-card__input"
-          value="<?= htmlspecialchars($formData['email'] ?? '') ?>"
-          placeholder="jankowalski@example.com"
-          required>
+        <div class="form-card__input-wrapper">
+          <i class="fas fa-envelope form-card__input-icon"></i>
+          <input type="email" id="email" name="email" class="form-card__input form-card__input--with-icon"
+            value="<?= htmlspecialchars($formData['email'] ?? '') ?>"
+            placeholder="jankowalski@example.com"
+            required>
+        </div>
       </div>
 
       <!-- Grupa: Pole "Hasło" -->
       <div class="form-card__group">
         <label for="password" class="form-card__label">Stwórz hasło</label>
         <div class="password-wrapper">
-          <input type="password" id="password" name="password" class="form-card__input"
+          <i class="fas fa-lock form-card__input-icon"></i>
+          <input type="password" id="password" name="password" class="form-card__input form-card__input--with-icon"
             placeholder="Stwórz solidne hasło" required>
           <i class="fas fa-eye password-toggle-icon"></i>
         </div>
-        <p class="form-card__input-hint">Minimum 8 znaków, w tym wielka i mała litera, cyfra oraz znak specjalny.</p>
+        <p class="form-card__input-hint">Minimum 8 znaków, wielka i mała litera, cyfra.</p>
       </div>
 
       <!-- Grupa: Pole "Potwierdź hasło" -->
       <div class="form-card__group">
         <label for="confirm_password" class="form-card__label">Potwierdź hasło</label>
         <div class="password-wrapper">
-          <input type="password" id="confirm_password" name="confirm_password" class="form-card__input"
+          <i class="fas fa-shield-alt form-card__input-icon"></i>
+          <input type="password" id="confirm_password" name="confirm_password" class="form-card__input form-card__input--with-icon"
             placeholder="Powtórz swoje hasło" required>
           <i class="fas fa-eye password-toggle-icon"></i>
         </div>
@@ -124,7 +133,9 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
 
       <!-- Kontener z głównym przyciskiem akcji -->
       <div class="form-card__action-container">
-        <button type="submit" class="btn btn--primary btn--full-width">Zarejestruj się</button>
+        <button type="submit" class="btn btn--primary btn--full-width">
+          Zarejestruj się <i class="fas fa-user-plus" style="margin-left: 0.5rem;"></i>
+        </button>
       </div>
 
       <!-- Stopka formularza z linkiem do logowania -->

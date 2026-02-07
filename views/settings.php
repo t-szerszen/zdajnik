@@ -34,7 +34,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
     </div>
   </header>
 
-  <main class="container" style="max-width: 800px; margin: 2rem auto 4rem; padding: 0 1rem;">
+  <main class="settings-page container">
 
     <?php
     /**
@@ -45,7 +45,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
       $flash = $_SESSION['flash_message'];
       unset($_SESSION['flash_message']);
     ?>
-      <div class="alert alert--<?= htmlspecialchars($flash['type']) ?>" role="alert" style="max-width: none; margin-bottom: 2rem;">
+      <div class="alert alert--<?= htmlspecialchars($flash['type']) ?>" role="alert">
         <?php if (isset($flash['errors'])): ?>
           <ul class="alert__list">
             <?php foreach ($flash['errors'] as $error): ?>
@@ -60,10 +60,14 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
 
     <div class="settings-accordion" id="settings-accordion">
 
+      <!-- Sekcja: Dane Osobowe -->
       <div class="settings-card <?= ($activeForm === 'name') ? 'is-open' : '' ?>">
         <div class="settings-card__header">
           <div class="settings-card__title-group">
-            <h3 class="settings-card__title">Dane osobowe</h3>
+            <h3 class="settings-card__title">
+              <i class="fas fa-id-card"></i>
+              <span>Dane osobowe</span>
+            </h3>
             <p class="settings-card__description">Zaktualizuj swoje imię i nazwisko widoczne w profilu.</p>
           </div>
           <i class="fas fa-chevron-down settings-card__icon"></i>
@@ -71,65 +75,88 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
         <div class="settings-card__content">
           <form method="POST" action="<?= url('ustawienia/change_name') ?>">
             <input type="hidden" name="form_type" value="change_name">
-            <div class="form-card__group">
-              <label for="first_name" class="form-card__label">Imię</label>
-              <input type="text" id="first_name" name="first_name" class="form-card__input"
-                value="<?= htmlspecialchars($currentUser->getFirstName()) ?>" required>
-            </div>
-            <div class="form-card__group">
-              <label for="last_name" class="form-card__label">Nazwisko</label>
-              <input type="text" id="last_name" name="last_name" class="form-card__input"
-                value="<?= htmlspecialchars($currentUser->getLastName()) ?>" required>
+
+            <div class="form-card__grid-2">
+              <div class="form-card__group">
+                <label for="first_name" class="form-card__label">Imię</label>
+                <div class="form-card__input-wrapper">
+                  <i class="fas fa-user form-card__input-icon"></i>
+                  <input type="text" id="first_name" name="first_name" class="form-card__input form-card__input--with-icon"
+                    value="<?= htmlspecialchars($currentUser->getFirstName()) ?>" required>
+                </div>
+              </div>
+              <div class="form-card__group">
+                <label for="last_name" class="form-card__label">Nazwisko</label>
+                <div class="form-card__input-wrapper">
+                  <i class="fas fa-user-tag form-card__input-icon"></i>
+                  <input type="text" id="last_name" name="last_name" class="form-card__input form-card__input--with-icon"
+                    value="<?= htmlspecialchars($currentUser->getLastName()) ?>" required>
+                </div>
+              </div>
             </div>
 
             <?php if (!$isGoogleUser): ?>
               <div class="form-card__group">
                 <label for="password_for_name" class="form-card__label">Potwierdź aktualnym hasłem</label>
                 <div class="password-wrapper">
-                  <input type="password" id="password_for_name" name="password" class="form-card__input" placeholder="Wpisz hasło" required>
+                  <i class="fas fa-lock form-card__input-icon"></i>
+                  <input type="password" id="password_for_name" name="password" class="form-card__input form-card__input--with-icon" placeholder="Wpisz hasło" required>
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>
             <?php endif; ?>
 
-            <button type="submit" class="btn btn--primary">Zaktualizuj profil</button>
+            <button type="submit" class="btn btn--primary">
+              <i class="fas fa-save" style="margin-right: 0.5rem;"></i> Zaktualizuj profil
+            </button>
           </form>
         </div>
       </div>
 
+      <!-- Sekcja: Adres E-mail -->
       <div class="settings-card <?= ($activeForm === 'email') ? 'is-open' : '' ?>">
         <div class="settings-card__header">
           <div class="settings-card__title-group">
-            <h3 class="settings-card__title">Adres e-mail</h3>
+            <h3 class="settings-card__title">
+              <i class="fas fa-envelope"></i>
+              <span>Adres e-mail</span>
+            </h3>
             <p class="settings-card__description">Twój aktualny adres: <strong><?= htmlspecialchars($currentUser->getEmail()) ?></strong></p>
           </div>
           <i class="fas fa-chevron-down settings-card__icon"></i>
         </div>
         <div class="settings-card__content">
           <?php if ($isGoogleUser): ?>
-            <p class="info-card__message" style="text-align: left; font-size: 0.9rem;">
+            <div class="info-card__message">
+              <i class="fab fa-google" style="margin-right: 0.5rem; color: var(--accent);"></i>
               Twoje konto jest powiązane z usługą Google. Adres e-mail można zmienić tylko w ustawieniach konta Google.
-            </p>
+            </div>
           <?php else: ?>
-            <p class="info-card__message" style="text-align: left; font-size: 0.9rem; margin-bottom: 1.5rem;">
+            <div class="info-card__message">
+              <i class="fas fa-info-circle" style="margin-right: 0.5rem; color: var(--accent);"></i>
               Po zmianie adresu konieczna będzie ponowna weryfikacja konta.
-            </p>
+            </div>
             <form method="POST" action="<?= url('ustawienia/change_email') ?>">
               <input type="hidden" name="form_type" value="change_email">
               <div class="form-card__group">
                 <label for="new_email" class="form-card__label">Nowy adres e-mail</label>
-                <input type="email" id="new_email" name="new_email" class="form-card__input" placeholder="np. jan.nowak@gmail.com" required>
+                <div class="form-card__input-wrapper">
+                  <i class="fas fa-at form-card__input-icon"></i>
+                  <input type="email" id="new_email" name="new_email" class="form-card__input form-card__input--with-icon" placeholder="np. jan.nowak@gmail.com" required>
+                </div>
               </div>
               <div class="form-card__group">
                 <label for="password_for_email" class="form-card__label">Potwierdź hasłem</label>
                 <div class="password-wrapper">
-                  <input type="password" id="password_for_email" name="password" class="form-card__input" placeholder="Wpisz hasło" required>
+                  <i class="fas fa-lock form-card__input-icon"></i>
+                  <input type="password" id="password_for_email" name="password" class="form-card__input form-card__input--with-icon" placeholder="Wpisz hasło" required>
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>
               <button type="submit" id="changeEmailBtn" class="btn btn--primary"
                 data-remaining="<?= $emailChangeRemaining ?? 0 ?>"
                 <?= ($emailChangeRemaining ?? 0) > 0 ? 'disabled' : '' ?>>
+                <i class="fas fa-paper-plane" style="margin-right: 0.5rem;"></i>
                 <?= ($emailChangeRemaining ?? 0) > 0 ? "Wyślij ponownie za {$emailChangeRemaining}s" : "Zmień e-mail" ?>
               </button>
             </form>
@@ -137,63 +164,78 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
         </div>
       </div>
 
+      <!-- Sekcja: Zmiana Hasła (tylko dla lokalnych kont) -->
       <?php if (!$isGoogleUser): ?>
         <div class="settings-card <?= ($activeForm === 'password') ? 'is-open' : '' ?>">
           <div class="settings-card__header">
             <div class="settings-card__title-group">
-              <h3 class="settings-card__title">Zmiana hasła</h3>
+              <h3 class="settings-card__title">
+                <i class="fas fa-key"></i>
+                <span>Zmiana hasła</span>
+              </h3>
               <p class="settings-card__description">Zadbaj o bezpieczeństwo swojego konta regularnie zmieniając hasło.</p>
             </div>
             <i class="fas fa-chevron-down settings-card__icon"></i>
           </div>
           <div class="settings-card__content">
-            <p>Hasło powinno zawierać:
-            <ul>
-              <li>Minimum 8 znaków</li>
-              <li>Co najmniej jedną wielką literę</li>
-              <li>Co najmniej jedną cyfrę</li>
-              <li>Co najmniej jeden znak specjalny (np. !@#$%)</li>
-            </ul>
-            </p>
+            <div class="pwd-requirements">
+              <p class="pwd-requirements__title">Hasło powinno zawierać:</p>
+              <ul class="req-list">
+                <li>Minimum 8 znaków</li>
+                <li>Wielką literę</li>
+                <li>Cyfrę</li>
+                <li>Znak specjalny</li>
+              </ul>
+            </div>
             <form method="POST" action="<?= url('ustawienia/change_password') ?>">
               <input type="hidden" name="form_type" value="change_password">
               <div class="form-card__group">
                 <label for="current_password" class="form-card__label">Obecne hasło</label>
                 <div class="password-wrapper">
-                  <input type="password" id="current_password" name="current_password" class="form-card__input" placeholder="Hasło" required>
+                  <i class="fas fa-unlock-alt form-card__input-icon"></i>
+                  <input type="password" id="current_password" name="current_password" class="form-card__input form-card__input--with-icon" placeholder="Wpisz obecne hasło" required>
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>
               <div class="form-card__group">
                 <label for="new_password" class="form-card__label">Nowe hasło</label>
                 <div class="password-wrapper">
-                  <input type="password" id="new_password" name="new_password" class="form-card__input" placeholder="Nowe hasło" required>
+                  <i class="fas fa-lock form-card__input-icon"></i>
+                  <input type="password" id="new_password" name="new_password" class="form-card__input form-card__input--with-icon" placeholder="Wpisz nowe hasło" required>
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>
               <div class="form-card__group">
                 <label for="confirm_new_password" class="form-card__label">Powtórz nowe hasło</label>
                 <div class="password-wrapper">
-                  <input type="password" id="confirm_new_password" name="confirm_new_password" class="form-card__input" placeholder="Powtórz nowe hasło" required>
+                  <i class="fas fa-shield-alt form-card__input-icon"></i>
+                  <input type="password" id="confirm_new_password" name="confirm_new_password" class="form-card__input form-card__input--with-icon" placeholder="Powtórz nowe hasło" required>
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>
-              <button type="submit" class="btn btn--primary">Zmień hasło</button>
+              <button type="submit" class="btn btn--primary">
+                <i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i> Zmień hasło
+              </button>
             </form>
           </div>
         </div>
       <?php endif; ?>
 
+      <!-- Sekcja: Zarządzanie Kontem -->
       <div class="settings-card <?= ($activeForm === 'delete') ? 'is-open' : '' ?>">
         <div class="settings-card__header">
           <div class="settings-card__title-group">
-            <h3 class="settings-card__title">Zarządzanie kontem</h3>
+            <h3 class="settings-card__title">
+              <i class="fas fa-user-shield"></i>
+              <span>Zarządzanie kontem</span>
+            </h3>
             <p class="settings-card__description">Opcje związane z trwałym usunięciem konta.</p>
           </div>
           <i class="fas fa-chevron-down settings-card__icon"></i>
         </div>
         <div class="settings-card__content">
-          <div class="alert alert--error" style="margin-bottom: 1.5rem; max-width: none;">
+          <div class="alert alert--error settings-card__alert">
+            <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i>
             <strong>Uwaga:</strong> Usunięcie konta spowoduje bezpowrotną utratę wszystkich postępów w nauce oraz statystyk egzaminacyjnych.
           </div>
           <form method="POST" action="<?= url('usun-konto') ?>">
@@ -201,20 +243,23 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
               <div class="form-card__group">
                 <label for="password_for_delete" class="form-card__label">Potwierdź hasłem, aby usunąć konto</label>
                 <div class="password-wrapper">
-                  <input type="password" id="password_for_delete" name="password" class="form-card__input" placeholder="Wpisz hasło" required>
+                  <i class="fas fa-lock-open form-card__input-icon"></i>
+                  <input type="password" id="password_for_delete" name="password" class="form-card__input form-card__input--with-icon" placeholder="Wpisz hasło dla bezpieczeństwa" required>
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>
             <?php else: ?>
-              <p class="form-card__group">Potwierdź chęć usunięcia konta klikając poniższy przycisk.</p>
+              <div class="info-card__message" style="margin-bottom: 2rem;">
+                <i class="fas fa-question-circle" style="margin-right: 0.5rem; color: var(--accent);"></i>
+                Potwierdź chęć usunięcia konta klikając poniższy przycisk. Operacja jest nieodwracalna.
+              </div>
             <?php endif; ?>
-            <button type="submit" class="btn" style="background-color: #dc2626; color: white; width: 100%;">
-              Usuń konto na zawsze
+            <button type="submit" class="btn btn--danger btn--full-width">
+              <i class="fas fa-trash-alt" style="margin-right: 0.5rem;"></i> Usuń konto na zawsze
             </button>
           </form>
         </div>
       </div>
-    </div>
   </main>
 
   <?php include 'partials/footer.php'; ?>

@@ -121,9 +121,10 @@ class StatisticsService
 			$limitSql = "LIMIT " . (int)$limit;
 		}
 		
-		$sql = "SELECT q.id, qv.question_text
+		$sql = "SELECT q.id, qv.question_text, t.name as topic_name
                 FROM user_progress up
                 JOIN questions q ON up.question_id = q.id
+                LEFT JOIN topics t ON q.topic_id = t.id
                 LEFT JOIN question_versions qv ON q.id = qv.question_id AND qv.is_active = 1 AND qv.deleted_at IS NULL
                 WHERE up.user_id = ? 
                   AND q.exam_type_id = ? 
@@ -166,10 +167,11 @@ class StatisticsService
 				$limitSql = "LIMIT " . (int)$limit;
 			}
 
-			$sql = "SELECT q.id as question_id, qv.question_text, 
+			$sql = "SELECT q.id as question_id, qv.question_text, t.name as topic_name, 
 			               ROUND((up.correct_count / up.attempts_count) * 100) as success_rate
 			        FROM user_progress up
 			        JOIN questions q ON up.question_id = q.id
+			        LEFT JOIN topics t ON q.topic_id = t.id
 			        LEFT JOIN question_versions qv ON q.id = qv.question_id 
 			                                         AND qv.is_active = 1 
 			                                         AND qv.deleted_at IS NULL
@@ -397,9 +399,12 @@ class StatisticsService
 	public function getExamReviewDetails(int $attemptId, int $userId): ?array
 	{
 		// 1. Meta dane próby
-		$sqlAttempt = "SELECT id, correct_count, total_questions, completed_at, test_type, 
-		               TIMESTAMPDIFF(SECOND, started_at, completed_at) as duration_seconds 
-		               FROM attempts WHERE id = ? AND user_id = ?";
+		$sqlAttempt = "SELECT a.id, a.correct_count, a.total_questions, a.completed_at, a.test_type, 
+		               TIMESTAMPDIFF(SECOND, a.started_at, a.completed_at) as duration_seconds,
+                       et.code as exam_code
+		               FROM attempts a
+                       JOIN exam_types et ON a.exam_type_id = et.id
+                       WHERE a.id = ? AND a.user_id = ?";
 		$attempt = $this->db->fetch($sqlAttempt, [$attemptId, $userId]);
 		
 		if (!$attempt) return null;
@@ -459,9 +464,10 @@ class StatisticsService
 	public function getQuestionDetails(int $questionId): ?array
 	{
 		// 1. Pobierz wersję pytania
-		$sqlQ = "SELECT q.id, qv.question_text, qv.explanation, qv.image_path, qv.id as version_id
+		$sqlQ = "SELECT q.id, qv.question_text, qv.explanation, qv.image_path, qv.id as version_id, et.code as exam_code
 		         FROM questions q
 		         JOIN question_versions qv ON q.id = qv.question_id
+                 JOIN exam_types et ON q.exam_type_id = et.id
 		         WHERE q.id = ? AND q.is_active = 1 AND qv.is_active = 1
 		         LIMIT 1";
 		$question = $this->db->fetch($sqlQ, [$questionId]);

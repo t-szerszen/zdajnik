@@ -25,6 +25,15 @@ class HistoryController extends BaseController
     $examTypes = $this->statsService->getExamTypes();
     // Pobranie aktualnie wybranej kategorii (domyślnie pierwsza) - dla kontekstu danych
     $selectedExamTypeId = (int)($_GET['category'] ?? $examTypes[0]['id'] ?? 0);
+    
+    // Znajdź kod kategorii na podstawie ID
+    $selectedCategoryCode = '';
+    foreach ($examTypes as $type) {
+        if ((int)$type['id'] === $selectedExamTypeId) {
+            $selectedCategoryCode = $type['code'];
+            break;
+        }
+    }
     $userId = $this->currentUser->getId();
     
     $type = $_GET['type'] ?? 'exams'; // Domyślnie egzaminy
@@ -32,19 +41,22 @@ class HistoryController extends BaseController
     $viewData = [
       'type' => $type,
       'selectedCategoryId' => $selectedExamTypeId,
+      'selectedCategoryCode' => $selectedCategoryCode,
       'categories' => $examTypes, // w razie potrzeby zmiany kategorii w historii
     ];
 
     // Pobieranie danych w zależności od typu
     switch ($type) {
       case 'critical':
-        $viewData['title'] = ' Błędy';
+        $viewData['title'] = ' Krytycznych błędów';
+        $viewData['backTo'] = 'criticalMistakes';
         // limit = null -> pobierz wszystko
         $viewData['items'] = $this->statsService->getCriticalErrors($userId, $selectedExamTypeId, null)['items']; 
         break;
 
       case 'errors':
         $viewData['title'] = ' Błędów';
+        $viewData['backTo'] = 'lastMistakes';
         // limit = null -> pobierz wszystko
         $viewData['items'] = $this->statsService->getErrorHistory($userId, $selectedExamTypeId, null); 
         break;
@@ -52,6 +64,7 @@ class HistoryController extends BaseController
       case 'exams':
       default:
         $viewData['title'] = ' Egzaminów';
+        $viewData['backTo'] = 'examsHistory';
         // limit = null -> pobierz wszystko
         $viewData['items'] = $this->statsService->getRecentExams($userId, $selectedExamTypeId, null);
         break;

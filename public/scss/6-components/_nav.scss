@@ -5,25 +5,36 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--bg);
+  
+  // --- GLASSMORPHISM ---
+  // --- GLASSMORPHISM ---
+  background-color: rgba(22, 26, 29, 0.85); // Nieco ciemniejsze dla lepszego kontrastu
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  
+  // Wyraźniejsza separacja od dołu - gradient border
+  border-bottom: 1px solid transparent;
+  background-image: linear-gradient(rgba(22, 26, 29, 0.9), rgba(22, 26, 29, 0.9)), 
+                    linear-gradient(to right, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+
   padding: 1rem 2rem;
   position: sticky;
   top: 0;
   z-index: 999;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  
+  transition: all 0.3s ease;
 
-  // Efekt gradientu na dolnej krawędzi
-  border-bottom: 5px solid transparent;
-  background-image: linear-gradient(to bottom, var(--bg), var(--bg)), linear-gradient(to right, var(--accent), #8b5cf6);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+  // Cień tylko delikatny, by nie "odrywał" zbyt mocno od tła
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
 
   // Element: lista linków nawigacyjnych
   &__links {
     align-items: center;
     list-style: none;
     display: flex;
-    gap: 2rem;
+    gap: 1.5rem; // Zwiększony odstęp dla lepszej czytelności
     margin: 0;
     padding: 0;
   }
@@ -32,160 +43,196 @@
   &__link {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--text);
+    gap: 0.6rem;
+    color: var(--muted-text); // Domyślnie lekko przygaszony
     text-decoration: none;
     font-weight: 500;
-    font-size: 1.3rem;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    transition: all 0.3s ease;
+    font-size: 1.05rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 99px; // "Pill shape"
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
 
+    // Hover state: "Świecąca pigułka"
     &:hover {
-      background-color: rgba(59, 130, 246, 0.1);
+      color: var(--text);
+      background-color: rgba(255, 255, 255, 0.08); // Bardzo subtelne tło
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); // Glow effect
+      
+      .main-nav__icon {
+        color: var(--accent);
+        transform: scale(1.1);
+      }
+    }
+    
+    // Active state (opcjonalnie, jeśli dodasz klasę .active)
+    &.active {
       color: var(--accent);
+      background-color: rgba(59, 130, 246, 0.1);
     }
   }
 
   // Element: ikona w linku
   &__icon {
-    font-size: 1.2rem;
-    color: var(--accent);
+    font-size: 1.1rem;
+    color: var(--accent); // Zawsze akcentowy, ale lekko ciemniejszy domyślnie?
+    transition: transform 0.3s ease;
   }
 }
 
-// Komponent .dropdown (może być używany wewnątrz .main-nav lub gdziekolwiek indziej)
+// Komponent .dropdown
 .dropdown {
-  position: relative; // Kluczowe dla pozycjonowania menu
+  position: relative;
 
   &:hover > .dropdown__menu {
-    // Pokazujemy menu przy najechaniu na rodzica
     display: flex;
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     pointer-events: auto;
   }
 
   // Element: rozwijane menu
   &__menu {
     position: absolute;
-    top: 100%; // Pozycjonowanie pod rodzicem
+    top: calc(100% + 0.8rem); // Większy odstęp wizualny
     left: 0;
-    background-color: var(--bg);
-    border: 1px solid var(--subtle-border);
-    border-radius: 0.75rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    display: none; // Ukryte domyślnie
+    
+    // Glassmorphism dla dropdowna
+    background-color: rgba(22, 26, 29, 0.95); // Mocniejsze tło dla czytelności
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: 1rem;
+    box-shadow: 
+      0 20px 50px -10px rgba(0,0,0,0.5),
+      0 0 0 1px rgba(255,255,255,0.05); // Wewnętrzny border
+
+    display: none;
     flex-direction: column;
-    min-width: 200px;
+    min-width: 240px;
     padding: 0.5rem;
+    
+    // Animacja wejścia
     opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
+    transform: translateY(10px) scale(0.98);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    
     z-index: 1000;
-    pointer-events: none; // Ukryte menu nie powinno łapać kliknięć
+    
+    // --- FIX: Mostek dla kursora (Bridge) ---
+    // Zapobiega znikaniu menu przy przesuwaniu myszy w dół
+    &::before {
+      content: '';
+      position: absolute;
+      top: -1.5rem; // Pokrywa lukę między linkiem a menu
+      left: 0;
+      width: 100%;
+      height: 1.5rem;
+      background: transparent;
+    }
 
     &--right {
-      left: auto; // Resetujemy wyrównanie do lewej
-      right: 0; // Ustawiamy wyrównanie do prawej
+      left: auto;
+      right: 0;
     }
   }
 
-  // Element: pojedynczy element w dropdownie
   &__item {
     list-style-type: none;
+    width: 100%;
   }
 
-  // Element: link w dropdownie
   &__link {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     color: var(--text);
     text-decoration: none;
-    padding: 0.75rem 1rem;
+    padding: 0.85rem 1rem;
     font-size: 0.95rem;
-    transition: background-color 0.2s ease;
-    border-radius: 0.5rem;
-    white-space: nowrap; // Zapobiega łamaniu tekstu
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-radius: 0.75rem;
+    margin-bottom: 2px;
 
-    &:hover {
-      background-color: rgba(59, 130, 246, 0.1);
-      color: var(--accent);
-    }
-  }
-
-  // Element: ikona w linku dropdowna
-  &__icon {
-    color: var(--accent);
-    font-size: 1rem;
-    min-width: 1.25rem;
-  }
-}
-
-.nav-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-
-  // Wariant: Rejestracja (styl "ghost")
-  &--register {
-    background-color: transparent;
-    border-color: var(--border);
-    color: var(--text);
-
-    // Kiedy najedziemy na CAŁY przycisk...
+    // Hover wewnątrz dropdowna
     &:hover {
       background-color: var(--accent);
-      border-color: var(--accent);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
-      color: white;
-
-      // ...znajdź w nim ikonę (.main-nav__icon) i zmień jej kolor na biały.
-      .main-nav__icon {
-        color: white;
+      color: white; // Kontrastowy tekst na akcencie
+      transform: translateX(4px); // Subtelne przesunięcie w prawo
+      
+      .dropdown__icon {
+        color: white; // Ikona też biała
       }
     }
   }
 
-  // Wariant: Logowanie (styl "solid")
-  &--login {
-    background-color: var(--accent);
-    color: white;
+  &__icon {
+    color: var(--muted-text);
+    font-size: 1.1rem;
+    width: 1.5rem; // Stała szerokość dla wyrównania tekstów
+    text-align: center;
+    transition: color 0.2s ease;
+  }
+}
 
-    // Ikona w tym przycisku zawsze będzie biała
+// CTA Buttons (Logowanie / Rejestracja)
+.nav-button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.4rem;
+  border-radius: 99px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+
+  // Wariant: Rejestracja (Ghost)
+  &--register {
+    background-color: transparent;
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text);
+
+    &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background-color: rgba(59, 130, 246, 0.05);
+      transform: translateY(-1px);
+    }
+  }
+
+  // Wariant: Logowanie (Solid Gradient)
+  &--login {
+    background: linear-gradient(135deg, var(--accent) 0%, #3b82f6 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+
     .main-nav__icon {
       color: white;
     }
 
     &:hover {
-      background-color: var(--accent-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
     }
   }
 }
 
+// User Avatar
 .main-nav__user-avatar {
-  height: 45px;
-  width: 45px;
-  border-radius: 50%; // Zapewnia idealnie okrągły kształt
-  object-fit: cover; // Zapobiega zniekształceniu, gdy wgrasz prawdziwe zdjęcie
-  border: 2px solid transparent; // Domyślnie przezroczysta ramka
+  height: 42px;
+  width: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease;
 
-  // Efekt po najechaniu myszką
   &:hover {
-    border-color: var(--accent); // Podświetla ramkę na kolor akcentowy
-    box-shadow: 0 0 12px rgba(59, 130, 246, 0.3); // Dodaje subtelną poświatę
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
   }
 }

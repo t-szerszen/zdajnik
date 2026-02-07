@@ -58,7 +58,9 @@ $canonicalUrl = 'https://www.examly.pl/';
 
           <!-- CTA widoczne tylko dla gości -->
           <?php if (!$isUserLoggedIn): ?>
-            <a href="<?= url('rejestracja') ?>" class="btn btn--secondary btn--large">Załóż darmowe konto</a>
+            <a href="<?= url('rejestracja') ?>" class="btn btn--secondary btn--large">
+              <i class="fas fa-user-plus" style="margin-right: 0.5rem;"></i> Załóż darmowe konto
+            </a>
           <?php endif; ?>
         </div>
       </div>

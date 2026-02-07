@@ -1,139 +1,247 @@
 // Plik: scss/6-components/_form-card.scss
 
 .form-card {
-  max-width: 460px; // Lepsze proporcje
-  margin: 5rem auto;
-  padding: 3rem;
-  background-color: var(--bg);
-  border-radius: var(--border-radius-large, 16px); // Zwiększone zaokrąglenie
-  border: 1px solid var(--subtle-border);
-
+  max-width: 480px;
+  margin: 4rem auto;
+  padding: 3.5rem;
+  
+  // --- GLASSMORPHISM ---
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 2rem;
+  
   // --- EFEKT GŁĘBI ---
-  // Wielowarstwowy cień tworzy subtelny efekt unoszenia się karty nad tłem.
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.05),
-    0 10px 25px -4px rgba(0, 0, 0, 0.08);
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 0, 0, 0.05),
+    0 20px 40px -10px rgba(0, 0, 0, 0.1);
 
-  // Delikatne przejście dla wszystkich zmian
-  transition: all 0.3s ease-in-out;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: 'Outfit', sans-serif;
 
   &:hover {
-    box-shadow:
-      0 4px 8px -1px rgba(0, 0, 0, 0.06),
-      0 12px 30px -4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+    box-shadow: 
+      0 15px 35px -5px rgba(0, 0, 0, 0.08),
+      0 25px 50px -15px rgba(0, 0, 0, 0.12);
   }
 
-  // --- SYMETRIA I ELEGANCJA ---
-  // Kontener na logo, zapewniający idealne wyśrodkowanie i spójność wizualną.
-  &__logo-container {
-    text-align: center;
-    margin-bottom: 2rem;
-
-    img {
-      max-width: 60px; // Dostosuj rozmiar do swojego logo
-      height: auto;
-    }
+  html.dark & {
+    background: rgba(22, 26, 29, 0.7);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 10px 25px -5px rgba(0, 0, 0, 0.3),
+      0 20px 40px -10px rgba(0, 0, 0, 0.4);
   }
 
   &__header {
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
   }
 
   &__title {
-    font-size: 2rem; // Większy, bardziej wyrazisty tytuł
+    font-size: 2.25rem;
     font-weight: 800;
-    margin: 0 0 0.75rem 0;
+    margin: 0 0 0.5rem 0;
     color: var(--text);
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   &__subtitle {
     font-size: 1.1rem;
     color: var(--muted-text);
     margin: 0;
+    font-weight: 500;
   }
 
   &__group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
   }
 
   &__label {
     display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
     font-size: 0.95rem;
     color: var(--text);
+    opacity: 0.9;
   }
 
   &__input-hint {
     font-size: 0.85rem;
     color: var(--muted-text);
-    margin-top: 0.5rem;
-    padding-left: 0.25rem;
+    margin-top: 0.75rem;
+    line-height: 1.4;
   }
 
-  // --- INTERAKTYWNOŚĆ I DETALE ---
-  &__input {
-    width: 90%;
-    padding: 1rem 1.2rem;
-    border-radius: var(--border-radius-base, 10px);
+  &__input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  &__input-icon {
+    position: absolute;
+    left: 1.25rem;
+    color: var(--muted-text);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 1;
     font-size: 1rem;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 1.15rem 1.25rem;
+    border-radius: 1.25rem;
+    font-size: 1rem;
+    font-family: 'Outfit', sans-serif;
     color: var(--text);
-    transition: all 0.2s ease;
-    outline: none;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    border: 2px solid var(--subtle-border);
+    background: var(--field-bg);
 
-    // KROK 1: Ustawiamy transparentny border, aby tło mogło "prześwitywać".
-    border: 2px solid transparent;
-
-    // KROK 2: Technika podwójnego tła do symulacji ramki.
-    // Tło 1: kolor pola (wewnętrzny), Tło 2: kolor/gradient ramki (zewnętrzny)
-    background-image:
-      linear-gradient(var(--field-bg), var(--field-bg)),
-      // Wypełnienie pola
-      linear-gradient(to right, var(--border), var(--border)); // Domyślna, jednolita "ramka"
-    background-origin: border-box;
-    background-clip: padding-box, border-box;
-
-    // KROK 3: STYL AKTYWACJI GRADIENTU
-    // Aktywujemy gradient, gdy pole jest w focusie LUB gdy ma treść
-    // (sztuczka z :not(:placeholder-shown) wymaga dodania placeholderów w HTML)
-    &:focus,
-    &:not(:placeholder-shown) {
-      border-color: transparent; // Upewniamy się, że ramka jest przezroczysta
-      background-image:
-        linear-gradient(var(--field-bg), var(--field-bg)), linear-gradient(to right, var(--accent), #8b5cf6); // Twój wymarzony gradient!
+    &--with-icon {
+      padding-left: 3.5rem;
     }
 
-    // KROK 4: Ulepszony focus, który nie koliduje z gradientem
     &:focus {
-      // Zostawiamy tylko cienie, ponieważ ramka jest już obsłużona powyżej.
-      box-shadow:
-        0 0 0 3px rgba(59, 130, 246, 0.25),
-        inset 0 1px 2px rgba(0, 0, 0, 0.1);
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    &::placeholder {
+      color: var(--muted-text);
+      opacity: 0.5;
     }
   }
 
-  // --- KONTENER NA PRZYCISK ---
-  // Ten blok idealnie wyśrodkuje wszystko, co w nim umieścisz.
+  &__icon-circle {
+    width: 64px;
+    height: 64px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    
+    i {
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+  }
+
+  &__google-btn {
+    width: 100%;
+    border-radius: 1rem;
+    border: 2px solid var(--subtle-border);
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    text-decoration: none;
+
+    img {
+      width: 18px;
+      height: 18px;
+      margin-right: 0.75rem;
+    }
+
+    &:hover {
+      background: var(--field-bg);
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  &__grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
   &__action-container {
+    margin: 2.5rem 0 2rem 0;
+  }
+
+  &__divider {
+    display: flex;
+    align-items: center;
     text-align: center;
-    margin: 2.5rem 0 1.5rem 0; // Dodajemy odstępy góra/dół
+    margin: 1.5rem 0;
+    color: var(--muted-text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+
+    &::before,
+    &::after {
+      content: "";
+      flex: 1;
+      border-bottom: 1px solid var(--subtle-border);
+    }
+
+    &::before {
+      margin-right: 1rem;
+    }
+
+    &::after {
+      margin-left: 1rem;
+    }
   }
 
   &__footer {
     text-align: center;
-    margin-top: 2rem;
-    font-size: 1rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--subtle-border); // Subtelny separator
+    margin-top: 2.5rem;
+    font-size: 1.05rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--subtle-border);
+
+    p {
+      margin: 0.5rem 0;
+      color: var(--muted-text);
+    }
 
     a {
       color: var(--accent);
       text-decoration: none;
-      font-weight: 600;
+      font-weight: 700;
+      transition: all 0.2s ease;
 
       &:hover {
+        color: var(--accent-hover);
         text-decoration: underline;
+      }
+    }
+
+    .form-card__forgot-password {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      display: inline-block;
+      
+      &:hover {
+        opacity: 1;
       }
     }
   }
@@ -145,19 +253,22 @@
   align-items: center;
 
   .form-card__input {
-    // Dodajemy padding po prawej stronie, aby tekst nie wchodził pod ikonę
-    padding-right: 2.5rem; 
+    padding-right: 3.5rem;
   }
 
   .password-toggle-icon {
     position: absolute;
-    right: 1rem;
+    right: 1.25rem;
     color: var(--muted-text);
     cursor: pointer;
-    transition: color 0.2s;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    opacity: 0.7;
 
     &:hover {
       color: var(--accent);
+      opacity: 1;
+      transform: scale(1.1);
     }
   }
 }

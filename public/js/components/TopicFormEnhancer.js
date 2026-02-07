@@ -67,6 +67,7 @@ class TopicFormEnhancer {
     this.isUserLoggedIn = window.examlyAppState?.isUserLoggedIn || false;
 
     this.bindEvents();
+    this.initFromUrl();
     this.updateFormState();
   }
 
@@ -132,12 +133,52 @@ class TopicFormEnhancer {
   }
 
   /**
+   * Inicjalizuje stan formularza na podstawie URL (hash i query params).
+   * Pozwala na linkowanie bezpośrednio do konfiguracji "wszystkie tematy + tryb premium".
+   * @private
+   */
+  initFromUrl() {
+    // 1. Obsługa "Zaznacz wszystko" 
+    // Sprawdzamy czy w URL jest hash #select-all-codes LUB parametr selectAll=true
+    const hash = window.location.hash;
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldSelectAll = hash === '#select-all-codes' || urlParams.get('selectAll') === 'true';
+
+    if (shouldSelectAll && this.selectAllCheckbox) {
+      this.selectAllCheckbox.checked = true;
+      // Kluczowe: wywołujemy handler, który zaznacza podrzędne checkboxy 
+      // I (co najważniejsze) odblokowuje sekcję premium metodą updatePremiumOptionsState
+      this.handleSelectAll(); 
+    } else {
+      // Jeśli nie wymuszamy zaznaczenia, po prostu odświeżamy stan UI
+      this.updatePremiumOptionsState();
+    }
+
+    // 2. Obsługa opcji Premium (np. ?premium=lastMistakes)
+    const premiumParam = urlParams.get('premium');
+    if (premiumParam && this.isUserLoggedIn) {
+      const targetCheckbox = this.form.querySelector(`.premium-checkbox[value="${premiumParam}"]`);
+      
+      // Sprawdzamy czy checkbox istnieje i czy został odblokowany w kroku 1
+      if (targetCheckbox && !targetCheckbox.disabled) {
+        targetCheckbox.checked = true;
+        // Wywołujemy handler, żeby zachować logikę "tylko jeden premium na raz"
+        this.handlePremiumChange(targetCheckbox);
+      }
+    }
+  }
+
+  /**
    * Ustawia poprawny stan całego formularza przy pierwszym załadowaniu skryptu.
    * @private
    */
   updateFormState() {
     this.handleSingleTopicChange(); // Synchronizuje "Zaznacz wszystko"
-    // `updatePremiumOptionsState` jest już wołane w powyższej metodzie.
+    // initFromUrl załatwia sprawę updatePremiumOptionsState, ale dla bezpieczeństwa
+    // przy ręcznym odświeżaniu strony bez parametrów:
+    if (!window.location.search && !window.location.hash) {
+         this.updatePremiumOptionsState();
+    }
   }
 
   /**

@@ -28,9 +28,19 @@ class ReviewController extends BaseController
       return;
     }
 
+    $source = $_GET['source'] ?? 'stats';
+    if ($source === 'history') {
+      $type = $_GET['type'] ?? 'errors';
+      $cat = $_GET['category'] ?? 0;
+      $backUrl = url('historia') . '?type=' . $type . '&category=' . $cat;
+    } else {
+      $backUrl = url('statystyki') . '#lastMistakes';
+    }
+
     $this->renderView('question_review', [
       'question' => $question,
-      'examCode' => 'INF.03'
+      'examCode' => $question['exam_code'],
+      'backUrl' => $backUrl
     ]);
   }
 
@@ -48,9 +58,19 @@ class ReviewController extends BaseController
       return;
     }
 
+    $source = $_GET['source'] ?? 'stats';
+    if ($source === 'history') {
+      $type = $_GET['type'] ?? 'exams';
+      $cat = $_GET['category'] ?? 0;
+      $backUrl = url('historia') . '?type=' . $type . '&category=' . $cat;
+    } else {
+      $backUrl = url('statystyki') . '#examsHistory';
+    }
+
     $this->renderView('exam_review', [
       'exam' => $reviewData,
-      'examCode' => 'INF.03'
+      'examCode' => $reviewData['meta']['exam_code'],
+      'backUrl' => $backUrl
     ]);
   }
 }

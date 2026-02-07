@@ -24,18 +24,21 @@
     }
   }
 
-  // NOWY MODYFIKATOR: Przycisk drugorzędny
+  // NOWY MODYFIKATOR: Przycisk drugorzędny (style glassmorphism)
   &--secondary {
     text-decoration: none;
-    background-color: transparent;
-    border-color: var(--border);
+    background-color: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid var(--border);
     color: var(--text);
+    
     &:hover {
       background-color: var(--accent);
       border-color: var(--accent);
       color: white;
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(59, 130, 246, 0.25);
     }
   }
 
@@ -49,6 +52,17 @@
     font-size: 0.85rem;
   }
 
+  &--danger {
+    background: #dc2626;
+    color: white;
+
+    &:hover {
+      background: #b91c1c;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(220, 38, 38, 0.2);
+    }
+  }
+
   &:disabled,
   &[disabled] {
     background-color: #d1d5db;
@@ -57,6 +71,28 @@
     box-shadow: none;
     transform: none;
     opacity: 0.7;
+  }
+
+  &--full-width {
+    width: 100%;
+    display: block;
+  }
+
+  &--icon-only {
+    padding: 0;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    
+    &.btn--sm {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
   }
 
   // Zapewniamy, że motyw ciemny również poprawnie obsłuży stan disabled

@@ -40,69 +40,61 @@ $canonicalUrl = 'https://www.examly.pl/autoryzacja-email';
 <!-- Dołączenie reużywalnego komponentu head -->
 <?php include 'partials/head.php'; ?>
 
-<body>
+<body class="auth-page-background">
   <!-- Dołączenie reużywalnego komponentu nawigacji -->
   <?php include 'partials/navbar.php'; ?>
 
   <main>
     <!-- 
       =====================================================================
-      Komponent: Karta Informacyjna (Info Card)
-      ---------------------------------------------------------------------
-      Opis: Wycentrowana karta służąca do wyświetlania ważnych komunikatów
-            lub instrukcji dla użytkownika poza standardowym przepływem
-            aplikacji.
+      Komponent: Karta Weryfikacji (styl Form Card)
       =====================================================================
     -->
-    <div class="info-card--centered-fullscreen">
-      <div class="info-card">
-        <div class="info-card__icon info-card__icon--info">
+    <div class="form-card">
+      <div class="form-card__header">
+        <div class="form-card__icon-circle">
           <i class="fas fa-envelope-open-text"></i>
         </div>
-        <h1 class="info-card__title">Sprawdź swoją skrzynkę e-mail</h1>
-        <p class="info-card__message">
+        <h1 class="form-card__title">Sprawdź skrzynkę</h1>
+        <p class="form-card__subtitle">
           Aby zakończyć rejestrację, kliknij w link aktywacyjny, który wysłaliśmy na Twój adres e-mail.
         </p>
+      </div>
 
-        <!-- Blok na jednorazowe komunikaty (np. "E-mail wysłano ponownie.") -->
-        <?php if (isset($flashMessage) && is_array($flashMessage)): ?>
-          <div class="alert alert--<?= htmlspecialchars($flashMessage['type']) ?>" role="alert">
-            <?= htmlspecialchars($flashMessage['text']) ?>
-          </div>
-        <?php endif; ?>
-
-        <!-- 
-          Akcje karty: Formularz do ponownego wysłania e-maila
-          Opis: Umożliwia użytkownikowi ponowne wysłanie linku aktywacyjnego.
-                Przycisk jest nieaktywny, jeśli trwa okres cooldown.
-        -->
-        <div class="info-card__actions">
-          <form method="GET">
-            <input type="hidden" name="send" value="true">
-            <!-- 
-              Przycisk z logiką cooldown:
-              - `data-remaining`: Przechowuje początkowy czas odliczania dla JS.
-              - `disabled`: Atrybut jest dodawany przez PHP, jeśli czas odliczania jest > 0.
-              - Treść przycisku: Zmienia się w zależności od tego, czy odliczanie trwa.
-              - Interaktywność (odliczanie i aktywacja) jest zarządzana przez `verification/index.js`.
-            -->
-            <button
-              type="submit"
-              id="resendButton"
-              class="btn btn--primary btn--full-width"
-              data-text="Wyślij ponownie e-mail"
-              data-remaining="<?= $remaining ?>"
-              <?= $remaining > 0 ? 'disabled' : '' ?>>
-              <?php if ($remaining > 0): ?>
-                Wyślij ponownie za <span id="countdown"><?= $remaining ?></span>s
-              <?php else: ?>
-                Wyślij ponownie e-mail
-              <?php endif; ?>
-            </button>
-          </form>
+      <!-- Blok na jednorazowe komunikaty (np. "E-mail wysłano ponownie.") -->
+      <?php if (isset($flashMessage) && is_array($flashMessage)): ?>
+        <div class="alert alert--<?= htmlspecialchars($flashMessage['type']) ?>" role="alert" style="margin-bottom: 2rem;">
+          <i class="fas fa-info-circle" style="margin-right: 0.5rem;"></i>
+          <?= htmlspecialchars($flashMessage['text']) ?>
         </div>
+      <?php endif; ?>
 
-        <p class="info-card__message" style="margin-top: 1rem; font-size: 0.9rem;">
+      <!-- Akcje karty: Formularz do ponownego wysłania e-maila -->
+      <div class="form-card__action-container" style="margin-top: 0;">
+        <form method="GET">
+          <input type="hidden" name="send" value="true">
+          <!-- 
+            Przycisk z logiką cooldown:
+            Zarządzany przez verification/index.js
+          -->
+          <button
+            type="submit"
+            id="resendButton"
+            class="btn btn--primary btn--full-width"
+            data-text="Wyślij ponownie e-mail"
+            data-remaining="<?= $remaining ?>"
+            <?= $remaining > 0 ? 'disabled' : '' ?>>
+            <?php if ($remaining > 0): ?>
+              Wyślij ponownie za <span id="countdown"><?= $remaining ?></span>s
+            <?php else: ?>
+              Wyślij ponownie e-mail
+            <?php endif; ?>
+          </button>
+        </form>
+      </div>
+
+      <div class="form-card__footer">
+        <p class="form-card__subtitle" style="font-size: 0.9rem; opacity: 0.8;">
           Nie widzisz wiadomości? Sprawdź folder SPAM.
         </p>
       </div>

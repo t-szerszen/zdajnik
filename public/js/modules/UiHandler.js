@@ -30,6 +30,7 @@
  */
 
 import { escapeHTML } from '../utils/sanitize.js';
+import ExplanationToggler from '../components/ExplanationToggler.js';
 
 class UIHandler {
   /**
@@ -139,12 +140,9 @@ class UIHandler {
         const explBtn = document.createElement('button');
         explBtn.type = 'button';
         explBtn.className = 'btn btn--secondary btn--small';
-        explBtn.textContent = 'Pokaż wyjaśnienie';
         
-        explBtn.addEventListener('click', () => {
-            const isVisible = explContainer.classList.toggle('quiz-card__explanation--visible');
-            explBtn.textContent = isVisible ? 'Ukryj wyjaśnienie' : 'Pokaż wyjaśnienie';
-        });
+        // Używamy helpera do obsługi logiki i wyglądu (w tym ikony)
+        ExplanationToggler.attach(explBtn, explContainer);
 
         // Parsowanie markdown dla wyjaśnienia
         explContainer.innerHTML = DOMPurify.sanitize(marked.parse(explanation));

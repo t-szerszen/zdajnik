@@ -23,6 +23,7 @@
 
 import api from './ApiClient.js';
 import { escapeHTML } from '../utils/sanitize.js';
+import ExplanationToggler from '../components/ExplanationToggler.js';
 
 export class TestRunner {
   /**
@@ -206,40 +207,76 @@ async finishTest() {
   /**
    * Buduje i wyświetla ekran wyników ze szczegółowym podsumowaniem.
    */
+  /**
+  /**
+   * Buduje i wyświetla ekran wyników ze szczegółowym podsumowaniem.
+   */
   showResults(score, correctCount, userAnswers) {
+    // Ukryj widok testu i główny kontener (aby tło review-page działało na pełną stronę)
     this.testView.classList.add('hidden');
+    if (this.testView.parentElement) {
+         this.testView.parentElement.classList.add('hidden');
+    }
+    
+    // Dodaj klasę do body dla stylów tła
+    document.body.classList.add('review-page');
+
+    // Pokaż ekran wyników
     this.resultsScreen.classList.remove('hidden');
 
     // Sekcja Podsumowania
     const scoreSummaryContainer = document.getElementById('score-summary');
+    
     const scoreToDisplay = this.isFullExam ? score.toFixed(2) : Math.round(score);
     const scoreForAnimation = Math.round(score);
 
     const minutes = Math.floor(this.timeSpent / 60);
     const seconds = this.timeSpent % 60;
-    const timeString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    const durationString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    
+    const totalQuestions = this.questionsData.length;
+
+    // Data i czas dla "Data podejścia"
+    const now = new Date();
+    const dateString = now.toLocaleDateString('pl-PL');
+    const timeString = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
 
     scoreSummaryContainer.innerHTML = `
-      <div class="score-circle" style="--score: ${scoreForAnimation}">
-        <div class="score-circle__percent">${scoreToDisplay}%</div>
-      </div>
-      <div class="score-stats">
-        <div class="stat-item">
-          <i class="stat-item__icon fas fa-check"></i>
-          <div>
-            <p class="stat-item__label">Poprawne odpowiedzi</p>
-            <p class="stat-item__value">${correctCount} / ${this.questionsData.length}</p>
-          </div>
+      <div class="review-page__score-display">
+        <div class="score-circle" style="--score: ${scoreForAnimation}">
+          <div class="score-circle__percent">${scoreToDisplay}%</div>
         </div>
-        <div class="stat-item">
-          <i class="stat-item__icon fas fa-clock"></i>
-          <div>
-            <p class="stat-item__label">Czas ukończenia</p>
-            <p class="stat-item__value">${timeString}</p>
-          </div>
+        <p class="label-text">Twój wynik</p>
+      </div>
+
+      <div class="review-page__stats-grid">
+        <div class="review-page__stat-box">
+          <span class="stat-label">Wynik punktowy</span>
+          <span class="stat-value text-gradient">
+            <i class="fas fa-bullseye" style="font-size: 0.8em; margin-right: 0.25rem;"></i>
+            ${correctCount} / ${totalQuestions}
+          </span>
+        </div>
+        <div class="review-page__stat-box">
+          <span class="stat-label">Czas pracy</span>
+          <span class="stat-value">
+            <i class="fas fa-clock" style="font-size: 0.8em; margin-right: 0.25rem;"></i>
+            ${durationString}
+          </span>
+        </div>
+        <div class="review-page__stat-box">
+             <span class="stat-label">Data podejścia</span>
+             <span class="stat-value" style="font-size: 1.1rem; line-height: 1.2;">
+               <i class="fas fa-calendar-alt" style="font-size: 0.8em; margin-right: 0.25rem; color: var(--accent);"></i>
+               ${dateString}
+               <small style="display: block; opacity: 0.6; font-size: 0.8rem; margin-top: 2px;">
+                 Godzina ${timeString}
+               </small>
+             </span>
         </div>
       </div>`;
 
+    // Sekcja detali pytań (szczegóły są w htmlu statycznie, ale content dynamicznie)
     this.resultsDetailsContainer.innerHTML = '';
 
     this.questionsData.forEach((qData, index) => {
@@ -247,43 +284,65 @@ async finishTest() {
       const userAnswerId = userAnswers[question_version_id]; // Odczyt z mapy
       const answers = qData.answers;
 
-      const card = document.createElement('section');
+      const card = document.createElement('article');
       card.className = 'quiz-card';
       card.id = `result-q-${question_id}`;
+      card.style.animationDelay = `${index * 0.1}s`;
+      
+      // Dodaj nagłówek z numerem pytania i statusem
+      const isUserCorrectHeader = answers.find(a => a.id === userAnswerId)?.is_correct === 1;
+      let badgeHTML = '';
+      if (userAnswerId === null || userAnswerId === undefined) {
+         badgeHTML = '<span class="status-badge status-badge--skipped"><i class="fas fa-share"></i> Pominięte</span>';
+      } else if (isUserCorrectHeader) {
+         badgeHTML = '<span class="status-badge status-badge--success"><i class="fas fa-check"></i> Poprawne</span>';
+      } else {
+         badgeHTML = '<span class="status-badge status-badge--error"><i class="fas fa-times"></i> Błąd</span>';
+      }
 
       let answersHTML = '';
       answers.forEach((ans, idx) => {
         const letter = String.fromCharCode(65 + idx);
+        
+        // LOGIKA KOLORYSTYKI ZGODNA Z REVIEW PAGE
+        const isCorrect = ans.is_correct === 1;
+        const isSelected = (userAnswerId === ans.id);
+        
         let statusClass = '';
-
-        // NOWA LOGIKA KOLORYSTYKI
-        if (userAnswerId === ans.id) {
-          // Użytkownik wybrał tę odpowiedź (Zawsze usuwamy 'selected', by nie było niebieskiego tła)
-          statusClass = ans.is_correct === 1 ? 'correct' : 'incorrect';
-        } else if (ans.is_correct === 1) {
-          // To jest poprawna odpowiedź, której użytkownik nie wybrał
-          // Jeśli w ogóle nie odpowiedział -> niebieski (missed)
-          // Jeśli wybrał inną, błędną -> zielony (correct)
-          statusClass = (userAnswerId === null || userAnswerId === undefined) ? 'missed' : 'correct';
+        if (isCorrect) {
+            if (userAnswerId !== null && userAnswerId !== undefined) {
+                statusClass = 'quiz-card__answer--correct';
+            } else {
+                statusClass = 'quiz-card__answer--skipped';
+            }
+        } else if (isSelected && !isCorrect) {
+            statusClass = 'quiz-card__answer--incorrect';
         }
 
         const contentHTML = DOMPurify.sanitize(marked.parse(ans.answer_text || ''));
+        
+        // Input checked tylko wizualnie, żeby widzieć co się kliknęło (opcjonalne, bo mamy kolory)
+        // Ale dodajmy dla pewności
+        const checkedAttr = isSelected ? 'checked' : '';
+        // const checkedAttr = isSelected ? 'checked' : '';
 
         answersHTML += `
           <div class="quiz-card__answer ${statusClass}">
             <span class="quiz-card__answer-prefix">${letter}</span>
             <span class="quiz-card__answer-text">${contentHTML}</span>
-            ${userAnswerId === ans.id ? '<input type="radio" checked disabled style="display:none">' : ''}
           </div>`;
       });
 
       card.innerHTML = `
-        <header class="quiz-card__header"><span class="quiz-card__question-number">Pytanie ${index + 1}</span></header>
+        <header class="quiz-card__header">
+            <span class="quiz-card__question-number">Pytanie ${index + 1}</span>
+            ${badgeHTML}
+        </header>
         <div class="quiz-card__content">
           <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
-          ${image_path ? `<img src="/examly/public/images/questions/${escapeHTML(image_path)}" class="quiz-card__image">` : ''}
+          ${image_path ? `<div class="quiz-card__image-container"><img src="/examly/public/images/questions/${escapeHTML(image_path)}" class="quiz-card__image"></div>` : ''}
         </div>
-        <div class="quiz-card__answers">${answersHTML}</div>
+        <div class="quiz-card__answers" data-answered="true">${answersHTML}</div>
         <div class="quiz-card__actions"></div>
       `;
 
@@ -301,31 +360,39 @@ async finishTest() {
    * Renderuje sekcję wyjaśnienia w wynikach (z działającym przyciskiem).
    */
   renderExplanationResult(card, explanation) {
-    const actionsContainer = document.createElement('div');
-    actionsContainer.className = 'quiz-card__actions'; // Zgodne z main.css
-
+    const actionsContainer = card.querySelector('.quiz-card__actions');
+    
     const btnContainer = document.createElement('div');
     btnContainer.className = 'quiz-card__button-container';
 
     const explContainer = document.createElement('div');
-    explContainer.className = 'quiz-card__explanation'; // Domyślnie ukryte w CSS
-    explContainer.innerHTML = DOMPurify.sanitize(marked.parse(explanation || ''));
+    // UID dla togglera
+    const explId = 'expl-' + Math.random().toString(36).substr(2, 9);
+    explContainer.id = explId;
+    explContainer.className = 'quiz-card__explanation';
+
+    const explanationHTML = DOMPurify.sanitize(marked.parse(explanation || ''));
+    explContainer.innerHTML = `
+        <div class="explanation-title">
+            <i class="fas fa-magic"></i> Wyjaśnienie
+        </div>
+        <div class="explanation-inner">
+            ${explanationHTML}
+        </div>
+    `;
 
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'btn btn--secondary btn--small';
-    button.textContent = 'Pokaż wyjaśnienie';
-
-    button.addEventListener('click', () => {
-      const isVisible = explContainer.classList.toggle('quiz-card__explanation--visible');
-      button.textContent = isVisible ? 'Ukryj wyjaśnienie' : 'Pokaż wyjaśnienie';
-    });
+    button.className = 'btn btn--secondary btn--small toggle-explanation-btn';
+    button.innerHTML = '<i class="fas fa-lightbulb"></i> Pokaż wyjaśnienie';
+    button.dataset.target = explId;
+    
+    // Używamy helpera do obsługi logiki
+    ExplanationToggler.attach(button, explContainer);
 
     btnContainer.appendChild(button);
     actionsContainer.appendChild(btnContainer);
     actionsContainer.appendChild(explContainer);
-
-    card.appendChild(actionsContainer);
   }
 
   /**

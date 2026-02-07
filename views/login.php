@@ -41,7 +41,7 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
 <!-- Dołączenie reużywalnego komponentu head -->
 <?php include 'partials/head.php'; ?>
 
-<body>
+<body class="auth-page-background">
   <!-- Dołączenie reużywalnego komponentu head -->
   <?php include 'partials/navbar.php'; ?>
 
@@ -59,6 +59,7 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
     <?php if (isset($_SESSION['flash_message']) && is_array($_SESSION['flash_message'])): ?>
       <div class="centered">
         <div class="alert alert--<?= htmlspecialchars($_SESSION['flash_message']['type']) ?>" role="alert">
+          <i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>
           <?= htmlspecialchars($_SESSION['flash_message']['text']) ?>
         </div>
       </div>
@@ -75,6 +76,9 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
     -->
     <form method="POST" class="form-card">
       <div class="form-card__header">
+        <div class="form-card__icon-circle">
+          <i class="fas fa-user-lock"></i>
+        </div>
         <h1 class="form-card__title">Witaj ponownie!</h1>
         <p class="form-card__subtitle">Zaloguj się, aby kontynuować naukę.</p>
       </div>
@@ -88,7 +92,7 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
         <div class="alert alert--error" role="alert">
           <ul class="alert__list">
             <?php foreach ($errors as $error): ?>
-              <li class="alert__item"><?= $error ?></li>
+              <li class="alert__item"><i class="fas fa-exclamation-circle" style="margin-right: 0.5rem;"></i><?= $error ?></li>
             <?php endforeach; ?>
           </ul>
         </div>
@@ -97,21 +101,20 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
       <!-- Grupa: Pole e-mail -->
       <div class="form-card__group">
         <label for="email" class="form-card__label">Adres e-mail</label>
-        <!-- 
-          PHP: Wypełnia pole e-mail poprzednio wprowadzoną wartością
-               w przypadku błędu walidacji, aby użytkownik nie musiał
-               wpisywać go ponownie.
-        -->
-        <input type="email" id="email" name="email" class="form-card__input"
-          value="<?= htmlspecialchars($formData['email'] ?? '') ?>"
-          placeholder="Twój adres e-mail" required>
+        <div class="form-card__input-wrapper">
+          <i class="fas fa-envelope form-card__input-icon"></i>
+          <input type="email" id="email" name="email" class="form-card__input form-card__input--with-icon"
+            value="<?= htmlspecialchars($formData['email'] ?? '') ?>"
+            placeholder="Twój adres e-mail" required>
+        </div>
       </div>
 
       <!-- Grupa: Pole hasła -->
       <div class="form-card__group">
         <label for="password" class="form-card__label">Hasło</label>
         <div class="password-wrapper">
-          <input type="password" id="password" name="password" class="form-card__input"
+          <i class="fas fa-lock form-card__input-icon"></i>
+          <input type="password" id="password" name="password" class="form-card__input form-card__input--with-icon"
             placeholder="Twoje hasło" required>
           <i class="fas fa-eye password-toggle-icon"></i>
         </div>
@@ -119,21 +122,24 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
 
       <!-- Kontener z głównym przyciskiem akcji -->
       <div class="form-card__action-container">
-        <button type="submit" class="btn btn--primary btn--full-width">Zaloguj się</button>
+        <button type="submit" class="btn btn--primary btn--full-width">
+          Zaloguj się <i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i>
+        </button>
       </div>
 
-      <div style="text-align: center; margin: 1.5rem 0; color: var(--muted-text);">lub</div>
+      <div class="form-card__divider">lub</div>
 
       <div class="form-card__action-container" style="margin-top: 0; margin-bottom: 2rem;">
-          <a href="<?= url('auth/google') ?>" class="btn btn--secondary btn--full-width">
-              <i class="fab fa-google" style="margin-right: 0.5rem;"></i> Zaloguj się przez Google
+          <a href="<?= url('auth/google') ?>" class="form-card__google-btn">
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+              Zaloguj się przez Google
           </a>
       </div>
 
       <!-- Stopka formularza z dodatkowymi linkami -->
       <div class="form-card__footer">
         <p>Nie masz konta? <a href="<?= url('rejestracja') ?>">Stwórz je teraz</a></p>
-        <p><a href="<?= url('reset-hasla') ?>">Nie pamiętasz hasła?</a></p>
+        <p><a href="<?= url('reset-hasla') ?>" class="form-card__forgot-password">Nie pamiętasz hasła?</a></p>
       </div>
     </form>
   </main>

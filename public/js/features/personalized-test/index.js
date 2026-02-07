@@ -157,7 +157,8 @@ class PersonalizedTest {
     this.quizContainer.classList.add('test-container--active');
     // Wstrzyknij cały szkielet HTML dla widoku testu i wyników.
     this.quizContainer.innerHTML = `
-      <div class="test-container">
+      <!-- Wrapper dla widoku testu - to ten element zostanie ukryty przez TestRunner -->
+      <div class="test-container"> 
         <div id="loading-screen" class="test-loading hidden">
           <h2>Trwa przygotowywanie Twojego testu...</h2><div class="spinner"></div>
         </div>
@@ -171,12 +172,33 @@ class PersonalizedTest {
             <button id="finish-test-btn" class="btn btn--primary">Zakończ i sprawdź test</button>
           </footer>
         </div>
-        <div id="results-screen" class="results-container hidden">
-          <h1 class="results-container__title">Wyniki Testu</h1>
-          <div id="score-summary" class="score-summary"></div>
-          <div id="results-details" class="results-details"></div>
-          <div class="results-container__actions">
-            <a href="/examly/public/" class="btn btn--primary">Wróć na stronę główną</a>
+      </div>
+
+      <!-- Wrapper dla ekranu wyników - poza elementem ukrywanym, z nową strukturą -->
+      <div id="results-screen" class="hidden">
+        <div class="review-page__main-wrapper">
+          <div class="review-page__container">
+            
+            <div class="review-page__back-nav">
+               <a href="/examly/public/" class="review-page__back-link">
+                 <i class="fas fa-chevron-left"></i> Wróć na stronę główną
+               </a>
+            </div>
+
+            <section id="score-summary" class="review-page__summary">
+               <!-- Wypełniane przez JS -->
+            </section>
+
+            <h2 id="review-section-title" class="review-page__section-title">Szczegóły pytań</h2>
+
+            <main id="results-details" class="review-page__questions">
+               <!-- Szczegóły generowane przez JS -->
+            </main>
+
+            <div style="margin-top: 4rem; display: flex; justify-content: center;">
+                 <a href="#top" class="btn btn--primary btn--large">Przewiń na górę</a>
+            </div>
+            
           </div>
         </div>
       </div>`;

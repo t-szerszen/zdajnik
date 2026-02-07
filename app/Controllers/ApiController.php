@@ -59,9 +59,10 @@ class ApiController extends BaseController
   /**
    * Endpoint: Pobiera pojedyncze pytanie.
    */
-  public function getQuestion(array $params): void
+  public function getQuestion(string $examCode): void
   {
     $this->ensureGetRequest();
+    $params = ['examCode' => $examCode];
     $result = $this->fetchFilteredQuestions($params, 1);
 
     if (!$result['success']) return;
@@ -84,9 +85,10 @@ class ApiController extends BaseController
   /**
    * Endpoint: Pobiera spersonalizowany test.
    */
-  public function getPersonalizedTest(array $params): void
+  public function getPersonalizedTest(string $examCode): void
   {
     $this->ensureGetRequest();
+    $params = ['examCode' => $examCode];
 
     $limit = isset($_GET['question_count']) ? (int) $_GET['question_count'] : 20;
     $limit = max(10, min(40, $limit));
@@ -120,9 +122,10 @@ class ApiController extends BaseController
   /**
    * Endpoint: Pobiera pełny arkusz egzaminacyjny.
    */
-  public function getFullTest(array $params): void
+  public function getFullTest(string $examCode): void
   {
     $this->ensureGetRequest();
+    $params = ['examCode' => $examCode];
 
     $examCode = $params['examCode'] ?? null;
     $examTypeId = $this->questionModel->getExamTypeIdByCode($examCode);

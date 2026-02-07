@@ -181,8 +181,8 @@ class Router
     $this->get('test/{code}', 'QuizPageController@showTestPage');
 
     // --- Review / Wyniki ---
-    $this->get('test-pytanie/{id}', 'ReviewController@showQuestionReview');
-    $this->get('wyniki/{id}', 'ReviewController@showExamReview');
+    $this->get('test-pytanie/{questionId}', 'ReviewController@showQuestionReview');
+    $this->get('wyniki/{attemptId}', 'ReviewController@showExamReview');
 
     // --- API (JSON) ---
     $this->get('api/question/{examCode}', 'ApiController@getQuestion');

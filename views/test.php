@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Konfiguracja komponentu head
  */
@@ -99,23 +100,36 @@ $extraScripts = [
         </footer>
       </div>
 
-      <!-- Stan 3: Ekran wyników (początkowo ukryty) -->
-      <div id="results-screen" class="results-container hidden">
-        <h1 class="results-container__title">Wyniki Testu</h1>
-        <!-- Podsumowanie wyniku, wypełniane przez JS -->
-        <div id="score-summary" class="score-summary">
-          <p>Twój wynik: <strong id="score-percent">0%</strong></p>
-          <p>Poprawne odpowiedzi: <strong id="correct-count">0</strong></p>
-          <p>Czas ukończenia: <strong id="duration">00:00</strong></p>
-        </div>
-        <!-- Kontener na szczegółową listę pytań z odpowiedziami, generowany przez JS -->
-        <div id="results-details" class="results-details"></div>
-        <div class="results-container__actions">
-          <a href="<?= url('/') ?>" class="btn btn--primary">Wróć na stronę główną</a>
-        </div>
-      </div>
-
     </main>
+  </div>
+
+  <!-- Stan 3: Ekran wyników (początkowo ukryty, poza głównym kontenerem) -->
+  <div id="results-screen" class="hidden">
+    <div class="review-page__main-wrapper">
+      <div class="review-page__container">
+        
+        <div class="review-page__back-nav">
+           <a href="<?= url('/') ?>" class="review-page__back-link">
+             <i class="fas fa-chevron-left"></i> Wróć na stronę główną
+           </a>
+        </div>
+
+        <section id="score-summary" class="review-page__summary">
+           <!-- Wypełniane przez JS -->
+        </section>
+
+        <h2 id="review-section-title" class="review-page__section-title">Szczegóły pytań</h2>
+
+        <main id="results-details" class="review-page__questions">
+           <!-- Szczegóły generowane przez JS -->
+        </main>
+
+        <div style="margin-top: 4rem; display: flex; justify-content: center;">
+             <a href="#top" class="btn btn--primary btn--large">Przewiń na górę</a>
+        </div>
+        
+      </div>
+    </div>
   </div>
 
   <?php include 'partials/footer.php'; ?>

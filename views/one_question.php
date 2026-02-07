@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Konfiguracja komponentu head
  */
@@ -83,11 +84,13 @@ $extraScripts = [
 
         <!-- Grupa: Główne kategorie tematyczne -->
         <fieldset class="topic-selector__fieldset">
-          <legend class="topic-selector__sub-legend">Główne kategorie</legend>
+          <legend class="topic-selector__sub-legend">
+            <i class="fas fa-layer-group" style="margin-right: 8px; opacity: 0.7;"></i> Główne kategorie
+          </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label">
               <input type="checkbox" value="<?= htmlspecialchars($examCode) ?>" id="select-all-codes">
-              <span>Cały materiał <?= htmlspecialchars($exam['formatted_name']) ?></span>
+              <span>Wszystkie pytania</span>
             </label>
             <?php foreach ($categories as $category): ?>
               <label class="topic-selector__label">
@@ -100,28 +103,33 @@ $extraScripts = [
 
         <!-- Grupa: Opcje inteligentnej nauki (potencjalnie dla użytkowników premium) -->
         <fieldset class="topic-selector__fieldset">
-          <legend class="topic-selector__sub-legend topic-selector__sub-legend--premium">Inteligentna nauka</legend>
+          <legend class="topic-selector__sub-legend topic-selector__sub-legend--premium">
+            <i class="fas fa-brain" style="margin-right: 8px; opacity: 0.7;"></i> Inteligentna nauka
+          </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="toDiscover" class="premium-checkbox">
-              <span>Nieodkryte pytania</span>
+              <span>Nieodkryte</span>
             </label>
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="toImprove" class="premium-checkbox" <?= (isset($_GET['premium']) && $_GET['premium'] === 'toImprove') ? 'checked' : '' ?>>
-              <span>Pytania, które gorzej Ci idą</span>
+              <span>Słabe punkty</span>
             </label>
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="toRemind" class="premium-checkbox">
-              <span>Pytania najdawniej powtórzone</span>
+              <span>Powtórki</span>
             </label>
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="lastMistakes" class="premium-checkbox" <?= (isset($_GET['premium']) && $_GET['premium'] === 'lastMistakes') ? 'checked' : '' ?>>
-              <span>Ostatnio błędne</span>
+              <span>Ostatnie błędy</span>
             </label>
           </div>
         </fieldset>
 
-        <button type="submit" class="btn btn--primary">Rozpocznij naukę!</button>
+        <button type="submit" class="btn btn--primary btn--full-width btn--large">
+          <span>Rozpocznij naukę</span>
+          <i class="fas fa-play" style="margin-left: 10px;"></i>
+        </button>
       </form>
     </aside>
 

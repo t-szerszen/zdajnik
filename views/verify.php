@@ -1,8 +1,9 @@
 <?php
+
 /**
  * Konfiguracja komponentu head
  */
-$noIndex = true; 
+$noIndex = true;
 $noFollow = true;
 $pageTitle = 'Weryfikacja Konta | Examly';
 $pageDescription = 'Proces weryfikacji konta w serwisie Examly i jego wynik.';
@@ -35,52 +36,53 @@ $canonicalUrl = 'https://www.examly.pl/weryfikacja';
 <!-- Dołączenie reużywalnego komponentu head -->
 <?php include 'partials/head.php'; ?>
 
-<body>
+<body class="auth-page-background">
   <main>
     <!-- 
       =====================================================================
-      Komponent: Karta Informacyjna (Info Card)
-      ---------------------------------------------------------------------
-      Opis: Wycentrowana karta, która wyświetla wynik operacji.
-            Jej treść i wygląd (ikona, kolorystyka) zależą od
-            zmiennej $status.
+      Komponent: Karta Wyniku Weryfikacji (styl Form Card)
       =====================================================================
     -->
-    <div class="info-card--centered-fullscreen">
-      <div class="info-card">
+    <div class="form-card">
+      
+      <!-- WARUNEK: SUKCES -->
+      <?php if ($status === 'success'): ?>
 
-        <!-- 
-          Blok warunkowy PHP: Renderowanie wariantu sukcesu lub błędu.
-          Kontroluje całą zawartość karty informacyjnej.
-        -->
-        <?php if ($status === 'success'): ?>
-
-          <!-- WARIANT: SUKCES -->
-          <div class="info-card__icon info-card__icon--success">
-            <i class="fas fa-check-circle"></i>
+        <div class="form-card__header">
+          <div class="form-card__icon-circle">
+            <i class="fas fa-check-circle" style="color: var(--success-color, #16a34a);"></i>
           </div>
-          <h1 class="info-card__title">Weryfikacja zakończona!</h1>
-          <p class="info-card__message"><?= htmlspecialchars($message) ?></p>
-          <div class="info-card__actions">
-            <a href="<?= url('logowanie') ?>" class="btn btn--primary btn--full-width">Przejdź do logowania</a>
-          </div>
-        
-        <?php else: ?>
+          <h1 class="form-card__title">Weryfikacja zakończona!</h1>
+          <p class="form-card__subtitle"><?= htmlspecialchars($message) ?></p>
+        </div>
 
-          <!-- WARIANT: BŁĄD -->
-          <div class="info-card__icon info-card__icon--error">
-            <i class="fas fa-times-circle"></i>
-          </div>
-          <h1 class="info-card__title">Wystąpił błąd</h1>
-          <p class="info-card__message"><?= htmlspecialchars($message) ?></p>
-          <div class="info-card__actions">
-            <a href="<?= url('/') ?>" class="btn btn--secondary btn--full-width">Wróć na stronę główną</a>
-          </div>
+        <div class="form-card__action-container">
+          <a href="<?= url('logowanie') ?>" class="btn btn--primary btn--full-width">
+            Przejdź do logowania <i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i>
+          </a>
+        </div>
 
-        <?php endif; ?>
+      <!-- WARUNEK: BŁĄD -->
+      <?php else: ?>
 
-      </div>
+        <div class="form-card__header">
+          <div class="form-card__icon-circle">
+            <i class="fas fa-times-circle" style="color: var(--error-color, #dc2626);"></i>
+          </div>
+          <h1 class="form-card__title">Wystąpił błąd</h1>
+          <p class="form-card__subtitle"><?= htmlspecialchars($message) ?></p>
+        </div>
+
+        <div class="form-card__action-container">
+          <a href="<?= url('/') ?>" class="btn btn--secondary btn--full-width">
+            Wróć na stronę główną
+          </a>
+        </div>
+
+      <?php endif; ?>
+
     </div>
   </main>
 </body>
+
 </html>
