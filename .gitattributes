@@ -1,2 +1,9 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Exclude generated/vendored files from language stats
+*.css linguist-vendored
+*.map linguist-generated
+*.min.js linguist-vendored
+vendor/** linguist-vendored
+node_modules/** linguist-vendored
