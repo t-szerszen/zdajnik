@@ -4,3 +4,5 @@
 .editorconfig
 .prettierrc
 composer.lock
+public/scss/*.css
+public/scss/*.css.map
