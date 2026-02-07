@@ -6,3 +6,5 @@
 composer.lock
 public/scss/*.css
 public/scss/*.css.map
+.DS_Store
+*.zip

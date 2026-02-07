@@ -1,0 +1,66 @@
+name: Final Deploy Try # v1.0.3
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Checkout code
+        uses: actions/checkout@v3
+
+      # --- 1. Budowanie CSS ---
+      - name: 🛠️ Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: 📦 Install Node Dependencies
+        run: npm install
+
+      - name: 🎨 Build CSS
+        run: npm run build:css
+
+      # --- 3. Synchronizacja FTP ---
+      - name: 📂 Sync Files to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          # Deploy do głównego katalogu użytkownika FTP (skonfiguruj katalog w Hostingerze w "FTP Accounts")
+          server-dir: ./
+          protocol: ftp
+          port: 21
+          # Zwiekszamy timeout (domyślnie 3000ms = 30s) na 5 minut
+          timeout: 300000 
+          # Logowanie verbose pomoże zdiagnozować błędy połączenia
+          log-level: verbose
+          # Bezpieczeństwo - spróbujmy wymusić, ale przy problemach z certyfikatem można dac false
+          security: strict
+          # Zmiana nazwy pliku stanu wymusi ponowne przesłanie wszystkich plików naprawiając desynchronizację
+          state-name: .ftp-deploy-sync-state-repair.json
+          
+          dangerous-clean-ls: true
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github*/**
+            **/node_modules/**
+            **/vendor/**
+            .env
+            .env.example
+            docker-compose.yml
+            Dockerfile
+            db/**
+            new_db.sql
+            debug_mailer.php
+            package.json
+            package-lock.json
+            README.md
+            composer.json
+            composer.lock
