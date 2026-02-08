@@ -45,7 +45,7 @@ jobs:
           # Zmiana nazwy pliku stanu wymusi ponowne przesłanie wszystkich plików naprawiając desynchronizację
           state-name: .ftp-deploy-sync-state-repair.json
           
-          dangerous-clean-ls: true
+          dangerous-clean-slate: true
           exclude: |
             **/.git*
             **/.git*/**
