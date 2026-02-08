@@ -3,7 +3,6 @@
 .vscode/
 .editorconfig
 .prettierrc
-composer.lock
 public/scss/*.css
 public/scss/*.css.map
 .DS_Store

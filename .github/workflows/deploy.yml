@@ -1,4 +1,4 @@
-name: Final Deploy Try # v1.0.3
+name: Local code to production deploy
 
 on:
   push:
@@ -64,3 +64,5 @@ jobs:
             README.md
             composer.json
             composer.lock
+            .prettierrc
+            .dockerignore
