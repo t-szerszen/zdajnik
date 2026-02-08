@@ -45,7 +45,8 @@ jobs:
           # Zmiana nazwy pliku stanu wymusi ponowne przesłanie wszystkich plików naprawiając desynchronizację
           state-name: .ftp-deploy-sync-state-repair.json
           
-          dangerous-clean-slate: true
+          # false = wysyłaj tylko zmienione pliki (szybko); true = kasuj wszystko i wgrywaj od nowa (wolno)
+          dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/.git*/**
@@ -57,7 +58,7 @@ jobs:
             docker-compose.yml
             Dockerfile
             db/**
-            new_db.sql
+            examly_db.sql
             debug_mailer.php
             package.json
             package-lock.json
