@@ -100,7 +100,7 @@ class UserModel
   }
 
   // Fragment UserModel.php
-  public function findOrCreateGoogleUser(string $googleId, string $email, string $firstName, string $lastName): ?User
+  public function findOrCreateGoogleUser(string $googleId, string $email, string $firstName, ?string $lastName): ?User
   {
     // Szukamy po googleId lub emailu, ale tylko w aktywnych kontach
     $sql = $this->getActiveUserSql() . " AND (google_id = ? OR email = ?)";
@@ -122,7 +122,7 @@ class UserModel
     return null;
   }
 
-  public function registerWithGoogleId(string $googleId, string $email, string $firstName, string $lastName): bool
+  public function registerWithGoogleId(string $googleId, string $email, string $firstName, ?string $lastName): bool
   {
     $sql = "INSERT INTO users (google_id, auth_provider, first_name, last_name, email, is_verified) 
             VALUES (?, 'google', ?, ?, ?, 1)";
