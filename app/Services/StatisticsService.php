@@ -158,8 +158,8 @@ class StatisticsService
     $totalResult = $this->db->fetch($sqlTotal, [$userId, $examTypeId]);
     $totalAnswered = (int) ($totalResult['total_answered'] ?? 0);
 
-    $isUnlocked = $totalAnswered >= 100;
-    $unlockProgress = min(100, $totalAnswered); // Cap at 100
+    $isUnlocked = $totalAnswered >= 25;
+    $unlockProgress = min(25, $totalAnswered); // Cap at 100
 
     // Pobierz krytyczne błędy
     $items = [];

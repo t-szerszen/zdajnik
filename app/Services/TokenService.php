@@ -45,18 +45,18 @@ class TokenService
     $token = bin2hex(random_bytes(32));
     $code = null;
 
-    if ($type === 'password_reset') {
+    if ($type === 'password_reset' || $type === 'email_change') {
       $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-      $data = $code;
     }
 
-    $sql = "INSERT INTO user_tokens (user_id, token, type, token_data, expires_at)
-            VALUES (:user_id, :token, :type, :token_data, DATE_ADD(NOW(), INTERVAL 1 HOUR))";
+    $sql = "INSERT INTO user_tokens (user_id, token, type, token_data, auth_code, expires_at)
+            VALUES (:user_id, :token, :type, :token_data, :auth_code, DATE_ADD(NOW(), INTERVAL 1 HOUR))";
     $params = [
       ':user_id' => $userId,
       ':token' => $token,
       ':type' => $type,
-      ':token_data' => $data
+      ':token_data' => $data,
+      ':auth_code' => $code,
     ];
 
     if ($this->db->execute($sql, $params)) {

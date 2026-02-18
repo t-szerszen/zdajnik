@@ -57,14 +57,29 @@ class Validator
     } elseif ($this->isPasswordPwned($password)) {
       $errors[] = 'To hasło wyciekło do sieci w publicznych bazach danych. Wybierz inne dla własnego bezpieczeństwa.';
     } else {
-      if (!preg_match('/[A-Z]/', $password)) $errors[] = 'Hasło musi zawierać wielką literę.';
-      if (!preg_match('/[a-z]/', $password)) $errors[] = 'Hasło musi zawierać małą literę.';
-      if (!preg_match('/[0-9]/', $password)) $errors[] = 'Hasło musi zawierać cyfrę.';
-      if (!preg_match('/[\W_]/', $password)) $errors[] = 'Hasło musi zawierać znak specjalny.';
+      if (!preg_match('/[A-Z]/', $password))
+        $errors[] = 'Hasło musi zawierać wielką literę.';
+      if (!preg_match('/[a-z]/', $password))
+        $errors[] = 'Hasło musi zawierać małą literę.';
+      if (!preg_match('/[0-9]/', $password))
+        $errors[] = 'Hasło musi zawierać cyfrę.';
+      if (!preg_match('/[\W_]/', $password))
+        $errors[] = 'Hasło musi zawierać znak specjalny.';
     }
 
     if ($password !== $confirm) {
       $errors[] = 'Podane hasła nie są identyczne.';
+    }
+
+    return $errors;
+  }
+
+  public function validateAuthCode(string $otpCode, string $authCode): array
+  {
+    $errors = [];
+
+    if ($otpCode !== $authCode) {
+      $errors[] = 'Podany kod bezpieczeństwa jest niepoprawny.';
     }
 
     return $errors;

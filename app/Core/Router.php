@@ -174,6 +174,10 @@ class Router
     $this->post('ustawienia/{action}', 'SettingsController@handleAction');
     $this->post('usun-konto', 'SettingsController@handleAccountDeletion');
 
+    // Weryfikacja zmiany maila
+    $this->get('zmiana-email', 'SettingsController@showVerifyEmailForm');
+    $this->post('zmiana-email', 'SettingsController@handleVerifyEmailRequest');
+
     // --- Quizy i Nauka (Web) ---
     // Teraz parametry są czytelne w URL
     $this->get('jedno-pytanie/{code}', 'QuizPageController@showOneQuestionPage');

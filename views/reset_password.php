@@ -18,7 +18,7 @@ $noIndex = true;
       <?php if (isset($_SESSION['flash_message'])):
         $flash = $_SESSION['flash_message'];
         unset($_SESSION['flash_message']);
-      ?>
+        ?>
         <div class="alert alert--<?= htmlspecialchars($flash['type']) ?>">
           <?php if (isset($flash['errors'])): ?>
             <ul class="alert__list">
@@ -35,15 +35,16 @@ $noIndex = true;
       <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
 
       <div class="form-card__group">
-        <label for="otp_code" class="form-card__label">Kod bezpieczeństwa</label>
-        <input type="text" id="otp_code" name="otp_code" class="form-card__input" placeholder="Wpisz 6-cyfrowy kod" required>
+        <label for="auth_code" class="form-card__label">Kod bezpieczeństwa</label>
+        <input type="text" id="auth_code" name="auth_code" class="form-card__input" placeholder="Wpisz 6-cyfrowy kod"
+          required>
       </div>
 
       <div class="form-card__group">
         <label for="new_password" class="form-card__label">Nowe hasło</label>
         <div class="password-wrapper">
-          <input type="password" id="new_password" name="new_password" class="form-card__input"
-            placeholder="Hasło" required>
+          <input type="password" id="new_password" name="new_password" class="form-card__input" placeholder="Hasło"
+            required>
           <i class="fas fa-eye password-toggle-icon"></i>
         </div>
         <p class="form-card__input-hint">Minimum 8 znaków, w tym wielka i mała litera, cyfra oraz znak specjalny.</p>

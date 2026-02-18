@@ -43,10 +43,10 @@ class SettingsController extends BaseController
     }
 
     match ($action) {
-      'change_name'     => $this->processNameChange(),
+      'change_name' => $this->processNameChange(),
       'change_password' => $this->processPasswordChange(),
-      'change_email'    => $this->processEmailChange(),
-      default           => $this->redirectWithFlash('error', ['Nieznana akcja.'], 'profile')
+      'change_email' => $this->processEmailChange(),
+      default => $this->redirectWithFlash('error', ['Nieznana akcja.'], 'profile')
     };
   }
 
@@ -123,7 +123,8 @@ class SettingsController extends BaseController
     }
 
     $errors = $this->validator->validatePasswordStrength($new, $confirm);
-    if ($current === $new) $errors[] = 'Nowe hasło musi różnić się od obecnego.';
+    if ($current === $new)
+      $errors[] = 'Nowe hasło musi różnić się od obecnego.';
 
     if (!empty($errors)) {
       $this->redirectWithFlash('error', $errors, 'password');
@@ -148,16 +149,65 @@ class SettingsController extends BaseController
       $this->redirectWithFlash('error', $errors, 'email');
     }
 
-    $token = $this->tokenService->generateToken($this->currentUser->getId(), 'email_change', $newEmail)['token'];
-    $link = url("weryfikacja?token=$token");
-    $body = "<p>Potwierdź zmianę adresu na $newEmail klikając: <a href='$link'>$link</a></p>";
+    // Generujemy token i kod
+    $tokenData = $this->tokenService->generateToken($this->currentUser->getId(), 'email_change', $newEmail);
+    $token = $tokenData['token'];
+    $code = $tokenData['code'];
 
-    if ($this->mailer->send($newEmail, 'Zmiana e-mail - Examly', $body)) {
-      $_SESSION['email_change_sent'] = time();
-      $this->redirectWithFlash('success', 'Link weryfikacyjny został wysłany.', 'email');
+    // Symulacja wysyłki (lub prawdziwa wysyłka) - tutaj wyświetlamy kod w flash message dla UX
+    $body = "<p>Twój kod weryfikacyjny zmiany e-maila to: <b>$code</b></p>";
+    $this->mailer->send($newEmail, 'Weryfikacja zmiany e-mail - Examly', $body);
+
+    $_SESSION['email_change_sent'] = time();
+    $_SESSION['flash_message'] = [
+      'type' => 'success',
+      'text' => "Na nowy adres e-mail wysłaliśmy kod. Wpisz go poniżej."
+    ];
+
+    header('Location: ' . url("zmiana-email?token=$token"));
+    exit();
+  }
+
+  public function showVerifyEmailForm(): void
+  {
+    $token = $_GET['token'] ?? null;
+    $tokenRecord = $this->tokenService->getTokenRecord($token);
+
+    if (!$token || !$tokenRecord) {
+      $this->redirectWithFlash('error', ['Link weryfikacyjny wygasł lub jest nieprawidłowy.'], 'email');
     }
 
-    $this->redirectWithFlash('error', ['Błąd podczas wysyłki e-mail.'], 'email');
+    $this->renderView('reset_email', ['token' => $token]);
+  }
+
+  public function handleVerifyEmailRequest(): void
+  {
+    $token = $_POST['token'] ?? null;
+    $authCode = $_POST['auth_code'] ?? '';
+
+    $tokenRecord = $this->tokenService->getTokenRecord($token);
+
+    if (!$tokenRecord) {
+      $this->redirectWithFlash('error', ['Sesja wygasła. Spróbuj ponownie.'], 'email');
+    }
+
+    $errors = $this->validator->validateAuthCode($authCode, $tokenRecord['auth_code']);
+
+    if (!empty($errors)) {
+      $_SESSION['flash_message'] = ['type' => 'error', 'errors' => $errors];
+      header('Location: ' . url("zmiana-email?token=$token"));
+      exit();
+    }
+
+    // Zmiana OK
+    $newEmail = $tokenRecord['token_data'];
+    if ($this->userModel->updateAndVerifyEmail($this->currentUser->getId(), $newEmail)) {
+      $this->tokenService->deleteTokensForUserByType($this->currentUser->getId(), 'email_change');
+      $this->refreshSessionUser();
+      $this->redirectWithFlash('success', 'Adres e-mail został pomyślnie zmieniony.', 'email');
+    } else {
+      $this->redirectWithFlash('error', ['Wystąpił błąd podczas aktualizacji adresu e-mail.'], 'email');
+    }
   }
 
   // --- Helpery ---
@@ -178,9 +228,9 @@ class SettingsController extends BaseController
 
     // Mapowanie przyjaznych nazw akcji na zakładki w widoku
     $activeMapping = [
-      'change_name'     => 'name',
+      'change_name' => 'name',
       'change_password' => 'password',
-      'change_email'    => 'email',
+      'change_email' => 'email',
     ];
 
     $activeTab = $_GET['active'] ?? ($activeMapping[$action] ?? 'profile');
@@ -195,7 +245,7 @@ class SettingsController extends BaseController
   {
     $_SESSION['flash_message'] = $type === 'success'
       ? ['type' => 'success', 'text' => $content]
-      : ['type' => 'error', 'errors' => (array)$content];
+      : ['type' => 'error', 'errors' => (array) $content];
 
     header('Location: ' . url("ustawienia?active=$activeTab"));
     exit();
@@ -215,9 +265,12 @@ class SettingsController extends BaseController
   private function validateEmailChange(string $email, string $password): array
   {
     $errors = [];
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Niepoprawny format e-mail.';
-    if ($this->userModel->checkEmail($email)) $errors[] = 'Ten e-mail jest już zajęty.';
-    if (!$this->userModel->checkPassword($this->currentUser->getId(), $password)) $errors[] = 'Hasło jest nieprawidłowe.';
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+      $errors[] = 'Niepoprawny format e-mail.';
+    if ($this->userModel->checkEmail($email))
+      $errors[] = 'Ten e-mail jest już zajęty.';
+    if (!$this->userModel->checkPassword($this->currentUser->getId(), $password))
+      $errors[] = 'Hasło jest nieprawidłowe.';
     return $errors;
   }
 }

@@ -44,7 +44,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
     if (isset($_SESSION['flash_message'])):
       $flash = $_SESSION['flash_message'];
       unset($_SESSION['flash_message']);
-    ?>
+      ?>
       <div class="alert alert--<?= htmlspecialchars($flash['type']) ?>" role="alert">
         <?php if (isset($flash['errors'])): ?>
           <ul class="alert__list">
@@ -81,7 +81,8 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                 <label for="first_name" class="form-card__label">Imię</label>
                 <div class="form-card__input-wrapper">
                   <i class="fas fa-user form-card__input-icon"></i>
-                  <input type="text" id="first_name" name="first_name" class="form-card__input form-card__input--with-icon"
+                  <input type="text" id="first_name" name="first_name"
+                    class="form-card__input form-card__input--with-icon"
                     value="<?= htmlspecialchars($currentUser->getFirstName()) ?>" required>
                 </div>
               </div>
@@ -89,7 +90,8 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                 <label for="last_name" class="form-card__label">Nazwisko</label>
                 <div class="form-card__input-wrapper">
                   <i class="fas fa-user-tag form-card__input-icon"></i>
-                  <input type="text" id="last_name" name="last_name" class="form-card__input form-card__input--with-icon"
+                  <input type="text" id="last_name" name="last_name"
+                    class="form-card__input form-card__input--with-icon"
                     value="<?= htmlspecialchars($currentUser->getLastName()) ?>" required>
                 </div>
               </div>
@@ -100,7 +102,8 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                 <label for="password_for_name" class="form-card__label">Potwierdź aktualnym hasłem</label>
                 <div class="password-wrapper">
                   <i class="fas fa-lock form-card__input-icon"></i>
-                  <input type="password" id="password_for_name" name="password" class="form-card__input form-card__input--with-icon" placeholder="Wpisz hasło" required>
+                  <input type="password" id="password_for_name" name="password"
+                    class="form-card__input form-card__input--with-icon" placeholder="Wpisz hasło" required>
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>
@@ -121,7 +124,9 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
               <i class="fas fa-envelope"></i>
               <span>Adres e-mail</span>
             </h3>
-            <p class="settings-card__description">Twój aktualny adres: <strong><?= htmlspecialchars($currentUser->getEmail()) ?></strong></p>
+            <p class="settings-card__description">Twój aktualny adres:
+              <strong><?= htmlspecialchars($currentUser->getEmail()) ?></strong>
+            </p>
           </div>
           <i class="fas fa-chevron-down settings-card__icon"></i>
         </div>
@@ -134,7 +139,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
           <?php else: ?>
             <div class="info-card__message">
               <i class="fas fa-info-circle" style="margin-right: 0.5rem; color: var(--accent);"></i>
-              Po zmianie adresu konieczna będzie ponowna weryfikacja konta.
+              Po przejściu procesu zmiany adresu e-mail, konto zostanie automatycznie zweryfikowane.
             </div>
             <form method="POST" action="<?= url('ustawienia/change_email') ?>">
               <input type="hidden" name="form_type" value="change_email">
@@ -142,22 +147,28 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                 <label for="new_email" class="form-card__label">Nowy adres e-mail</label>
                 <div class="form-card__input-wrapper">
                   <i class="fas fa-at form-card__input-icon"></i>
-                  <input type="email" id="new_email" name="new_email" class="form-card__input form-card__input--with-icon" placeholder="np. jan.nowak@gmail.com" required>
+                  <input type="email" id="new_email" name="new_email" class="form-card__input form-card__input--with-icon"
+                    placeholder="np. jan.nowak@gmail.com" required>
                 </div>
               </div>
               <div class="form-card__group">
                 <label for="password_for_email" class="form-card__label">Potwierdź hasłem</label>
                 <div class="password-wrapper">
                   <i class="fas fa-lock form-card__input-icon"></i>
-                  <input type="password" id="password_for_email" name="password" class="form-card__input form-card__input--with-icon" placeholder="Wpisz hasło" required>
+                  <input type="password" id="password_for_email" name="password"
+                    class="form-card__input form-card__input--with-icon" placeholder="Wpisz hasło" required>
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>
               <button type="submit" id="changeEmailBtn" class="btn btn--primary"
                 data-remaining="<?= $emailChangeRemaining ?? 0 ?>"
+                data-text="<i class='fas fa-paper-plane' style='margin-right: 0.5rem;'></i> Zmień e-mail"
                 <?= ($emailChangeRemaining ?? 0) > 0 ? 'disabled' : '' ?>>
-                <i class="fas fa-paper-plane" style="margin-right: 0.5rem;"></i>
-                <?= ($emailChangeRemaining ?? 0) > 0 ? "Wyślij ponownie za {$emailChangeRemaining}s" : "Zmień e-mail" ?>
+                <?php if (($emailChangeRemaining ?? 0) > 0): ?>
+                  Wyślij ponownie za <span id="countdown"><?= $emailChangeRemaining ?></span>s
+                <?php else: ?>
+                  <i class="fas fa-paper-plane" style="margin-right: 0.5rem;"></i> Zmień e-mail
+                <?php endif; ?>
               </button>
             </form>
           <?php endif; ?>
@@ -193,7 +204,8 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                 <label for="current_password" class="form-card__label">Obecne hasło</label>
                 <div class="password-wrapper">
                   <i class="fas fa-unlock-alt form-card__input-icon"></i>
-                  <input type="password" id="current_password" name="current_password" class="form-card__input form-card__input--with-icon" placeholder="Wpisz obecne hasło" required>
+                  <input type="password" id="current_password" name="current_password"
+                    class="form-card__input form-card__input--with-icon" placeholder="Wpisz obecne hasło" required>
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>
@@ -201,7 +213,8 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                 <label for="new_password" class="form-card__label">Nowe hasło</label>
                 <div class="password-wrapper">
                   <i class="fas fa-lock form-card__input-icon"></i>
-                  <input type="password" id="new_password" name="new_password" class="form-card__input form-card__input--with-icon" placeholder="Wpisz nowe hasło" required>
+                  <input type="password" id="new_password" name="new_password"
+                    class="form-card__input form-card__input--with-icon" placeholder="Wpisz nowe hasło" required>
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>
@@ -209,7 +222,8 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                 <label for="confirm_new_password" class="form-card__label">Powtórz nowe hasło</label>
                 <div class="password-wrapper">
                   <i class="fas fa-shield-alt form-card__input-icon"></i>
-                  <input type="password" id="confirm_new_password" name="confirm_new_password" class="form-card__input form-card__input--with-icon" placeholder="Powtórz nowe hasło" required>
+                  <input type="password" id="confirm_new_password" name="confirm_new_password"
+                    class="form-card__input form-card__input--with-icon" placeholder="Powtórz nowe hasło" required>
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>
@@ -236,7 +250,8 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
         <div class="settings-card__content">
           <div class="alert alert--error settings-card__alert">
             <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i>
-            <strong>Uwaga:</strong> Usunięcie konta spowoduje bezpowrotną utratę wszystkich postępów w nauce oraz statystyk egzaminacyjnych.
+            <strong>Uwaga:</strong> Usunięcie konta spowoduje bezpowrotną utratę wszystkich postępów w nauce oraz
+            statystyk egzaminacyjnych.
           </div>
           <form method="POST" action="<?= url('usun-konto') ?>">
             <?php if (!$isGoogleUser): ?>
@@ -244,7 +259,9 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                 <label for="password_for_delete" class="form-card__label">Potwierdź hasłem, aby usunąć konto</label>
                 <div class="password-wrapper">
                   <i class="fas fa-lock-open form-card__input-icon"></i>
-                  <input type="password" id="password_for_delete" name="password" class="form-card__input form-card__input--with-icon" placeholder="Wpisz hasło dla bezpieczeństwa" required>
+                  <input type="password" id="password_for_delete" name="password"
+                    class="form-card__input form-card__input--with-icon" placeholder="Wpisz hasło dla bezpieczeństwa"
+                    required>
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>

@@ -114,9 +114,13 @@ class PasswordResetController extends BaseController
       header('Location: ' . url('logowanie'));
       exit();
     }
+    // Walidacja kodu bezpieczeństwa:
+    $authErrors = $this->validator->validateAuthCode($_POST['auth_code'] ?? '', $tokenRecord['auth_code'] ?? '');
 
-    // Używamy zunifikowanej metody walidacji siły hasła
-    $errors = $this->validator->validatePasswordStrength($_POST['new_password'] ?? '', $_POST['confirm_new_password'] ?? '');
+    // Walidacja siły hasła:
+    $passwordErrors = $this->validator->validatePasswordStrength($_POST['new_password'] ?? '', $_POST['confirm_new_password'] ?? '');
+
+    $errors = array_merge($authErrors, $passwordErrors);
 
     if (!empty($errors)) {
       $_SESSION['flash_message'] = ['type' => 'error', 'errors' => $errors];
