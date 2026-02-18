@@ -34,7 +34,7 @@ class ReviewController extends BaseController
       $cat = $_GET['category'] ?? 0;
       $backUrl = url('historia') . '?type=' . $type . '&category=' . $cat;
     } else {
-      $backUrl = url('statystyki') . '#lastMistakes';
+      $backUrl = url('statystyki');
     }
 
     $this->renderView('question_review', [

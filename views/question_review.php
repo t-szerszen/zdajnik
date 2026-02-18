@@ -16,7 +16,8 @@ $pageDescription = 'Analiza pytania z bazy egzaminacyjnej.';
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Podgląd</span> pytania</h1>
-      <p class="page-header__text">Przeanalizuj to pytanie na spokojnie. Zobacz poprawną odpowiedź i przeczytaj wyjaśnienie.</p>
+      <p class="page-header__text">Przeanalizuj to pytanie na spokojnie. Zobacz poprawną odpowiedź i przeczytaj
+        wyjaśnienie.</p>
     </div>
   </header>
 
@@ -41,7 +42,8 @@ $pageDescription = 'Analiza pytania z bazy egzaminacyjnej.';
             </p>
             <?php if (!empty($question['image_path'])): ?>
               <div class="quiz-card__image-container">
-                <img src="<?= url('images/questions/' . $question['image_path']) ?>" alt="Ilustracja do pytania" class="quiz-card__image">
+                <img src="<?= url('images/questions/' . $question['image_path']) ?>" alt="Ilustracja do pytania"
+                  class="quiz-card__image">
               </div>
             <?php endif; ?>
           </div>
@@ -50,7 +52,7 @@ $pageDescription = 'Analiza pytania z bazy egzaminacyjnej.';
             <?php foreach ($question['answers'] as $index => $answer): ?>
               <?php
               $letter = chr(65 + $index);
-              $isCorrect = (int)$answer['is_correct'] === 1;
+              $isCorrect = (int) $answer['is_correct'] === 1;
               $statusClass = $isCorrect ? 'quiz-card__answer--correct' : '';
               ?>
               <div class="quiz-card__answer <?= $statusClass ?>">
@@ -63,7 +65,8 @@ $pageDescription = 'Analiza pytania z bazy egzaminacyjnej.';
           <div class="quiz-card__actions">
             <?php if (!empty($question['explanation'])): ?>
               <div class="quiz-card__button-container">
-                <button type="button" class="btn btn--secondary btn--small toggle-explanation-btn" data-target="explanation-content">
+                <button type="button" class="btn btn--secondary btn--small toggle-explanation-btn"
+                  data-target="explanation-content">
                   <i class="fas fa-lightbulb"></i> Pokaż wyjaśnienie
                 </button>
               </div>
@@ -77,9 +80,10 @@ $pageDescription = 'Analiza pytania z bazy egzaminacyjnej.';
               </div>
             <?php endif; ?>
 
-            <div class="review-page__actions-container" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; width: 100%;">
-              <a href="<?= url('jedno-pytanie/' . $examCode . '?premium=lastMistakes#select-all-codes') ?>" 
-              class="btn btn--secondary btn--large">
+            <div class="review-page__actions-container"
+              style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; width: 100%;">
+              <a href="<?= url('jedno-pytanie/' . $examCode . '#select-all-codes') ?>"
+                class="btn btn--secondary btn--large">
                 <i class="fas fa-bolt"></i> Ćwicz słabe strony
               </a>
             </div>
