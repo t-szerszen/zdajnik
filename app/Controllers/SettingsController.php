@@ -64,20 +64,63 @@ class SettingsController extends BaseController
       $this->redirectWithFlash('error', ['Podane hasło jest nieprawidłowe.'], 'delete');
     }
 
-    // 2. Wykonanie operacji
-    if ($this->userModel->deleteUser($this->currentUser->getId())) {
+    // 2. Wykonanie operacji - Generowanie tokena weryfikacyjnego
+    $tokenData = $this->tokenService->generateToken($this->currentUser->getId(), 'account_deletion');
+
+    if ($tokenData) {
+      $link = url('potwierdz-usuniecie?token=' . $tokenData['token']);
+
+      $this->mailer->sendAccountDeletionConfirmationEmail($this->currentUser->getEmail(), $link);
+
+      $_SESSION['flash_message'] = [
+        'type' => 'success',
+        'text' => 'Na Twój adres e-mail wysłaliśmy link potwierdzający. Kliknij go, aby dokończyć usuwanie konta.'
+      ];
+    } else {
+      $_SESSION['flash_message'] = [
+        'type' => 'error',
+        'text' => 'Wystąpił błąd podczas generowania tokena. Spróbuj ponownie.'
+      ];
+    }
+
+    $this->redirectWithFlash('success', 'Sprawdź skrzynkę odbiorczą.', 'delete');
+  }
+
+  /**
+   * Obsługuje potwierdzenie usunięcia konta z linku email.
+   * GET /potwierdz-usuniecie?token=XYZ
+   */
+  public function confirmDeletion(): void
+  {
+    $token = $_GET['token'] ?? '';
+    // Token service sprawdza czy token nie wygasł (expires_at > NOW())
+    $tokenRecord = $this->tokenService->getTokenRecord($token);
+
+    if (!$tokenRecord || $tokenRecord['type'] !== 'account_deletion') {
+      // Token nieważny lub nieprawidłowy
+      $this->redirectWithFlash('error', ['Link weryfikacyjny wygasł lub jest nieprawidłowy.'], 'profile');
+    }
+
+    $userId = $tokenRecord['user_id'];
+
+    // Wykonaj właściwe usuwanie (Soft Delete + Smart Cleanup)
+    if ($this->userModel->requestDeletion($userId)) {
+      // Posprzątaj tokeny tego typu
+      $this->tokenService->deleteTokensForUserByType($userId, 'account_deletion');
+
+      // Wyloguj i przekieruj
       $this->terminateSession();
 
       $_SESSION['flash_message'] = [
         'type' => 'success',
-        'text' => 'Konto zostało pomyślnie usunięte. Przykro nam, że odchodzisz.'
+        'text' => 'Twoje konto zostało dezaktywowane. Masz 30 dni na anulowanie tej operacji poprzez ponowne zalogowanie.'
       ];
 
       header('Location: ' . url('/'));
       exit();
     }
 
-    $this->redirectWithFlash('error', ['Wystąpił błąd podczas usuwania konta.'], 'delete');
+    $this->redirectWithFlash('error', ['Wystąpił błąd podczas usuwania konta.'], 'profile');
   }
 
   private function processNameChange(): void

@@ -173,6 +173,7 @@ class Router
     $this->get('ustawienia/{action}', 'SettingsController@index');
     $this->post('ustawienia/{action}', 'SettingsController@handleAction');
     $this->post('usun-konto', 'SettingsController@handleAccountDeletion');
+    $this->get('potwierdz-usuniecie', 'SettingsController@confirmDeletion');
 
     // Weryfikacja zmiany maila
     $this->get('zmiana-email', 'SettingsController@showVerifyEmailForm');

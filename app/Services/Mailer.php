@@ -95,12 +95,36 @@ class Mailer
 
       // Krok 3: Wyślij e-mail.
       return $this->mailer->send();
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       // W przypadku błędu wysyłki, zapisz go w logu serwera
       // i zwróć `false`, informując, że operacja się nie powiodła.
       error_log('Błąd wysyłki e-maila: ' . $this->mailer->ErrorInfo);
       return false;
     }
+  }
+
+  /**
+   * Wysyła e-mail z linkiem potwierdzającym chęć usunięcia konta.
+   *
+   * @param string $email Adres e-mail użytkownika.
+   * @param string $link  Link weryfikacyjny (np. https://examly.pl/potwierdz-usuniecie?token=XYZ).
+   *
+   * @return bool
+   */
+  public function sendAccountDeletionConfirmationEmail(string $email, string $link): bool
+  {
+    $subject = 'Potwierdzenie usunięcia konta - Examly';
+    $body = '
+      <h1>Witaj!</h1>
+      <p>Otrzymaliśmy prośbę o usunięcie Twojego konta w serwisie Examly.</p>
+      <p>Decyzja ta jest ważna, dlatego prosimy o jej potwierdzenie. Kliknij w poniższy przycisk, aby trwale rozpocząć procedurę usuwania konta (z 30-dniowym okresem karencji).</p>
+      <p style="text-align: center; margin: 20px 0;">
+        <a href="' . $link . '" style="background-color: #d9534f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">POTWIERDZAM USUNIĘCIE KONTA</a>
+      </p>
+      <p>Jeśli to nie Ty zleciłeś/aś tę operację, zignoruj tę wiadomość - Twoje konto pozostanie bezpieczne.</p>
+      <p>Pozdrawiamy,<br>Zespół Examly</p>
+    ';
+
+    return $this->send($email, $subject, $body);
   }
 }

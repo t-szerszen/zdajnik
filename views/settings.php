@@ -265,14 +265,9 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                   <i class="fas fa-eye password-toggle-icon"></i>
                 </div>
               </div>
-            <?php else: ?>
-              <div class="info-card__message" style="margin-bottom: 2rem;">
-                <i class="fas fa-question-circle" style="margin-right: 0.5rem; color: var(--accent);"></i>
-                Potwierdź chęć usunięcia konta klikając poniższy przycisk. Operacja jest nieodwracalna.
-              </div>
             <?php endif; ?>
             <button type="submit" class="btn btn--danger btn--full-width">
-              <i class="fas fa-trash-alt" style="margin-right: 0.5rem;"></i> Usuń konto na zawsze
+              <i class="fas fa-trash-alt" style="margin-right: 0.5rem;"></i> Usuń konto
             </button>
           </form>
         </div>

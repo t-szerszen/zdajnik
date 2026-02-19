@@ -75,11 +75,27 @@ class UserModel
 
   public function login(array $data): ?User
   {
-    // Szukamy tylko wśród aktywnych, nieusuniętych kont
-    $sql = $this->getActiveUserSql() . " AND email = ? AND auth_provider = 'local'";
+    // Zmiana: Szukamy po emailu, ignorantując flagę deleted_at/is_active na tym etapie
+    // Pozwoli to na wykrycie użytkownika w okresie karencji
+
+    // Oryginalnie: $sql = $this->getActiveUserSql() . " AND email = ? AND auth_provider = 'local'";
+    // Nowe podejście:
+    $sql = "SELECT * FROM users WHERE email = ? AND auth_provider = 'local'";
     $user_data = $this->db->fetch($sql, [$data['email']]);
 
     if ($user_data && password_verify($data['password'], $user_data['password_hash'])) {
+      // Sprawdź czy użytkownik jest soft-deleted (karencja)
+      if ((int) $user_data['is_active'] === 0 && !empty($user_data['deleted_at'])) {
+        // Reaktywuj konto
+        $this->reactivateUser($user_data['id']);
+        // Odśwież dane (np. is_active=1)
+        $user_data['is_active'] = 1;
+        $user_data['deleted_at'] = null;
+      }
+
+      // Jeśli użytkownik jest nieaktywny z innego powodu (np. ban), 
+      // można by tu dodać warunek, ale w tym zadaniu skupiamy się na soft delete.
+
       unset($user_data['password_hash']);
       return new User($user_data);
     }
@@ -102,11 +118,18 @@ class UserModel
   // Fragment UserModel.php
   public function findOrCreateGoogleUser(string $googleId, string $email, string $firstName, ?string $lastName): ?User
   {
-    // Szukamy po googleId lub emailu, ale tylko w aktywnych kontach
-    $sql = $this->getActiveUserSql() . " AND (google_id = ? OR email = ?)";
+    // Szukamy po googleId lub emailu. NIE używamy getActiveUserSql(), aby obsłużyć reaktywację.
+    $sql = "SELECT * FROM users WHERE (google_id = ? OR email = ?) LIMIT 1";
     $userData = $this->db->fetch($sql, [$googleId, $email]);
 
     if ($userData) {
+      // Sprawdź czy konto wymaga reaktywacji
+      if ((int) $userData['is_active'] === 0 && !empty($userData['deleted_at'])) {
+        $this->reactivateUser($userData['id']);
+        $userData['is_active'] = 1;
+        $userData['deleted_at'] = null;
+      }
+
       $user = new User($userData);
       // Jeśli znaleziony po emailu, a nie miał google_id - aktualizujemy
       if (!$user->getGoogleId()) {
@@ -239,9 +262,62 @@ class UserModel
   /**
    * Implementacja Soft Delete.
    */
-  public function deleteUser(int $userId): bool
+  /**
+   * Zgłasza żądanie usunięcia konta (Soft Delete) z 30-dniowym okresem karencji.
+   * Przed wykonaniem operacji uruchamia "Smart Cleanup" - anonimizację starych kont.
+   *
+   * @param int $userId ID użytkownika.
+   * @return bool
+   */
+  public function requestDeletion(int $userId): bool
   {
-    $sql = "UPDATE users SET deleted_at = NOW(), is_active = 0 WHERE id = ?";
+    // 1. Smart Cleanup: Anonimizuj konta starsze niż 30 dni
+    $this->anonymizeOldUsers();
+
+    // 2. Soft Delete aktualnego użytkownika
+    $sql = "UPDATE users SET is_active = 0, deleted_at = NOW() WHERE id = ?";
     return $this->db->execute($sql, [$userId]);
+  }
+
+  /**
+   * Reaktywuje konto użytkownika (anuluje usuwanie).
+   *
+   * @param int $userId ID użytkownika.
+   * @return bool
+   */
+  public function reactivateUser(int $userId): bool
+  {
+    $sql = "UPDATE users SET is_active = 1, deleted_at = NULL WHERE id = ?";
+    return $this->db->execute($sql, [$userId]);
+  }
+
+  /**
+   * Wykonuje anonimizację użytkowników, którzy mają deleted_at starszy niż 30 dni.
+   *
+   * @return int Liczba zanonimizowanych rekordów (opcjonalnie, tutaj void/bool).
+   */
+  private function anonymizeOldUsers(): void
+  {
+    // Anonimizacja:
+    // - google_id = NULL
+    // - email = anon + md5(id) + @examly.pl
+    // - first_name = 'Anonimowy'
+    // - last_name = 'Użytkownik'
+    // - password_hash = '' (lub losowy ciąg, ale pusty/null bezpieczniejszy jeśli kolumna pozwala, tu zakładamy string)
+    // - auth_provider = 'local' (dla spójności)
+
+    // Warunek: is_active = 0 AND deleted_at < TERAZ - 30 DNI
+    $sql = "UPDATE users 
+            SET 
+              google_id = NULL,
+              email = CONCAT('anon_', MD5(id), '@examly.pl'),
+              first_name = 'Anonimowy',
+              last_name = 'Użytkownik',
+              password_hash = 'ANONYMIZED',
+              auth_provider = 'local'
+            WHERE is_active = 0 
+              AND deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)";
+
+    $this->db->execute($sql);
   }
 }

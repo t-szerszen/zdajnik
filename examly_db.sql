@@ -36,7 +36,7 @@ CREATE TABLE user_tokens (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id INT UNSIGNED NOT NULL,
   token VARCHAR(512) NOT NULL,
-  type ENUM('email_verify','password_reset','email_change') NOT NULL,
+  type ENUM('email_verify','password_reset','email_change','account_deletion') NOT NULL,
   token_data VARCHAR(255) DEFAULT NULL,           -- Np. nowy e-mail przy zmianie
   expires_at DATETIME NOT NULL,
   deleted_at DATETIME DEFAULT NULL,
