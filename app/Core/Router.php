@@ -72,7 +72,7 @@ class Router
     }
 
     // 3. Fallback - 404
-    $this->sendNotFound();
+    $this->abort(404);
   }
 
   /**
@@ -99,14 +99,14 @@ class Router
     $fullControllerName = "App\\Controllers\\$controllerName";
 
     if (!class_exists($fullControllerName)) {
-      $this->sendError("Controller class '$fullControllerName' not found.");
+      $this->abort(500, "Controller class '$fullControllerName' not found.");
       return;
     }
 
     $controller = new $fullControllerName();
 
     if (!method_exists($controller, $methodName)) {
-      $this->sendError("Method '$methodName' not found in '$controllerName'.");
+      $this->abort(500, "Method '$methodName' not found in '$controllerName'.");
       return;
     }
 
@@ -115,23 +115,14 @@ class Router
     call_user_func_array([$controller, $methodName], $params);
   }
 
-  private function sendNotFound(): void
+  private function abort(int $code, string $message = ''): void
   {
-    http_response_code(404);
-    if (strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
-      header('Content-Type: application/json');
-      echo json_encode(['success' => false, 'message' => 'Endpoint not found']);
-    } else {
-      echo "404 - Strona nie została znaleziona.";
+    if (!empty($message)) {
+      error_log($message);
     }
-    exit;
-  }
 
-  private function sendError(string $message): void
-  {
-    http_response_code(500);
-    error_log($message);
-    echo "Internal Server Error"; // Na produkcji nie pokazujemy szczegółów
+    $errorController = new \App\Controllers\ErrorController();
+    $errorController->showError($code);
     exit;
   }
 
