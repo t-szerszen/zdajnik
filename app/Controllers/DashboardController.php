@@ -22,13 +22,13 @@ class DashboardController extends BaseController
   {
     $this->requireAuth();
 
-    $examTypes = $this->statsService->getExamTypes();
-    $selectedExamTypeId = (int)($_GET['category'] ?? $examTypes[0]['id'] ?? 0);
+    $examTypes = $this->statsService->getUserExams($this->currentUser->getId());
+    $selectedExamTypeId = (int) ($_GET['category'] ?? $examTypes[0]['id'] ?? 0);
     $userId = $this->currentUser->getId();
 
     // Dla dashboardu zawsze limit 5 (domyślny w metodach, ale warto być explicite lub polegać na defaultLimit)
     // Metody getErrorHistory, getCriticalErrors, etc. mają domyślny limit 5.
-    
+
     $data = [
       'categories' => $examTypes,
       'selectedCategoryId' => $selectedExamTypeId,

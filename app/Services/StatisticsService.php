@@ -22,6 +22,29 @@ class StatisticsService
     return $this->db->fetchAll($sql);
   }
 
+  private function checkUserProgress(int $userId): bool
+  {
+    $sql = "SELECT 1 FROM user_progress WHERE user_id = ? LIMIT 1";
+    return $this->db->fetch($sql, [$userId]) !== false;
+  }
+
+  public function getUserExams(int $userId): array
+  {
+    if ($this->checkUserProgress($userId)) {
+      $sql = "SELECT DISTINCT et.id, et.code, et.name 
+              FROM user_progress up
+              JOIN questions q ON up.question_id = q.id 
+              JOIN exam_types et ON q.exam_type_id = et.id
+              WHERE up.user_id = ? 
+              AND q.is_active = 1 AND q.deleted_at IS NULL
+              AND et.is_active = 1 AND et.deleted_at IS NULL";
+
+      return $this->db->fetchAll($sql, [$userId]);
+    }
+
+    return [];
+  }
+
   /**
    * Pobiera ogólny postęp użytkownika w danej kategorii (procent zaliczonych pytań).
    */

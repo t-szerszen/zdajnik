@@ -48,7 +48,7 @@ $extraScripts = [
           <form action="" method="GET">
             <label for="category-select" class="sr-only">Wybór kategorii</label>
             <select id="category-select" name="category" onchange="this.form.submit()" class="stats-page__select">
-              <option value="">wybór kategorii</option>
+              <option value="">wybór egzaminu</option>
               <?php foreach ($categories as $cat): ?>
                 <option value="<?= $cat['id'] ?>" <?= $selectedCategoryId == $cat['id'] ? 'selected' : '' ?>>
                   <?= htmlspecialchars($cat['code']) ?>
@@ -107,7 +107,8 @@ $extraScripts = [
               <p class="stats-card__empty">Rozwiąż swój pierwszy egzamin, aby zobaczyć trend!</p>
             <?php else: ?>
               <div style="height: 250px; width: 100%;">
-                <canvas id="efficiencyTrendChart" data-chart-data='<?= json_encode($efficiencyTrend, JSON_HEX_APOS | JSON_HEX_QUOT) ?>'></canvas>
+                <canvas id="efficiencyTrendChart"
+                  data-chart-data='<?= json_encode($efficiencyTrend, JSON_HEX_APOS | JSON_HEX_QUOT) ?>'></canvas>
               </div>
               <!-- <p class="stats-card__chart-caption">Średnia krocząca z 5 ostatnich podejść (%)</p> -->
             <?php endif; ?>
@@ -152,7 +153,8 @@ $extraScripts = [
             $isPredictedUnlocked = $examsAnalyzed >= $minExams;
             ?>
 
-            <div class="stats-card__predicted <?= !$isPredictedUnlocked ? 'stats-card__predicted--locked' : '' ?>" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--subtle-border); position: relative;">
+            <div class="stats-card__predicted <?= !$isPredictedUnlocked ? 'stats-card__predicted--locked' : '' ?>"
+              style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--subtle-border); position: relative;">
 
               <?php if ($isPredictedUnlocked): ?>
                 <span class="stats-card__icon">📊</span>
@@ -160,7 +162,8 @@ $extraScripts = [
                   <p class="stats-card__predicted-label">Przewidywany wynik egzaminu:</p>
                   <p class="stats-card__predicted-score">
                     <?= $predictedScore['predicted_score'] ?>%
-                    <span class="stats-card__confidence stats-card__confidence--<?= $predictedScore['confidence_level'] ?>">
+                    <span
+                      class="stats-card__confidence stats-card__confidence--<?= $predictedScore['confidence_level'] ?>">
                       (<?= $predictedScore['confidence_level'] ?>)
                     </span>
                   </p>
@@ -169,16 +172,21 @@ $extraScripts = [
                 <div style="display: flex; align-items: flex-start; gap: 0.75rem; width: 100%;">
                   <div class="stats-card__lock-icon" style="font-size: 1.25rem;">🔒</div>
                   <div style="flex: 1;">
-                    <p class="stats-card__lock-text" style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-muted);">
+                    <p class="stats-card__lock-text"
+                      style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-muted);">
                       Przewidywany wynik dostępny po <?= $minExams ?> pełnych egzaminach
                     </p>
                     <?php
                     $lockedPercent = min(100, round(($examsAnalyzed / $minExams) * 100));
                     ?>
-                    <div class="stats-card__progress-bar" style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
-                      <div class="stats-card__progress-fill" style="width: <?= $lockedPercent ?>%; height: 100%; background: var(--accent); transition: width 0.3s ease;"></div>
+                    <div class="stats-card__progress-bar"
+                      style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
+                      <div class="stats-card__progress-fill"
+                        style="width: <?= $lockedPercent ?>%; height: 100%; background: var(--accent); transition: width 0.3s ease;">
+                      </div>
                     </div>
-                    <p class="stats-card__unlock-text" style="text-align: right; font-size: 0.75rem; margin-top: 0.25rem; color: var(--text-muted);">
+                    <p class="stats-card__unlock-text"
+                      style="text-align: right; font-size: 0.75rem; margin-top: 0.25rem; color: var(--text-muted);">
                       <?= $examsAnalyzed ?>/<?= $minExams ?>
                     </p>
                   </div>
@@ -188,9 +196,11 @@ $extraScripts = [
           </div>
 
           <!-- Critical Errors Card (with lock overlay) -->
-          <div class="stats-card stats-card--critical <?= !$criticalErrors['is_unlocked'] ? 'stats-card--locked' : '' ?>"
+          <div
+            class="stats-card stats-card--critical <?= !$criticalErrors['is_unlocked'] ? 'stats-card--locked' : '' ?>"
             id="criticalMistakes">
-            <div class="stats-card__header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div class="stats-card__header"
+              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
               <h3 class="stats-card__title" style="margin-bottom: 0;">🔥 Krytyczne Błędy</h3>
               <?php if ($criticalErrors['is_unlocked']): ?>
                 <a href="<?= url('historia?type=critical&category=' . $selectedCategoryId) ?>"
@@ -209,7 +219,8 @@ $extraScripts = [
                 </p>
                 <div class="stats-card__unlock-progress">
                   <div class="stats-card__progress-bar">
-                    <div class="stats-card__progress-fill" style="width: <?= $criticalErrors['unlock_progress'] ?>%;"></div>
+                    <div class="stats-card__progress-fill" style="width: <?= $criticalErrors['unlock_progress'] ?>%;">
+                    </div>
                   </div>
                   <p class="stats-card__unlock-text">
                     <?= $criticalErrors['total_answered'] ?>/100 pytań
@@ -235,7 +246,8 @@ $extraScripts = [
                         <?= mb_strimwidth(htmlspecialchars($critical['question_text']), 0, 35, "...") ?>
                       </span>
                       <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
-                        <a href="<?= url('test-pytanie/' . $critical['question_id']) ?>" class="btn btn--primary btn--sm" title="Zobacz">zobacz</a>
+                        <a href="<?= url('test-pytanie/' . $critical['question_id']) ?>" class="btn btn--primary btn--sm"
+                          title="Zobacz">zobacz</a>
                       </div>
                     </li>
                   <?php endforeach; ?>
@@ -253,7 +265,8 @@ $extraScripts = [
 
           <!-- Recent Errors Card -->
           <div class="stats-card stats-card--errors" id="lastMistakes">
-            <div class="stats-card__header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div class="stats-card__header"
+              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
               <h3 class="stats-card__title" style="margin-bottom: 0;">Historia Błędów</h3>
               <a href="<?= url('historia?type=errors&category=' . $selectedCategoryId) ?>"
                 class="btn btn--secondary btn--sm">
@@ -280,7 +293,8 @@ $extraScripts = [
 
           <!-- Exam History Card -->
           <div class="stats-card stats-card--history" id="examsHistory">
-            <div class="stats-card__header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div class="stats-card__header"
+              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
               <h3 class="stats-card__title" style="margin-bottom: 0;">Ostatnie Egzaminy</h3>
               <a href="<?= url('historia?type=exams&category=' . $selectedCategoryId) ?>"
                 class="btn btn--secondary btn--sm">
@@ -295,7 +309,8 @@ $extraScripts = [
                   <li class="stats-card__list-item">
                     <span>
                       <?= htmlspecialchars($exam['display_name']) ?>
-                      <strong class="<?= $exam['score'] >= 50 ? 'text-success' : 'text-danger' ?>" style="margin-left: 0.5rem;">
+                      <strong class="<?= $exam['score'] >= 50 ? 'text-success' : 'text-danger' ?>"
+                        style="margin-left: 0.5rem;">
                         <?= $exam['score'] ?>%
                       </strong>
                     </span>

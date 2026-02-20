@@ -62,10 +62,10 @@ class ApiController extends BaseController
   public function getQuestion(string $examCode): void
   {
     $this->ensureGetRequest();
-    $params = ['examCode' => $examCode];
-    $result = $this->fetchFilteredQuestions($params, 1);
+    $result = $this->fetchFilteredQuestions($examCode, 1);
 
-    if (!$result['success']) return;
+    if (!$result['success'])
+      return;
 
     $question = $result['questions'][0] ?? null;
 
@@ -88,12 +88,11 @@ class ApiController extends BaseController
   public function getPersonalizedTest(string $examCode): void
   {
     $this->ensureGetRequest();
-    $params = ['examCode' => $examCode];
 
     $limit = isset($_GET['question_count']) ? (int) $_GET['question_count'] : 20;
     $limit = max(10, min(40, $limit));
 
-    $result = $this->fetchFilteredQuestions($params, $limit);
+    $result = $this->fetchFilteredQuestions($examCode, $limit);
 
     if (!$result['success']) {
       return;
@@ -125,9 +124,7 @@ class ApiController extends BaseController
   public function getFullTest(string $examCode): void
   {
     $this->ensureGetRequest();
-    $params = ['examCode' => $examCode];
 
-    $examCode = $params['examCode'] ?? null;
     $examTypeId = $this->questionModel->getExamTypeIdByCode($examCode);
 
     if (!$examTypeId) {
@@ -174,7 +171,7 @@ class ApiController extends BaseController
     if ($this->isUserLoggedIn) {
       $questionId = $this->questionModel->getQuestionIdByVersionId($qvId);
       if ($questionId) {
-        $this->userProgressModel->saveProgress($this->currentUser->getId(), $questionId, (int)$isCorrect);
+        $this->userProgressModel->saveProgress($this->currentUser->getId(), $questionId, (int) $isCorrect);
       }
     }
 
@@ -204,7 +201,7 @@ class ApiController extends BaseController
 
     foreach ($progressData as $progressItem) {
       if (isset($progressItem['questionId'], $progressItem['isCorrect'])) {
-        $this->userProgressModel->saveProgress($userId, (int)$progressItem['questionId'], $progressItem['isCorrect'] ? 1 : 0);
+        $this->userProgressModel->saveProgress($userId, (int) $progressItem['questionId'], $progressItem['isCorrect'] ? 1 : 0);
       }
     }
 
@@ -233,12 +230,12 @@ class ApiController extends BaseController
     }
 
     $attemptData = [
-      'user_id'          => $userId,
-      'exam_type_id'     => $examTypeId,
-      'test_type'        => ($input['isFullExam'] ?? false) ? 'full_exam' : 'personalized',
-      'correct_count'    => (int)($input['correctAnswers'] ?? 0),
-      'total_questions'  => (int)($input['totalQuestions'] ?? 0),
-      'duration_seconds' => (int)($input['duration'] ?? 0)
+      'user_id' => $userId,
+      'exam_type_id' => $examTypeId,
+      'test_type' => ($input['isFullExam'] ?? false) ? 'full_exam' : 'personalized',
+      'correct_count' => (int) ($input['correctAnswers'] ?? 0),
+      'total_questions' => (int) ($input['totalQuestions'] ?? 0),
+      'duration_seconds' => (int) ($input['duration'] ?? 0)
     ];
 
     $answersDetails = $input['answers'] ?? [];
@@ -259,9 +256,8 @@ class ApiController extends BaseController
   /**
    * Centralna metoda do pobierania pytań (Zoptymalizowana pod BaseController).
    */
-  private function fetchFilteredQuestions(array $params, int $limit): array
+  private function fetchFilteredQuestions(string $examCode, int $limit): array
   {
-    $examCode = $params['examCode'] ?? null;
     $subjectIds = $_GET['subject'] ?? [];
 
     if (!$examCode || empty($subjectIds)) {
@@ -284,11 +280,11 @@ class ApiController extends BaseController
     $questions = [];
     if ($specialFilter && $this->isUserLoggedIn) {
       $questions = match ($specialFilter) {
-        'toDiscover'   => $this->questionModel->getUndiscoveredQuestions($userId, $subjectIds, $limit, $examTypeId),
-        'toImprove'    => $this->questionModel->getLowerAccuracyQuestions($userId, $subjectIds, $limit, $examTypeId),
-        'toRemind'     => $this->questionModel->getQuestionsRepeatedAtTheLatest($userId, $subjectIds, $limit, $examTypeId),
+        'toDiscover' => $this->questionModel->getUndiscoveredQuestions($userId, $subjectIds, $limit, $examTypeId),
+        'toImprove' => $this->questionModel->getLowerAccuracyQuestions($userId, $subjectIds, $limit, $examTypeId),
+        'toRemind' => $this->questionModel->getQuestionsRepeatedAtTheLatest($userId, $subjectIds, $limit, $examTypeId),
         'lastMistakes' => $this->questionModel->getLastMistakes($userId, $subjectIds, $limit, $examTypeId),
-        default        => $this->questionModel->getQuestions($subjectIds, $limit, $examTypeId),
+        default => $this->questionModel->getQuestions($subjectIds, $limit, $examTypeId),
       };
     } else {
       $questions = $this->questionModel->getQuestions($subjectIds, $limit, $examTypeId);

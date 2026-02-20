@@ -230,6 +230,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
               <button type="submit" class="btn btn--primary">
                 <i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i> Zmień hasło
               </button>
+              <p><a href="<?= url('reset-hasla') ?>" class="form-card__forgot-password">Nie pamiętasz hasła?</a></p>
             </form>
           </div>
         </div>
