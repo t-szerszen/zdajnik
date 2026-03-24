@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Services\DynamicDataService;
+
 /**
  * Kontroler Strony Głównej.
  *
@@ -12,6 +14,14 @@ namespace App\Controllers;
  */
 class HomeController extends BaseController
 {
+  private DynamicDataService $dynamicDataService;
+
+  public function __construct()
+  {
+    parent::__construct();
+    $this->dynamicDataService = new DynamicDataService();
+  }
+
   /**
    * Wyświetla widok strony głównej.
    * 
@@ -19,6 +29,19 @@ class HomeController extends BaseController
    */
   public function show(): void
   {
-    $this->renderView('home');
+    $examsCategories = $this->loadExamsAndTopics();
+    $this->renderView('home', ['examsCategories' => $examsCategories]);
+  }
+
+  private function loadExamsAndTopics(): array
+  {
+    $exams = $this->dynamicDataService->getExams();
+    $examsCategories = [];
+    foreach ($exams as $exam) {
+      $categories = $this->dynamicDataService->getCategoriesForExam($exam['id']);
+      $examsCategories[$exam['code']] = $categories;
+    }
+
+    return $examsCategories;
   }
 }

@@ -52,7 +52,8 @@ $canonicalUrl = 'https://www.examly.pl/';
     <section class="hero-section">
       <div class="hero-section__content">
         <h1 class="hero-section__title"><span class="text-gradient">Zdaj</span> egzamin zawodowy bez stresu.</h1>
-        <p class="hero-section__subtitle">Opanuj cały materiał dzięki naszej inteligentnej platformie z tysiącami pytań i zdobądź wynik o którym marzysz.</p>
+        <p class="hero-section__subtitle">Opanuj cały materiał dzięki naszej inteligentnej platformie z tysiącami pytań
+          i zdobądź wynik o którym marzysz.</p>
         <div class="hero-section__cta-group">
           <a href="<?= url('#egzaminy') ?>" class="btn btn--primary btn--large">Rozpocznij egzamin próbny</a>
 
@@ -83,9 +84,11 @@ $canonicalUrl = 'https://www.examly.pl/';
             <i class="feature-card__icon fas fa-database"></i>
             <h3 class="feature-card__title">Ogromna Baza Pytań</h3>
           </div>
-          <p class="feature-card__text">Korzystaj z tysięcy pytań z oficjalnych arkuszy egzaminacyjnych z poprzednich lat.</p>
+          <p class="feature-card__text">Korzystaj z tysięcy pytań z oficjalnych arkuszy egzaminacyjnych z poprzednich
+            lat.</p>
           <div class="feature-card__details">
-            <p>Nasza baza jest stale aktualizowana, co gwarantuje Ci dostęp do najbardziej kompletnego zbioru materiałów przygotowawczych.</p>
+            <p>Nasza baza jest stale aktualizowana, co gwarantuje Ci dostęp do najbardziej kompletnego zbioru materiałów
+              przygotowawczych.</p>
           </div>
         </div>
         <div class="feature-card">
@@ -185,10 +188,13 @@ $canonicalUrl = 'https://www.examly.pl/';
     -->
     <section class="exams-section" id="egzaminy">
       <h2 class="section-title">Rozwiąż test z swojej kwalifikacji już teraz</h2>
-      <p class="section-subtitle">Wybierz swoją specjalizację i sprawdź się w symulacji prawdziwego egzaminu państwowego.</p>
+      <p class="section-subtitle">Wybierz swoją specjalizację i sprawdź się w symulacji prawdziwego egzaminu
+        państwowego.</p>
       <div class="exams-grid">
         <a href="<?= url('test/INF.03') ?>" class="exam-card">
-          <div class="exam-card__background" style="background-image: url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop');"></div>
+          <div class="exam-card__background"
+            style="background-image: url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop');">
+          </div>
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.03 (dawniej E.14)</h3>
@@ -197,7 +203,9 @@ $canonicalUrl = 'https://www.examly.pl/';
         </a>
         <!-- Karta nieaktywna, z modyfikatorem BEM `--disabled` -->
         <a href="<?= url('test/INF.02') ?>" class="exam-card exam-card--disabled">
-          <div class="exam-card__background" style="background-image: url('https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop');"></div>
+          <div class="exam-card__background"
+            style="background-image: url('https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop');">
+          </div>
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.02 (dawniej EE.08)</h3>
@@ -208,7 +216,9 @@ $canonicalUrl = 'https://www.examly.pl/';
           </div>
         </a>
         <a href="<?= url('test/INF.04') ?>" class="exam-card exam-card--disabled">
-          <div class="exam-card__background" style="background-image: url('https://images.unsplash.com/photo-1605379399642-870262d3d051?q=80&w=2106&auto=format&fit=crop');"></div>
+          <div class="exam-card__background"
+            style="background-image: url('https://images.unsplash.com/photo-1605379399642-870262d3d051?q=80&w=2106&auto=format&fit=crop');">
+          </div>
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.04 (dawniej E.14)</h3>
@@ -295,52 +305,51 @@ $canonicalUrl = 'https://www.examly.pl/';
     -->
     <section class="topics-section">
       <h2 class="section-title">Ucz się z konkretnych działów</h2>
-      <p class="section-subtitle">Skup się na wybranych zagadnieniach i szlifuj wiedzę tam, gdzie potrzebujesz tego najbardziej.</p>
+      <p class="section-subtitle">Skup się na wybranych zagadnieniach i szlifuj wiedzę tam, gdzie potrzebujesz tego
+        najbardziej.</p>
       <div class="topics-wrapper">
-        <!-- Grupa INF.02 -->
-        <div class="topics-group">
-          <h3 class="topics-group__subheading">
-            <i class="topics-group__icon fas fa-microchip"></i>
-            <span>Kwalifikacja INF.02</span>
-            <span class="soon-badge">Wkrótce!</span>
-          </h3>
-          <div class="topics-grid">
-            <a href="#" class="topic-card topic-card--disabled">Sprzęt komputerowy</a>
-            <a href="#" class="topic-card topic-card--disabled">Systemy operacyjne</a>
-            <a href="#" class="topic-card topic-card--disabled">Sieci komputerowe</a>
+        <?php 
+        $icons = [
+          'INF.02' => 'fas fa-microchip',
+          'INF.03' => 'fas fa-laptop-code',
+          'INF.04' => 'fas fa-code'
+        ];
+        foreach ($examsCategories as $examCode => $categories): 
+          $icon = $icons[$examCode] ?? 'fas fa-laptop-code';
+          $isSoon = empty($categories);
+        ?>
+          <div class="topics-group">
+            <h3 class="topics-group__subheading">
+              <i class="topics-group__icon <?= $icon ?>"></i>
+              <span>Kwalifikacja <?= htmlspecialchars((string) $examCode) ?></span>
+              <?php if ($isSoon): ?>
+                <span class="soon-badge">Wkrótce!</span>
+              <?php endif; ?>
+            </h3>
+            <div class="topics-grid">
+              <?php if ($isSoon): ?>
+                <?php if ($examCode === 'INF.02'): ?>
+                  <a href="#" class="topic-card topic-card--disabled">Sprzęt komputerowy</a>
+                  <a href="#" class="topic-card topic-card--disabled">Systemy operacyjne</a>
+                  <a href="#" class="topic-card topic-card--disabled">Sieci komputerowe</a>
+                <?php elseif ($examCode === 'INF.04'): ?>
+                  <a href="#" class="topic-card topic-card--disabled">Algorytmika</a>
+                  <a href="#" class="topic-card topic-card--disabled">Programowanie obiektowe</a>
+                  <a href="#" class="topic-card topic-card--disabled">Aplikacje mobilne</a>
+                  <a href="#" class="topic-card topic-card--disabled">Aplikacje desktopowe</a>
+                <?php else: ?>
+                  <p>Brak działów.</p>
+                <?php endif; ?>
+              <?php else: ?>
+                <?php foreach ($categories as $category): ?>
+                  <a href="<?= url("jedno-pytanie/{$examCode}?subject[]=" . $category['id']) ?>" class="topic-card">
+                    <?= htmlspecialchars($category['name']) ?>
+                  </a>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </div>
           </div>
-        </div>
-
-        <!-- Grupa INF.03 -->
-        <div class="topics-group">
-          <h3 class="topics-group__subheading">
-            <i class="topics-group__icon fas fa-laptop-code"></i>
-            <span>Kwalifikacja INF.03</span>
-          </h3>
-          <div class="topics-grid">
-            <a href="<?= url('personalizowany-test/INF.03?subject[]=1') ?>" class="topic-card">HTML</a>
-            <a href="<?= url('personalizowany-test/INF.03?subject[]=2') ?>" class="topic-card">CSS</a>
-            <a href="<?= url('personalizowany-test/INF.03?subject[]=3') ?>" class="topic-card">JavaScript</a>
-            <a href="<?= url('personalizowany-test/INF.03?subject[]=4') ?>" class="topic-card">PHP</a>
-            <a href="<?= url('personalizowany-test/INF.03?subject[]=5') ?>" class="topic-card">SQL</a>
-            <a href="<?= url('personalizowany-test/INF.03?subject[]=6') ?>" class="topic-card">Teoria</a>
-          </div>
-        </div>
-
-        <!-- Grupa INF.04 -->
-        <div class="topics-group">
-          <h3 class="topics-group__subheading">
-            <i class="topics-group__icon fas fa-code"></i>
-            <span>Kwalifikacja INF.04</span>
-            <span class="soon-badge">Wkrótce!</span>
-          </h3>
-          <div class="topics-grid">
-            <a href="#" class="topic-card topic-card--disabled">Algorytmika</a>
-            <a href="#" class="topic-card topic-card--disabled">Programowanie obiektowe</a>
-            <a href="#" class="topic-card topic-card--disabled">Aplikacje mobilne</a>
-            <a href="#" class="topic-card topic-card--disabled">Aplikacje desktopowe</a>
-          </div>
-        </div>
+        <?php endforeach; ?>
       </div>
     </section>
   </main>

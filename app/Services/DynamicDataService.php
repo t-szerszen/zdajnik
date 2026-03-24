@@ -1,14 +1,20 @@
-<?php 
+<?php
 namespace App\Services;
 use App\Core\Database;
 
-class DynamicDataService 
+class DynamicDataService
 {
   private Database $db;
 
   public function __construct()
   {
     $this->db = Database::getInstance();
+  }
+
+  public function getExams(): array
+  {
+    $sql = "SELECT id, code FROM exam_types";
+    return $this->db->fetchAll($sql) ?? [];
   }
 
   public function getExamIdByCode($code): int|null
@@ -25,7 +31,8 @@ class DynamicDataService
   public function getExamDetails(string $code): ?array
   {
     $examId = $this->getExamIdByCode($code);
-    if (!$examId) return null;
+    if (!$examId)
+      return null;
 
     // Pobierz podstawowe dane z bazy (zakładając, że tabela exam_types może mieć kolumnę name, ale jeśli nie - fallback)
     $sql = "SELECT * FROM exam_types WHERE id = ?";
