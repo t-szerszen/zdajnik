@@ -93,7 +93,29 @@ class VerificationController extends BaseController
       // Po udanej operacji, usuwamy zużyty token
       $this->tokenService->deleteTokensForUserByType($userId, $tokenType);
 
-      $_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Operacja zakończona pomyślnie! Możesz się teraz zalogować.'];
+      // --- AUTOMATYCZNE LOGOWANIE ---
+      // Pobieramy pełny obiekt użytkownika po weryfikacji
+      $user = $this->userModel->getUserById($userId);
+      if ($user) {
+        // Regenerujemy ID sesji dla bezpieczeństwa (zapobieganie Session Fixation)
+        session_regenerate_id(true);
+        // Zapisujemy obiekt użytkownika w sesji (zgodnie z logiką LoginController/AuthService)
+        $_SESSION['user'] = $user;
+        // Czyścimy zbędne klucze sesji
+        unset($_SESSION['verify_user_id']);
+
+        $_SESSION['flash_message'] = [
+          'type' => 'success',
+          'text' => 'Twoje konto zostało zweryfikowane! Zostałeś automatycznie zalogowany.'
+        ];
+
+        // Przekierowujemy na stronę główną
+        header('Location: ' . url('/'));
+        exit();
+      }
+
+      // Fallback (gdyby użytkownik nie został pobrany)
+      $_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Konto zweryfikowane! Możesz się teraz zalogować.'];
       unset($_SESSION['verify_user_id']);
       header('Location: ' . url('logowanie'));
       exit();
