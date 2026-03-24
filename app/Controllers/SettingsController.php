@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\Attempt;
+use App\Models\UserProgress;
 use App\Services\TokenService;
 use App\Services\Mailer;
 use App\Services\Validator;
@@ -10,6 +12,8 @@ use App\Services\Validator;
 class SettingsController extends BaseController
 {
   private UserModel $userModel;
+  private Attempt $attemptModel;
+  private UserProgress $userProgressModel;
   private TokenService $tokenService;
   private Mailer $mailer;
   private Validator $validator;
@@ -19,6 +23,8 @@ class SettingsController extends BaseController
     parent::__construct();
     $this->requireAuth();
     $this->userModel = new UserModel();
+    $this->attemptModel = new Attempt();
+    $this->userProgressModel = new UserProgress();
     $this->tokenService = new TokenService();
     $this->mailer = new Mailer();
     $this->validator = new Validator();
@@ -46,6 +52,7 @@ class SettingsController extends BaseController
       'change_name' => $this->processNameChange(),
       'change_password' => $this->processPasswordChange(),
       'change_email' => $this->processEmailChange(),
+      'anonymize_progress' => $this->processProgressAnonymization(),
       default => $this->redirectWithFlash('error', ['Nieznana akcja.'], 'profile')
     };
   }
@@ -253,6 +260,91 @@ class SettingsController extends BaseController
     }
   }
 
+  private function processProgressAnonymization(): void
+  {
+    $examTypeId = $_POST['exam_type_id'] ?? null;
+    $password = $_POST['password'] ?? '';
+    $isGoogleUser = ($this->currentUser->getAuthProvider() === 'google');
+
+    if (!$examTypeId) {
+      $this->redirectWithFlash('error', ['Musisz wybrać egzamin z listy.'], 'progress');
+    }
+
+    if (!$isGoogleUser && !$this->userModel->checkPassword($this->currentUser->getId(), $password)) {
+      $this->redirectWithFlash('error', ['Podane hasło jest nieprawidłowe.'], 'progress');
+    }
+
+    $userId = $this->currentUser->getId();
+
+    // Find exam code for email
+    $startedExams = $this->attemptModel->getStartedExamsByUser($userId);
+    $examCode = '';
+    foreach ($startedExams as $exam) {
+      if ((int) $exam['id'] === (int) $examTypeId) {
+        $examCode = $exam['code'];
+        break;
+      }
+    }
+
+    if (!$examCode) {
+      $this->redirectWithFlash('error', ['Wybrany egzamin nie istnieje lub nie został rozpoczęty.'], 'progress');
+    }
+
+    // 2. Generowanie tokena weryfikacyjnego
+    $tokenData = $this->tokenService->generateToken($userId, 'progress_anonymization', (string) $examTypeId);
+
+    if ($tokenData) {
+      $link = url('potwierdz-anonimizacje?token=' . $tokenData['token']);
+
+      $this->mailer->sendProgressAnonymizationEmail($this->currentUser->getEmail(), $link, $examCode);
+
+      $_SESSION['flash_message'] = [
+        'type' => 'success',
+        'text' => 'Na Twój adres e-mail wysłaliśmy link potwierdzający. Kliknij go, aby wyzerować postęp wybranego egzaminu.'
+      ];
+    } else {
+      $_SESSION['flash_message'] = [
+        'type' => 'error',
+        'text' => 'Wystąpił błąd podczas przetwarzania żądania. Spróbuj ponownie.'
+      ];
+    }
+
+    $this->redirectWithFlash('success', 'Sprawdź skrzynkę odbiorczą.', 'progress');
+  }
+
+  /**
+   * Obsługuje potwierdzenie z wyzerowaniem postępu z linku email.
+   * GET /potwierdz-anonimizacje?token=XYZ
+   */
+  public function confirmProgressAnonymization(): void
+  {
+    $token = $_GET['token'] ?? '';
+    $tokenRecord = $this->tokenService->getTokenRecord($token);
+
+    if (!$tokenRecord || $tokenRecord['type'] !== 'progress_anonymization') {
+      $this->redirectWithFlash('error', ['Link weryfikacyjny wygasł lub jest nieprawidłowy.'], 'profile');
+    }
+
+    $userId = (int) $tokenRecord['user_id'];
+    $examTypeId = (int) $tokenRecord['token_data'];
+
+    // Wykonaj zerowanie
+    $progressDeleted = $this->userProgressModel->deleteProgress($userId, $examTypeId);
+    $attemptsAnonymized = $this->attemptModel->anonymizeAttempts($userId, $examTypeId);
+
+    if ($progressDeleted !== false && $attemptsAnonymized !== false) {
+      $this->tokenService->deleteTokensForUserByType($userId, 'progress_anonymization');
+      $_SESSION['flash_message'] = [
+        'type' => 'success',
+        'text' => 'Postęp dla wskazanego egzaminu został pomyślnie wyzerowany.'
+      ];
+      header('Location: ' . url('ustawienia'));
+      exit();
+    }
+
+    $this->redirectWithFlash('error', ['Wystąpił błąd podczas usuwania postępu.'], 'profile');
+  }
+
   // --- Helpery ---
 
   /**
@@ -274,13 +366,17 @@ class SettingsController extends BaseController
       'change_name' => 'name',
       'change_password' => 'password',
       'change_email' => 'email',
+      'anonymize_progress' => 'progress',
     ];
 
     $activeTab = $_GET['active'] ?? ($activeMapping[$action] ?? 'profile');
 
+    $startedExams = $this->attemptModel->getStartedExamsByUser($this->currentUser->getId());
+
     $this->renderView('settings', [
       'activeForm' => $activeTab,
-      'emailChangeRemaining' => max(0, 60 - $elapsed)
+      'emailChangeRemaining' => max(0, 60 - $elapsed),
+      'startedExams' => $startedExams
     ]);
   }
 

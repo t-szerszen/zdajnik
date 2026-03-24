@@ -98,7 +98,7 @@ class Mailer
     } catch (Exception $e) {
       // W przypadku błędu wysyłki, zapisz go w logu serwera
       // i zwróć `false`, informując, że operacja się nie powiodła.
-      error_log('Błąd wysyłki e-maila: ' . $this->mailer->ErrorInfo);
+      error_log('Błąd wysyłki e-maila: ' . $this->mailer->ErrorInfo . " | Exception: " . $e->getMessage());
       return false;
     }
   }
@@ -122,6 +122,32 @@ class Mailer
         <a href="' . $link . '" style="background-color: #d9534f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">POTWIERDZAM USUNIĘCIE KONTA</a>
       </p>
       <p>Jeśli to nie Ty zleciłeś/aś tę operację, zignoruj tę wiadomość - Twoje konto pozostanie bezpieczne.</p>
+      <p>Pozdrawiamy,<br>Zespół Examly</p>
+    ';
+
+    return $this->send($email, $subject, $body);
+  }
+
+  /**
+   * Wysyła e-mail z linkiem potwierdzającym w celu wyzerowania postępu edukacyjnego.
+   *
+   * @param string $email Adres e-mail użytkownika.
+   * @param string $link  Link weryfikacyjny.
+   * @param string $examCode Kod egzaminu (np. INF.02).
+   *
+   * @return bool
+   */
+  public function sendProgressAnonymizationEmail(string $email, string $link, string $examCode): bool
+  {
+    $subject = 'Potwierdzenie wyzerowania postępu - Examly';
+    $body = '
+      <h1>Witaj!</h1>
+      <p>Otrzymaliśmy prośbę o wyzerowanie Twojego postępu dla egzaminu <strong>' . htmlspecialchars($examCode) . '</strong>.</p>
+      <p>Kliknij w poniższy przycisk, aby trwale zanonimizować swoje dotychczasowe próby dla tego egzaminu i całkowicie skasować go z historii konta.</p>
+      <p style="text-align: center; margin: 20px 0;">
+        <a href="' . $link . '" style="background-color: #d9534f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">POTWIERDZAM WYZEROWANIE POSTĘPU</a>
+      </p>
+      <p>Jeśli to nie Ty zleciłeś/aś tę operację, zignoruj tę wiadomość.</p>
       <p>Pozdrawiamy,<br>Zespół Examly</p>
     ';
 

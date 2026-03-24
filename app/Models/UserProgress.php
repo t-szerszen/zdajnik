@@ -56,9 +56,6 @@ class UserProgress
     }
   }
 
-  /**
-   * Zapisuje postęp dla pojedynczego pytania (Tryb: Jedno pytanie).
-   */
   public function saveProgress(int $userId, int $questionId, int $isCorrect): bool
   {
     $sql = "INSERT INTO user_progress 
@@ -72,5 +69,16 @@ class UserProgress
               last_result = VALUES(last_result)";
 
     return $this->db->execute($sql, [$userId, $questionId, $isCorrect, 1 - $isCorrect, $isCorrect]);
+  }
+
+  /**
+   * Usuwa postęp użytkownika dla podanego typu egzaminu.
+   */
+  public function deleteProgress(int $userId, int $examTypeId): bool
+  {
+    $sql = "DELETE up FROM user_progress up 
+            JOIN questions q ON up.question_id = q.id 
+            WHERE up.user_id = ? AND q.exam_type_id = ?";
+    return $this->db->execute($sql, [$userId, $examTypeId]);
   }
 }

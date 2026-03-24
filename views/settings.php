@@ -236,6 +236,64 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
         </div>
       <?php endif; ?>
 
+      <!-- Sekcja: Zarządzanie Postępem -->
+      <div class="settings-card <?= ($activeForm === 'progress') ? 'is-open' : '' ?>">
+        <div class="settings-card__header">
+          <div class="settings-card__title-group">
+            <h3 class="settings-card__title">
+              <i class="fas fa-history"></i>
+              <span>Zarządzanie postępem</span>
+            </h3>
+            <p class="settings-card__description">Wyzeruj swój postęp i statystyki dla wybranego egzaminu.</p>
+          </div>
+          <i class="fas fa-chevron-down settings-card__icon"></i>
+        </div>
+        <div class="settings-card__content">
+          <div class="alert alert--warning settings-card__alert">
+            <i class="fas fa-exclamation-circle" style="margin-right: 0.5rem;"></i>
+            <strong>Uwaga:</strong> Postęp we wskazanym egzaminie zostanie trwale wyzerowany. Anonimowe dane
+            statystyczne z Twoich prób pozostaną w systemie w celach analitycznych.
+          </div>
+          <form method="POST" action="<?= url('ustawienia/anonymize_progress') ?>">
+            <input type="hidden" name="form_type" value="anonymize_progress">
+
+            <div class="form-card__group">
+              <label for="exam_type_id" class="form-card__label">Wybierz egzamin</label>
+              <div class="form-card__input-wrapper">
+                <i class="fas fa-graduation-cap form-card__input-icon"></i>
+                <select id="exam_type_id" name="exam_type_id" class="form-card__input form-card__input--with-icon"
+                  required>
+                  <option value="" disabled selected>-- Wybierz egzamin do wyzerowania --</option>
+                  <?php if (!empty($startedExams)): ?>
+                    <?php foreach ($startedExams as $exam): ?>
+                      <option value="<?= htmlspecialchars($exam['id']) ?>"><?= htmlspecialchars($exam['code']) ?></option>
+                    <?php endforeach; ?>
+                  <?php else: ?>
+                    <option value="" disabled>Brak rozpoczętych egzaminów</option>
+                  <?php endif; ?>
+                </select>
+              </div>
+            </div>
+
+            <?php if (!$isGoogleUser): ?>
+              <div class="form-card__group">
+                <label for="password_for_progress" class="form-card__label">Potwierdź hasłem</label>
+                <div class="password-wrapper">
+                  <i class="fas fa-lock form-card__input-icon"></i>
+                  <input type="password" id="password_for_progress" name="password"
+                    class="form-card__input form-card__input--with-icon" placeholder="Wpisz hasło dla bezpieczeństwa"
+                    required>
+                  <i class="fas fa-eye password-toggle-icon"></i>
+                </div>
+              </div>
+            <?php endif; ?>
+            <button type="submit" class="btn btn--danger btn--full-width" <?= empty($startedExams) ? 'disabled' : '' ?>>
+              <i class="fas fa-eraser" style="margin-right: 0.5rem;"></i> Wyzeruj postęp
+            </button>
+          </form>
+        </div>
+      </div>
+
       <!-- Sekcja: Zarządzanie Kontem -->
       <div class="settings-card <?= ($activeForm === 'delete') ? 'is-open' : '' ?>">
         <div class="settings-card__header">

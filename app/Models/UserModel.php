@@ -298,15 +298,24 @@ class UserModel
    */
   private function anonymizeOldUsers(): void
   {
-    // Anonimizacja:
-    // - google_id = NULL
-    // - email = anon + md5(id) + @examly.pl
-    // - first_name = 'Anonimowy'
-    // - last_name = 'Użytkownik'
-    // - password_hash = '' (lub losowy ciąg, ale pusty/null bezpieczniejszy jeśli kolumna pozwala, tu zakładamy string)
-    // - auth_provider = 'local' (dla spójności)
+    $sqlFetch = "SELECT id FROM users WHERE is_active = 0 AND deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)";
+    $usersToAnonymize = $this->db->fetchAll($sqlFetch);
 
-    // Warunek: is_active = 0 AND deleted_at < TERAZ - 30 DNI
+    if (empty($usersToAnonymize)) {
+      return;
+    }
+
+    $userIds = array_column($usersToAnonymize, 'id');
+    $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+
+    // Anonimizacja progresu egzaminacyjnego
+    $sqlAttempts = "UPDATE attempts SET user_id = NULL WHERE user_id IN ($placeholders)";
+    $this->db->execute($sqlAttempts, $userIds);
+
+    $sqlProgress = "DELETE FROM user_progress WHERE user_id IN ($placeholders)";
+    $this->db->execute($sqlProgress, $userIds);
+
+    // Anonimizacja w tabeli users
     $sql = "UPDATE users 
             SET 
               google_id = NULL,
@@ -315,9 +324,8 @@ class UserModel
               last_name = 'Użytkownik',
               password_hash = 'ANONYMIZED',
               auth_provider = 'local'
-            WHERE is_active = 0 
-              AND deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)";
+            WHERE id IN ($placeholders)";
 
-    $this->db->execute($sql);
+    $this->db->execute($sql, $userIds);
   }
 }
