@@ -81,7 +81,7 @@ class StatisticsService
                        (SELECT COUNT(*) FROM questions q WHERE q.topic_id = t.id AND q.is_active = 1 AND q.deleted_at IS NULL) as total,
                        (SELECT COUNT(*) FROM user_progress up 
                         JOIN questions q ON up.question_id = q.id 
-                        WHERE up.user_id = ? AND q.topic_id = t.id AND up.last_result = 1
+                        WHERE up.user_id = ? AND q.topic_id = t.id
                         AND q.is_active = 1 AND q.deleted_at IS NULL) as completed
                 FROM topics t
                 WHERE t.exam_type_id = ? AND t.is_active = 1 AND t.deleted_at IS NULL";
@@ -160,7 +160,18 @@ class StatisticsService
                 ORDER BY last_updated DESC
                 $limitSql";
 
-    return $this->db->fetchAll($sql, [$userId, $examTypeId]);
+    $items = $this->db->fetchAll($sql, [$userId, $examTypeId]);
+
+    $sqlTotal = "SELECT COUNT(*) as total FROM user_progress up
+                 JOIN questions q ON up.question_id = q.id
+                 WHERE up.user_id = ? AND q.exam_type_id = ? AND up.last_result = 0
+                 AND q.is_active = 1 AND q.deleted_at IS NULL";
+    $totalResult = $this->db->fetch($sqlTotal, [$userId, $examTypeId]);
+
+    return [
+      'items' => $items,
+      'total' => $totalResult['total'] ?? 0
+    ];
   }
 
   /**
@@ -211,11 +222,20 @@ class StatisticsService
 			        ORDER BY success_rate ASC, last_updated DESC
 			        $limitSql";
       $items = $this->db->fetchAll($sql, [$userId, $examTypeId]);
+
+      $sqlTotalCritical = "SELECT COUNT(*) as total FROM user_progress up
+                           JOIN questions q ON up.question_id = q.id
+                           WHERE up.user_id = ? AND q.exam_type_id = ? 
+                           AND q.is_active = 1 AND q.deleted_at IS NULL
+                           AND (up.correct_count / up.attempts_count) < 0.6";
+      $totalCriticalResult = $this->db->fetch($sqlTotalCritical, [$userId, $examTypeId]);
+      $totalCritical = (int) ($totalCriticalResult['total'] ?? 0);
     }
 
     return [
       'items' => $items,
       'total_answered' => $totalAnswered,
+      'total_critical' => $totalCritical ?? 0,
       'unlock_progress' => $unlockProgress,
       'is_unlocked' => $isUnlocked
     ];
@@ -258,7 +278,13 @@ class StatisticsService
       }
     }
 
-    return $exams;
+    $sqlTotal = "SELECT COUNT(*) as total FROM attempts WHERE user_id = ? AND exam_type_id = ? AND completed_at IS NOT NULL";
+    $totalResult = $this->db->fetch($sqlTotal, [$userId, $examTypeId]);
+
+    return [
+      'items' => $exams,
+      'total' => $totalResult['total'] ?? 0
+    ];
   }
 
   /**

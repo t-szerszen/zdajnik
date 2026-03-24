@@ -50,23 +50,23 @@ class HistoryController extends BaseController
       case 'critical':
         $viewData['title'] = ' Krytycznych błędów';
         $viewData['backTo'] = 'criticalMistakes';
-        // limit = null -> pobierz wszystko
-        $viewData['items'] = $this->statsService->getCriticalErrors($userId, $selectedExamTypeId, null)['items']; 
+        $result = $this->statsService->getCriticalErrors($userId, $selectedExamTypeId, null);
+        $viewData['items'] = $result['items']; 
         break;
 
       case 'errors':
         $viewData['title'] = ' Błędów';
         $viewData['backTo'] = 'lastMistakes';
-        // limit = null -> pobierz wszystko
-        $viewData['items'] = $this->statsService->getErrorHistory($userId, $selectedExamTypeId, null); 
+        $result = $this->statsService->getErrorHistory($userId, $selectedExamTypeId, null); 
+        $viewData['items'] = $result['items'];
         break;
 
       case 'exams':
       default:
         $viewData['title'] = ' Egzaminów';
         $viewData['backTo'] = 'examsHistory';
-        // limit = null -> pobierz wszystko
-        $viewData['items'] = $this->statsService->getRecentExams($userId, $selectedExamTypeId, null);
+        $result = $this->statsService->getRecentExams($userId, $selectedExamTypeId, null);
+        $viewData['items'] = $result['items'];
         break;
     }
 

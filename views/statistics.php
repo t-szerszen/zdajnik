@@ -70,7 +70,7 @@ $extraScripts = [
             </div>
           </div>
           <p class="stats-card__mastery-legend">
-            <?= $masteryStats['mastered'] ?> z <?= $masteryStats['total'] ?> pytań
+            <?= $masteryStats['mastered'] ?> z <?= $masteryStats['total'] ?> pytań (<?= $masteryStats['percent'] ?>%)
           </p>
 
           <!-- Topic Breakdown -->
@@ -83,7 +83,7 @@ $extraScripts = [
                 <div class="stats-card__topic-item">
                   <div class="stats-card__topic-label">
                     <span><?= htmlspecialchars($topic['name']) ?></span>
-                    <span><?= $topic['progress'] ?>%</span>
+                    <span><?= $topic['progress'] ?>% (<?= $topic['completed'] ?>/<?= $topic['total'] ?>)</span>
                   </div>
                   <div class="stats-card__progress-bar">
                     <div class="stats-card__progress-fill" style="width: <?= $topic['progress'] ?>%;"></div>
@@ -205,7 +205,8 @@ $extraScripts = [
               <?php if ($criticalErrors['is_unlocked']): ?>
                 <a href="<?= url('historia?type=critical&category=' . $selectedCategoryId) ?>"
                   class="btn btn--secondary btn--sm">
-                  zobacz wszystkie <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
+                  zobacz wszystkie (<?= $criticalErrors['total_critical'] ?>) <i class="fas fa-chevron-right"
+                    style="font-size: 0.8em;"></i>
                 </a>
               <?php endif; ?>
             </div>
@@ -270,14 +271,15 @@ $extraScripts = [
               <h3 class="stats-card__title" style="margin-bottom: 0;">Historia Błędów</h3>
               <a href="<?= url('historia?type=errors&category=' . $selectedCategoryId) ?>"
                 class="btn btn--secondary btn--sm">
-                zobacz wszystkie <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
+                zobacz wszystkie (<?= $errorHistory['total'] ?? 0 ?>) <i class="fas fa-chevron-right"
+                  style="font-size: 0.8em;"></i>
               </a>
             </div>
             <ul class="stats-card__list">
-              <?php if (empty($errorHistory)): ?>
+              <?php if (empty($errorHistory['items'])): ?>
                 <li class="stats-card__empty">Świetnie! Brak błędów do przejrzenia.</li>
               <?php else: ?>
-                <?php foreach ($errorHistory as $error): ?>
+                <?php foreach ($errorHistory['items'] as $error): ?>
                   <li class="stats-card__list-item">
                     <span class="stats-card__question-text">
                       <?= mb_strimwidth(htmlspecialchars($error['question_text']), 0, 40, "...") ?>
@@ -298,14 +300,15 @@ $extraScripts = [
               <h3 class="stats-card__title" style="margin-bottom: 0;">Ostatnie Egzaminy</h3>
               <a href="<?= url('historia?type=exams&category=' . $selectedCategoryId) ?>"
                 class="btn btn--secondary btn--sm">
-                zobacz wszystkie <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
+                zobacz wszystkie (<?= $recentExams['total'] ?? 0 ?>) <i class="fas fa-chevron-right"
+                  style="font-size: 0.8em;"></i>
               </a>
             </div>
             <ul class="stats-card__list">
-              <?php if (empty($recentExams)): ?>
+              <?php if (empty($recentExams['items'])): ?>
                 <li class="stats-card__empty">Jeszcze nie rozwiązano żadnych testów.</li>
               <?php else: ?>
-                <?php foreach ($recentExams as $exam): ?>
+                <?php foreach ($recentExams['items'] as $exam): ?>
                   <li class="stats-card__list-item">
                     <span>
                       <?= htmlspecialchars($exam['display_name']) ?>
