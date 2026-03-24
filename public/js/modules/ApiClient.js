@@ -71,7 +71,7 @@ class ApiClient {
       if (!response.ok) {
         // Jeśli serwer odpowiedział błędem (np. 404, 500), zwróć ustandaryzowany obiekt błędu.
         const errorMessage = data.message || `Błąd serwera: ${response.status}`;
-        return { success: false, error: errorMessage };
+        return { success: false, error: errorMessage, status: data.status };
       }
 
       // Krok 4: Jeśli status jest OK, zwróć ustandaryzowany obiekt sukcesu.

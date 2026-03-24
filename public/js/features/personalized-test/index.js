@@ -237,6 +237,8 @@ class PersonalizedTest {
       // Scenariusz B: Błąd lub brak pytań - pokaż wiadomość i zresetuj widok.
       if (response.data?.status === 'no_questions_left') {
         Toast.show(response.data.message, 'info');
+      } else if (response.status === 'gatekeeper') {
+        Toast.show(response.error, 'info');
       } else {
         Toast.show(response.error || 'Nie udało się załadować pytań.', 'error');
       }

@@ -109,7 +109,11 @@ class Quiz {
           ui.renderQuestion(this.quizContainer, data.question, data.answers);
         }
       } else {
-        Toast.show(result.error, 'error');
+        if (result.status === 'gatekeeper') {
+          Toast.show(result.error, 'info');
+        } else {
+          Toast.show(result.error, 'error');
+        }
       }
     } catch (error) {
       Toast.show('Wystąpił błąd sieci.', 'error');

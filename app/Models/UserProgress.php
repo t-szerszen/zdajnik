@@ -81,4 +81,18 @@ class UserProgress
             WHERE up.user_id = ? AND q.exam_type_id = ?";
     return $this->db->execute($sql, [$userId, $examTypeId]);
   }
+
+  /**
+   * Zlicza liczbę pytań, na które użytkownik odpowiedział w danym egzaminie.
+   */
+  public function countAnsweredQuestionsForExam(int $userId, int $examTypeId): int
+  {
+    $sql = "SELECT COUNT(up.id) as answered_count
+            FROM user_progress up
+            JOIN questions q ON up.question_id = q.id
+            WHERE up.user_id = ? AND q.exam_type_id = ? AND (up.correct_count + up.incorrect_count) > 0";
+    
+    $result = $this->db->fetch($sql, [$userId, $examTypeId]);
+    return (int)($result['answered_count'] ?? 0);
+  }
 }

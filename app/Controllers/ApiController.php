@@ -277,6 +277,21 @@ class ApiController extends BaseController
 
     $userId = $this->isUserLoggedIn ? $this->currentUser->getId() : null;
 
+    // Gatekeeper dla opcji "Do poprawy" ('toImprove')
+    if ($specialFilter === 'toImprove' || $specialFilter === 'toRemind') {
+      if ($userId) {
+        $answeredCount = $this->userProgressModel->countAnsweredQuestionsForExam($userId, $examTypeId);
+        if ($answeredCount < 100) {
+          $this->sendJsonResponse([
+            'success' => false,
+            'status' => 'gatekeeper',
+            'message' => 'Musisz odpowiedzieć na co najmniej 100 pytań z tego egzaminu, aby odblokować tę funkcję.'
+          ], 403);
+          return ['success' => false, 'questions' => []];
+        }
+      }
+    }
+
     $questions = [];
     if ($specialFilter && $this->isUserLoggedIn) {
       $questions = match ($specialFilter) {
