@@ -303,21 +303,21 @@ $canonicalUrl = 'https://www.examly.pl/';
            co stanowi alternatywną ścieżkę nawigacji.
       =====================================================================
     -->
-    <section class="topics-section">
+    <section class="topics-section" id="topics-section">
       <h2 class="section-title">Ucz się z konkretnych działów</h2>
       <p class="section-subtitle">Skup się na wybranych zagadnieniach i szlifuj wiedzę tam, gdzie potrzebujesz tego
         najbardziej.</p>
       <div class="topics-wrapper">
-        <?php 
+        <?php
         $icons = [
           'INF.02' => 'fas fa-microchip',
           'INF.03' => 'fas fa-laptop-code',
           'INF.04' => 'fas fa-code'
         ];
-        foreach ($examsCategories as $examCode => $categories): 
+        foreach ($examsCategories as $examCode => $categories):
           $icon = $icons[$examCode] ?? 'fas fa-laptop-code';
           $isSoon = empty($categories);
-        ?>
+          ?>
           <div class="topics-group">
             <h3 class="topics-group__subheading">
               <i class="topics-group__icon <?= $icon ?>"></i>

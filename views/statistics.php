@@ -69,6 +69,8 @@ $extraScripts = [
               </div>
             </div>
           </div>
+
+
           <p class="stats-card__mastery-legend">
             <?= $masteryStats['mastered'] ?> z <?= $masteryStats['total'] ?> pytań (<?= $masteryStats['percent'] ?>%)
           </p>
@@ -77,8 +79,13 @@ $extraScripts = [
           <div class="stats-card__topics">
             <h4 class="stats-card__subtitle">Podział na tematy</h4>
             <?php if (empty($topicStats)): ?>
-              <p class="stats-card__empty">Brak danych dla tej kategorii.</p>
+              <div class="stats-card__empty stats-card__empty--compact">
+                <p>Rozpocznij naukę, aby zobaczyć postęp w tematach.</p>
+                <a href="<?= url('#topics-section') ?>" class="btn btn--primary btn--sm" style="margin-top: 1rem;">Wybierz
+                  temat</a>
+              </div>
             <?php else: ?>
+
               <?php foreach ($topicStats as $topic): ?>
                 <div class="stats-card__topic-item">
                   <div class="stats-card__topic-label">
@@ -104,8 +111,15 @@ $extraScripts = [
           <h2 class="stats-card__title">Trend Skuteczności (Średnia Krocząca)</h2>
           <div class="stats-card__chart">
             <?php if (empty($efficiencyTrend)): ?>
-              <p class="stats-card__empty">Rozwiąż swój pierwszy egzamin, aby zobaczyć trend!</p>
+              <div class="stats-card__empty">
+                <div class="stats-card__empty-icon">📈</div>
+                <p>Twój wykres skuteczności jest jeszcze pusty.</p>
+                <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem; font-style: italic;">Rozwiąż pierwszy
+                  egzamin, abyśmy mogli wygenerować Twój trend!</p>
+                <a href="<?= url('#egzaminy') ?>" class="btn btn--primary" style="margin-top: 1.5rem;">Rozpocznij test</a>
+              </div>
             <?php else: ?>
+
               <div style="height: 250px; width: 100%;">
                 <canvas id="efficiencyTrendChart"
                   data-chart-data='<?= json_encode($efficiencyTrend, JSON_HEX_APOS | JSON_HEX_QUOT) ?>'></canvas>
@@ -202,7 +216,7 @@ $extraScripts = [
             <div class="stats-card__header"
               style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
               <h3 class="stats-card__title" style="margin-bottom: 0;">🔥 Krytyczne Błędy</h3>
-              <?php if ($criticalErrors['is_unlocked']): ?>
+              <?php if ($criticalErrors['is_unlocked'] && ($criticalErrors['total_critical'] ?? 0) > 0): ?>
                 <a href="<?= url('historia?type=critical&category=' . $selectedCategoryId) ?>"
                   class="btn btn--secondary btn--sm">
                   zobacz wszystkie (<?= $criticalErrors['total_critical'] ?>) <i class="fas fa-chevron-right"
@@ -229,10 +243,15 @@ $extraScripts = [
                 </div>
               </div>
             <?php else: ?>
-              <!-- Critical Errors List -->
               <ul class="stats-card__list">
                 <?php if (empty($criticalErrors['items'])): ?>
-                  <li class="stats-card__empty">Twoja skuteczność jest na wysokim poziomie!</li>
+                  <?php if ($records['total_exams'] == 0): ?>
+                    <li class="stats-card__empty">Zacznij rozwiązywać testy, abyśmy mogli wyłapać Twoje najczęstsze błędy.
+                    </li>
+                  <?php else: ?>
+                    <li class="stats-card__empty">Twoja skuteczność jest na najwyższym poziomie! Nie wykryto krytycznych
+                      błędów.</li>
+                  <?php endif; ?>
                 <?php else: ?>
                   <?php foreach ($criticalErrors['items'] as $critical): ?>
                     <?php
@@ -256,28 +275,36 @@ $extraScripts = [
                     <a href="<?= url('inf03-jedno-pytanie?premium=toImprove&selectAll=true') ?>" class="btn btn--primary">
                       🎯 Ćwicz (wszystkie)
                     </a>
-                    <!-- Placeholder for full view -->
-                    <!-- <a href="#" class="stats-card__action-btn stats-card__action-btn--secondary">Pełna lista</a> -->
                   </li>
                 <?php endif; ?>
               </ul>
             <?php endif; ?>
+
           </div>
+
+
 
           <!-- Recent Errors Card -->
           <div class="stats-card stats-card--errors" id="lastMistakes">
             <div class="stats-card__header"
               style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
               <h3 class="stats-card__title" style="margin-bottom: 0;">Historia Błędów</h3>
-              <a href="<?= url('historia?type=errors&category=' . $selectedCategoryId) ?>"
-                class="btn btn--secondary btn--sm">
-                zobacz wszystkie (<?= $errorHistory['total'] ?? 0 ?>) <i class="fas fa-chevron-right"
-                  style="font-size: 0.8em;"></i>
-              </a>
+              <?php if (($errorHistory['total'] ?? 0) > 0): ?>
+                <a href="<?= url('historia?type=errors&category=' . $selectedCategoryId) ?>"
+                  class="btn btn--secondary btn--sm">
+                  zobacz wszystkie (<?= $errorHistory['total'] ?? 0 ?>) <i class="fas fa-chevron-right"
+                    style="font-size: 0.8em;"></i>
+                </a>
+              <?php endif; ?>
+
             </div>
             <ul class="stats-card__list">
               <?php if (empty($errorHistory['items'])): ?>
-                <li class="stats-card__empty">Świetnie! Brak błędów do przejrzenia.</li>
+                <?php if ($records['total_exams'] == 0): ?>
+                  <li class="stats-card__empty">Twoja historia błędów jest pusta – to świetny moment na pierwszy test!</li>
+                <?php else: ?>
+                  <li class="stats-card__empty">Nie masz żadnych błędów do przejrzenia. Tak trzymaj!</li>
+                <?php endif; ?>
               <?php else: ?>
                 <?php foreach ($errorHistory['items'] as $error): ?>
                   <li class="stats-card__list-item">
@@ -291,6 +318,8 @@ $extraScripts = [
                 <?php endforeach; ?>
               <?php endif; ?>
             </ul>
+
+
           </div>
 
           <!-- Exam History Card -->
@@ -298,15 +327,20 @@ $extraScripts = [
             <div class="stats-card__header"
               style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
               <h3 class="stats-card__title" style="margin-bottom: 0;">Ostatnie Egzaminy</h3>
-              <a href="<?= url('historia?type=exams&category=' . $selectedCategoryId) ?>"
-                class="btn btn--secondary btn--sm">
-                zobacz wszystkie (<?= $recentExams['total'] ?? 0 ?>) <i class="fas fa-chevron-right"
-                  style="font-size: 0.8em;"></i>
-              </a>
+              <?php if (($recentExams['total'] ?? 0) > 0): ?>
+                <a href="<?= url('historia?type=exams&category=' . $selectedCategoryId) ?>"
+                  class="btn btn--secondary btn--sm">
+                  zobacz wszystkie (<?= $recentExams['total'] ?? 0 ?>) <i class="fas fa-chevron-right"
+                    style="font-size: 0.8em;"></i>
+                </a>
+              <?php endif; ?>
             </div>
             <ul class="stats-card__list">
               <?php if (empty($recentExams['items'])): ?>
-                <li class="stats-card__empty">Jeszcze nie rozwiązano żadnych testów.</li>
+                <li class="stats-card__empty">Nie masz jeszcze żadnych zapisanych egzaminów. Czas to zmienić!</li>
+                <li class="stats-card__action">
+                  <a href="<?= url('#egzaminy') ?>" class="btn btn--primary">Podejdź do arkusza</a>
+                </li>
               <?php else: ?>
                 <?php foreach ($recentExams['items'] as $exam): ?>
                   <li class="stats-card__list-item">
@@ -319,12 +353,12 @@ $extraScripts = [
                     </span>
                     <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
                       <a href="<?= url('wyniki/' . $exam['id']) ?>" class="btn btn--primary btn--sm">zobacz</a>
-
                     </div>
                   </li>
                 <?php endforeach; ?>
               <?php endif; ?>
             </ul>
+
           </div>
 
         </div>

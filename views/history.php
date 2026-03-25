@@ -57,11 +57,33 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
         <div class="stats-card__content">
           <?php if (empty($items)): ?>
             <div class="stats-card__empty">
-              <div class="stats-card__empty-icon">📭</div>
-              <p>Brak danych do wyświetlenia w tej kategorii.</p>
-              <a href="<?= url('statystyki') ?>" class="btn btn--secondary btn--sm" style="margin-top: 1.5rem;">Zacznij naukę</a>
+              <div class="stats-card__empty-icon">
+                <?php if ($type === 'exams'): ?>
+                  <i class="fas fa-file-signature" style="opacity: 0.2; font-size: 4rem;"></i>
+                <?php else: ?>
+                  <i class="fas fa-check-circle" style="opacity: 0.2; font-size: 4rem; color: var(--success-bg);"></i>
+                <?php endif; ?>
+              </div>
+              <h3>
+                <?php if ($type === 'exams'): ?>
+                  Twoja historia jest pusta
+                <?php elseif ($type === 'critical'): ?>
+                  Brak krytycznych błędów
+                <?php else: ?>
+                  Brak błędów do przejrzenia
+                <?php endif; ?>
+              </h3>
+              <p>
+                <?php if ($type === 'exams'): ?>
+                  Czas zmierzyć się z pierwszym arkuszem i sprawdzić swoje umiejętności!
+                <?php else: ?>
+                  Świetna robota! Wygląda na to, że radzisz sobie doskonale w tej kategorii.
+                <?php endif; ?>
+              </p>
+              <a href="<?= url('statystyki') ?>" class="btn btn--primary" style="margin-top: 1.5rem;">Wróć do statystyk</a>
             </div>
           <?php else: ?>
+
             <div class="stats-card__list">
               <?php foreach ($items as $item): ?>
 
