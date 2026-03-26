@@ -56,7 +56,7 @@ body.home-page-background {
   position: relative;
   background: radial-gradient(circle at center, rgba(59, 130, 246, 0.07) 0%, transparent 70%);
   padding: 6rem 1.5rem !important; // Więcej miejsca
-  
+
   &::before {
     content: '';
     position: absolute;

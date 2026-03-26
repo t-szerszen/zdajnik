@@ -22,12 +22,12 @@
 -->
 <footer class="footer">
   <div class="footer__content">
-    
+
     <!-- Sekcja 1: Brand & Description -->
     <div class="footer__section footer__section--brand">
       <h4 class="footer__heading">Examly</h4>
       <p class="footer__description">
-        Twoja inteligentna platforma do nauki na egzaminy zawodowe INF.02 i INF.03. 
+        Twoja inteligentna platforma do nauki na egzaminy zawodowe INF.02 i INF.03.
         Tysiące pytań, szczegółowe statystyki i tryby nauki dopasowane do Ciebie.
       </p>
       <div class="footer__socials">
@@ -54,7 +54,8 @@
       <h4 class="footer__heading">Nauka</h4>
       <ul class="footer__list">
         <li class="footer__item"><a href="<?= url('') ?>" class="footer__link">Kurs INF.03</a></li>
-        <li class="footer__item"><a href="<?= url('jedno-pytanie/INF.03') ?>" class="footer__link">Pytania Wyzwania</a></li>
+        <li class="footer__item"><a href="<?= url('jedno-pytanie/INF.03') ?>" class="footer__link">Pytania Wyzwania</a>
+        </li>
         <li class="footer__item"><a href="<?= url('#egzaminy') ?>" class="footer__link">Symulacja Egzaminu</a></li>
         <li class="footer__item"><a href="<?= url('historia') ?>" class="footer__link">Twoja Historia</a></li>
       </ul>
@@ -82,7 +83,7 @@
 
   <div class="footer__bottom">
     <p class="footer__copyright">&copy; <?= date('Y') ?> Examly. Stworzone dla przyszłych informatyków.</p>
-    
+
     <div class="footer__theme-action">
       <div class="theme-switcher">
         <input type="checkbox" id="theme-toggle-checkbox">

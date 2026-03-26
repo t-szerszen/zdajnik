@@ -35,13 +35,14 @@ class Question
   public function getQuestions(array $subjectIds, int $limit, int $examTypeId): array
   {
     $placeholders = $this->buildInClausePlaceholders($subjectIds);
-    if (!$placeholders) return [];
+    if (!$placeholders)
+      return [];
 
     $sql = $this->getBaseSelectionSql() . "
                 WHERE q.is_active = 1 AND qv.is_active = 1
                 AND q.topic_id IN ($placeholders) 
                 AND q.exam_type_id = ? 
-                ORDER BY RAND() LIMIT " . (int)$limit;
+                ORDER BY RAND() LIMIT " . (int) $limit;
 
     return $this->db->fetchAll($sql, array_merge($subjectIds, [$examTypeId]));
   }
@@ -49,7 +50,8 @@ class Question
   public function getUndiscoveredQuestions(int $userId, array $subjectIds, int $limit, int $examTypeId): array
   {
     $placeholders = $this->buildInClausePlaceholders($subjectIds);
-    if (!$placeholders) return [];
+    if (!$placeholders)
+      return [];
 
     // JOIN dodany PRZED WHERE
     $sql = $this->getBaseSelectionSql() . "
@@ -58,7 +60,7 @@ class Question
                 AND up.question_id IS NULL
                 AND q.topic_id IN ($placeholders) 
                 AND q.exam_type_id = ?
-                ORDER BY RAND() LIMIT " . (int)$limit;
+                ORDER BY RAND() LIMIT " . (int) $limit;
 
     return $this->db->fetchAll($sql, array_merge([$userId], $subjectIds, [$examTypeId]));
   }
@@ -66,7 +68,8 @@ class Question
   public function getLowerAccuracyQuestions(int $userId, array $subjectIds, int $limit, int $examTypeId): array
   {
     $placeholders = $this->buildInClausePlaceholders($subjectIds);
-    if (!$placeholders) return [];
+    if (!$placeholders)
+      return [];
 
     $sql = $this->getBaseSelectionSql() . "
                 INNER JOIN user_progress up ON q.id = up.question_id AND up.user_id = ?
@@ -75,7 +78,7 @@ class Question
                 AND up.attempts_count > 0
                 AND (up.correct_count * 100.0 / up.attempts_count) < 60
                 ORDER BY (up.correct_count * 100.0 / up.attempts_count) ASC, RAND() 
-                LIMIT " . (int)$limit;
+                LIMIT " . (int) $limit;
 
     return $this->db->fetchAll($sql, array_merge([$userId], $subjectIds, [$examTypeId]));
   }
@@ -83,13 +86,14 @@ class Question
   public function getQuestionsRepeatedAtTheLatest(int $userId, array $subjectIds, int $limit, int $examTypeId): array
   {
     $placeholders = $this->buildInClausePlaceholders($subjectIds);
-    if (!$placeholders) return [];
+    if (!$placeholders)
+      return [];
 
     $sql = $this->getBaseSelectionSql() . "
                 INNER JOIN user_progress up ON q.id = up.question_id AND up.user_id = ?
                 WHERE q.is_active = 1 AND qv.is_active = 1
                 AND q.topic_id IN ($placeholders) AND q.exam_type_id = ?
-                ORDER BY up.updated_at ASC LIMIT " . (int)$limit;
+                ORDER BY up.updated_at ASC LIMIT " . (int) $limit;
 
     return $this->db->fetchAll($sql, array_merge([$userId], $subjectIds, [$examTypeId]));
   }
@@ -97,7 +101,8 @@ class Question
   public function getLastMistakes(int $userId, array $subjectIds, int $limit, int $examTypeId): array
   {
     $placeholders = $this->buildInClausePlaceholders($subjectIds);
-    if (!$placeholders) return [];
+    if (!$placeholders)
+      return [];
 
     $sql = $this->getBaseSelectionSql() . "
                 INNER JOIN user_progress up ON q.id = up.question_id AND up.user_id = ?
@@ -105,7 +110,7 @@ class Question
                 AND q.topic_id IN ($placeholders) 
                 AND q.exam_type_id = ? 
                 AND up.last_result = 0
-                ORDER BY RAND() LIMIT " . (int)$limit;
+                ORDER BY RAND() LIMIT " . (int) $limit;
 
     return $this->db->fetchAll($sql, array_merge([$userId], $subjectIds, [$examTypeId]));
   }
@@ -113,13 +118,14 @@ class Question
   public function getSavedQuestions(int $userId, array $subjectIds, int $limit, int $examTypeId): array
   {
     $placeholders = $this->buildInClausePlaceholders($subjectIds);
-    if (!$placeholders) return [];
+    if (!$placeholders)
+      return [];
 
     $sql = $this->getBaseSelectionSql() . "
                 INNER JOIN saved_questions sq ON q.id = sq.question_id AND sq.user_id = ?
                 WHERE q.is_active = 1 AND qv.is_active = 1
                 AND q.topic_id IN ($placeholders) AND q.exam_type_id = ?
-                ORDER BY RAND() LIMIT " . (int)$limit;
+                ORDER BY RAND() LIMIT " . (int) $limit;
 
     return $this->db->fetchAll($sql, array_merge([$userId], $subjectIds, [$examTypeId]));
   }
@@ -127,7 +133,8 @@ class Question
   public function getPoolProgress(int $userId, array $subjectIds, int $examTypeId): array
   {
     $placeholders = $this->buildInClausePlaceholders($subjectIds);
-    if (!$placeholders) return ['total' => 0, 'answered' => 0];
+    if (!$placeholders)
+      return ['total' => 0, 'answered' => 0];
 
     // Total in pool
     $sqlTotal = "SELECT COUNT(*) as total FROM questions q 
@@ -144,8 +151,8 @@ class Question
     $answered = $this->db->fetch($sqlAnswered, array_merge([$userId], $subjectIds, [$examTypeId]));
 
     return [
-      'total' => (int)($total['total'] ?? 0),
-      'answered' => (int)($answered['answered'] ?? 0)
+      'total' => (int) ($total['total'] ?? 0),
+      'answered' => (int) ($answered['answered'] ?? 0)
     ];
   }
 
@@ -153,7 +160,7 @@ class Question
   {
     $sql = "SELECT question_id FROM question_versions WHERE id = ? LIMIT 1";
     $result = $this->db->fetch($sql, [$qvId]);
-    return $result ? (int)$result['question_id'] : false; // Zwracamy int, nie tablicę!
+    return $result ? (int) $result['question_id'] : false; // Zwracamy int, nie tablicę!
   }
 
   public function getQuestionById(int $id): array|false
@@ -179,7 +186,8 @@ class Question
 
   private function buildInClausePlaceholders(array $ids): ?string
   {
-    if (empty($ids)) return null;
+    if (empty($ids))
+      return null;
     return implode(',', array_fill(0, count($ids), '?'));
   }
 
@@ -189,34 +197,44 @@ class Question
    */
   public function searchQuestions(array $filters): array
   {
-    $sql = $this->getBaseSelectionSql() . " 
+    $sql = "SELECT 
+                q.id as question_id, 
+                qv.id as question_version_id, 
+                q.topic_id, 
+                qv.question_text, 
+                qv.image_path, 
+                qv.explanation,
+                et.code as exam_code,
+                t.name as topic_name
+            FROM questions q
+            JOIN question_versions qv ON q.id = qv.question_id
             JOIN exam_types et ON q.exam_type_id = et.id
             JOIN topics t ON q.topic_id = t.id
             WHERE q.is_active = 1 AND qv.is_active = 1 AND q.deleted_at IS NULL ";
-    
+
     $params = [];
 
     // Filtr Egzamin
     if (!empty($filters['exam_id'])) {
       $sql .= " AND q.exam_type_id = ? ";
-      $params[] = (int)$filters['exam_id'];
+      $params[] = (int) $filters['exam_id'];
     }
 
     // Filtr Temat
     if (!empty($filters['topic_id'])) {
       $sql .= " AND q.topic_id = ? ";
-      $params[] = (int)$filters['topic_id'];
+      $params[] = (int) $filters['topic_id'];
     }
 
     // Filtr "Zapytanie" (ID lub Treść)
     if (!empty($filters['query'])) {
       $query = trim($filters['query']);
-      
+
       // Jeśli to liczba -> szukamy po ID pytania
       if (is_numeric($query)) {
         $sql .= " AND q.id = ? ";
-        $params[] = (int)$query;
-      } 
+        $params[] = (int) $query;
+      }
       // Jeśli tekst -> szukamy w treści (min 3 znaki)
       elseif (mb_strlen($query) >= 3) {
         $sql .= " AND (qv.question_text LIKE ? OR qv.explanation LIKE ?) ";

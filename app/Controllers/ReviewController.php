@@ -33,6 +33,11 @@ class ReviewController extends BaseController
       $type = $_GET['type'] ?? 'errors';
       $cat = $_GET['category'] ?? 0;
       $backUrl = url('historia') . '?type=' . $type . '&category=' . $cat;
+    } elseif ($source === 'search') {
+      $query = $_GET['query'] ?? '';
+      $exam = $_GET['exam_id'] ?? '';
+      $topic = $_GET['topic_id'] ?? '';
+      $backUrl = url('search') . "?exam_id=$exam&topic_id=$topic&query=" . urlencode($query);
     } else {
       $backUrl = url('statystyki');
     }

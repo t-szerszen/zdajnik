@@ -21,18 +21,19 @@ $results = $results ?? [];
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Wyszukiwarka</span> Pytań</h1>
-      <p class="page-header__text">Potrzebujesz znaleźć konkretne zagadnienie lub sprawdzić wyjaśnienie do pytania o znanym ID? Skorzystaj z naszych filtrów.</p>
+      <p class="page-header__text">Potrzebujesz znaleźć konkretne zagadnienie lub sprawdzić wyjaśnienie do pytania o
+        znanym ID? Skorzystaj z naszych filtrów.</p>
     </div>
   </header>
 
   <main class="search-page">
     <div class="search-page__container">
-      
+
       <!-- Sekcja Formularza Filtrów -->
       <section class="search-page__filters">
         <form action="<?= url('search') ?>" method="GET" class="search-form">
           <div class="search-form__grid">
-            
+
             <!-- Egzamin -->
             <div class="search-form__field">
               <label for="exam_id" class="search-form__label">Egzamin</label>
@@ -63,9 +64,9 @@ $results = $results ?? [];
             <div class="search-form__field search-form__field--full">
               <label for="query" class="search-form__label">ID pytania lub treść (min. 3 znaki)</label>
               <div class="search-form__input-wrapper">
-                <input type="text" name="query" id="query" class="search-form__input" 
-                       placeholder="np. podzespoły komputerowe lub 402" 
-                       value="<?= htmlspecialchars($filters['query'] ?? '') ?>">
+                <input type="text" name="query" id="query" class="search-form__input"
+                  placeholder="np. podzespoły komputerowe lub 402"
+                  value="<?= htmlspecialchars($filters['query'] ?? '') ?>">
                 <button type="submit" class="btn btn--primary">
                   <i class="fas fa-search"></i> Szukaj
                 </button>
@@ -85,8 +86,10 @@ $results = $results ?? [];
               <?php foreach ($results as $q): ?>
                 <article class="search-result-card">
                   <div class="search-result-card__header">
+                    <div class="search-result-card__badges">
+                      <span class="badge badge--accent"><?= htmlspecialchars($q['exam_code'] ?? 'INF') ?></span>
+                    </div>
                     <span class="search-result-card__id">ID: #<?= $q['question_id'] ?></span>
-                    <!-- <span class="search-result-card__topic"><?= htmlspecialchars($q['topic_name'] ?? '') ?></span> -->
                   </div>
                   <div class="search-result-card__content">
                     <p class="search-result-card__text">
@@ -94,7 +97,16 @@ $results = $results ?? [];
                     </p>
                   </div>
                   <div class="search-result-card__footer">
-                    <a href="<?= url('test-pytanie/' . $q['question_id']) ?>" class="btn btn--secondary btn--sm">
+                    <?php 
+                      $reviewParams = [
+                        'source' => 'search',
+                        'query' => $filters['query'] ?? '',
+                        'exam_id' => $filters['exam_id'] ?? '',
+                        'topic_id' => $filters['topic_id'] ?? ''
+                      ];
+                      $reviewLink = url('test-pytanie/' . $q['question_id']) . '?' . http_build_query($reviewParams);
+                    ?>
+                    <a href="<?= $reviewLink ?>" class="btn btn--secondary btn--sm">
                       Pokaż detal <i class="fas fa-chevron-right"></i>
                     </a>
                   </div>
@@ -106,7 +118,8 @@ $results = $results ?? [];
           <div class="stats-card__empty">
             <div class="stats-card__empty-icon">🔍</div>
             <p>Nie znaleźliśmy pytań spełniających Twoje kryteria.</p>
-            <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.6;">Spróbuj wpisać inną frazę lub zmienić filtry.</p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.6;">Spróbuj wpisać inną frazę lub zmienić filtry.
+            </p>
           </div>
         <?php else: ?>
           <div class="stats-card__empty">
@@ -121,4 +134,5 @@ $results = $results ?? [];
 
   <?php include 'partials/footer.php'; ?>
 </body>
+
 </html>
