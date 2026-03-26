@@ -73,7 +73,7 @@ class Question
                 WHERE q.is_active = 1 AND qv.is_active = 1
                 AND q.topic_id IN ($placeholders) AND q.exam_type_id = ?
                 AND up.attempts_count > 0
-                AND (up.correct_count * 100.0 / up.attempts_count) <= 60
+                AND (up.correct_count * 100.0 / up.attempts_count) < 60
                 ORDER BY (up.correct_count * 100.0 / up.attempts_count) ASC, RAND() 
                 LIMIT " . (int)$limit;
 
@@ -110,6 +110,45 @@ class Question
     return $this->db->fetchAll($sql, array_merge([$userId], $subjectIds, [$examTypeId]));
   }
 
+  public function getSavedQuestions(int $userId, array $subjectIds, int $limit, int $examTypeId): array
+  {
+    $placeholders = $this->buildInClausePlaceholders($subjectIds);
+    if (!$placeholders) return [];
+
+    $sql = $this->getBaseSelectionSql() . "
+                INNER JOIN saved_questions sq ON q.id = sq.question_id AND sq.user_id = ?
+                WHERE q.is_active = 1 AND qv.is_active = 1
+                AND q.topic_id IN ($placeholders) AND q.exam_type_id = ?
+                ORDER BY RAND() LIMIT " . (int)$limit;
+
+    return $this->db->fetchAll($sql, array_merge([$userId], $subjectIds, [$examTypeId]));
+  }
+
+  public function getPoolProgress(int $userId, array $subjectIds, int $examTypeId): array
+  {
+    $placeholders = $this->buildInClausePlaceholders($subjectIds);
+    if (!$placeholders) return ['total' => 0, 'answered' => 0];
+
+    // Total in pool
+    $sqlTotal = "SELECT COUNT(*) as total FROM questions q 
+                 WHERE q.topic_id IN ($placeholders) AND q.exam_type_id = ? 
+                 AND q.is_active = 1 AND q.deleted_at IS NULL";
+    $total = $this->db->fetch($sqlTotal, array_merge($subjectIds, [$examTypeId]));
+
+    // Answered in pool
+    $sqlAnswered = "SELECT COUNT(DISTINCT up.question_id) as answered FROM user_progress up
+                    JOIN questions q ON up.question_id = q.id
+                    WHERE up.user_id = ? AND q.topic_id IN ($placeholders) AND q.exam_type_id = ?
+                    AND q.is_active = 1 AND q.deleted_at IS NULL
+                    AND up.attempts_count > 0";
+    $answered = $this->db->fetch($sqlAnswered, array_merge([$userId], $subjectIds, [$examTypeId]));
+
+    return [
+      'total' => (int)($total['total'] ?? 0),
+      'answered' => (int)($answered['answered'] ?? 0)
+    ];
+  }
+
   public function getQuestionIdByVersionId(int $qvId): int|false
   {
     $sql = "SELECT question_id FROM question_versions WHERE id = ? LIMIT 1";
@@ -142,5 +181,54 @@ class Question
   {
     if (empty($ids)) return null;
     return implode(',', array_fill(0, count($ids), '?'));
+  }
+
+  /**
+   * Wyszukuje pytania na podstawie filtrów.
+   * Wspiera: egzamin, temat, ID (numer pytania) lub treść.
+   */
+  public function searchQuestions(array $filters): array
+  {
+    $sql = $this->getBaseSelectionSql() . " 
+            JOIN exam_types et ON q.exam_type_id = et.id
+            JOIN topics t ON q.topic_id = t.id
+            WHERE q.is_active = 1 AND qv.is_active = 1 AND q.deleted_at IS NULL ";
+    
+    $params = [];
+
+    // Filtr Egzamin
+    if (!empty($filters['exam_id'])) {
+      $sql .= " AND q.exam_type_id = ? ";
+      $params[] = (int)$filters['exam_id'];
+    }
+
+    // Filtr Temat
+    if (!empty($filters['topic_id'])) {
+      $sql .= " AND q.topic_id = ? ";
+      $params[] = (int)$filters['topic_id'];
+    }
+
+    // Filtr "Zapytanie" (ID lub Treść)
+    if (!empty($filters['query'])) {
+      $query = trim($filters['query']);
+      
+      // Jeśli to liczba -> szukamy po ID pytania
+      if (is_numeric($query)) {
+        $sql .= " AND q.id = ? ";
+        $params[] = (int)$query;
+      } 
+      // Jeśli tekst -> szukamy w treści (min 3 znaki)
+      elseif (mb_strlen($query) >= 3) {
+        $sql .= " AND (qv.question_text LIKE ? OR qv.explanation LIKE ?) ";
+        $params[] = "%$query%";
+        $params[] = "%$query%";
+      } else {
+        // Jeśli zapytanie tekstowe < 3 znaki, ignorujemy ten filtr zgodnie z wymogiem optymalizacji
+      }
+    }
+
+    $sql .= " ORDER BY q.id DESC LIMIT 30";
+
+    return $this->db->fetchAll($sql, $params);
   }
 }

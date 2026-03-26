@@ -185,6 +185,22 @@ class ApiClient {
     };
     return this._request('/check-answer', options);
   }
+
+  /**
+   * Przełącza stan zapisania pytania (Saved Question Toggle).
+   * @param {number} questionId - ID pytania.
+   * @returns {Promise<{success: boolean, data?: object, error?: string}>}
+   */
+  toggleSavedQuestion(questionId) {
+    const options = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        question_id: questionId,
+      }),
+    };
+    return this._request('/toggle-saved', options);
+  }
 }
 
 /**

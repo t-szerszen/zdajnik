@@ -80,9 +80,23 @@ class UIHandler {
          </div>`
       : '';
 
-    // Krok 3: Zbuduj finalny szablon całej karty pytania i wstaw go do kontenera.
+    // Krok 3: Wygeneruj przycisk zapisu (tylko dla zalogowanych)
+    let saveBtnHTML = '';
+    if (window.examlyAppState.isUserLoggedIn) {
+      const heartType = question.is_saved ? 'fas' : 'far';
+      saveBtnHTML = `
+        <button class="quiz-card__save-btn" data-question-id="${question.question_id}" title="Zapisz pytanie">
+          <i class="${heartType} fa-heart"></i>
+        </button>
+      `;
+    }
+
+    // Krok 4: Zbuduj finalny szablon całej karty pytania i wstaw go do kontenera.
     container.innerHTML = `
       <section class="quiz-card">
+        <div class="quiz-card__header">
+          ${saveBtnHTML}
+        </div>
         <p class="quiz-card__question-text">${escapeHTML(question.question_text)}</p>
         ${imageHTML}
         <div class="quiz-card__answers">${answersHTML}</div>
@@ -90,7 +104,7 @@ class UIHandler {
           <div class="quiz-card__button-container"></div>
           <div class="quiz-card__explanation"></div>
         </div>
-        <input type="hidden" id="question_id_hidden" value="${question.id}">
+        <input type="hidden" id="question_id_hidden" value="${question.question_id}">
       </section>`;
   }
 

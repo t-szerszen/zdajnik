@@ -57,12 +57,16 @@ $extraScripts = [
   -->
   <header class="page-header">
     <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span> - Jedno pytanie</h1>
+      <h1 class="page-header__title"><span class="text-gradient">
+          <?= htmlspecialchars($exam['formatted_name']) ?>
+        </span> - Jedno pytanie</h1>
       <p class="page-header__text">
-        Nie masz czasu na pełny test? Spoko! Ten tryb jest idealny, żeby w kilka minut wbić do głowy coś nowego. Wybierz dział, wylosuj pytanie prosto z oficjalnych egzaminów i sprawdź, czy dasz radę.
+        Nie masz czasu na pełny test? Spoko! Ten tryb jest idealny, żeby w kilka minut wbić do głowy coś nowego. Wybierz
+        dział, wylosuj pytanie prosto z oficjalnych egzaminów i sprawdź, czy dasz radę.
       </p>
       <p class="page-header__text">
-        <strong class="text-gradient">Pro Tip:</strong> Zapisuj na boku każde nowe hasło lub trudniejsze zagadnienie. Regularne, krótkie sesje potrafią zdziałać cuda!
+        <strong class="text-gradient">Pro Tip:</strong> Zapisuj na boku każde nowe hasło lub trudniejsze zagadnienie.
+        Regularne, krótkie sesje potrafią zdziałać cuda!
       </p>
     </div>
   </header>
@@ -94,8 +98,11 @@ $extraScripts = [
             </label>
             <?php foreach ($categories as $category): ?>
               <label class="topic-selector__label">
-                <input type="checkbox" name="subject[]" value="<?= htmlspecialchars($category['id']) ?>" class="topic-checkbox" <?= (isset($_GET['subject']) && in_array($category['id'], is_array($_GET['subject']) ? $_GET['subject'] : [$_GET['subject']])) ? 'checked' : '' ?>>
-                <span><?= htmlspecialchars($category['name']) ?></span>
+                <input type="checkbox" name="subject[]" value="<?= htmlspecialchars($category['id']) ?>"
+                  class="topic-checkbox" <?= (isset($_GET['subject']) && in_array($category['id'], is_array($_GET['subject']) ? $_GET['subject'] : [$_GET['subject']])) ? 'checked' : '' ?>>
+                <span>
+                  <?= htmlspecialchars($category['name']) ?>
+                </span>
               </label>
             <?php endforeach; ?>
           </div>
@@ -112,7 +119,8 @@ $extraScripts = [
               <span>Nieodkryte</span>
             </label>
             <label class="topic-selector__label premium-option">
-              <input type="checkbox" name="premium_option" value="toImprove" class="premium-checkbox" <?= (isset($_GET['premium']) && $_GET['premium'] === 'toImprove') ? 'checked' : '' ?>>
+              <input type="checkbox" name="premium_option" value="toImprove" class="premium-checkbox"
+                <?= (isset($_GET['premium']) && $_GET['premium'] === 'toImprove') ? 'checked' : '' ?>>
               <span>Słabe punkty</span>
             </label>
             <label class="topic-selector__label premium-option">
@@ -120,8 +128,14 @@ $extraScripts = [
               <span>Powtórki</span>
             </label>
             <label class="topic-selector__label premium-option">
-              <input type="checkbox" name="premium_option" value="lastMistakes" class="premium-checkbox" <?= (isset($_GET['premium']) && $_GET['premium'] === 'lastMistakes') ? 'checked' : '' ?>>
+              <input type="checkbox" name="premium_option" value="lastMistakes" class="premium-checkbox"
+                <?= (isset($_GET['premium']) && $_GET['premium'] === 'lastMistakes') ? 'checked' : '' ?>>
               <span>Ostatnie błędy</span>
+            </label>
+            <label class="topic-selector__label premium-option">
+              <input type="checkbox" name="premium_option" value="saved" class="premium-checkbox"
+                <?= (isset($_GET['premium']) && $_GET['premium'] === 'saved') ? 'checked' : '' ?>>
+              <span>Zapisane</span>
             </label>
           </div>
         </fieldset>
@@ -135,6 +149,17 @@ $extraScripts = [
 
     <!-- Główna treść (Main Content), gdzie dynamicznie ładowane jest pytanie -->
     <main class="quiz-page-layout__main-content">
+      <!-- Session/Pool Progress Bar -->
+      <div id="quiz-progress-bar" class="quiz-progress" style="display:none; margin-bottom: 2rem;">
+        <div class="quiz-progress__header">
+          <span class="quiz-progress__label">Udzielone odpowiedzi: <strong id="progress-counts">0 / 0</strong></span>
+          <span class="quiz-progress__percentage" id="progress-percent">0%</span>
+        </div>
+        <div class="quiz-progress__bar">
+          <div class="quiz-progress__fill" id="progress-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
       <!-- 
         Kontener na pytanie.
         Początkowo zawiera placeholder. Jego zawartość jest w całości

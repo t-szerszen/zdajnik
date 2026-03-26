@@ -109,6 +109,27 @@ class Database
   }
 
   /**
+   * Wykonuje zapytanie i zwraca jednowymiarową tablicę wartości z pierwszej kolumny.
+   * Idealna do pobierania listy ID.
+   *
+   * @param string $sql Zapytanie SQL z placeholderami.
+   * @param array<mixed> $params Parametry do bindowania.
+   * 
+   * @return array Tablica wartości pierwszej kolumny.
+   */
+  public function fetchColumn(string $sql, array $params = []): array
+  {
+    try {
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute($params);
+      return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    } catch (PDOException $e) {
+      error_log('Błąd zapytania (fetchColumn): ' . $e->getMessage() . " SQL: $sql");
+      return [];
+    }
+  }
+
+  /**
    * Wykonuje zapytanie i zwraca pojedynczy wiersz.
    * Idealna do pobierania jednego rekordu po jego ID.
    *

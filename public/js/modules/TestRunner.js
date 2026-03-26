@@ -24,6 +24,7 @@
 import api from './ApiClient.js';
 import { escapeHTML } from '../utils/sanitize.js';
 import ExplanationToggler from '../components/ExplanationToggler.js';
+import saveToggle from '../components/SaveToggleHandler.js';
 
 export class TestRunner {
   /**
@@ -89,6 +90,12 @@ export class TestRunner {
     window.addEventListener('beforeunload', this.handleBeforeUnload);
     this.finishBtn.addEventListener('click', this.finishTest);
     this.questionsWrapper.addEventListener('click', this.handleAnswerSelection);
+    this.resultsDetailsContainer.addEventListener('click', (e) => {
+      const saveBtn = e.target.closest('.quiz-card__save-btn');
+      if (saveBtn) {
+        saveToggle.toggle(saveBtn);
+      }
+    });
   }
 
   /**
@@ -125,15 +132,22 @@ export class TestRunner {
       
       const imageHTML = image_path
         ? `<div class="quiz-card__image-container">
-             <img src="/examly/public/images/questions/${escapeHTML(image_path)}"
+             <img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_path)}"
                   alt="Ilustracja do pytania" class="quiz-card__image">
            </div>`
         : '';
 
-      questionElement.innerHTML = `
-        <header class="quiz-card__header">
-          <span class="quiz-card__question-number">Pytanie ${index + 1} / ${questions.length}</span>
-        </header>
+       questionElement.innerHTML = `
+         <header class="quiz-card__header">
+           <span class="quiz-card__question-number">Pytanie ${index + 1} / ${questions.length}</span>
+           <div class="quiz-card__header-actions">
+           ${window.examlyAppState.isUserLoggedIn ? `
+             <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz pytanie">
+               <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
+             </button>
+           ` : ''}
+           </div>
+         </header>
         <div class="quiz-card__content">
           <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
           ${imageHTML}
@@ -333,14 +347,21 @@ async finishTest() {
           </div>`;
       });
 
-      card.innerHTML = `
-        <header class="quiz-card__header">
-            <span class="quiz-card__question-number">Pytanie ${index + 1}</span>
-            ${badgeHTML}
-        </header>
+       card.innerHTML = `
+         <header class="quiz-card__header">
+             <span class="quiz-card__question-number">Pytanie ${index + 1}</span>
+             <div class="quiz-card__header-actions">
+               ${window.examlyAppState.isUserLoggedIn ? `
+                 <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz pytanie">
+                   <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
+                 </button>
+               ` : ''}
+               ${badgeHTML}
+             </div>
+         </header>
         <div class="quiz-card__content">
           <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
-          ${image_path ? `<div class="quiz-card__image-container"><img src="/examly/public/images/questions/${escapeHTML(image_path)}" class="quiz-card__image"></div>` : ''}
+          ${image_path ? `<div class="quiz-card__image-container"><img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_path)}" class="quiz-card__image"></div>` : ''}
         </div>
         <div class="quiz-card__answers" data-answered="true">${answersHTML}</div>
         <div class="quiz-card__actions"></div>
@@ -412,7 +433,14 @@ async finishTest() {
    * @private
    * @param {Event} event - Obiekt zdarzenia `click`.
    */
-  handleAnswerSelection(event) {
+   handleAnswerSelection(event) {
+    // Krok 1: Przycisk zapisu
+    const saveBtn = event.target.closest('.quiz-card__save-btn');
+    if (saveBtn) {
+      this.handleSaveToggle(saveBtn);
+      return;
+    }
+
     const answerLabel = event.target.closest('.quiz-card__answer');
     if (!answerLabel) return;
 
@@ -450,9 +478,19 @@ async finishTest() {
       }
 
       // Krok 3: Jeśli czas się skończył, automatycznie zakończ test.
-      if (timeLeft <= 0) {
+       if (timeLeft <= 0) {
         this.finishTest();
       }
     }, 1000);
+  }
+
+  /**
+   * Obsługuje przełączanie stanu zapisania pytania.
+   * @private
+   * @async
+   * @param {HTMLElement} btn - Element przycisku zapisu.
+   */
+  handleSaveToggle(btn) {
+    saveToggle.toggle(btn);
   }
 }

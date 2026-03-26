@@ -188,5 +188,9 @@ class Router
     $this->post('api/check-answer', 'ApiController@checkAnswer');
     $this->post('api/save-attempt', 'ApiController@saveAttempt');
     $this->post('api/save-progress-bulk', 'ApiController@saveProgressBulk');
+    $this->post('api/toggle-saved', 'ApiController@toggleSavedQuestion');
+
+    // --- Wyszukiwarka ---
+    $this->get('search', 'SearchController@showSearch');
   }
 }

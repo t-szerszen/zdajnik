@@ -61,6 +61,13 @@ class HistoryController extends BaseController
         $viewData['items'] = $result['items'];
         break;
 
+      case 'saved':
+        $viewData['title'] = ' Zapisanych Pytań';
+        $viewData['backTo'] = 'savedQuestions';
+        $result = $this->statsService->getSavedQuestions($userId, $selectedExamTypeId, null); 
+        $viewData['items'] = $result['items'];
+        break;
+
       case 'exams':
       default:
         $viewData['title'] = ' Egzaminów';

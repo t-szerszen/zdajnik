@@ -177,6 +177,37 @@ $canonicalUrl = 'https://www.examly.pl/';
       </div>
     </section>
 
+    <section class="search-feature-section">
+      <div class="search-feature-card">
+        <div class="search-feature-card__content">
+            <h2 class="search-feature-card__title">Zapomniałeś jakiegoś pytania? <span class="text-gradient">Znajdź je teraz.</span></h2>
+            <p class="search-feature-card__text">
+                Nasza wyszukiwarka pozwala na błyskawiczne znalezienie pytania po treści lub jego unikalnym numerze ID. 
+                Dzięki temu szybko sprawdzisz poprawne odpowiedzi i obszerne wyjaśnienia.
+            </p>
+            <div class="search-feature-card__cta">
+                <a href="<?= url('search') ?>" class="btn btn--primary btn--large">
+                    <i class="fas fa-search" style="margin-right: 0.5rem;"></i> Wypróbuj wyszukiwarkę
+                </a>
+            </div>
+        </div>
+        <div class="search-feature-card__image-preview">
+            <div class="search-preview-mockup">
+                <div class="search-preview-mockup__dots">
+                    <span></span><span></span><span></span>
+                </div>
+                <div class="search-preview-mockup__content">
+                    <div class="search-preview-mockup__bar">402</div>
+                    <div class="search-preview-mockup__item">
+                        <div class="search-preview-mockup__line" style="width: 80%"></div>
+                        <div class="search-preview-mockup__line" style="width: 60%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </section>
+
     <!-- 
       =====================================================================
       Sekcja 3: Exams Section

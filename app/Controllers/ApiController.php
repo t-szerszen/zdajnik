@@ -6,6 +6,7 @@ use App\Models\Question;
 use App\Models\Answer;
 use App\Models\UserProgress;
 use App\Models\Attempt;
+use App\Models\SavedQuestion;
 
 /**
  * Główny kontroler API do obsługi logiki quizu.
@@ -41,6 +42,11 @@ class ApiController extends BaseController
   private Attempt $attemptModel;
 
   /**
+   * @var SavedQuestion Model do zarządzania zapisanymi pytaniami.
+   */
+  private SavedQuestion $savedQuestionModel;
+
+  /**
    * Konstruktor klasy ApiController.
    *
    * Inicjalizuje wszystkie niezbędne obiekty modeli, które stanowią warstwę
@@ -54,6 +60,7 @@ class ApiController extends BaseController
     $this->answerModel = new Answer();
     $this->userProgressModel = new UserProgress();
     $this->attemptModel = new Attempt();
+    $this->savedQuestionModel = new SavedQuestion();
   }
 
   /**
@@ -79,7 +86,22 @@ class ApiController extends BaseController
     }
 
     $answers = $this->answerModel->getAnswersByVersionId($question['question_version_id']);
-    $this->sendJsonResponse(['success' => true, 'question' => $question, 'answers' => $answers]);
+
+    if ($this->isUserLoggedIn) {
+      $question['is_saved'] = $this->savedQuestionModel->isSaved($this->currentUser->getId(), $question['question_id']);
+    }
+
+    $responseData = [
+      'success' => true,
+      'question' => $question,
+      'answers' => $answers
+    ];
+
+    if ($this->isUserLoggedIn && isset($result['pool_progress'])) {
+      $responseData['pool_progress'] = $result['pool_progress'];
+    }
+
+    $this->sendJsonResponse($responseData);
   }
 
   /**
@@ -110,8 +132,11 @@ class ApiController extends BaseController
     }
 
     $questionsData = [];
+    $savedIds = $this->isUserLoggedIn ? $this->savedQuestionModel->getUserSavedIds($this->currentUser->getId()) : [];
+
     foreach ($questions as $question) {
       $answers = $this->answerModel->getAnswersByVersionId($question['question_version_id']);
+      $question['is_saved'] = in_array((int) $question['question_id'], $savedIds);
       $questionsData[] = ['question' => $question, 'answers' => $answers];
     }
 
@@ -136,8 +161,11 @@ class ApiController extends BaseController
     $questions = $this->questionModel->getQuestions($allTopicIds, 40, $examTypeId);
 
     $questionsData = [];
+    $savedIds = $this->isUserLoggedIn ? $this->savedQuestionModel->getUserSavedIds($this->currentUser->getId()) : [];
+
     foreach ($questions as $question) {
       $answers = $this->answerModel->getAnswersByVersionId($question['question_version_id']);
+      $question['is_saved'] = in_array((int) $question['question_id'], $savedIds);
       $questionsData[] = ['question' => $question, 'answers' => $answers];
     }
 
@@ -249,6 +277,39 @@ class ApiController extends BaseController
     }
   }
 
+  /**
+   * Endpoint: Przełącza stan zapisania pytania (Saved Question Toggle).
+   */
+  public function toggleSavedQuestion(): void
+  {
+    $this->ensurePostRequest();
+
+    if (!$this->isUserLoggedIn) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Wymagane uwierzytelnienie.'], 403);
+      return;
+    }
+
+    $questionId = (int) ($_POST['question_id'] ?? 0);
+
+    if (!$questionId) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Brak ID pytania.'], 400);
+      return;
+    }
+
+    $success = $this->savedQuestionModel->toggle($this->currentUser->getId(), $questionId);
+
+    if ($success) {
+      $isSaved = $this->savedQuestionModel->isSaved($this->currentUser->getId(), $questionId);
+      $this->sendJsonResponse([
+        'success' => true,
+        'is_saved' => $isSaved,
+        'message' => $isSaved ? 'Pytanie zostało zapisane.' : 'Pytanie zostało usunięte z zapisanych.'
+      ]);
+    } else {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Wystąpił błąd podczas zapisywania.'], 500);
+    }
+  }
+
   // ========================================================================
   // METODY POMOCNICZE (PRIVATE)
   // ========================================================================
@@ -299,13 +360,19 @@ class ApiController extends BaseController
         'toImprove' => $this->questionModel->getLowerAccuracyQuestions($userId, $subjectIds, $limit, $examTypeId),
         'toRemind' => $this->questionModel->getQuestionsRepeatedAtTheLatest($userId, $subjectIds, $limit, $examTypeId),
         'lastMistakes' => $this->questionModel->getLastMistakes($userId, $subjectIds, $limit, $examTypeId),
+        'saved' => $this->questionModel->getSavedQuestions($userId, $subjectIds, $limit, $examTypeId),
         default => $this->questionModel->getQuestions($subjectIds, $limit, $examTypeId),
       };
     } else {
       $questions = $this->questionModel->getQuestions($subjectIds, $limit, $examTypeId);
     }
 
-    return ['success' => true, 'questions' => $questions];
+    $poolProgress = null;
+    if ($this->isUserLoggedIn) {
+      $poolProgress = $this->questionModel->getPoolProgress($userId, $subjectIds, $examTypeId);
+    }
+
+    return ['success' => true, 'questions' => $questions, 'pool_progress' => $poolProgress];
   }
 
   /**

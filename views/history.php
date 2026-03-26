@@ -35,19 +35,19 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
           <div class="stats-card__title">
             <?php if ($type === 'exams'): ?>
               <i class="fas fa-file-invoice"></i>
-            <?php elseif ($type === 'critical'): ?>
-              <i class="fas fa-exclamation-triangle"></i>
+            <?php elseif ($type === 'saved'): ?>
+              <i class="fas fa-heart"></i>
             <?php else: ?>
               <i class="fas fa-history"></i>
             <?php endif; ?>
-            <span><?= htmlspecialchars('Historia ' . $title ?? 'Historia') ?></span>
+            <span><?= htmlspecialchars('Historia ' . ($title ?? 'Historia')) ?></span>
           </div>
 
-          <?php if (!empty($items) && in_array($type, ['errors', 'critical'])): ?>
+          <?php if (!empty($items) && in_array($type, ['errors', 'critical', 'saved'])): ?>
             <?php
-            $premiumParam = ($type === 'critical') ? 'toImprove' : 'lastMistakes';
+            $premiumParam = ($type === 'critical') ? 'toImprove' : (($type === 'saved') ? 'saved' : 'lastMistakes');
             ?>
-            <a href="<?= url('jedno-pytanie/' . $selectedCategoryCode . '?premium=' . $premiumParam . '#select-all-codes') ?>"
+            <a href="<?= url('jedno-pytanie/' . $selectedCategoryCode . '?premium=' . $premiumParam . '&selectAll=true#select-all-codes') ?>"
               class="btn btn--primary btn--sm">
               <i class="fas fa-bullseye" style="margin-right: 0.5rem;"></i> Ćwicz wszystkie (<?= count($items) ?>)
             </a>
@@ -67,8 +67,8 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
               <h3>
                 <?php if ($type === 'exams'): ?>
                   Twoja historia jest pusta
-                <?php elseif ($type === 'critical'): ?>
-                  Brak krytycznych błędów
+                <?php elseif ($type === 'saved'): ?>
+                  Twoja lista zapisanych pytań jest pusta
                 <?php else: ?>
                   Brak błędów do przejrzenia
                 <?php endif; ?>
@@ -76,6 +76,8 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
               <p>
                 <?php if ($type === 'exams'): ?>
                   Czas zmierzyć się z pierwszym arkuszem i sprawdzić swoje umiejętności!
+                <?php elseif ($type === 'saved'): ?>
+                  Dodawaj trudne pytania do zapisanych, aby móc do nich wrócić w dowolnym momencie.
                 <?php else: ?>
                   Świetna robota! Wygląda na to, że radzisz sobie doskonale w tej kategorii.
                 <?php endif; ?>
@@ -139,7 +141,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
                     </div>
                   </div>
 
-                <?php elseif ($type === 'errors'): ?>
+                <?php elseif ($type === 'errors' || $type === 'saved'): ?>
                   <div class="stats-card__list-item stats-card__list-item--history">
                     <span class="stats-card__question-text">
                       <?php if (!empty($item['topic_name'])): ?>
@@ -150,7 +152,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
                       <?= htmlspecialchars($item['question_text']) ?>
                     </span>
                     <div class="stats-card__item-actions">
-                      <a href="<?= url('test-pytanie/' . $item['id']) ?>?source=history&type=<?= $type ?>&category=<?= $selectedCategoryId ?>" class="btn btn--secondary btn--sm">zobacz</a>
+                      <a href="<?= url('test-pytanie/' . $item['id']) ?>?source=history&type=<?= $type ?>&category=<?= $selectedCategoryId ?>" class="btn btn--primary btn--sm">zobacz</a>
                     </div>
                   </div>
                 <?php endif; ?>

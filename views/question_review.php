@@ -32,8 +32,15 @@ $pageDescription = 'Analiza pytania z bazy egzaminacyjnej.';
       <main class="review-page__main">
         <article class="quiz-card">
           <header class="quiz-card__header">
-            <span class="quiz-card__question-number">Pytanie</span>
-            <span class="status-badge status-badge--success"><i class="fas fa-eye"></i> Tryb przeglądu</span>
+            <div>
+              <span class="quiz-card__question-number">Pytanie</span>
+              <span class="status-badge status-badge--success"><i class="fas fa-eye"></i> Tryb przeglądu</span>
+            </div>
+            <?php if ($isUserLoggedIn): ?>
+              <button class="quiz-card__save-btn" data-question-id="<?= $question['id'] ?>" title="Zapisz pytanie">
+                <i class="<?= $question['is_saved'] ? 'fas' : 'far' ?> fa-heart"></i>
+              </button>
+            <?php endif; ?>
           </header>
 
           <div class="quiz-card__content">
@@ -96,6 +103,10 @@ $pageDescription = 'Analiza pytania z bazy egzaminacyjnej.';
   <?php include 'partials/footer.php'; ?>
 
   <script type="module" src="<?= url('js/components/ExplanationToggler.js') ?>"></script>
+  <script type="module">
+    import saveToggle from '<?= url('js/components/SaveToggleHandler.js') ?>';
+    saveToggle.init('.review-page__main');
+  </script>
 </body>
 
 </html>

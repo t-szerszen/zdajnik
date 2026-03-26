@@ -158,6 +158,10 @@ $extraScripts = [
               <input type="checkbox" name="premium_option" value="lastMistakes" class="premium-checkbox">
               <span>Ostatnio błędne</span>
             </label>
+            <label class="topic-selector__label premium-option">
+              <input type="checkbox" name="premium_option" value="saved" class="premium-checkbox">
+              <span>Zapisane</span>
+            </label>
           </div>
           <div class="config-step__actions">
             <button type="button" class="btn btn--secondary" data-action="prev">Wróć</button>

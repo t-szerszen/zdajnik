@@ -17,6 +17,16 @@ $errorHistory = $errorHistory ?? [];
 $criticalErrors = $criticalErrors ?? ['items' => [], 'total_answered' => 0, 'unlock_progress' => 0, 'is_unlocked' => false];
 $recentExams = $recentExams ?? [];
 $efficiencyTrend = $efficiencyTrend ?? [];
+$savedQuestions = $savedQuestions ?? ['items' => [], 'total' => 0];
+
+// Znajdź kod aktualnie wybranej kategorii do linków
+$selectedCategoryCode = '';
+foreach ($categories as $cat) {
+  if ($cat['id'] == $selectedCategoryId) {
+    $selectedCategoryCode = $cat['code'];
+    break;
+  }
+}
 
 // Dodajemy Chart.js oraz nasz komponent
 $extraScripts = [
@@ -65,14 +75,19 @@ $extraScripts = [
             <div class="stats-card__pie-chart"
               style="background: conic-gradient(var(--accent) 0%, #8b5cf6 <?= $masteryStats['percent'] ?>%, var(--field-bg) <?= $masteryStats['percent'] ?>% 100%);">
               <div class="stats-card__pie-center">
-                <span class="stats-card__pie-percentage"><?= $masteryStats['percent'] ?>%</span>
+                <span class="stats-card__pie-percentage">
+                  <?= $masteryStats['percent'] ?>%
+                </span>
               </div>
             </div>
           </div>
 
 
           <p class="stats-card__mastery-legend">
-            <?= $masteryStats['mastered'] ?> z <?= $masteryStats['total'] ?> pytań (<?= $masteryStats['percent'] ?>%)
+            <strong><?= $masteryStats['mastered'] ?></strong> opanowanych z <?= $masteryStats['total'] ?>
+          </p>
+          <p class="stats-card__mastery-activity" style="font-size: 0.8rem; text-align: center; color: var(--muted-text); margin-top: -0.5rem; margin-bottom: 2rem;">
+            Poznano: <?= ($masteryStats['attempted'] ?? 0) ?> / <?= $masteryStats['total'] ?> pytań
           </p>
 
           <!-- Topic Breakdown -->
@@ -81,7 +96,7 @@ $extraScripts = [
             <?php if (empty($topicStats)): ?>
               <div class="stats-card__empty stats-card__empty--compact">
                 <p>Rozpocznij naukę, aby zobaczyć postęp w tematach.</p>
-                <a href="<?= url('#topics-section') ?>" class="btn btn--primary btn--sm" style="margin-top: 1rem;">Wybierz
+                <a href="<?= url('jedno-pytanie/' . $selectedCategoryCode) ?>" class="btn btn--primary btn--sm" style="margin-top: 1rem;">Wybierz
                   temat</a>
               </div>
             <?php else: ?>
@@ -89,8 +104,10 @@ $extraScripts = [
               <?php foreach ($topicStats as $topic): ?>
                 <div class="stats-card__topic-item">
                   <div class="stats-card__topic-label">
-                    <span><?= htmlspecialchars($topic['name']) ?></span>
-                    <span><?= $topic['progress'] ?>% (<?= $topic['completed'] ?>/<?= $topic['total'] ?>)</span>
+                    <span>
+                      <?= htmlspecialchars($topic['name']) ?>
+                    </span>
+                    <span style="font-size: 0.8rem; opacity: 0.8;">Opanowane: <?= $topic['mastered'] ?> / Poznano: <?= $topic['attempted'] ?></span>
                   </div>
                   <div class="stats-card__progress-bar">
                     <div class="stats-card__progress-fill" style="width: <?= $topic['progress'] ?>%;"></div>
@@ -116,7 +133,7 @@ $extraScripts = [
                 <p>Twój wykres skuteczności jest jeszcze pusty.</p>
                 <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem; font-style: italic;">Rozwiąż pierwszy
                   egzamin, abyśmy mogli wygenerować Twój trend!</p>
-                <a href="<?= url('#egzaminy') ?>" class="btn btn--primary" style="margin-top: 1.5rem;">Rozpocznij test</a>
+                <a href="<?= url('test/' . $selectedCategoryCode) ?>" class="btn btn--primary" style="margin-top: 1.5rem;">Rozpocznij test</a>
               </div>
             <?php else: ?>
 
@@ -140,23 +157,33 @@ $extraScripts = [
             <ul class="stats-card__list">
               <li class="stats-card__list-item">
                 <span>Ostatnia aktywność:</span>
-                <strong><?= $records['last_activity'] ?></strong>
+                <strong>
+                  <?= $records['last_activity'] ?>
+                </strong>
               </li>
               <li class="stats-card__list-item">
                 <span>Ostatni egzamin:</span>
-                <strong><?= $records['last_exam'] ?></strong>
+                <strong>
+                  <?= $records['last_exam'] ?>
+                </strong>
               </li>
               <li class="stats-card__list-item">
                 <span>Najlepsza próba:</span>
-                <strong><?= $records['best_score'] ?>%</strong>
+                <strong>
+                  <?= $records['best_score'] ?>%
+                </strong>
               </li>
               <li class="stats-card__list-item">
                 <span>Średni czas:</span>
-                <strong><?= $records['avg_duration'] ?>s</strong>
+                <strong>
+                  <?= $records['avg_duration'] ?>s
+                </strong>
               </li>
               <li class="stats-card__list-item">
                 <span>Rozwiązanych testów:</span>
-                <strong><?= $records['total_exams'] ?></strong>
+                <strong>
+                  <?= $records['total_exams'] ?>
+                </strong>
               </li>
             </ul>
 
@@ -178,7 +205,8 @@ $extraScripts = [
                     <?= $predictedScore['predicted_score'] ?>%
                     <span
                       class="stats-card__confidence stats-card__confidence--<?= $predictedScore['confidence_level'] ?>">
-                      (<?= $predictedScore['confidence_level'] ?>)
+                      (
+                      <?= $predictedScore['confidence_level'] ?>)
                     </span>
                   </p>
                 </div>
@@ -188,7 +216,8 @@ $extraScripts = [
                   <div style="flex: 1;">
                     <p class="stats-card__lock-text"
                       style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-muted);">
-                      Przewidywany wynik dostępny po <?= $minExams ?> pełnych egzaminach
+                      Przewidywany wynik dostępny po
+                      <?= $minExams ?> pełnych egzaminach
                     </p>
                     <?php
                     $lockedPercent = min(100, round(($examsAnalyzed / $minExams) * 100));
@@ -201,7 +230,8 @@ $extraScripts = [
                     </div>
                     <p class="stats-card__unlock-text"
                       style="text-align: right; font-size: 0.75rem; margin-top: 0.25rem; color: var(--text-muted);">
-                      <?= $examsAnalyzed ?>/<?= $minExams ?>
+                      <?= $examsAnalyzed ?>/
+                      <?= $minExams ?>
                     </p>
                   </div>
                 </div>
@@ -219,8 +249,8 @@ $extraScripts = [
               <?php if ($criticalErrors['is_unlocked'] && ($criticalErrors['total_critical'] ?? 0) > 0): ?>
                 <a href="<?= url('historia?type=critical&category=' . $selectedCategoryId) ?>"
                   class="btn btn--secondary btn--sm">
-                  zobacz wszystkie (<?= $criticalErrors['total_critical'] ?>) <i class="fas fa-chevron-right"
-                    style="font-size: 0.8em;"></i>
+                  zobacz wszystkie (
+                  <?= $criticalErrors['total_critical'] ?>) <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
                 </a>
               <?php endif; ?>
             </div>
@@ -271,11 +301,6 @@ $extraScripts = [
                       </div>
                     </li>
                   <?php endforeach; ?>
-                  <li class="stats-card__action" style="display:flex; gap:10px; justify-content:center;">
-                    <a href="<?= url('inf03-jedno-pytanie?premium=toImprove&selectAll=true') ?>" class="btn btn--primary">
-                      🎯 Ćwicz (wszystkie)
-                    </a>
-                  </li>
                 <?php endif; ?>
               </ul>
             <?php endif; ?>
@@ -292,8 +317,8 @@ $extraScripts = [
               <?php if (($errorHistory['total'] ?? 0) > 0): ?>
                 <a href="<?= url('historia?type=errors&category=' . $selectedCategoryId) ?>"
                   class="btn btn--secondary btn--sm">
-                  zobacz wszystkie (<?= $errorHistory['total'] ?? 0 ?>) <i class="fas fa-chevron-right"
-                    style="font-size: 0.8em;"></i>
+                  zobacz wszystkie (
+                  <?= $errorHistory['total'] ?? 0 ?>) <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
                 </a>
               <?php endif; ?>
 
@@ -322,6 +347,39 @@ $extraScripts = [
 
           </div>
 
+          <!-- Saved Questions Card -->
+          <div class="stats-card stats-card--saved" id="savedQuestions">
+            <div class="stats-card__header"
+              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 class="stats-card__title" style="margin-bottom: 0;"><i class="fas fa-heart"
+                  style="color: var(--accent); margin-right: 8px;"></i> Zapisane Pytania</h3>
+              <?php if (($savedQuestions['total'] ?? 0) > 0): ?>
+                <a href="<?= url('historia?type=saved&category=' . $selectedCategoryId) ?>"
+                  class="btn btn--secondary btn--sm">
+                  zobacz wszystkie (
+                  <?= $savedQuestions['total'] ?? 0 ?>) <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
+                </a>
+              <?php endif; ?>
+            </div>
+            <ul class="stats-card__list">
+              <?php if (empty($savedQuestions['items'])): ?>
+                <li class="stats-card__empty">Nie masz jeszcze żadnych zapisanych pytań. Kliknij serduszko przy trudnym
+                  pytaniu, aby je tu dodać!</li>
+              <?php else: ?>
+                <?php foreach ($savedQuestions['items'] as $saved): ?>
+                  <li class="stats-card__list-item">
+                    <span class="stats-card__question-text">
+                      <?= mb_strimwidth(htmlspecialchars($saved['question_text']), 0, 40, "...") ?>
+                    </span>
+                    <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
+                      <a href="<?= url('test-pytanie/' . $saved['id']) ?>" class="btn btn--primary btn--sm">zobacz</a>
+                    </div>
+                  </li>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </ul>
+          </div>
+
           <!-- Exam History Card -->
           <div class="stats-card stats-card--history" id="examsHistory">
             <div class="stats-card__header"
@@ -330,8 +388,8 @@ $extraScripts = [
               <?php if (($recentExams['total'] ?? 0) > 0): ?>
                 <a href="<?= url('historia?type=exams&category=' . $selectedCategoryId) ?>"
                   class="btn btn--secondary btn--sm">
-                  zobacz wszystkie (<?= $recentExams['total'] ?? 0 ?>) <i class="fas fa-chevron-right"
-                    style="font-size: 0.8em;"></i>
+                  zobacz wszystkie (
+                  <?= $recentExams['total'] ?? 0 ?>) <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
                 </a>
               <?php endif; ?>
             </div>
@@ -339,7 +397,7 @@ $extraScripts = [
               <?php if (empty($recentExams['items'])): ?>
                 <li class="stats-card__empty">Nie masz jeszcze żadnych zapisanych egzaminów. Czas to zmienić!</li>
                 <li class="stats-card__action">
-                  <a href="<?= url('#egzaminy') ?>" class="btn btn--primary">Podejdź do arkusza</a>
+                  <a href="<?= url('test/' . $selectedCategoryCode) ?>" class="btn btn--primary">Podejdź do arkusza</a>
                 </li>
               <?php else: ?>
                 <?php foreach ($recentExams['items'] as $exam): ?>

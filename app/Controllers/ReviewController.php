@@ -20,7 +20,7 @@ class ReviewController extends BaseController
    */
   public function showQuestionReview(int $questionId)
   {
-    $question = $this->statsService->getQuestionDetails($questionId);
+    $question = $this->statsService->getQuestionDetails($questionId, $this->currentUser->getId());
 
     if (!$question) {
       http_response_code(404);

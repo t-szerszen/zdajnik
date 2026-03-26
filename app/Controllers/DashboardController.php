@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Services\StatisticsService;
+use App\Models\SavedQuestion;
 
 class DashboardController extends BaseController
 {
@@ -40,7 +41,8 @@ class DashboardController extends BaseController
       'errorHistory' => $this->statsService->getErrorHistory($userId, $selectedExamTypeId, 5),
       'criticalErrors' => $this->statsService->getCriticalErrors($userId, $selectedExamTypeId, 5),
       'recentExams' => $this->statsService->getRecentExams($userId, $selectedExamTypeId, 5),
-      'efficiencyTrend' => $this->statsService->getEfficiencyTrendWithMovingAvg($userId, $selectedExamTypeId, 10)
+      'efficiencyTrend' => $this->statsService->getEfficiencyTrendWithMovingAvg($userId, $selectedExamTypeId, 10),
+      'savedQuestions' => $this->statsService->getSavedQuestions($userId, $selectedExamTypeId, 5)
     ];
 
     $this->renderView('statistics', $data);

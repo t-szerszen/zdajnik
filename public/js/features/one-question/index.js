@@ -21,6 +21,7 @@
 import api from '../../modules/ApiClient.js';
 import ui from '../../modules/UiHandler.js';
 import Toast from '../../components/Toast.js';
+import saveToggle from '../../components/SaveToggleHandler.js';
 
 class Quiz {
   /**
@@ -33,6 +34,10 @@ class Quiz {
     this.pageContainer = document.getElementById('quiz-single-question');
     this.topicForm = document.getElementById('topic-form');
     this.quizContainer = document.getElementById('quiz-container');
+    this.progressBar = document.getElementById('quiz-progress-bar');
+    this.progressCounts = document.getElementById('progress-counts');
+    this.progressPercent = document.getElementById('progress-percent');
+    this.progressFill = document.getElementById('progress-fill');
 
     // Krok 2: Pobierz dane konfiguracyjne z atrybutów HTML.
     this.examCode = this.pageContainer?.dataset.examCode || null;
@@ -60,6 +65,26 @@ class Quiz {
     // Krok 2: Użyj delegacji zdarzeń do obsługi kliknięć wewnątrz kontenera quizu.
     // Jest to wydajniejsze niż dodawanie wielu listenerów do dynamicznych elementów.
     this.quizContainer.addEventListener('click', this.handleInteraction.bind(this));
+    
+    // Krok 3: Sprawdź URL pod kątem autostartu
+    this.handleAutoStart();
+  }
+
+  /**
+   * Obsługuje automatyczne rozpoczęcie quizu na podstawie URL.
+   * @private
+   */
+  handleAutoStart() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hash = window.location.hash;
+    const shouldAutoStart = urlParams.get('selectAll') === 'true' || urlParams.get('autoStart') === 'true' || hash === '#select-all-codes';
+    
+    if (shouldAutoStart) {
+        // Małe opóźnienie, aby TopicFormEnhancer zdążył przetworzyć checkboxy
+        setTimeout(() => {
+            this.topicForm.dispatchEvent(new Event('submit', { cancelable: true }));
+        }, 100);
+    }
   }
 
   /**
@@ -104,9 +129,14 @@ class Quiz {
         } else {
           // KROK KLUCZOWY: Zapisujemy question_version_id do stanu klasy
           this.currentExplanation = data.question.explanation;
-          this.currentQuestionVersionId = data.question.question_version_id; 
+          this.currentQuestionVersionId = data.question.question_version_id;
           
           ui.renderQuestion(this.quizContainer, data.question, data.answers);
+          
+          // Aktualizacja paska postępu
+          if (data.pool_progress) {
+            this.updateProgressBar(data.pool_progress);
+          }
         }
       } else {
         if (result.status === 'gatekeeper') {
@@ -128,7 +158,14 @@ class Quiz {
    * @param {Event} event - Obiekt zdarzenia 'click'.
    */
   handleInteraction(event) {
-    // Krok 1: Sprawdź, czy celem kliknięcia była etykieta odpowiedzi.
+    // Krok 1: Sprawdź, czy celem kliknięcia był przycisk zapisu.
+    const saveBtn = event.target.closest('.quiz-card__save-btn');
+    if (saveBtn) {
+      this.handleSaveToggle(saveBtn);
+      return;
+    }
+
+    // Krok 2: Sprawdź, czy celem kliknięcia była etykieta odpowiedzi.
     const clickedLabel = event.target.closest('.quiz-card__answer');
 
     if (clickedLabel) {
@@ -155,8 +192,8 @@ class Quiz {
     const versionId = this.currentQuestionVersionId; // Używamy zapisanego ID wersji
 
     if (!versionId) {
-        Toast.show('Błąd synchronizacji danych pytania.', 'error');
-        return;
+      Toast.show('Błąd synchronizacji danych pytania.', 'error');
+      return;
     }
 
     // Krok 3: Wywołaj API (ApiClient prześle to jako question_version_id)
@@ -170,6 +207,33 @@ class Quiz {
       Toast.show(result.error || 'Wystąpił błąd.', 'error');
       delete answersContainer.dataset.answered;
     }
+  }
+
+  /**
+   * Obsługuje przełączanie stanu zapisania pytania.
+   * @private
+   * @async
+   * @param {HTMLElement} btn - Element przycisku zapisu.
+   */
+  async handleSaveToggle(btn) {
+    saveToggle.toggle(btn);
+  }
+
+  /**
+   * Aktualizuje wizualnie pasek postępu.
+   * @private
+   * @param {object} progress - Obiekt z total i answered.
+   */
+  updateProgressBar(progress) {
+    if (!this.progressBar) return;
+
+    this.progressBar.style.display = 'block';
+    const { total, answered } = progress;
+    const percent = total > 0 ? Math.round((answered / total) * 100) : 0;
+
+    this.progressCounts.textContent = `${answered} / ${total}`;
+    this.progressPercent.textContent = `${percent}%`;
+    this.progressFill.style.width = `${percent}%`;
   }
 }
 

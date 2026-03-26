@@ -55,19 +55,25 @@ class StatisticsService
     $totalResult = $this->db->fetch($sqlTotal, [$examTypeId]);
     $totalQuestions = $totalResult['total'] ?? 0;
 
-    // Liczba pytań, na które użytkownik odpowiedział poprawnie chociaż raz (lub ostatnio poprawnie)
-    $sqlCompleted = "SELECT COUNT(*) as completed FROM user_progress up
-                         JOIN questions q ON up.question_id = q.id
-                         WHERE up.user_id = ? AND q.exam_type_id = ? AND up.last_result = 1
-                         AND q.is_active = 1 AND q.deleted_at IS NULL";
-    $completedResult = $this->db->fetch($sqlCompleted, [$userId, $examTypeId]);
-    $completedQuestions = $completedResult['completed'] ?? 0;
+    // Liczba pytań opanowanych (>= 60% skuteczności) oraz w ogóle podjętych
+    $sqlStats = "SELECT 
+                    COUNT(CASE WHEN up.attempts_count > 0 AND (up.correct_count * 1.0 / up.attempts_count) >= 0.6 THEN 1 END) as mastered,
+                    COUNT(CASE WHEN up.attempts_count > 0 THEN 1 END) as attempted
+                  FROM user_progress up
+                  JOIN questions q ON up.question_id = q.id
+                  WHERE up.user_id = ? AND q.exam_type_id = ?
+                  AND q.is_active = 1 AND q.deleted_at IS NULL";
 
-    $percent = ($totalQuestions > 0) ? round(($completedQuestions / $totalQuestions) * 100) : 0;
+    $stats = $this->db->fetch($sqlStats, [$userId, $examTypeId]);
+    $masteredQuestions = $stats['mastered'] ?? 0;
+    $attemptedQuestions = $stats['attempted'] ?? 0;
+
+    $percent = ($totalQuestions > 0) ? round(($masteredQuestions / $totalQuestions) * 100) : 0;
 
     return [
       'total' => $totalQuestions,
-      'completed' => $completedQuestions,
+      'mastered' => $masteredQuestions,
+      'attempted' => $attemptedQuestions,
       'percent' => $percent
     ];
   }
@@ -78,18 +84,26 @@ class StatisticsService
   public function getTopicStats(int $userId, int $examTypeId): array
   {
     $sql = "SELECT t.id, t.name, 
-                       (SELECT COUNT(*) FROM questions q WHERE q.topic_id = t.id AND q.is_active = 1 AND q.deleted_at IS NULL) as total,
+                       (SELECT COUNT(*) FROM questions q 
+                        WHERE q.topic_id = t.id AND q.is_active = 1 AND q.deleted_at IS NULL) as total,
                        (SELECT COUNT(*) FROM user_progress up 
                         JOIN questions q ON up.question_id = q.id 
                         WHERE up.user_id = ? AND q.topic_id = t.id
-                        AND q.is_active = 1 AND q.deleted_at IS NULL) as completed
+                        AND q.is_active = 1 AND q.deleted_at IS NULL
+                        AND up.attempts_count > 0
+                        AND (up.correct_count * 1.0 / up.attempts_count) >= 0.6) as mastered,
+                       (SELECT COUNT(*) FROM user_progress up 
+                        JOIN questions q ON up.question_id = q.id 
+                        WHERE up.user_id = ? AND q.topic_id = t.id
+                        AND q.is_active = 1 AND q.deleted_at IS NULL
+                        AND up.attempts_count > 0) as attempted
                 FROM topics t
                 WHERE t.exam_type_id = ? AND t.is_active = 1 AND t.deleted_at IS NULL";
 
-    $topics = $this->db->fetchAll($sql, [$userId, $examTypeId]);
+    $topics = $this->db->fetchAll($sql, [$userId, $userId, $examTypeId]);
 
     foreach ($topics as &$topic) {
-      $topic['progress'] = ($topic['total'] > 0) ? round(($topic['completed'] / $topic['total']) * 100) : 0;
+      $topic['progress'] = ($topic['total'] > 0) ? round(($topic['mastered'] / $topic['total']) * 100) : 0;
     }
 
     return $topics;
@@ -192,8 +206,8 @@ class StatisticsService
     $totalResult = $this->db->fetch($sqlTotal, [$userId, $examTypeId]);
     $totalAnswered = (int) ($totalResult['total_answered'] ?? 0);
 
-    $isUnlocked = $totalAnswered >= 25;
-    $unlockProgress = min(25, $totalAnswered); // Cap at 100
+    $isUnlocked = $totalAnswered >= 1;
+    $unlockProgress = min(1, $totalAnswered); // Cap at 100
 
     // Pobierz krytyczne błędy
     $items = [];
@@ -346,21 +360,25 @@ class StatisticsService
     $totalResult = $this->db->fetch($sqlTotal, [$examTypeId]);
     $totalQuestions = $totalResult['total'] ?? 0;
 
-    // MVP: Używamy correct_count >= 1 jako przybliżenia "opanowania"
-    // W przyszłości można dodać kolumnę consecutive_correct w user_progress
-    $sqlMastered = "SELECT COUNT(*) as mastered FROM user_progress up
-		                JOIN questions q ON up.question_id = q.id
-		                WHERE up.user_id = ? AND q.exam_type_id = ? 
-		                AND up.correct_count >= 1
-		                AND q.is_active = 1 AND q.deleted_at IS NULL";
-    $masteredResult = $this->db->fetch($sqlMastered, [$userId, $examTypeId]);
-    $masteredQuestions = $masteredResult['mastered'] ?? 0;
+    // Statystyki opanowania i podejmowania wyzwań
+    $sqlStats = "SELECT 
+                    COUNT(CASE WHEN up.attempts_count > 0 AND (up.correct_count * 1.0 / up.attempts_count) >= 0.6 THEN 1 END) as mastered,
+                    COUNT(CASE WHEN up.attempts_count > 0 THEN 1 END) as attempted
+                  FROM user_progress up
+                  JOIN questions q ON up.question_id = q.id
+                  WHERE up.user_id = ? AND q.exam_type_id = ? 
+                  AND q.is_active = 1 AND q.deleted_at IS NULL";
+
+    $stats = $this->db->fetch($sqlStats, [$userId, $examTypeId]);
+    $masteredQuestions = $stats['mastered'] ?? 0;
+    $attemptedQuestions = $stats['attempted'] ?? 0;
 
     $percent = ($totalQuestions > 0) ? round(($masteredQuestions / $totalQuestions) * 100) : 0;
 
     return [
       'total' => $totalQuestions,
       'mastered' => $masteredQuestions,
+      'attempted' => $attemptedQuestions,
       'percent' => $percent
     ];
   }
@@ -451,6 +469,8 @@ class StatisticsService
    */
   public function getExamReviewDetails(int $attemptId, int $userId): ?array
   {
+    $savedQuestionModel = new \App\Models\SavedQuestion();
+    $savedIds = $savedQuestionModel->getUserSavedIds($userId);
     // 1. Meta dane próby
     $sqlAttempt = "SELECT a.id, a.correct_count, a.total_questions, a.completed_at, a.test_type, 
 		               TIMESTAMPDIFF(SECOND, a.started_at, a.completed_at) as duration_seconds,
@@ -503,6 +523,7 @@ class StatisticsService
       $q['user_answer_id'] = $userChoice['answer_id'] ?? null;
       $q['is_user_correct'] = $userChoice['is_correct'] ?? 0;
       $q['was_skipped'] = $userChoice['was_skipped'] ?? false;
+      $q['is_saved'] = in_array((int) $q['question_id'], $savedIds);
     }
 
     return [
@@ -515,7 +536,7 @@ class StatisticsService
    * Pobiera szczegóły pojedynczego pytania do trybu podglądu (Review).
    * Zwraca treść, obrazek, wyjaśnienie i odpowiedzi.
    */
-  public function getQuestionDetails(int $questionId): ?array
+  public function getQuestionDetails(int $questionId, ?int $userId = null): ?array
   {
     // 1. Pobierz wersję pytania
     $sqlQ = "SELECT q.id, qv.question_text, qv.explanation, qv.image_path, qv.id as version_id, et.code as exam_code
@@ -538,6 +559,14 @@ class StatisticsService
     $answers = $this->db->fetchAll($sqlA, [$question['version_id']]);
 
     $question['answers'] = $answers;
+
+    if ($userId) {
+      $savedQuestionModel = new \App\Models\SavedQuestion();
+      $question['is_saved'] = $savedQuestionModel->isSaved($userId, $questionId);
+    } else {
+      $question['is_saved'] = false;
+    }
+
     return $question;
   }
 
@@ -571,5 +600,32 @@ class StatisticsService
       }
     }
     return $attempts;
+  }
+
+  /**
+   * Pobiera ostatnio zapisane pytania dla danej kategorii.
+   */
+  public function getSavedQuestions(int $userId, int $examTypeId, ?int $limit = 5): array
+  {
+    $limitSql = ($limit !== null) ? " LIMIT " . (int) $limit : "";
+    $sql = "SELECT q.id, qv.question_text 
+            FROM saved_questions sq
+            JOIN questions q ON sq.question_id = q.id
+            JOIN question_versions qv ON q.id = qv.question_id
+            WHERE sq.user_id = ? AND q.exam_type_id = ?
+            AND q.is_active = 1 AND qv.is_active = 1
+            ORDER BY sq.created_at DESC" . $limitSql;
+
+    $items = $this->db->fetchAll($sql, [$userId, $examTypeId]);
+
+    $sqlTotal = "SELECT COUNT(*) as total FROM saved_questions sq 
+                 JOIN questions q ON sq.question_id = q.id 
+                 WHERE sq.user_id = ? AND q.exam_type_id = ?";
+    $total = $this->db->fetch($sqlTotal, [$userId, $examTypeId]);
+
+    return [
+      'items' => $items,
+      'total' => $total['total'] ?? 0
+    ];
   }
 }
