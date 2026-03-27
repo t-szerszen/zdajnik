@@ -33,6 +33,16 @@ class HomeController extends BaseController
     $this->renderView('home', ['examsCategories' => $examsCategories]);
   }
 
+  /**
+   * Wyświetla widok polityki prywatności.
+   *
+   * @return void
+   */
+  public function showPrivacyPolicy(): void
+  {
+    $this->renderView('privacy_policy');
+  }
+
   private function loadExamsAndTopics(): array
   {
     $exams = $this->dynamicDataService->getExams();

@@ -134,6 +134,7 @@ class Router
   {
     // --- Strony Główne i Auth ---
     $this->get('', 'HomeController@show');
+    $this->get('polityka-prywatnosci', 'HomeController@showPrivacyPolicy');
     $this->get('logowanie', 'LoginController@showLoginForm');
     $this->post('logowanie', 'LoginController@processLogin');
     $this->get('rejestracja', 'RegisterController@showRegistrationForm');

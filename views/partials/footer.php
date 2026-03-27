@@ -82,7 +82,8 @@
   </div>
 
   <div class="footer__bottom">
-    <p class="footer__copyright">&copy; <?= date('Y') ?> Examly. Stworzone dla przyszłych informatyków.</p>
+    <p class="footer__copyright">&copy; <?= date('Y') ?> Examly. Stworzone dla przyszłych informatyków. <a
+        href="<?= url('polityka-prywatnosci') ?>" class="footer__link">Polityka prywatności</a></p>
 
     <div class="footer__theme-action">
       <div class="theme-switcher">
