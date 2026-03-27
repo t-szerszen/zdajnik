@@ -192,11 +192,62 @@ class Question
   }
 
   /**
-   * Wyszukuje pytania na podstawie filtrów.
-   * Wspiera: egzamin, temat, ID (numer pytania) lub treść.
+   * Zwraca sql $where oraz $params dla wyszukiwarki.
    */
-  public function searchQuestions(array $filters): array
+  private function buildSearchWhereClause(array $filters): array
   {
+    $where = "q.is_active = 1 AND qv.is_active = 1 AND q.deleted_at IS NULL ";
+    $params = [];
+
+    if (!empty($filters['exam_id'])) {
+      $where .= " AND q.exam_type_id = ? ";
+      $params[] = (int) $filters['exam_id'];
+    }
+
+    if (!empty($filters['topic_id'])) {
+      $where .= " AND q.topic_id = ? ";
+      $params[] = (int) $filters['topic_id'];
+    }
+
+    if (!empty($filters['query'])) {
+      $query = trim($filters['query']);
+
+      if (is_numeric($query)) {
+        $where .= " AND q.id = ? ";
+        $params[] = (int) $query;
+      } elseif (mb_strlen($query) >= 3) {
+        $where .= " AND (qv.question_text LIKE ? OR qv.explanation LIKE ?) ";
+        $params[] = "%$query%";
+        $params[] = "%$query%";
+      }
+    }
+
+    return [$where, $params];
+  }
+
+  /**
+   * Zlicza wszystkie pytania spełniające kryteria. (Do paginacji)
+   */
+  public function countSearchQuestions(array $filters): int
+  {
+    [$where, $params] = $this->buildSearchWhereClause($filters);
+
+    $sql = "SELECT COUNT(*) as total
+            FROM questions q
+            JOIN question_versions qv ON q.id = qv.question_id
+            WHERE $where";
+
+    $result = $this->db->fetch($sql, $params);
+    return (int) ($result['total'] ?? 0);
+  }
+
+  /**
+   * Wyszukuje pytania na podstawie filtrów z paginacją.
+   */
+  public function searchQuestions(array $filters, int $page = 1, int $limit = 25): array
+  {
+    [$where, $params] = $this->buildSearchWhereClause($filters);
+
     $sql = "SELECT 
                 q.id as question_id, 
                 qv.id as question_version_id, 
@@ -210,42 +261,16 @@ class Question
             JOIN question_versions qv ON q.id = qv.question_id
             JOIN exam_types et ON q.exam_type_id = et.id
             JOIN topics t ON q.topic_id = t.id
-            WHERE q.is_active = 1 AND qv.is_active = 1 AND q.deleted_at IS NULL ";
+            WHERE $where ";
 
-    $params = [];
+    $sql .= " ORDER BY q.id DESC ";
 
-    // Filtr Egzamin
-    if (!empty($filters['exam_id'])) {
-      $sql .= " AND q.exam_type_id = ? ";
-      $params[] = (int) $filters['exam_id'];
-    }
+    // Paginacja
+    $offset = ($page - 1) * $limit;
+    if ($offset < 0)
+      $offset = 0;
 
-    // Filtr Temat
-    if (!empty($filters['topic_id'])) {
-      $sql .= " AND q.topic_id = ? ";
-      $params[] = (int) $filters['topic_id'];
-    }
-
-    // Filtr "Zapytanie" (ID lub Treść)
-    if (!empty($filters['query'])) {
-      $query = trim($filters['query']);
-
-      // Jeśli to liczba -> szukamy po ID pytania
-      if (is_numeric($query)) {
-        $sql .= " AND q.id = ? ";
-        $params[] = (int) $query;
-      }
-      // Jeśli tekst -> szukamy w treści (min 3 znaki)
-      elseif (mb_strlen($query) >= 3) {
-        $sql .= " AND (qv.question_text LIKE ? OR qv.explanation LIKE ?) ";
-        $params[] = "%$query%";
-        $params[] = "%$query%";
-      } else {
-        // Jeśli zapytanie tekstowe < 3 znaki, ignorujemy ten filtr zgodnie z wymogiem optymalizacji
-      }
-    }
-
-    $sql .= " ORDER BY q.id DESC LIMIT 30";
+    $sql .= " LIMIT " . (int) $limit . " OFFSET " . (int) $offset;
 
     return $this->db->fetchAll($sql, $params);
   }
