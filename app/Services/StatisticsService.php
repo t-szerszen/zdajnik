@@ -14,6 +14,18 @@ class StatisticsService
   }
 
   /**
+   * Pomocnicza metoda formatująca wynik procentowy wg wymagań:
+   * Pełna cyfra jako int, połówka (x.5) jako float z jedną cyfrą po przecinku (x.y).
+   */
+  private function formatScore(float $score): string|int
+  {
+    if (floor($score) == $score) {
+      return (int) $score;
+    }
+    return number_format($score, 1, '.', '');
+  }
+
+  /**
    * Pobiera wszystkie dostępne typy egzaminów dla selektora.
    */
   public function getExamTypes(): array
@@ -68,7 +80,8 @@ class StatisticsService
     $masteredQuestions = $stats['mastered'] ?? 0;
     $attemptedQuestions = $stats['attempted'] ?? 0;
 
-    $percent = ($totalQuestions > 0) ? round(($masteredQuestions / $totalQuestions) * 100) : 0;
+    $percentRaw = ($totalQuestions > 0) ? ($masteredQuestions * 100.0 / $totalQuestions) : 0;
+    $percent = $this->formatScore($percentRaw);
 
     return [
       'total' => $totalQuestions,
@@ -103,7 +116,8 @@ class StatisticsService
     $topics = $this->db->fetchAll($sql, [$userId, $userId, $examTypeId]);
 
     foreach ($topics as &$topic) {
-      $topic['progress'] = ($topic['total'] > 0) ? round(($topic['mastered'] / $topic['total']) * 100) : 0;
+      $percentRaw = ($topic['total'] > 0) ? ($topic['mastered'] * 100.0 / $topic['total']) : 0;
+      $topic['progress'] = $this->formatScore($percentRaw);
     }
 
     return $topics;
@@ -115,7 +129,7 @@ class StatisticsService
   public function getRecords(int $userId, int $examTypeId): array
   {
     $sql = "SELECT 
-                    MAX(ROUND((correct_count / total_questions) * 100)) as best_score,
+                    MAX(correct_count * 100.0 / total_questions) as best_score_raw,
                     MAX(completed_at) as last_exam,
                     COUNT(id) as total_exams,
                     AVG(TIMESTAMPDIFF(SECOND, started_at, completed_at)) as avg_duration
@@ -123,9 +137,11 @@ class StatisticsService
                 WHERE user_id = ? AND exam_type_id = ? AND completed_at IS NOT NULL";
 
     $result = $this->db->fetch($sql, [$userId, $examTypeId]);
+    $bestScoreRaw = (float)($result['best_score_raw'] ?? 0);
+    $bestScore = $this->formatScore($bestScoreRaw);
 
     return [
-      'best_score' => $result['best_score'] ?? 0,
+      'best_score' => $bestScore,
       'last_exam' => $result['last_exam'] ? date('d.m.Y H:i', strtotime($result['last_exam'])) : 'Brak',
       'total_exams' => $result['total_exams'] ?? 0,
       'avg_duration' => $result['avg_duration'] ? round($result['avg_duration']) : 0,
@@ -218,7 +234,7 @@ class StatisticsService
       }
 
       $sql = "SELECT q.id as question_id, qv.question_text, t.name as topic_name, 
-			               ROUND((up.correct_count / up.attempts_count) * 100) as success_rate,
+			               (up.correct_count * 100.0 / up.attempts_count) as success_rate_raw,
                            MAX(up.updated_at) as last_updated,
                            up.correct_count, up.attempts_count, up.incorrect_count
 			        FROM user_progress up
@@ -233,9 +249,13 @@ class StatisticsService
 			          AND q.deleted_at IS NULL
 			          AND (up.correct_count / up.attempts_count) < 0.6
 			        GROUP BY q.id, qv.question_text, t.name, up.correct_count, up.attempts_count, up.incorrect_count
-			        ORDER BY success_rate ASC, last_updated DESC
+			        ORDER BY success_rate_raw ASC, last_updated DESC
 			        $limitSql";
-      $items = $this->db->fetchAll($sql, [$userId, $examTypeId]);
+      $rawItems = $this->db->fetchAll($sql, [$userId, $examTypeId]);
+      foreach ($rawItems as $item) {
+        $item['success_rate'] = round((float)$item['success_rate_raw']);
+        $items[] = $item;
+      }
 
       $sqlTotalCritical = "SELECT COUNT(*) as total FROM user_progress up
                            JOIN questions q ON up.question_id = q.id
@@ -265,29 +285,40 @@ class StatisticsService
       $limitSql = "LIMIT " . (int) $limit;
     }
 
-    $sql = "SELECT id, ROUND((correct_count / total_questions) * 100) as score, completed_at, test_type
-                FROM attempts 
-                WHERE user_id = ? AND exam_type_id = ? AND completed_at IS NOT NULL
-                ORDER BY completed_at DESC
+    $sql = "SELECT a.id, (a.correct_count * 100.0 / a.total_questions) as score_raw, a.completed_at, a.test_type, et.code as exam_code
+                FROM attempts a
+                JOIN exam_types et ON a.exam_type_id = et.id
+                WHERE a.user_id = ? AND a.exam_type_id = ? AND a.completed_at IS NOT NULL
+                ORDER BY a.completed_at DESC
                 $limitSql";
 
     $exams = $this->db->fetchAll($sql, [$userId, $examTypeId]);
 
+    // Pobierz całkowitą liczbę tematów dla danej kategorii dla logiki nazewnictwa
+    $sqlTotalTopics = "SELECT COUNT(*) as total FROM topics WHERE exam_type_id = ? AND is_active = 1 AND deleted_at IS NULL";
+    $totalTopicsResult = $this->db->fetch($sqlTotalTopics, [$examTypeId]);
+    $totalTopicsInExam = (int)($totalTopicsResult['total'] ?? 0);
+
     foreach ($exams as &$exam) {
-      $date = date('d.m.Y', strtotime($exam['completed_at']));
+      $exam['score'] = $this->formatScore((float)$exam['score_raw']);
 
       if ($exam['test_type'] === 'full_exam') {
         $exam['display_name'] = "Pełny test";
         $exam['badge_text'] = "Pełny test";
       } else {
-        // Fetch topics for personalized test
+        // Pobierz tematy dla personalizowanego testu
         $topicsSql = "SELECT t.name FROM topics t 
                               JOIN attempt_topics atop ON t.id = atop.topic_id 
                               WHERE atop.attempt_id = ?";
-        $topics = $this->db->fetchAll($topicsSql, [$exam['id']]);
-        $topicNames = array_column($topics, 'name');
+        $topicsResult = $this->db->fetchAll($topicsSql, [$exam['id']]);
+        $topicNames = array_column($topicsResult, 'name');
 
-        $exam['display_name'] = "Test z " . implode(', ', $topicNames);
+        // Sprawdź czy test obejmuje wszystkie tematy kategorii
+        if (count($topicNames) >= $totalTopicsInExam && $totalTopicsInExam > 0) {
+          $exam['display_name'] = "Personalizowany test (" . $exam['exam_code'] . ")";
+        } else {
+          $exam['display_name'] = "Test z " . implode(', ', $topicNames);
+        }
         $exam['badge_text'] = "Personalizowany test";
       }
     }
@@ -373,7 +404,8 @@ class StatisticsService
     $masteredQuestions = $stats['mastered'] ?? 0;
     $attemptedQuestions = $stats['attempted'] ?? 0;
 
-    $percent = ($totalQuestions > 0) ? round(($masteredQuestions / $totalQuestions) * 100) : 0;
+    $percentRaw = ($totalQuestions > 0) ? ($masteredQuestions * 100.0 / $totalQuestions) : 0;
+    $percent = $this->formatScore($percentRaw);
 
     return [
       'total' => $totalQuestions,
@@ -424,7 +456,8 @@ class StatisticsService
       $totalWeight += $weight;
     }
 
-    $predictedScore = round($weightedSum / $totalWeight);
+    $predictedScoreRaw = ($totalWeight > 0) ? ($weightedSum / $totalWeight) : 0;
+    $predictedScore = $this->formatScore((float)$predictedScoreRaw);
 
     // Określ poziom pewności na podstawie liczby egzaminów
     $confidenceLevel = match (true) {
@@ -578,7 +611,7 @@ class StatisticsService
     $sql = "SELECT 
                     id, completed_at as date_taken, test_type, 
                     correct_count as correct_answers, total_questions, 
-                    ROUND((correct_count / total_questions) * 100, 2) as score_percent,
+                    (correct_count * 100.0 / total_questions) as score_percent_raw,
                     TIMESTAMPDIFF(SECOND, started_at, completed_at) as duration_seconds
                 FROM attempts 
                 WHERE user_id = ? 
@@ -587,6 +620,7 @@ class StatisticsService
     $attempts = $this->db->fetchAll($sql, [$userId]);
 
     foreach ($attempts as &$attempt) {
+      $attempt['score_percent'] = $this->formatScore((float)$attempt['score_percent_raw']);
       $attempt['is_full_exam'] = ($attempt['test_type'] === 'full_exam') ? 1 : 0;
 
       if ($attempt['is_full_exam']) {

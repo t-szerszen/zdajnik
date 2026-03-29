@@ -41,14 +41,16 @@ $extraScripts = [
 
 <?php include 'partials/head.php'; ?>
 
-<body>
+<body class="test-page">
 
   <?php include 'partials/navbar.php'; ?>
 
   <!-- Nagłówek wprowadzający w kontekst strony -->
   <header class="page-header">
     <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span> - Pełny Egzamin Próbny</h1>
+      <h1 class="page-header__title"><span class="text-gradient">
+          <?= htmlspecialchars($exam['formatted_name'])?>
+        </span> - Pełny Egzamin Próbny</h1>
       <p class="page-header__text">
         Zmierz się z pełnym egzaminem próbnym składającym się z 40 losowych pytań z naszej bazy.
         To najlepszy sposób, by sprawdzić swoją wiedzę, zidentyfikować słabe punkty i śledzić postępy w nauce.
@@ -73,22 +75,44 @@ $extraScripts = [
             Logika przełączania widoczności jest w całości w JS.
       =====================================================================
     -->
-    <main id="test-container" class="test-container" data-exam-code="<?= htmlspecialchars($examCode) ?>">
+    <!-- Dekoracyjne elementy tła -->
+    <div class="stats-page__decorations">
+      <div class="stats-page__blob stats-page__blob--1"></div>
+      <div class="stats-page__blob stats-page__blob--2"></div>
+    </div>
+
+    <main id="test-container" class="test-container" data-exam-code="<?= htmlspecialchars($examCode)?>">
 
       <!-- Stan 1: Ekran ładowania -->
       <div id="loading-screen" class="test-loading">
-        <h2>Trwa przygotowywanie testu...</h2>
-        <p>Proszę czekać, losujemy 40 pytań z całej puli.</p>
         <div class="spinner"></div>
+        <h2>Trwa przygotowywanie testu...</h2>
+        <p>Proszę czekać, losujemy pytania z całej puli specjalnie dla Ciebie.</p>
       </div>
 
       <!-- Stan 2: Widok aktywnego testu (początkowo ukryty) -->
       <div id="test-view" class="hidden">
         <header class="test-header">
-          <h1 class="test-header__title">Test Całościowy - <span class="text-gradient"><?= htmlspecialchars($examCode) ?></span></h1>
+          <div class="test-header__content-left">
+            <h1 class="test-header__title">Egzamin <span class="text-gradient">
+                <?= htmlspecialchars($examCode)?>
+              </span></h1>
+            <div class="test-header__progress-info">
+              Postęp: <span id="progress-text">0 / 40</span>
+            </div>
+          </div>
+
+          <div class="test-header__progress-container">
+            <div id="test-progress-bar" class="test-header__progress-bar" style="width: 0%"></div>
+          </div>
+
           <div class="test-header__meta">
             <!-- Minutnik, zarządzany przez JS -->
             <div id="timer" class="timer">60:00</div>
+            <!-- Przycisk pauzy -->
+            <button id="pause-test-btn" class="test-header__pause-btn" title="Zapauzuj egzamin">
+              <i class="fas fa-pause"></i>
+            </button>
           </div>
         </header>
 
@@ -103,31 +127,43 @@ $extraScripts = [
     </main>
   </div>
 
+  <!-- Stan 2.5: Nakładka PAUZY -->
+  <div id="pause-overlay" class="test-pause-overlay hidden">
+    <div class="test-pause-overlay__content">
+      <div class="test-pause-overlay__icon">
+        <i class="fas fa-mug-hot"></i>
+      </div>
+      <h2>Test Zapauzowany</h2>
+      <p>Czas został zatrzymany. Możesz spokojnie zająć się innymi sprawami i wrócić do testu, gdy będziesz gotowy.</p>
+      <button id="resume-test-btn" class="btn btn--primary btn--large">Wznów egzamin</button>
+    </div>
+  </div>
+
   <!-- Stan 3: Ekran wyników (początkowo ukryty, poza głównym kontenerem) -->
   <div id="results-screen" class="hidden">
     <div class="review-page__main-wrapper">
       <div class="review-page__container">
-        
+
         <div class="review-page__back-nav">
-           <a href="<?= url('/') ?>" class="review-page__back-link">
-             <i class="fas fa-chevron-left"></i> Wróć na stronę główną
-           </a>
+          <a href="<?= url('/')?>" class="review-page__back-link">
+            <i class="fas fa-chevron-left"></i> Wróć na stronę główną
+          </a>
         </div>
 
         <section id="score-summary" class="review-page__summary">
-           <!-- Wypełniane przez JS -->
+          <!-- Wypełniane przez JS -->
         </section>
 
         <h2 id="review-section-title" class="review-page__section-title">Szczegóły pytań</h2>
 
         <main id="results-details" class="review-page__questions">
-           <!-- Szczegóły generowane przez JS -->
+          <!-- Szczegóły generowane przez JS -->
         </main>
 
-        <div style="margin-top: 4rem; display: flex; justify-content: center;">
-             <a href="#top" class="btn btn--primary btn--large">Przewiń na górę</a>
+        <div class="centered" style="margin-top: 4rem;">
+          <a href="#top" class="btn btn--primary btn--large">Przewiń na górę</a>
         </div>
-        
+
       </div>
     </div>
   </div>
@@ -135,7 +171,7 @@ $extraScripts = [
   <?php include 'partials/footer.php'; ?>
 
   <!-- Główny skrypt aplikacji dla tego widoku, zarządzający całą logiką testu -->
-  <script type="module" src="<?= url('js/features/test/index.js') ?>"></script>
+  <script type="module" src="<?= url('js/features/test/index.js')?>"></script>
 </body>
 
 </html>

@@ -42,7 +42,7 @@ $extraScripts = [
 <!-- Dołączenie reużywalnego komponentu head -->
 <?php include 'partials/head.php'; ?>
 
-<body>
+<body class="single-question-page">
 
   <!-- Dołączenie reużywalnego komponentu paska nawigacyjnego -->
   <?php include 'partials/navbar.php'; ?>

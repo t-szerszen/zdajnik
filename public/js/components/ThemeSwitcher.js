@@ -32,11 +32,17 @@ class ThemeSwitcher {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     
     // Zapisz wybór użytkownika w pamięci przeglądarki, aby przetrwał odświeżenie
-    localStorage.setItem('theme', theme);
+    try {
+      localStorage.setItem('theme', theme);
+    } catch (e) {
+      console.warn('ThemeSwitcher: Brak dostępu do localStorage. Motyw został zmieniony, ale nie zostanie zapamiętany na przyszłość.', e);
+    }
   }
 }
 
-// Uruchom skrypt po załadowaniu strony
-document.addEventListener('DOMContentLoaded', () => {
-  new ThemeSwitcher('theme-toggle-checkbox');
-});
+// Skrypty importowane jako 'module' (<script type="module">) są zawsze odraczane (defer),
+// co oznacza, że parser DOM już skończył przepracowywać cały dokument HTML.
+// Zabezpieczenia takie jak asynchronicznie zawiązane zdarzenie 'DOMContentLoaded' zazwyczaj
+// powodują usterki wyścigów czasowych na szybszych sieciach i na stronach statycznych.
+const initThemeSwitcher = () => new ThemeSwitcher('theme-toggle-checkbox');
+initThemeSwitcher();

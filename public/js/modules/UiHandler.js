@@ -151,16 +151,16 @@ class UIHandler {
 
     // Sprawdzenie, czy wyjaśnienie nie jest puste
     if (explanation && explanation.trim() !== '') {
-        const explBtn = document.createElement('button');
-        explBtn.type = 'button';
-        explBtn.className = 'btn btn--secondary btn--small';
-        
-        // Używamy helpera do obsługi logiki i wyglądu (w tym ikony)
-        ExplanationToggler.attach(explBtn, explContainer);
+      const explBtn = document.createElement('button');
+      explBtn.type = 'button';
+      explBtn.className = 'btn btn--secondary btn--small';
 
-        // Parsowanie markdown dla wyjaśnienia
-        explContainer.innerHTML = DOMPurify.sanitize(marked.parse(explanation));
-        btnContainer.appendChild(explBtn);
+      // Używamy helpera do obsługi logiki i wyglądu (w tym ikony)
+      ExplanationToggler.attach(explBtn, explContainer);
+
+      // Parsowanie markdown dla wyjaśnienia
+      explContainer.innerHTML = DOMPurify.sanitize(marked.parse(explanation));
+      btnContainer.appendChild(explBtn);
     }
 
     // Przycisk "Następne"

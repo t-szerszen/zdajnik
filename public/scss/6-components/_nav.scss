@@ -1,238 +1,266 @@
-// Plik: scss/6-components/_nav.scss
-
-// Główny blok komponentu .main-nav
 .main-nav {
+  // Navbar jest STICKY domyślnie
+  position: sticky;
+  top: 1.5rem; // ZMIANA: Zwiększony top marign dla symetrii
+  z-index: 1000;
+  
+  // Floating Effect - Idealnie równe marginesy z każdej strony
+  width: calc(100% - 3rem);
+  max-width: 1400px;
+  margin: 1.5rem auto; // ZMIANA: Równe marginesy góra/dół (1.5rem)
+  
+  // WYJĄTEK: Wyłączenie sticky w trybach egzaminu i nauki
+  .test-page &,
+  .single-question-page & {
+    position: relative;
+    top: 0;
+    margin: 1.5rem auto; // Zachowanie identycznej symetrii
+  }
+  
+  // Glassmorphism 2.0
+  background-color: var(--nav-bg);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid var(--nav-border);
+  border-radius: 100px;
+  
+  // Symetryczne paddingi wewnętrzne
+  padding: 0.5rem 1.75rem; 
   display: flex;
   align-items: center;
   justify-content: space-between;
   
-  // --- GLASSMORPHISM ---
-  // --- GLASSMORPHISM ---
-  background-color: rgba(22, 26, 29, 0.85); // Nieco ciemniejsze dla lepszego kontrastu
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 
+    0 12px 35px -10px rgba(0, 0, 0, 0.15),
+    0 4px 12px -2px rgba(0, 0, 0, 0.05);
   
-  // Wyraźniejsza separacja od dołu - gradient border
-  border-bottom: 1px solid transparent;
-  background-image: linear-gradient(rgba(22, 26, 29, 0.9), rgba(22, 26, 29, 0.9)), 
-                    linear-gradient(to right, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
-  padding: 1rem 2rem;
-  position: sticky;
-  top: 0;
-  z-index: 999;
-  
-  transition: all 0.3s ease;
-
-  // Cień tylko delikatny, by nie "odrywał" zbyt mocno od tła
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-
-  // Element: lista linków nawigacyjnych
-  &__links {
-    align-items: center;
-    list-style: none;
-    display: flex;
-    gap: 1.5rem; // Zwiększony odstęp dla lepszej czytelności
-    margin: 0;
-    padding: 0;
+  @media (max-width: 1024px) {
+    padding: 0.5rem 1.25rem;
+    width: calc(100% - 1.5rem);
+    margin: 1.25rem auto;
   }
 
-  // Element: pojedynczy link w nawigacji
+  &__logo {
+    display: flex;
+    align-items: center;
+    
+    .logo {
+      height: 34px;
+      width: auto;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      
+      &:hover {
+        transform: scale(1.08);
+      }
+    }
+  }
+
+  &__links {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    @media (max-width: 992px) {
+      display: none;
+    }
+  }
+
   &__link {
+    padding: 0.6rem 1.25rem;
+    border-radius: 100px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.94rem;
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    color: var(--muted-text); // Domyślnie lekko przygaszony
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 1.05rem;
-    padding: 0.6rem 1.2rem;
-    border-radius: 99px; // "Pill shape"
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
+    white-space: nowrap;
 
-    // Hover state: "Świecąca pigułka"
+    .main-nav__icon {
+      font-size: 1rem;
+      opacity: 0.6;
+    }
+
     &:hover {
       color: var(--text);
-      background-color: rgba(255, 255, 255, 0.08); // Bardzo subtelne tło
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); // Glow effect
+      background-color: var(--nav-link-hover-bg);
       
       .main-nav__icon {
+        opacity: 1;
         color: var(--accent);
-        transform: scale(1.1);
       }
     }
-    
-    // Active state (opcjonalnie, jeśli dodasz klasę .active)
+
     &.active {
       color: var(--accent);
-      background-color: rgba(59, 130, 246, 0.1);
+      background-color: rgba(var(--accent-rgb), 0.08);
     }
-  }
-
-  // Element: ikona w linku
-  &__icon {
-    font-size: 1.1rem;
-    color: var(--accent); // Zawsze akcentowy, ale lekko ciemniejszy domyślnie?
-    transition: transform 0.3s ease;
   }
 }
 
-// Komponent .dropdown
+// Dropdown Modernization
 .dropdown {
   position: relative;
 
-  &:hover > .dropdown__menu {
-    display: flex;
+  &:hover > .dropdown__menu:not(.dropdown__menu--right) {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    pointer-events: auto;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0) scale(1);
   }
 
-  // Element: rozwijane menu
+  &:hover > .dropdown__menu--right {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
   &__menu {
     position: absolute;
-    top: calc(100% + 0.8rem); // Większy odstęp wizualny
-    left: 0;
+    top: calc(100% + 0.55rem);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px) scale(0.95);
     
-    // Glassmorphism dla dropdowna
-    background-color: rgba(22, 26, 29, 0.95); // Mocniejsze tło dla czytelności
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-
-    border-radius: 1rem;
+    background-color: var(--nav-dropdown-bg);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid var(--nav-border);
+    border-radius: 2.25rem; 
     box-shadow: 
-      0 20px 50px -10px rgba(0,0,0,0.5),
-      0 0 0 1px rgba(255,255,255,0.05); // Wewnętrzny border
-
-    display: none;
+      0 30px 60px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(255, 255, 255, 0.05);
+    
+    padding: 0.75rem;
+    min-width: 260px;
+    display: flex;
     flex-direction: column;
-    min-width: 240px;
-    padding: 0.5rem;
+    gap: 0.3rem;
     
-    // Animacja wejścia
     opacity: 0;
-    transform: translateY(10px) scale(0.98);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    
-    z-index: 1000;
-    
-    // --- FIX: Mostek dla kursora (Bridge) ---
-    // Zapobiega znikaniu menu przy przesuwaniu myszy w dół
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1001;
+
     &::before {
       content: '';
       position: absolute;
-      top: -1.5rem; // Pokrywa lukę między linkiem a menu
+      top: -1.2rem;
       left: 0;
       width: 100%;
-      height: 1.5rem;
-      background: transparent;
+      height: 1.2rem;
     }
 
     &--right {
       left: auto;
       right: 0;
+      transform: translateY(10px) scale(0.95);
     }
   }
 
   &__item {
-    list-style-type: none;
-    width: 100%;
+    list-style: none;
+    padding: 0;
+    margin: 0;
   }
 
   &__link {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: 1.5rem;
     color: var(--text);
     text-decoration: none;
-    padding: 0.85rem 1rem;
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    border-radius: 0.75rem;
-    margin-bottom: 2px;
+    font-size: 0.94rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    // Hover wewnątrz dropdowna
     &:hover {
-      background-color: var(--accent);
-      color: white; // Kontrastowy tekst na akcencie
-      transform: translateX(4px); // Subtelne przesunięcie w prawo
-      
+      background-color: var(--nav-link-hover-bg);
+      color: var(--accent);
+      transform: scale(1.02) translateX(4px);
+
       .dropdown__icon {
-        color: white; // Ikona też biała
+        color: var(--accent);
       }
     }
   }
 
   &__icon {
-    color: var(--muted-text);
-    font-size: 1.1rem;
-    width: 1.5rem; // Stała szerokość dla wyrównania tekstów
-    text-align: center;
-    transition: color 0.2s ease;
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    width: 24px;
+    display: flex;
+    justify-content: center;
   }
 }
 
-// CTA Buttons (Logowanie / Rejestracja)
+// CTA Buttons
 .nav-button {
+  padding: 0.65rem 1.6rem;
+  border-radius: 100px;
+  font-weight: 750;
+  font-size: 0.9rem;
+  text-decoration: none;
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.6rem 1.4rem;
-  border-radius: 99px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  border: 1px solid transparent;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1.5px solid transparent;
 
-  // Wariant: Rejestracja (Ghost)
   &--register {
-    background-color: transparent;
-    border-color: rgba(255, 255, 255, 0.2);
     color: var(--text);
+    background: transparent;
+    border-color: var(--border);
 
     &:hover {
+      background: var(--nav-link-hover-bg);
       border-color: var(--accent);
       color: var(--accent);
-      background-color: rgba(59, 130, 246, 0.05);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
     }
   }
 
-  // Wariant: Logowanie (Solid Gradient)
   &--login {
-    background: linear-gradient(135deg, var(--accent) 0%, #3b82f6 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-
-    .main-nav__icon {
-      color: white;
-    }
+    background: var(--accent-gradient);
+    color: #ffffff;
+    box-shadow: 0 10px 25px -5px rgba(var(--accent-rgb), 0.5);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
 
     &:hover {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 16px 35px -8px rgba(var(--accent-rgb), 0.6);
+      filter: saturate(1.2) brightness(1.05);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+    
+    html:not(.dark) & {
+       background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
     }
   }
 }
 
-// User Avatar
+// Avatar Profile
 .main-nav__user-avatar {
-  height: 42px;
-  width: 42px;
+  height: 40px;
+  width: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  background: var(--accent-gradient);
+  padding: 2.5px;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   &:hover {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    transform: scale(1.1);
   }
 }

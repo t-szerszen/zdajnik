@@ -42,7 +42,7 @@ $filters = $filters ?? [];
               ];
               $reviewLink = url('test-pytanie/' . $q['question_id']) . '?' . http_build_query($reviewParams);
             ?>
-            <a href="<?= $reviewLink ?>" class="btn btn--secondary btn--sm btn--icon-only">
+            <a href="<?= $reviewLink ?>" class="btn btn--secondary btn--sm">
               <span>Pokaż</span> <i class="fas fa-arrow-right"></i>
             </a>
           </div>

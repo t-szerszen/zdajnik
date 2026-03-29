@@ -9,8 +9,18 @@
  * czcionkę dla całej aplikacji.
  */
 
+// Globalna reguła box-sizing dla spójności layoutu
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html {
   scroll-behavior: smooth;
+  // Blokada poziomego scrollowania - zapobiega uciekaniu elementów poza krawędź ekranu,
+  // używamy clip, aby nie blokować działania `position: sticky` wewnątrz dokumentu
+  overflow-x: clip;
 }
 
 body {
@@ -18,7 +28,7 @@ body {
   font-family: 'Manrope', sans-serif;
   background-color: var(--bg);
   color: var(--text);
-  background-color: var(--bg);
+  overflow-x: clip; // Zabezpieczenie na poziomie body bez psuja sticky
 
   // Poprawia renderowanie czcionek na różnych systemach
   -webkit-font-smoothing: antialiased;

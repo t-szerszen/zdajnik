@@ -42,7 +42,7 @@ $extraScripts = [
 <!-- Dołączenie reużywalnego komponentu head -->
 <?php include 'partials/head.php'; ?>
 
-<body>
+<body class="test-page">
 
   <?php include 'partials/navbar.php'; ?>
 

@@ -100,10 +100,12 @@ class Attempt
   public function getStartedExamsByUser(int $userId): array
   {
     $sql = "SELECT DISTINCT e.id, e.code 
-				FROM attempts a 
-				JOIN exam_types e ON a.exam_type_id = e.id 
-				WHERE a.user_id = ?";
-    return $this->db->fetchAll($sql, [$userId]);
+            FROM exam_types e
+            WHERE EXISTS (SELECT 1 FROM attempts a WHERE a.exam_type_id = e.id AND a.user_id = ?)
+               OR EXISTS (SELECT 1 FROM user_progress up 
+                          JOIN questions q ON up.question_id = q.id 
+                          WHERE q.exam_type_id = e.id AND up.user_id = ?)";
+    return $this->db->fetchAll($sql, [$userId, $userId]);
   }
 
   /**
@@ -112,6 +114,14 @@ class Attempt
   public function anonymizeAttempts(int $userId, int $examTypeId): bool
   {
     $sql = "UPDATE attempts SET user_id = NULL WHERE user_id = ? AND exam_type_id = ?";
+    return $this->db->execute($sql, [$userId, $examTypeId]);
+  }
+  /**
+   * Trwale usuwa próby użytkownika dla danego egzaminu.
+   */
+  public function deleteAttempts(int $userId, int $examTypeId): bool
+  {
+    $sql = "DELETE FROM attempts WHERE user_id = ? AND exam_type_id = ?";
     return $this->db->execute($sql, [$userId, $examTypeId]);
   }
 }

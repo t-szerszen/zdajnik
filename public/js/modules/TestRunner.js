@@ -59,6 +59,16 @@ export class TestRunner {
     this.handleBeforeUnload = this.handleBeforeUnload.bind(this);
     this.finishTest = this.finishTest.bind(this);
     this.handleAnswerSelection = this.handleAnswerSelection.bind(this);
+    this.togglePause = this.togglePause.bind(this);
+    this.resumeTest = this.resumeTest.bind(this);
+
+    // Krok 4: Wyszukaj dodatkowe elementy UI V2
+    this.progressBar = document.getElementById('test-progress-bar');
+    this.progressText = document.getElementById('progress-text');
+    this.timerEl = document.getElementById('timer');
+    this.pauseBtn = document.getElementById('pause-test-btn');
+    this.resumeBtn = document.getElementById('resume-test-btn');
+    this.pauseOverlay = document.getElementById('pause-overlay');
   }
 
   /**
@@ -77,7 +87,10 @@ export class TestRunner {
     // Krok 3: Wyrenderuj pytania na stronie.
     this.renderAllQuestions(this.questionsData);
 
-    // Krok 4: Uruchom zegar z czasem obliczonym na podstawie liczby pytań.
+    // Krok 4: Uaktualnij licznik pytań początkowy
+    this.updateProgress();
+
+    // Krok 5: Uruchom zegar z czasem obliczonym na podstawie liczby pytań.
     const duration = this.questionsData.length * 90; // 1.5 minuty na pytanie
     this.startTimer(duration);
   }
@@ -90,6 +103,10 @@ export class TestRunner {
     window.addEventListener('beforeunload', this.handleBeforeUnload);
     this.finishBtn.addEventListener('click', this.finishTest);
     this.questionsWrapper.addEventListener('click', this.handleAnswerSelection);
+
+    if (this.pauseBtn) this.pauseBtn.addEventListener('click', this.togglePause);
+    if (this.resumeBtn) this.resumeBtn.addEventListener('click', this.resumeTest);
+
     this.resultsDetailsContainer.addEventListener('click', (e) => {
       const saveBtn = e.target.closest('.quiz-card__save-btn');
       if (saveBtn) {
@@ -112,7 +129,7 @@ export class TestRunner {
 
       answers.forEach((answer, answerIndex) => {
         const letter = String.fromCharCode(65 + answerIndex);
-        
+
         // FIX: Zmiana z .content na .answer_text
         // Dodajemy || '', aby uniknąć błędu marked w razie pustej odpowiedzi
         const unsafeHTML = marked.parse(answer.answer_text || '', { gfm: true, breaks: true });
@@ -129,7 +146,7 @@ export class TestRunner {
       const questionElement = document.createElement('section');
       questionElement.className = 'quiz-card';
       questionElement.id = `question-${question_id}`; // ID bazowe dla DOM
-      
+
       const imageHTML = image_path
         ? `<div class="quiz-card__image-container">
              <img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_path)}"
@@ -137,7 +154,7 @@ export class TestRunner {
            </div>`
         : '';
 
-       questionElement.innerHTML = `
+      questionElement.innerHTML = `
          <header class="quiz-card__header">
            <span class="quiz-card__question-number">Pytanie ${index + 1} / ${questions.length}</span>
            <div class="quiz-card__header-actions">
@@ -162,9 +179,9 @@ export class TestRunner {
     });
   }
 
-async finishTest() {
+  async finishTest() {
     this.isTestInProgress = false;
-    clearInterval(this.timerInterval);
+    this.stopTimer();
     window.removeEventListener('beforeunload', this.handleBeforeUnload);
 
     let correctAnswersCount = 0;
@@ -178,13 +195,13 @@ async finishTest() {
 
       const selectedInput = this.questionsWrapper.querySelector(`input[name="q_${question_version_id}"]:checked`);
       const selectedAnswerId = selectedInput ? parseInt(selectedInput.value, 10) : null;
-      
+
       // Zapisujemy wybór do mapy
       userAnswersMap[question_version_id] = selectedAnswerId;
 
       const correctAnswer = qData.answers.find(a => a.is_correct === 1);
       const isCorrect = selectedAnswerId && correctAnswer && selectedAnswerId === correctAnswer.id;
-      
+
       if (isCorrect) {
         correctAnswersCount++;
       }
@@ -229,9 +246,9 @@ async finishTest() {
     // Ukryj widok testu i główny kontener (aby tło review-page działało na pełną stronę)
     this.testView.classList.add('hidden');
     if (this.testView.parentElement) {
-         this.testView.parentElement.classList.add('hidden');
+      this.testView.parentElement.classList.add('hidden');
     }
-    
+
     // Dodaj klasę do body dla stylów tła
     document.body.classList.add('review-page');
 
@@ -240,14 +257,14 @@ async finishTest() {
 
     // Sekcja Podsumowania
     const scoreSummaryContainer = document.getElementById('score-summary');
-    
+
     const scoreToDisplay = this.isFullExam ? score.toFixed(2) : Math.round(score);
     const scoreForAnimation = Math.round(score);
 
     const minutes = Math.floor(this.timeSpent / 60);
     const seconds = this.timeSpent % 60;
     const durationString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    
+
     const totalQuestions = this.questionsData.length;
 
     // Data i czas dla "Data podejścia"
@@ -302,39 +319,39 @@ async finishTest() {
       card.className = 'quiz-card';
       card.id = `result-q-${question_id}`;
       card.style.animationDelay = `${index * 0.1}s`;
-      
+
       // Dodaj nagłówek z numerem pytania i statusem
       const isUserCorrectHeader = answers.find(a => a.id === userAnswerId)?.is_correct === 1;
       let badgeHTML = '';
       if (userAnswerId === null || userAnswerId === undefined) {
-         badgeHTML = '<span class="status-badge status-badge--skipped"><i class="fas fa-share"></i> Pominięte</span>';
+        badgeHTML = '<span class="status-badge status-badge--skipped"><i class="fas fa-share"></i> Pominięte</span>';
       } else if (isUserCorrectHeader) {
-         badgeHTML = '<span class="status-badge status-badge--success"><i class="fas fa-check"></i> Poprawne</span>';
+        badgeHTML = '<span class="status-badge status-badge--success"><i class="fas fa-check"></i> Poprawne</span>';
       } else {
-         badgeHTML = '<span class="status-badge status-badge--error"><i class="fas fa-times"></i> Błąd</span>';
+        badgeHTML = '<span class="status-badge status-badge--error"><i class="fas fa-times"></i> Błąd</span>';
       }
 
       let answersHTML = '';
       answers.forEach((ans, idx) => {
         const letter = String.fromCharCode(65 + idx);
-        
+
         // LOGIKA KOLORYSTYKI ZGODNA Z REVIEW PAGE
         const isCorrect = ans.is_correct === 1;
         const isSelected = (userAnswerId === ans.id);
-        
+
         let statusClass = '';
         if (isCorrect) {
-            if (userAnswerId !== null && userAnswerId !== undefined) {
-                statusClass = 'quiz-card__answer--correct';
-            } else {
-                statusClass = 'quiz-card__answer--skipped';
-            }
+          if (userAnswerId !== null && userAnswerId !== undefined) {
+            statusClass = 'quiz-card__answer--correct';
+          } else {
+            statusClass = 'quiz-card__answer--skipped';
+          }
         } else if (isSelected && !isCorrect) {
-            statusClass = 'quiz-card__answer--incorrect';
+          statusClass = 'quiz-card__answer--incorrect';
         }
 
         const contentHTML = DOMPurify.sanitize(marked.parse(ans.answer_text || ''));
-        
+
         // Input checked tylko wizualnie, żeby widzieć co się kliknęło (opcjonalne, bo mamy kolory)
         // Ale dodajmy dla pewności
         const checkedAttr = isSelected ? 'checked' : '';
@@ -347,7 +364,7 @@ async finishTest() {
           </div>`;
       });
 
-       card.innerHTML = `
+      card.innerHTML = `
          <header class="quiz-card__header">
              <span class="quiz-card__question-number">Pytanie ${index + 1}</span>
              <div class="quiz-card__header-actions">
@@ -382,7 +399,7 @@ async finishTest() {
    */
   renderExplanationResult(card, explanation) {
     const actionsContainer = card.querySelector('.quiz-card__actions');
-    
+
     const btnContainer = document.createElement('div');
     btnContainer.className = 'quiz-card__button-container';
 
@@ -407,7 +424,7 @@ async finishTest() {
     button.className = 'btn btn--secondary btn--small toggle-explanation-btn';
     button.innerHTML = '<i class="fas fa-lightbulb"></i> Pokaż wyjaśnienie';
     button.dataset.target = explId;
-    
+
     // Używamy helpera do obsługi logiki
     ExplanationToggler.attach(button, explContainer);
 
@@ -433,7 +450,7 @@ async finishTest() {
    * @private
    * @param {Event} event - Obiekt zdarzenia `click`.
    */
-   handleAnswerSelection(event) {
+  handleAnswerSelection(event) {
     // Krok 1: Przycisk zapisu
     const saveBtn = event.target.closest('.quiz-card__save-btn');
     if (saveBtn) {
@@ -452,6 +469,40 @@ async finishTest() {
         .forEach((label) => label.classList.remove('selected'));
       // Dodaj zaznaczenie do klikniętej odpowiedzi.
       answerLabel.classList.add('selected');
+
+      // Uaktualnij progres po zaznaczeniu odpowiedzi
+      this.updateProgress();
+    }
+  }
+
+  /**
+   * Aktualizuje pasek postępu i licznik pytań.
+   * @private
+   */
+  updateProgress() {
+    if (!this.questionsWrapper) return;
+
+    const total = this.questionsData.length;
+    const answered = new Set();
+
+    // Zliczamy unikalne nazwy pytań (radio groups), które mają zaznaczoną odpowiedź
+    this.questionsWrapper.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+      if (input.name) {
+        answered.add(input.name);
+      }
+    });
+
+    const count = answered.size;
+    const percent = total > 0 ? (count / total) * 100 : 0;
+
+    // Aktualizacja tekstu (X / Y)
+    if (this.progressText) {
+      this.progressText.innerHTML = `<span>${count}</span> / ${total}`;
+    }
+
+    // Aktualizacja szerokości paska (0-100%)
+    if (this.progressBar) {
+      this.progressBar.style.width = `${percent}%`;
     }
   }
 
@@ -461,27 +512,75 @@ async finishTest() {
    * @param {number} duration - Czas testu w sekundach.
    */
   startTimer(duration) {
-    let timeLeft = duration;
-    const timerEl = document.getElementById('timer');
+    this.timeLeft = duration;
+    this.runTimer();
+  }
+
+  /**
+   * Logika pętli zegara.
+   * @private
+   */
+  runTimer() {
+    if (this.timerInterval) clearInterval(this.timerInterval);
 
     this.timerInterval = setInterval(() => {
-      // Krok 1: Aktualizuj upływający czas.
       this.timeSpent++;
-      timeLeft = duration - this.timeSpent;
-      if (timeLeft < 0) timeLeft = 0;
+      this.timeLeft--;
 
-      // Krok 2: Zaktualizuj interfejs użytkownika.
-      const minutes = Math.floor(timeLeft / 60);
-      const seconds = timeLeft % 60;
-      if (timerEl) {
-        timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      if (this.timeLeft < 0) this.timeLeft = 0;
+
+      const minutes = Math.floor(this.timeLeft / 60);
+      const seconds = this.timeLeft % 60;
+
+      if (this.timerEl) {
+        this.timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        if (this.timeLeft <= 300) {
+          this.timerEl.classList.add('timer--warning');
+        } else {
+          this.timerEl.classList.remove('timer--warning');
+        }
       }
 
-      // Krok 3: Jeśli czas się skończył, automatycznie zakończ test.
-       if (timeLeft <= 0) {
+      if (this.timeLeft <= 0) {
         this.finishTest();
       }
     }, 1000);
+  }
+
+  /**
+   * Zatrzymuje zegar.
+   * @private
+   */
+  stopTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
+  /**
+   * Przełącza stan pauzy (On/Off).
+   * @public
+   */
+  togglePause() {
+    if (!this.isTestInProgress) return;
+
+    this.stopTimer();
+    if (this.pauseOverlay) this.pauseOverlay.classList.remove('hidden');
+    if (this.questionsWrapper) this.questionsWrapper.classList.add('questions-wrapper--blurred');
+  }
+
+  /**
+   * Wznawia test po pauzie.
+   * @public
+   */
+  resumeTest() {
+    if (!this.isTestInProgress) return;
+
+    this.runTimer();
+    if (this.pauseOverlay) this.pauseOverlay.classList.add('hidden');
+    if (this.questionsWrapper) this.questionsWrapper.classList.remove('questions-wrapper--blurred');
   }
 
   /**

@@ -328,11 +328,22 @@ class SettingsController extends BaseController
     $userId = (int) $tokenRecord['user_id'];
     $examTypeId = (int) $tokenRecord['token_data'];
 
-    // Wykonaj zerowanie
-    $progressDeleted = $this->userProgressModel->deleteProgress($userId, $examTypeId);
-    $attemptsAnonymized = $this->attemptModel->anonymizeAttempts($userId, $examTypeId);
+    // 1. Zlicz postęp dla decyzji: usuwanie vs anonimizacja
+    $answeredCount = $this->userProgressModel->countAnsweredQuestionsForExam($userId, $examTypeId);
+    
+    // 2. Wykonaj odpowiednią akcję dla prób (attempts)
+    if ($answeredCount <= 40) {
+      // Przy małej liczbie pytań zakładamy, że to dane testowe/śmieciowe - usuwamy na stałe
+      $attemptsResult = $this->attemptModel->deleteAttempts($userId, $examTypeId);
+    } else {
+      // Powyżej 40 pytań dane są wartościowe statystycznie - anonimizujemy
+      $attemptsResult = $this->attemptModel->anonymizeAttempts($userId, $examTypeId);
+    }
 
-    if ($progressDeleted !== false && $attemptsAnonymized !== false) {
+    // 3. Usuń postęp użytkownika (zawsze usuwamy powiązanie użytkownik-pytanie)
+    $progressDeleted = $this->userProgressModel->deleteProgress($userId, $examTypeId);
+
+    if ($progressDeleted !== false && $attemptsResult !== false) {
       $this->tokenService->deleteTokensForUserByType($userId, 'progress_anonymization');
       $_SESSION['flash_message'] = [
         'type' => 'success',

@@ -8,13 +8,13 @@
   background: var(--card-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--subtle-border);
-  border-radius: 1.5rem;
+  border: 1px solid var(--card-border);
+  border-radius: 2rem;
   // Zwiększony padding-top, aby tekst nie był przyklejony
-  padding: 2.5rem 2rem 2rem 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-  animation: fadeInSlideUp 0.5s ease-out forwards;
-  transition: all 0.3s ease;
+  padding: 3rem 2.5rem 2.5rem 2.5rem;
+  box-shadow: var(--shadow-lg);
+  animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: all 0.4s ease;
 
   @media (max-width: 768px) {
     padding: 2rem 1.25rem 1.5rem 1.25rem;
@@ -26,7 +26,7 @@
     align-items: flex-start;
     margin-bottom: 1rem;
     min-height: 24px;
-    
+
     &-actions {
       display: flex;
       align-items: center;
@@ -85,7 +85,7 @@
     border-radius: 1rem;
     overflow: hidden;
     border: 1px solid var(--subtle-border);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
 
   &__image {
@@ -114,13 +114,20 @@
 
     &[data-answered='true'] .quiz-card__answer {
       cursor: default;
+
       &:hover {
         transform: none;
         box-shadow: none;
         border-color: var(--subtle-border);
       }
-      &--correct { border-color: rgba(34, 197, 94, 0.3); }
-      &--incorrect { border-color: rgba(239, 68, 68, 0.3); }
+
+      &--correct {
+        border-color: rgba(34, 197, 94, 0.3);
+      }
+
+      &--incorrect {
+        border-color: rgba(239, 68, 68, 0.3);
+      }
     }
   }
 
@@ -140,7 +147,9 @@
     font-weight: 600;
     font-size: 0.95rem; // Nieco mniejsza czcionka
 
-    input[type='radio'] { display: none; }
+    input[type='radio'] {
+      display: none;
+    }
 
     &-prefix {
       display: flex;
@@ -163,56 +172,64 @@
       background: var(--field-bg);
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
-      .quiz-card__answer-prefix { color: var(--accent); background: rgba(59, 130, 246, 0.1); }
+
+      .quiz-card__answer-prefix {
+        color: var(--accent);
+        background: rgba(59, 130, 246, 0.1);
+      }
     }
 
     &:has(input:checked) {
       border-color: var(--accent);
       background: rgba(59, 130, 246, 0.05);
-      .quiz-card__answer-prefix { background: var(--accent); color: white; }
+
+      .quiz-card__answer-prefix {
+        background: var(--accent);
+        color: white;
+      }
     }
 
-    &--correct {
-        background-color: rgba(34, 197, 94, 0.05) !important;
-        border-color: rgba(34, 197, 94, 0.3) !important;
-        color: #15803d !important;
-        html.dark & {
-            background-color: rgba(34, 197, 94, 0.15) !important;
-            color: #4ade80 !important;
-            border-color: rgba(74, 222, 128, 0.4) !important;
-        }
-        .quiz-card__answer-prefix { background-color: #22c55e !important; color: white !important; }
-        &::after {
-            content: '\f058';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
-            right: 1rem;
-            font-size: 1.25rem; // Mniejsza ikona
-            color: #22c55e;
-        }
-    }
+      &--correct {
+        background-color: var(--success-bg) !important;
+        border-color: var(--success-border) !important;
+        color: var(--success-text) !important;
 
-    &--incorrect {
-        background-color: rgba(239, 68, 68, 0.05) !important;
-        border-color: rgba(239, 68, 68, 0.3) !important;
-        color: #b91c1c !important;
-        html.dark & {
-            background-color: rgba(239, 68, 68, 0.15) !important;
-            color: #fca5a5 !important;
-            border-color: rgba(248, 113, 113, 0.4) !important;
+        .quiz-card__answer-prefix {
+          background-color: var(--success) !important;
+          color: white !important;
         }
-        .quiz-card__answer-prefix { background-color: #ef4444 !important; color: white !important; }
+
         &::after {
-            content: '\f057';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
-            right: 1rem;
-            font-size: 1.25rem;
-            color: #ef4444;
+          content: '\f058';
+          font-family: 'Font Awesome 6 Free';
+          font-weight: 900;
+          position: absolute;
+          right: 1rem;
+          font-size: 1.25rem; // Mniejsza ikona
+          color: var(--success);
         }
-    }
+      }
+
+      &--incorrect {
+        background-color: var(--error-bg) !important;
+        border-color: var(--error-border) !important;
+        color: var(--error-text) !important;
+
+        .quiz-card__answer-prefix {
+          background-color: var(--error) !important;
+          color: white !important;
+        }
+
+        &::after {
+          content: '\f057';
+          font-family: 'Font Awesome 6 Free';
+          font-weight: 900;
+          position: absolute;
+          right: 1rem;
+          font-size: 1.25rem;
+          color: var(--error);
+        }
+      }
   }
 
   &__actions {
@@ -232,23 +249,27 @@
 
     // Dostosowanie przycisków
     .btn {
-        padding: 0.75rem 1.5rem;
-        font-size: 0.95rem;
-        border-radius: 0.75rem;
-        
-        // Specyficzny styl dla "Następne pytanie" (który jest primary)
-        &--primary {
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
-            &:hover {
-                box-shadow: 0 8px 25px rgba(59, 130, 246, 0.35);
-                transform: translateY(-2px);
-            }
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      border-radius: 0.75rem;
+
+      // Specyficzny styl dla "Następne pytanie" (który jest primary)
+      &--primary {
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+
+        &:hover {
+          box-shadow: 0 8px 25px rgba(59, 130, 246, 0.35);
+          transform: translateY(-2px);
         }
+      }
     }
 
     @media (max-width: 576px) {
-        flex-direction: column;
-        .btn { width: 100%; }
+      flex-direction: column;
+
+      .btn {
+        width: 100%;
+      }
     }
   }
 
@@ -268,51 +289,61 @@
     padding: 0; // Padding reset
 
     &::before {
-        content: '\f0eb';
-        font-family: 'Font Awesome 6 Free';
-        font-weight: 900;
-        position: absolute;
-        top: -1rem;
-        right: -1rem;
-        font-size: 5rem;
-        opacity: 0.05;
-        transform: rotate(15deg);
-        color: var(--accent);
-        pointer-events: none;
+      content: '\f0eb';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      top: -1rem;
+      right: -1rem;
+      font-size: 5rem;
+      opacity: 0.05;
+      transform: rotate(15deg);
+      color: var(--accent);
+      pointer-events: none;
     }
 
     // NAPRAWA ROZWIJANIA: Obsługa klasy --visible (BEM)
     &--visible {
-        max-height: 1000px;
-        padding: 1.5rem 1.5rem;
-        margin-top: 1rem;
-        opacity: 1;
+      max-height: 1000px;
+      // Symetryczny margines: równy odstęp od góry i dołu
+      padding: 1.5rem;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      opacity: 1;
 
-        .explanation-title, .explanation-inner {
-          opacity: 1;
-        }
+      .explanation-title,
+      .explanation-inner {
+        opacity: 1;
+      }
     }
-    
+
     .explanation-title {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-weight: 800;
-        margin-bottom: 0.75rem;
-        color: var(--accent);
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.1em;
-        opacity: 0;
-        transition: opacity 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
-    
+
     .explanation-inner {
-        line-height: 1.6;
-        color: var(--text);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        p { margin-bottom: 0.75rem; &:last-child { margin-bottom: 0; } }
+      line-height: 1.6;
+      color: var(--text);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+
+      p {
+        margin-bottom: 0.75rem;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
     }
   }
 }

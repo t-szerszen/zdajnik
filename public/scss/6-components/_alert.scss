@@ -57,4 +57,15 @@
   &__item {
     margin-bottom: 0.25rem;
   }
+
+  // Element: linki wewnątrz alertów
+  a {
+    color: inherit;
+    text-decoration: underline;
+    font-weight: 600;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
 }
