@@ -2,12 +2,21 @@
 
 .topics-section {
   margin-bottom: 8rem;
+
+  @include media-down(md) {
+    margin-bottom: 4rem;
+  }
 }
 
 .topics-wrapper {
   @include glass-card(3rem 2rem, 24px);
   max-width: 1000px;
   margin: 0 auto;
+
+  @include media-down(sm) {
+    padding: 2rem 1.25rem;
+    border-radius: 20px;
+  }
 }
 
 .topics-group {

@@ -1,12 +1,14 @@
 // Plik: scss/6-components/_page-header.scss
 
 .page-header {
-  padding: 4rem 1.5rem; // Zwiększamy padding dla lepszego efektu
+  padding: 8rem 1.5rem 5rem; // Increased top padding to account for transparent navbar
+  margin-top: -6.5rem; // Pull header up to go under the navbar area
   background-color: var(--field-bg);
   text-align: center;
   border-bottom: 1px solid var(--subtle-border);
   position: relative;
   overflow: hidden;
+  z-index: 1; // Lower than navbar
 
   // Dwie "kulki" gradientu dla dynamicznego tła
   &::before {

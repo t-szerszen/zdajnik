@@ -11,7 +11,6 @@ class ReviewController extends BaseController
   public function __construct()
   {
     parent::__construct();
-    $this->requireAuth();
     $this->statsService = new StatisticsService();
   }
 
@@ -20,7 +19,8 @@ class ReviewController extends BaseController
    */
   public function showQuestionReview(int $questionId)
   {
-    $question = $this->statsService->getQuestionDetails($questionId, $this->currentUser->getId());
+    $userId = $this->isUserLoggedIn ? $this->currentUser->getId() : null;
+    $question = $this->statsService->getQuestionDetails($questionId, $userId);
 
     if (!$question) {
       http_response_code(404);
@@ -54,6 +54,7 @@ class ReviewController extends BaseController
    */
   public function showExamReview(int $attemptId)
   {
+    $this->requireAuth();
     $userId = $this->currentUser->getId();
     $reviewData = $this->statsService->getExamReviewDetails($attemptId, $userId);
 

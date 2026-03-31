@@ -97,8 +97,8 @@ $extraScripts = [
             <h1 class="test-header__title">Egzamin <span class="text-gradient">
                 <?= htmlspecialchars($examCode)?>
               </span></h1>
-            <div class="test-header__progress-info">
-              Postęp: <span id="progress-text">0 / 40</span>
+            <div id="test-progress-text" class="test-header__progress-info">
+              Postęp: <span>0 / 40</span>
             </div>
           </div>
 

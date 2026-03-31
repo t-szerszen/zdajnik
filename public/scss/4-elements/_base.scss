@@ -17,10 +17,17 @@
 }
 
 html {
+  font-size: 16px; // 1rem = 16px bazowo
   scroll-behavior: smooth;
   // Blokada poziomego scrollowania - zapobiega uciekaniu elementów poza krawędź ekranu,
   // używamy clip, aby nie blokować działania `position: sticky` wewnątrz dokumentu
   overflow-x: clip;
+}
+
+// Globalne skalowanie zasobów (media)
+img, picture, svg, video {
+  max-width: 100%;
+  height: auto;
 }
 
 body {

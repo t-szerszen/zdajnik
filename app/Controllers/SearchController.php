@@ -32,8 +32,8 @@ class SearchController extends BaseController
       'query' => $_GET['query'] ?? null
     ];
 
-    $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-    $limit = 5;
+    $page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+    $limit = 25;
 
     $results = [];
     $totalCount = 0;
@@ -41,7 +41,7 @@ class SearchController extends BaseController
 
     if (!empty($filters['exam_id']) || !empty($filters['topic_id']) || !empty($filters['query'])) {
       $totalCount = $this->questionModel->countSearchQuestions($filters);
-      $totalPages = max(1, (int)ceil($totalCount / $limit));
+      $totalPages = max(1, (int) ceil($totalCount / $limit));
 
       if ($page > $totalPages) {
         $page = $totalPages;
@@ -78,7 +78,7 @@ class SearchController extends BaseController
 
     $this->renderView('search', [
       'exams' => $this->dynamicData->getExams(),
-      'categories' => $filters['exam_id'] ? $this->dynamicData->getCategoriesForExam((int)$filters['exam_id']) : [],
+      'categories' => $filters['exam_id'] ? $this->dynamicData->getCategoriesForExam((int) $filters['exam_id']) : [],
       'filters' => $filters,
       'results' => $results,
       'page' => $page,

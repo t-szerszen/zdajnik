@@ -94,28 +94,27 @@ else: ?>
         <?php foreach ($exam['questions'] as $index => $question): ?>
         <article class="quiz-card" id="q-<?= $question['question_id']?>" style="animation-delay: <?= $index * 0.1?>s">
           <header class="quiz-card__header">
-            <div>
+            <div class="quiz-card__header-left">
               <span class="quiz-card__question-number">Pytanie
                 <?= $index + 1?>
               </span>
-              <?php if (!empty($question['was_skipped'])): ?>
-              <span class="status-badge status-badge--skipped"><i class="fas fa-share"></i> Pominięte</span>
-              <?php
-    elseif ($question['is_user_correct']): ?>
-              <span class="status-badge status-badge--success"><i class="fas fa-check"></i> Poprawne</span>
-              <?php
-    else: ?>
-              <span class="status-badge status-badge--error"><i class="fas fa-times"></i> Błąd</span>
-              <?php
-    endif; ?>
+              <span class="quiz-card__id">ID: <?= $question['question_id'] ?></span>
             </div>
-            <?php if ($isUserLoggedIn): ?>
-            <button class="quiz-card__save-btn" data-question-id="<?= $question['question_id']?>"
-              title="Zapisz pytanie">
-              <i class="<?= $question['is_saved'] ? 'fas' : 'far'?> fa-heart"></i>
-            </button>
-            <?php
-    endif; ?>
+            <div class="quiz-card__header-actions">
+              <?php if (!empty($question['was_skipped'])): ?>
+                <span class="status-badge status-badge--skipped"><i class="fas fa-share"></i> Pominięte</span>
+              <?php elseif ($question['is_user_correct']): ?>
+                <span class="status-badge status-badge--success"><i class="fas fa-check"></i> Poprawne</span>
+              <?php else: ?>
+                <span class="status-badge status-badge--error"><i class="fas fa-times"></i> Błąd</span>
+              <?php endif; ?>
+
+              <?php if ($isUserLoggedIn): ?>
+                <button class="quiz-card__save-btn" data-question-id="<?= $question['question_id']?>" title="Zapisz pytanie">
+                  <i class="<?= $question['is_saved'] ? 'fas' : 'far'?> fa-heart"></i>
+                </button>
+              <?php endif; ?>
+            </div>
           </header>
 
           <div class="quiz-card__content">
@@ -199,7 +198,7 @@ endif; ?>
 
   <script type="module" src="<?= url('js/components/ExplanationToggler.js')?>"></script>
   <script type="module">
-    import saveToggle from '<?= url('js / components / SaveToggleHandler.js')?>';
+    import saveToggle from '<?= url('js/components/SaveToggleHandler.js')?>';
     saveToggle.init('.review-page__questions');
   </script>
 </body>

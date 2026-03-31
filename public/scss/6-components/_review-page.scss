@@ -4,6 +4,8 @@
 // KOMPONENT: REVIEW PAGE (Common for Exam and Question Review)
 // =============================================================================
 
+@use '../2-tools/mixins' as *;
+
 .review-page {
   --glass-bg: rgba(255, 255, 255, 0.75);
   --glass-border: rgba(255, 255, 255, 0.8);
@@ -161,6 +163,12 @@
     gap: 1.5rem;
     position: relative;
     overflow: hidden;
+
+    @include media-down(md) {
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
 
     @include media-up(md) {
       flex-direction: row;
@@ -336,11 +344,12 @@
     }
 
     &__header {
-      padding-bottom: 1rem;
+      padding-bottom: 1.25rem;
       border-bottom: 1px solid rgba(var(--accent-rgb), 0.05);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 1rem;
     }
 
     &__content {

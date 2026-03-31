@@ -137,7 +137,7 @@ class StatisticsService
                 WHERE user_id = ? AND exam_type_id = ? AND completed_at IS NOT NULL";
 
     $result = $this->db->fetch($sql, [$userId, $examTypeId]);
-    $bestScoreRaw = (float)($result['best_score_raw'] ?? 0);
+    $bestScoreRaw = (float) ($result['best_score_raw'] ?? 0);
     $bestScore = $this->formatScore($bestScoreRaw);
 
     return [
@@ -222,7 +222,7 @@ class StatisticsService
     $totalResult = $this->db->fetch($sqlTotal, [$userId, $examTypeId]);
     $totalAnswered = (int) ($totalResult['total_answered'] ?? 0);
 
-    $isUnlocked = $totalAnswered >= 1;
+    $isUnlocked = $totalAnswered >= 100;
     $unlockProgress = min(1, $totalAnswered); // Cap at 100
 
     // Pobierz krytyczne błędy
@@ -253,7 +253,7 @@ class StatisticsService
 			        $limitSql";
       $rawItems = $this->db->fetchAll($sql, [$userId, $examTypeId]);
       foreach ($rawItems as $item) {
-        $item['success_rate'] = round((float)$item['success_rate_raw']);
+        $item['success_rate'] = round((float) $item['success_rate_raw']);
         $items[] = $item;
       }
 
@@ -297,10 +297,10 @@ class StatisticsService
     // Pobierz całkowitą liczbę tematów dla danej kategorii dla logiki nazewnictwa
     $sqlTotalTopics = "SELECT COUNT(*) as total FROM topics WHERE exam_type_id = ? AND is_active = 1 AND deleted_at IS NULL";
     $totalTopicsResult = $this->db->fetch($sqlTotalTopics, [$examTypeId]);
-    $totalTopicsInExam = (int)($totalTopicsResult['total'] ?? 0);
+    $totalTopicsInExam = (int) ($totalTopicsResult['total'] ?? 0);
 
     foreach ($exams as &$exam) {
-      $exam['score'] = $this->formatScore((float)$exam['score_raw']);
+      $exam['score'] = $this->formatScore((float) $exam['score_raw']);
 
       if ($exam['test_type'] === 'full_exam') {
         $exam['display_name'] = "Pełny test";
@@ -457,7 +457,7 @@ class StatisticsService
     }
 
     $predictedScoreRaw = ($totalWeight > 0) ? ($weightedSum / $totalWeight) : 0;
-    $predictedScore = $this->formatScore((float)$predictedScoreRaw);
+    $predictedScore = $this->formatScore((float) $predictedScoreRaw);
 
     // Określ poziom pewności na podstawie liczby egzaminów
     $confidenceLevel = match (true) {
@@ -620,7 +620,7 @@ class StatisticsService
     $attempts = $this->db->fetchAll($sql, [$userId]);
 
     foreach ($attempts as &$attempt) {
-      $attempt['score_percent'] = $this->formatScore((float)$attempt['score_percent_raw']);
+      $attempt['score_percent'] = $this->formatScore((float) $attempt['score_percent_raw']);
       $attempt['is_full_exam'] = ($attempt['test_type'] === 'full_exam') ? 1 : 0;
 
       if ($attempt['is_full_exam']) {

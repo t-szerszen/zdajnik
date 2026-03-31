@@ -55,20 +55,39 @@ export class TestRunner {
     this.timeSpent = 0;
     this.isTestInProgress = false;
 
-    // Krok 3: Zapewnij prawidłowy kontekst `this` dla metod używanych jako event handlery.
+    // Bindowanie metod
     this.handleBeforeUnload = this.handleBeforeUnload.bind(this);
     this.finishTest = this.finishTest.bind(this);
     this.handleAnswerSelection = this.handleAnswerSelection.bind(this);
     this.togglePause = this.togglePause.bind(this);
     this.resumeTest = this.resumeTest.bind(this);
+    this.handleSyncScroll = this.handleSyncScroll.bind(this);
 
-    // Krok 4: Wyszukaj dodatkowe elementy UI V2
-    this.progressBar = document.getElementById('test-progress-bar');
-    this.progressText = document.getElementById('progress-text');
-    this.timerEl = document.getElementById('timer');
-    this.pauseBtn = document.getElementById('pause-test-btn');
-    this.resumeBtn = document.getElementById('resume-test-btn');
-    this.pauseOverlay = document.getElementById('pause-overlay');
+    // Krok 4: Pierwsza próba wyszukania elementów
+    this.refreshUIElements();
+  }
+
+  /**
+   * Odświeża referencje do elementów UI (pomocne, gdy DOM jest wstrzykiwany dynamicznie).
+   * @public
+   */
+  refreshUIElements() {
+    const root = document;
+    const view = this.testView || document;
+    
+    this.progressBar = view.querySelector('#test-progress-bar') || root.getElementById('test-progress-bar');
+    this.progressText = view.querySelector('#test-progress-text') || root.getElementById('test-progress-text');
+    this.timerEl = view.querySelector('#timer') || root.getElementById('timer');
+    this.testHeader = view.querySelector('.test-header') || root.querySelector('.test-header');
+    this.pauseBtn = view.querySelector('#pause-test-btn') || root.getElementById('pause-test-btn') || view.querySelector('.test-header__pause-btn');
+    this.resumeBtn = view.querySelector('#resume-test-btn') || root.getElementById('resume-test-btn');
+    this.pauseOverlay = view.querySelector('#pause-overlay') || root.getElementById('pause-overlay');
+
+    // Elementy w nawigacji (Sync)
+    this.navTimer = root.getElementById('nav-timer');
+    this.navProgressBar = root.getElementById('nav-test-progress-bar');
+    this.navProgressText = root.getElementById('nav-test-progress-text');
+    this.navPauseBtn = root.getElementById('nav-pause-btn');
   }
 
   /**
@@ -80,6 +99,9 @@ export class TestRunner {
     // Krok 1: Ustaw stan wewnętrzny testu.
     this.questionsData = questions;
     this.isTestInProgress = true;
+
+    // Odświeżamy referencje - kluczowe dla personalizowanego testu, gdzie HTML wchodzi późno
+    this.refreshUIElements();
 
     // Krok 2: Powiąż nasłuchiwacze zdarzeń.
     this.bindListeners();
@@ -93,6 +115,23 @@ export class TestRunner {
     // Krok 5: Uruchom zegar z czasem obliczonym na podstawie liczby pytań.
     const duration = this.questionsData.length * 90; // 1.5 minuty na pytanie
     this.startTimer(duration);
+
+    // Krok 6: Synchronizacja widoczności timera w navie
+    window.addEventListener('scroll', this.handleSyncScroll);
+  }
+
+  /**
+   * Synchronizuje widoczność paska nawigacji z pozycją scrolla względem headera testu.
+   * @private
+   */
+  handleSyncScroll() {
+    if (!this.testHeader || window.innerWidth <= 1024) {
+      // Wyłączone na mobilkach i tabletach (Zadanie 3)
+      document.body.classList.remove('test-scrolled-past-header');
+      return;
+    }
+    const headerBottom = this.testHeader.offsetTop + this.testHeader.offsetHeight;
+    document.body.classList.toggle('test-scrolled-past-header', window.scrollY > headerBottom);
   }
 
   /**
@@ -105,6 +144,7 @@ export class TestRunner {
     this.questionsWrapper.addEventListener('click', this.handleAnswerSelection);
 
     if (this.pauseBtn) this.pauseBtn.addEventListener('click', this.togglePause);
+    if (this.navPauseBtn) this.navPauseBtn.addEventListener('click', this.togglePause);
     if (this.resumeBtn) this.resumeBtn.addEventListener('click', this.resumeTest);
 
     this.resultsDetailsContainer.addEventListener('click', (e) => {
@@ -155,9 +195,12 @@ export class TestRunner {
         : '';
 
       questionElement.innerHTML = `
-         <header class="quiz-card__header">
-           <span class="quiz-card__question-number">Pytanie ${index + 1} / ${questions.length}</span>
-           <div class="quiz-card__header-actions">
+          <header class="quiz-card__header">
+            <div class="quiz-card__header-left">
+              <span class="quiz-card__question-number">Pytanie ${index + 1} / ${questions.length}</span>
+              <span class="quiz-card__id">ID: ${question_id}</span>
+            </div>
+            <div class="quiz-card__header-actions">
            ${window.examlyAppState.isUserLoggedIn ? `
              <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz pytanie">
                <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
@@ -365,9 +408,12 @@ export class TestRunner {
       });
 
       card.innerHTML = `
-         <header class="quiz-card__header">
-             <span class="quiz-card__question-number">Pytanie ${index + 1}</span>
-             <div class="quiz-card__header-actions">
+          <header class="quiz-card__header">
+              <div class="quiz-card__header-left">
+                <span class="quiz-card__question-number">Pytanie ${index + 1}</span>
+                <span class="quiz-card__id">ID: ${question_id}</span>
+              </div>
+              <div class="quiz-card__header-actions">
                ${window.examlyAppState.isUserLoggedIn ? `
                  <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz pytanie">
                    <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
@@ -480,29 +526,36 @@ export class TestRunner {
    * @private
    */
   updateProgress() {
+    // Jeśli elementy nagle zniknęły lub ich nie było - spróbuj znaleźć ponownie
+    if (!this.progressText || !this.progressBar) {
+      this.refreshUIElements();
+    }
+
     if (!this.questionsWrapper) return;
 
     const total = this.questionsData.length;
-    const answered = new Set();
-
-    // Zliczamy unikalne nazwy pytań (radio groups), które mają zaznaczoną odpowiedź
-    this.questionsWrapper.querySelectorAll('input[type="radio"]:checked').forEach(input => {
-      if (input.name) {
-        answered.add(input.name);
-      }
-    });
-
-    const count = answered.size;
+    
+    // Zliczamy unikalne karty pytań, które mają zaznaczoną chociaż jedną odpowiedź (.selected)
+    const cards = this.questionsWrapper.querySelectorAll('.quiz-card');
+    const count = Array.from(cards).filter(card => card.querySelector('.selected')).length;
     const percent = total > 0 ? (count / total) * 100 : 0;
 
     // Aktualizacja tekstu (X / Y)
     if (this.progressText) {
-      this.progressText.innerHTML = `<span>${count}</span> / ${total}`;
+      this.progressText.innerHTML = `Postęp: <span>${count} / ${total}</span>`;
     }
 
     // Aktualizacja szerokości paska (0-100%)
     if (this.progressBar) {
       this.progressBar.style.width = `${percent}%`;
+    }
+
+    // Dodatkowo aktualizujemy pasek w nawigacji jeśli istnieje
+    if (this.navProgressBar) {
+      this.navProgressBar.style.width = `${percent}%`;
+    }
+    if (this.navProgressText) {
+      this.navProgressText.textContent = `${count} / ${total}`;
     }
   }
 
@@ -533,12 +586,16 @@ export class TestRunner {
       const seconds = this.timeLeft % 60;
 
       if (this.timerEl) {
-        this.timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        this.timerEl.textContent = timeStr;
+        if (this.navTimer) this.navTimer.textContent = timeStr;
 
         if (this.timeLeft <= 300) {
           this.timerEl.classList.add('timer--warning');
+          if (this.navTimer) this.navTimer.classList.add('timer--warning');
         } else {
           this.timerEl.classList.remove('timer--warning');
+          if (this.navTimer) this.navTimer.classList.remove('timer--warning');
         }
       }
 

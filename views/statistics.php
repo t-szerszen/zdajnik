@@ -364,12 +364,12 @@ else: ?>
                 <span class="stats-card__badge stats-card__badge--danger">
                   <?= $critical['success_rate']?>%
                 </span>
-                <span class="stats-card__question-text">
-                  <?= mb_strimwidth(htmlspecialchars($critical['question_text']), 0, 35, "...")?>
+                <span class="stats-card__question-text" title="<?= htmlspecialchars($critical['question_text'])?>">
+                  <?= mb_strimwidth(htmlspecialchars($critical['question_text']), 0, 120, "...")?>
                 </span>
-                <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
+                <div style="display: flex; gap: 0.5rem; white-space: nowrap; flex-shrink: 0;">
                   <a href="<?= url('test-pytanie/' . $critical['question_id'])?>" class="btn btn--primary btn--sm"
-                    title="Zobacz">zobacz</a>
+                    title="Zobacz" style="padding: 0.4rem 1rem;">zobacz</a>
                 </div>
               </li>
               <?php
@@ -412,11 +412,11 @@ endif; ?>
 else: ?>
               <?php foreach ($errorHistory['items'] as $error): ?>
               <li class="stats-card__list-item">
-                <span class="stats-card__question-text">
-                  <?= mb_strimwidth(htmlspecialchars($error['question_text']), 0, 40, "...")?>
+                <span class="stats-card__question-text" title="<?= htmlspecialchars($error['question_text'])?>">
+                  <?= mb_strimwidth(htmlspecialchars($error['question_text']), 0, 120, "...")?>
                 </span>
                 <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
-                  <a href="<?= url('test-pytanie/' . $error['id'])?>" class="btn btn--primary btn--sm">zobacz</a>
+                  <a href="<?= url('test-pytanie/' . $error['id'])?>" class="btn btn--primary btn--sm" style="padding: 0.4rem 1rem;">zobacz</a>
                 </div>
               </li>
               <?php
@@ -451,11 +451,11 @@ endif; ?>
 else: ?>
               <?php foreach ($savedQuestions['items'] as $saved): ?>
               <li class="stats-card__list-item">
-                <span class="stats-card__question-text">
-                  <?= mb_strimwidth(htmlspecialchars($saved['question_text']), 0, 40, "...")?>
+                <span class="stats-card__question-text" title="<?= htmlspecialchars($saved['question_text'])?>">
+                  <?= mb_strimwidth(htmlspecialchars($saved['question_text']), 0, 120, "...")?>
                 </span>
                 <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
-                  <a href="<?= url('test-pytanie/' . $saved['id'])?>" class="btn btn--primary btn--sm">zobacz</a>
+                  <a href="<?= url('test-pytanie/' . $saved['id'])?>" class="btn btn--primary btn--sm" style="padding: 0.4rem 1rem;">zobacz</a>
                 </div>
               </li>
               <?php
@@ -497,7 +497,7 @@ else: ?>
                   </strong>
                 </span>
                 <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
-                  <a href="<?= url('wyniki/' . $exam['id'])?>" class="btn btn--primary btn--sm">zobacz</a>
+                  <a href="<?= url('wyniki/' . $exam['id'])?>" class="btn btn--primary btn--sm" style="padding: 0.4rem 1rem;">zobacz</a>
                 </div>
               </li>
               <?php

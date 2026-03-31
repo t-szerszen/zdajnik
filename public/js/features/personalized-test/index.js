@@ -164,41 +164,34 @@ class PersonalizedTest {
         </div>
         <div id="test-view" class="hidden">
           <header class="test-header">
-            <h1 class="test-header__title">Test Spersonalizowany - <span class="text-gradient">${this.examCode}</span></h1>
-            <div class="test-header__meta"><div id="timer">00:00</div></div>
+            <div class="test-header__content-left">
+               <div id="test-progress-text" class="test-header__progress-info">Postęp: <span>0 / 0</span></div>
+               <h1 class="test-header__title">Test Spersonalizowany - <span class="text-gradient">${this.examCode}</span></h1>
+            </div>
+            <div class="test-header__progress-container">
+               <div id="test-progress-bar" class="test-header__progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="test-header__meta">
+               <div id="timer" class="timer">00:00</div>
+               <button id="pause-test-btn" class="test-header__pause-btn" title="Zapauzuj egzamin">
+                 <i class="fas fa-pause"></i>
+               </button>
+            </div>
           </header>
           <div id="questions-wrapper" class="questions-wrapper"></div>
           <footer class="test-footer">
             <button id="finish-test-btn" class="btn btn--primary">Zakończ i sprawdź test</button>
           </footer>
-        </div>
-      </div>
-
-      <!-- Wrapper dla ekranu wyników - poza elementem ukrywanym, z nową strukturą -->
-      <div id="results-screen" class="hidden">
-        <div class="review-page__main-wrapper">
-          <div class="review-page__container">
-            
-            <div class="review-page__back-nav">
-               <a href="/examly/public/" class="review-page__back-link">
-                 <i class="fas fa-chevron-left"></i> Wróć na stronę główną
-               </a>
+          <!-- Nakładka PAUZY -->
+          <div id="pause-overlay" class="test-pause-overlay hidden">
+            <div class="test-pause-overlay__content">
+              <div class="test-pause-overlay__icon">
+                <i class="fas fa-mug-hot"></i>
+              </div>
+              <h2>Test Zapauzowany</h2>
+              <p>Czas został zatrzymany. Możesz spokojnie zająć się innymi sprawami i wrócić do testu, gdy będziesz gotowy.</p>
+              <button id="resume-test-btn" class="btn btn--primary btn--large">Wznów egzamin</button>
             </div>
-
-            <section id="score-summary" class="review-page__summary">
-               <!-- Wypełniane przez JS -->
-            </section>
-
-            <h2 id="review-section-title" class="review-page__section-title">Szczegóły pytań</h2>
-
-            <main id="results-details" class="review-page__questions">
-               <!-- Szczegóły generowane przez JS -->
-            </main>
-
-            <div style="margin-top: 4rem; display: flex; justify-content: center;">
-                 <a href="#top" class="btn btn--primary btn--large">Przewiń na górę</a>
-            </div>
-            
           </div>
         </div>
       </div>`;

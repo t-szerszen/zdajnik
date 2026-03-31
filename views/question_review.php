@@ -32,16 +32,18 @@ $pageDescription = 'Analiza pytania z bazy egzaminacyjnej.';
       <main class="review-page__main">
         <article class="quiz-card">
           <header class="quiz-card__header">
-            <div>
+            <div class="quiz-card__header-left">
               <span class="quiz-card__question-number">Pytanie</span>
-              <span class="status-badge status-badge--success"><i class="fas fa-eye"></i> Tryb przeglądu</span>
+              <span class="quiz-card__id">ID: <?= $question['id'] ?></span>
             </div>
-            <?php if ($isUserLoggedIn): ?>
-            <button class="quiz-card__save-btn" data-question-id="<?= $question['id']?>" title="Zapisz pytanie">
-              <i class="<?= $question['is_saved'] ? 'fas' : 'far'?> fa-heart"></i>
-            </button>
-            <?php
-endif; ?>
+            <div class="quiz-card__header-actions">
+              <span class="status-badge status-badge--success"><i class="fas fa-eye"></i> Tryb przeglądu</span>
+              <?php if ($isUserLoggedIn): ?>
+              <button class="quiz-card__save-btn" data-question-id="<?= $question['id']?>" title="Zapisz pytanie">
+                <i class="<?= $question['is_saved'] ? 'fas' : 'far'?> fa-heart"></i>
+              </button>
+              <?php endif; ?>
+            </div>
           </header>
 
           <div class="quiz-card__content">

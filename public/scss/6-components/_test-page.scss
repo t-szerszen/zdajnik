@@ -7,7 +7,7 @@ body.test-page {
     radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.1), transparent 45%);
   position: relative;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
 
   html.dark & {
     background: radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.08), transparent 70%);
@@ -137,22 +137,29 @@ body.test-page {
   padding: 0 1.5rem 3rem 1.5rem;
   background-color: transparent;
   border-radius: 0;
-  box-shadow: none;
 }
 
 .test-header {
   position: sticky;
-  top: 4.5rem; // Poniżej navbaru
+  top: 100px; // Spójny odstęp od góry (Navbar ~70px + margines)
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 1.25rem 1.75rem;
   margin: 0 0 3.5rem 0;
   border-bottom: 1px solid var(--glass-border);
-  z-index: 50;
+  z-index: 999;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  body.test-scrolled-past-header & {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+  }
+
   border-radius: 0 0 1.5rem 1.5rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   animation: slideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -166,6 +173,10 @@ body.test-page {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+
+    @include media-down(md) {
+      font-size: 0.95rem;
+    }
 
     &::before {
       content: '';
@@ -181,6 +192,17 @@ body.test-page {
     display: flex;
     flex-direction: column;
     gap: 0.1rem;
+  }
+
+  &--sticky {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  }
+
+  @include media-down(sm) {
+    padding: 1rem;
+    margin-bottom: 2rem;
+    top: 80px; // Mobile offset
+    border-radius: 0;
   }
 
   &__progress-info {
@@ -207,7 +229,7 @@ body.test-page {
     position: relative;
     border: 1px solid rgba(var(--accent-rgb), 0.1);
 
-    @media (max-width: 850px) {
+    @include media-down(md) {
       display: none;
     }
   }
@@ -224,6 +246,10 @@ body.test-page {
     display: flex;
     align-items: center;
     gap: 1.5rem;
+
+    @include media-down(sm) {
+      gap: 0.75rem;
+    }
   }
 
   .timer {
@@ -240,6 +266,11 @@ body.test-page {
     align-items: center;
     gap: 0.6rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+
+    @include media-down(sm) {
+      padding: 0.4rem 1rem;
+      font-size: 1.1rem;
+    }
 
     &::before {
       content: '\f017';
@@ -271,6 +302,12 @@ body.test-page {
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     font-size: 1.1rem;
 
+    @include media-down(sm) {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+    }
+
     &:hover {
       background: var(--accent);
       color: white;
@@ -288,7 +325,6 @@ body.test-page {
   }
 }
 
-// Overlay dla PAUZY (Modern Glassmorphism)
 .test-pause-overlay {
   position: fixed;
   top: 0;
@@ -429,18 +465,6 @@ body.test-page {
 
   to {
     box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
-  }
-}
-
-@keyframes slideDown {
-  from {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
   }
 }
 

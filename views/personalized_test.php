@@ -49,12 +49,15 @@ $extraScripts = [
   <!-- Nagłówek wprowadzający w kontekst strony -->
   <header class="page-header">
     <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span> - Spersonalizowany test</h1>
+      <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span>
+        - Spersonalizowany test</h1>
       <p class="page-header__text">
-        Stwórz test idealnie dopasowany do Twoich potrzeb. Wybierz interesujące Cię tematy, ustaw liczbę pytań i skup się na tym, co jest dla Ciebie najważniejsze.
+        Stwórz test idealnie dopasowany do Twoich potrzeb. Wybierz interesujące Cię tematy, ustaw liczbę pytań i skup
+        się na tym, co jest dla Ciebie najważniejsze.
       </p>
       <p class="page-header__text">
-        <strong class="text-gradient">Pro Tip:</strong> Filtry inteligentnej nauki działają najskuteczniej, gdy system pozna Twoje postępy. Rozwiąż kilka testów w trybie standardowym, aby w pełni odblokować ich moc!
+        <strong class="text-gradient">Pro Tip:</strong> Filtry inteligentnej nauki działają najskuteczniej, gdy system
+        pozna Twoje postępy. Rozwiąż kilka testów w trybie standardowym, aby w pełni odblokować ich moc!
       </p>
     </div>
   </header>
@@ -102,8 +105,8 @@ $extraScripts = [
             <?php if (isset($categories)): ?>
               <?php foreach ($categories as $category): ?>
                 <label class="topic-selector__label">
-                  <input type="checkbox" name="subject[]" value="<?= htmlspecialchars($category['id']) ?>" class="topic-checkbox"
-                    <?= ($selectedSubjectId === (int)$category['id']) ? 'checked' : '' ?>>
+                  <input type="checkbox" name="subject[]" value="<?= htmlspecialchars($category['id']) ?>"
+                    class="topic-checkbox" <?= ($selectedSubjectId === (int) $category['id']) ? 'checked' : '' ?>>
                   <span><?= htmlspecialchars($category['name']) ?></span>
                 </label>
               <?php endforeach; ?>
@@ -127,7 +130,8 @@ $extraScripts = [
             <label for="question-count" class="slider-container__label">
               Wybierz liczbę pytań: <output id="question-count-value">25</output>
             </label>
-            <input type="range" id="question-count" name="question_count" min="10" max="40" value="25" class="slider-container__input">
+            <input type="range" id="question-count" name="question_count" min="10" max="40" value="25"
+              class="slider-container__input">
           </div>
           <div class="config-step__actions">
             <button type="button" class="btn btn--secondary" data-action="prev">Wróć</button>
@@ -176,6 +180,35 @@ $extraScripts = [
       Początkowo pusty, zostaje wypełniony przez JS po wysłaniu formularza.
     -->
     <main id="quiz-container"></main>
+
+    <!-- Stan 3: Ekran wyników (początkowo ukryty, poza głównym kontenerem) -->
+    <div id="results-screen" class="hidden">
+      <div class="review-page__main-wrapper">
+        <div class="review-page__container">
+
+          <div class="review-page__back-nav">
+            <a href="<?= url('/') ?>" class="review-page__back-link">
+              <i class="fas fa-chevron-left"></i> Wróć na stronę główną
+            </a>
+          </div>
+
+          <section id="score-summary" class="review-page__summary">
+            <!-- Wypełniane przez JS -->
+          </section>
+
+          <h2 id="review-section-title" class="review-page__section-title">Szczegóły pytań</h2>
+
+          <main id="results-details" class="review-page__questions">
+            <!-- Szczegóły generowane przez JS -->
+          </main>
+
+          <div class="centered" style="margin-top: 4rem;">
+            <a href="#top" class="btn btn--primary btn--large">Przewiń na górę</a>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </div>
 
   <?php include 'partials/footer.php'; ?>

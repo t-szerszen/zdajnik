@@ -23,15 +23,40 @@
   &__header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-    min-height: 24px;
+    align-items: center;
+    margin-bottom: 2rem;
+    min-height: 44px;
+    gap: 1.5rem;
+    border-bottom: 1px solid var(--subtle-border);
+    padding-bottom: 1.25rem;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+      border-bottom: none;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    &-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
 
     &-actions {
       display: flex;
       align-items: center;
       gap: 0.75rem;
       margin-left: auto;
+
+      @media (max-width: 768px) {
+        width: 100%;
+        margin-left: 0;
+        justify-content: space-between;
+      }
     }
   }
 
@@ -79,6 +104,29 @@
     border-radius: 6px;
   }
 
+  &__id {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    color: var(--muted-text);
+    font-size: 0.85rem;
+    background: var(--bg);
+    border: 1px solid var(--subtle-border);
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    transition: all 0.2s ease;
+
+    &::before {
+      content: '#';
+      opacity: 0.5;
+      font-weight: 800;
+      color: var(--accent);
+    }
+  }
+
   // Element: kontener na obrazek
   &__image-container {
     margin-bottom: 1.5rem;
@@ -114,6 +162,7 @@
 
     &[data-answered='true'] .quiz-card__answer {
       cursor: default;
+      pointer-events: none; // BLOCKED mode
 
       &:hover {
         transform: none;
@@ -179,9 +228,10 @@
       }
     }
 
+    &.selected,
     &:has(input:checked) {
       border-color: var(--accent);
-      background: rgba(59, 130, 246, 0.05);
+      background: rgba(var(--accent-rgb), 0.08);
 
       .quiz-card__answer-prefix {
         background: var(--accent);
@@ -189,47 +239,47 @@
       }
     }
 
-      &--correct {
-        background-color: var(--success-bg) !important;
-        border-color: var(--success-border) !important;
-        color: var(--success-text) !important;
+    &--correct {
+      background-color: var(--success-bg) !important;
+      border-color: var(--success-border) !important;
+      color: var(--success-text) !important;
 
-        .quiz-card__answer-prefix {
-          background-color: var(--success) !important;
-          color: white !important;
-        }
-
-        &::after {
-          content: '\f058';
-          font-family: 'Font Awesome 6 Free';
-          font-weight: 900;
-          position: absolute;
-          right: 1rem;
-          font-size: 1.25rem; // Mniejsza ikona
-          color: var(--success);
-        }
+      .quiz-card__answer-prefix {
+        background-color: var(--success) !important;
+        color: white !important;
       }
 
-      &--incorrect {
-        background-color: var(--error-bg) !important;
-        border-color: var(--error-border) !important;
-        color: var(--error-text) !important;
-
-        .quiz-card__answer-prefix {
-          background-color: var(--error) !important;
-          color: white !important;
-        }
-
-        &::after {
-          content: '\f057';
-          font-family: 'Font Awesome 6 Free';
-          font-weight: 900;
-          position: absolute;
-          right: 1rem;
-          font-size: 1.25rem;
-          color: var(--error);
-        }
+      &::after {
+        content: '\f058';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        right: 1rem;
+        font-size: 1.25rem; // Mniejsza ikona
+        color: var(--success);
       }
+    }
+
+    &--incorrect {
+      background-color: var(--error-bg) !important;
+      border-color: var(--error-border) !important;
+      color: var(--error-text) !important;
+
+      .quiz-card__answer-prefix {
+        background-color: var(--error) !important;
+        color: white !important;
+      }
+
+      &::after {
+        content: '\f057';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        right: 1rem;
+        font-size: 1.25rem;
+        color: var(--error);
+      }
+    }
   }
 
   &__actions {

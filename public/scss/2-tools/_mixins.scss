@@ -3,30 +3,74 @@
 // =============================================================================
 
 @mixin media-down($breakpoint) {
-  @if $breakpoint == sm {
-    @media (max-width: 576px) { @content; }
-  } @else if $breakpoint == md {
-    @media (max-width: 768px) { @content; }
-  } @else if $breakpoint == lg {
-    @media (max-width: 992px) { @content; }
-  } @else if $breakpoint == xl {
-    @media (max-width: 1200px) { @content; }
-  } @else {
-    @media (max-width: $breakpoint) { @content; }
+  @if $breakpoint ==sm {
+    @media (max-width: 576px) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==md {
+    @media (max-width: 768px) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==lg {
+    @media (max-width: 992px) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==xl {
+    @media (max-width: 1200px) {
+      @content;
+    }
+  }
+
+  @else {
+    @media (max-width: $breakpoint) {
+      @content;
+    }
   }
 }
 
 @mixin media-up($breakpoint) {
-  @if $breakpoint == sm {
-    @media (min-width: 576px) { @content; }
-  } @else if $breakpoint == md {
-    @media (min-width: 768px) { @content; }
-  } @else if $breakpoint == lg {
-    @media (min-width: 992px) { @content; }
-  } @else if $breakpoint == xl {
-    @media (min-width: 1200px) { @content; }
-  } @else {
-    @media (min-width: $breakpoint) { @content; }
+  @if $breakpoint ==sm {
+    @media (min-width: 576px) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==md {
+    @media (min-width: 768px) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==lg {
+    @media (min-width: 992px) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==xl {
+    @media (min-width: 1200px) {
+      @content;
+    }
+  }
+
+  @else {
+    @media (min-width: $breakpoint) {
+      @content;
+    }
+  }
+}
+
+// Minimalny rozmiar elementów interaktywnych dla urządzeń mobilnych
+@mixin min-size-touch() {
+  @media (max-width: 768px) {
+    min-height: 44px;
+    min-width: 44px;
   }
 }
 

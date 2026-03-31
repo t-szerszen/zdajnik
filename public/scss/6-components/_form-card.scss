@@ -1,9 +1,16 @@
 // Plik: scss/6-components/_form-card.scss
+@use '../2-tools/mixins' as *;
 
 .form-card {
   max-width: 480px;
   margin: 4rem auto;
   padding: 3.5rem;
+
+  @include media-down(sm) {
+    margin: 2rem auto;
+    padding: 2rem 1.5rem;
+    border-radius: 1.5rem;
+  }
   
   // --- GLASSMORPHISM ---
   background: rgba(255, 255, 255, 0.75);
@@ -173,7 +180,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
 
-    @media (max-width: 480px) {
+    @include media-down(sm) {
       grid-template-columns: 1fr;
     }
   }

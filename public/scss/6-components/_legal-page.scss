@@ -2,6 +2,7 @@
  * Styles dla strony Polityki Prywatności.
  * @group legal-page
  */
+@use '../2-tools/mixins' as *;
 
 .legal-page {
   padding: 2rem 0 5rem;
@@ -236,7 +237,7 @@
   gap: 1rem;
   margin-top: 1rem;
 
-  @media (max-width: 600px) {
+  @include media-down(sm) {
     grid-template-columns: 1fr;
   }
 }

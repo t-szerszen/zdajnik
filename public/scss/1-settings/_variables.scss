@@ -28,6 +28,7 @@
   --accent: #3b82f6;
   --accent-rgb: 59, 130, 246;
   --accent-hover: #2563eb;
+  --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
 
   // Obramowania - subtelne w light mode
   --border: rgba(0, 0, 0, 0.08);
@@ -124,6 +125,9 @@ html.dark {
   --warning-bg: rgba(59, 130, 246, 0.08);
   --warning-text: #60a5fa;
   --warning-border: rgba(59, 130, 246, 0.15);
+
+  // Progress bar
+  --progress-bar-bg: var(--accent-gradient);
 
   --muted-text: #64748b;
   --card-bg: rgba(20, 22, 26, 0.9);

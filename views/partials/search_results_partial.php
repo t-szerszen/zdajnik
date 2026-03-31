@@ -23,8 +23,8 @@ $filters = $filters ?? [];
                 <?php if (!empty($q['topic_name'])): ?>
                   <span class="badge badge--secondary"><?= htmlspecialchars($q['topic_name']) ?></span>
                 <?php endif; ?>
+                <span class="search-result-card__id">ID: <?= $q['question_id'] ?></span>
               </div>
-              <span class="search-result-card__id">ID: #<?= $q['question_id'] ?></span>
             </div>
             <div class="search-result-card__content">
               <p class="search-result-card__text">

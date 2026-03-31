@@ -2,28 +2,54 @@
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  align-items: start;
+  grid-template-columns: repeat(3, 1fr); // Wymuszony układ 3 kolumn na desktopie (Zadanie 3)
+  align-items: stretch; // Naprawa: Karty w rzędzie mają tę samą wysokość dla równego wyglądu (iPad Pro)
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+
+  @include media-down(xl) {
+    grid-template-columns: repeat(3, 1fr); // Zachowaj 3 kolumny do progu XL (iPad Pro Landscape)
+    gap: 1.5rem;
+  }
+
+  @include media-down(lg) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include media-down(sm) {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
 }
 
 .feature-card {
-  @include glass-card(2.5rem 2rem, 16px);
+  @include glass-card(2rem 1.75rem, 20px);
+
+  @include media-down(sm) {
+    padding: 1.25rem 1rem; // Zredukowany padding (Zadanie 2)
+  }
 
   &__header {
     display: flex;
     align-items: center;
     gap: 1.25rem;
     margin-bottom: 1rem;
+
+    @include media-down(xs) {
+      gap: 0.75rem; // Ciaśniejszy header na bardzo małych telefonach
+    }
   }
 
   &__icon {
     font-size: 2rem;
+    
+    @include media-down(sm) {
+      font-size: 1.5rem; // Zredukowany rozmiar ikony (Zadanie 2)
+    }
     // Kolor gradientowy dla ikony
     @include text-gradient;
-    
+
     flex-shrink: 0;
     transition: transform 0.3s ease, filter 0.3s ease;
   }
@@ -64,7 +90,7 @@
     color: var(--text);
     line-height: 1.6;
     font-size: 0.95rem;
-    
+
     // Reset marginesów
     margin-top: 0;
     padding-left: 0;
@@ -72,10 +98,10 @@
 
   // Stan aktywny (rozwinięty) - dodajemy akcent z lewej strony
   &:hover &__details {
-    max-height: 300px;
+    max-height: 500px;
     opacity: 1;
-    margin-top: 1.5rem;
-    
+    margin-top: 1.25rem;
+
     // Wyróżnienie rozwiniętej treści paskiem z boku
     padding-left: 1rem;
     border-left: 3px solid var(--accent);
