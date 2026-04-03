@@ -159,8 +159,8 @@
     }
 
     &:hover &__background {
-      transform: scale(1.05);
-      filter: brightness(0.7) grayscale(1);
+      transform: none; // Disable zoom on hover for disabled
+      filter: brightness(0.8) grayscale(1); // Keep consistent with non-hover
     }
 
     .exam-card__title::after {

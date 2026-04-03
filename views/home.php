@@ -105,7 +105,7 @@ $canonicalUrl = 'https://www.examly.pl/';
             </p>
             <ul class="feature-card__list">
               <li>
-                <strong>Cztery tryby nauki:</strong>
+                <strong>Pięć filtrów nauki:</strong>
                 Aplikacja oferuje wyjątkowe tryby nauki maksymalizujące efekty Twojej pracy.
               </li>
               <li>
@@ -132,30 +132,35 @@ $canonicalUrl = 'https://www.examly.pl/';
         <div class="feature-card">
           <div class="feature-card__header">
             <i class="feature-card__icon fas fa-keyboard"></i>
-            <h3 class="feature-card__title">Arkusze Praktyczne</h3>
+            <div class="feature-card__title-group">
+              <h3 class="feature-card__title">Arkusze Praktyczne</h3>
+              <span class="soon-badge">Wkrótce!</span>
+            </div>
           </div>
           <p class="feature-card__text">
-            Pobieraj gotowe do druku arkusze PDF i ćwicz w warunkach zbliżonych do prawdziwego egzaminu.
+            Pobieraj gotowe do druku arkusze PDF i materiały, aby ćwiczyć w warunkach zbliżonych do prawdziwego
+            egzaminu.
           </p>
           <div class="feature-card__details">
             <p>
               Każdy arkusz to kompletny zestaw zadań praktycznych, który pomoże Ci oswoić się z formą egzaminu.
-              (Wkrótce!)
             </p>
           </div>
         </div>
         <div class="feature-card">
           <div class="feature-card__header">
             <i class="feature-card__icon fas fa-graduation-cap"></i>
-            <h3 class="feature-card__title">Najlepsze Kursy</h3>
+            <div class="feature-card__title-group">
+              <h3 class="feature-card__title">Kursy</h3>
+              <span class="soon-badge">Wkrótce!</span>
+            </div>
           </div>
           <p class="feature-card__text">
             Skorzystaj z naszych kompleksowych kursów wideo, które przeprowadzą Cię przez każdy temat.
           </p>
           <div class="feature-card__details">
             <p>
-              Nasi eksperci tłumaczą najtrudniejsze zagadnienia w prosty i zrozumiały sposób, krok po kroku.
-              (Wkrótce!)
+              Najtrudniejsze zagadnienia wytłumaczone w prosty i zrozumiały sposób, krok po kroku.
             </p>
           </div>
         </div>
@@ -224,18 +229,22 @@ $canonicalUrl = 'https://www.examly.pl/';
       <p class="section-subtitle">Wybierz swoją specjalizację i sprawdź się w symulacji prawdziwego egzaminu
         państwowego.</p>
       <div class="exams-grid">
-        <a href="<?= url('test/INF.03') ?>" class="exam-card">
+        <a href="#" class="exam-card exam-card--disabled" onclick="return false;">
           <div class="exam-card__background"
             style="background-image: url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop');">
           </div>
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.03 (dawniej E.14)</h3>
-            <p class="exam-card__subtitle">Programowanie webowe</p>
+            <p class="exam-card__subtitle">
+              Programowanie webowe<br>
+              <span class="soon-badge"
+                style="margin-left: 0; margin-top: 0.5rem; display: inline-block;">Wkrótce!</span>
+            </p>
           </div>
         </a>
         <!-- Karta nieaktywna, z modyfikatorem BEM `--disabled` -->
-        <a href="<?= url('test/INF.02') ?>" class="exam-card exam-card--disabled">
+        <a href="#" class="exam-card exam-card--disabled" onclick="return false;">
           <div class="exam-card__background"
             style="background-image: url('https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop');">
           </div>
@@ -244,11 +253,12 @@ $canonicalUrl = 'https://www.examly.pl/';
             <h3 class="exam-card__title">INF.02 (dawniej EE.08)</h3>
             <p class="exam-card__subtitle">
               Sprzęt, systemy i sieci<br>
-              <span class="exam-card__soon">Wkrótce!</span>
+              <span class="soon-badge"
+                style="margin-left: 0; margin-top: 0.5rem; display: inline-block;">Wkrótce!</span>
             </p>
           </div>
         </a>
-        <a href="<?= url('test/INF.04') ?>" class="exam-card exam-card--disabled">
+        <a href="<?= url('test/INF.04') ?>" class="exam-card">
           <div class="exam-card__background"
             style="background-image: url('https://images.unsplash.com/photo-1605379399642-870262d3d051?q=80&w=2106&auto=format&fit=crop');">
           </div>
@@ -256,8 +266,7 @@ $canonicalUrl = 'https://www.examly.pl/';
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.04 (dawniej E.14)</h3>
             <p class="exam-card__subtitle">
-              Projektowanie i programowanie aplikacji<br>
-              <span class="exam-card__soon">Wkrótce!</span>
+              Projektowanie i programowanie aplikacji
             </p>
           </div>
         </a>
@@ -349,7 +358,7 @@ $canonicalUrl = 'https://www.examly.pl/';
         ];
         foreach ($examsCategories as $examCode => $categories):
           $icon = $icons[$examCode] ?? 'fas fa-laptop-code';
-          $isSoon = empty($categories);
+          $isSoon = $examCode !== 'INF.04';
           ?>
           <div class="topics-group">
             <h3 class="topics-group__subheading">
@@ -365,11 +374,10 @@ $canonicalUrl = 'https://www.examly.pl/';
                   <a href="#" class="topic-card topic-card--disabled">Sprzęt komputerowy</a>
                   <a href="#" class="topic-card topic-card--disabled">Systemy operacyjne</a>
                   <a href="#" class="topic-card topic-card--disabled">Sieci komputerowe</a>
-                <?php elseif ($examCode === 'INF.04'): ?>
-                  <a href="#" class="topic-card topic-card--disabled">Algorytmika</a>
-                  <a href="#" class="topic-card topic-card--disabled">Programowanie obiektowe</a>
-                  <a href="#" class="topic-card topic-card--disabled">Aplikacje mobilne</a>
-                  <a href="#" class="topic-card topic-card--disabled">Aplikacje desktopowe</a>
+                <?php elseif ($examCode === 'INF.03'): ?>
+                  <a href="#" class="topic-card topic-card--disabled">Tworzenie stron internetowych</a>
+                  <a href="#" class="topic-card topic-card--disabled">Bazy danych</a>
+                  <a href="#" class="topic-card topic-card--disabled">Aplikacje internetowe</a>
                 <?php else: ?>
                   <p>Brak działów.</p>
                 <?php endif; ?>

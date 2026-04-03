@@ -20,7 +20,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
         </span> - Historia
         <?= htmlspecialchars($title)?>
       </h1>
-      <p class="page-header__text">Twoje postępy i zestawienia w jednym miejscu.</p>
+      <p class="page-header__text">Pełna historia Twojej aktywności edukacyjnej. Analizuj dotychczasowe wyniki, wyciągaj wnioski z poprzednich podejść i mierz swoje postępy w czasie.</p>
     </div>
   </header>
 

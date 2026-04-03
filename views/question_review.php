@@ -16,8 +16,7 @@ $pageDescription = 'Analiza pytania z bazy egzaminacyjnej.';
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Podgląd</span> pytania</h1>
-      <p class="page-header__text">Przeanalizuj to pytanie na spokojnie. Zobacz poprawną odpowiedź i przeczytaj
-        wyjaśnienie.</p>
+      <p class="page-header__text">Indywidualna weryfikacja zagadnienia. Przeanalizuj odpowiedź oraz zapoznaj się ze szczegółowym wyjaśnieniem, aby dogłębnie zrozumieć omawiany problem.</p>
     </div>
   </header>
 

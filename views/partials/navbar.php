@@ -45,53 +45,23 @@ use App\Models\User;
 
       <!-- Element nawigacji z menu rozwijanym (dropdown) -->
       <li class="main-nav__item dropdown">
-        <a href="<?= url('#inf02')?>" class="main-nav__link">
+        <a href="#" class="main-nav__link main-nav__link--disabled" style="opacity: 0.6; pointer-events: none;">
           <i class="main-nav__icon fas fa-microchip"></i>
-          <span>INF.02</span>
-          <i class="dropdown__arrow fas fa-chevron-down"></i>
+          <div class="main-nav__link-content">
+            <span>INF.02</span>
+            <span class="badge badge--soon">Wkrótce</span>
+          </div>
         </a>
-        <ul class="dropdown__menu">
-          <li class="dropdown__item">
-            <a href="<?= url('jedno-pytanie/INF.02')?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-question-circle"></i> Jedno Pytanie
-            </a>
-          </li>
-          <li class="dropdown__item">
-            <a href="<?= url('personalizowany-test/INF.02')?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-sliders-h"></i> Spersonalizowany Test
-            </a>
-          </li>
-          <li class="dropdown__item">
-            <a href="<?= url('test/INF.02')?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
-            </a>
-          </li>
-        </ul>
       </li>
 
       <li class="main-nav__item dropdown">
-        <a href="<?= url('#inf03')?>" class="main-nav__link">
+        <a href="#" class="main-nav__link main-nav__link--disabled" style="opacity: 0.6; pointer-events: none;">
           <i class="main-nav__icon fas fa-laptop-code"></i>
-          <span>INF.03</span>
-          <i class="dropdown__arrow fas fa-chevron-down"></i>
+          <div class="main-nav__link-content">
+            <span>INF.03</span>
+            <span class="badge badge--soon">Wkrótce</span>
+          </div>
         </a>
-        <ul class="dropdown__menu">
-          <li class="dropdown__item">
-            <a href="<?= url('jedno-pytanie/INF.03')?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-question-circle"></i> Jedno Pytanie
-            </a>
-          </li>
-          <li class="dropdown__item">
-            <a href="<?= url('personalizowany-test/INF.03')?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-sliders-h"></i> Spersonalizowany Test
-            </a>
-          </li>
-          <li class="dropdown__item">
-            <a href="<?= url('test/INF.03')?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
-            </a>
-          </li>
-        </ul>
       </li>
 
       <li class="main-nav__item dropdown">
@@ -120,18 +90,13 @@ use App\Models\User;
       </li>
 
       <li class="main-nav__item dropdown">
-        <a href="<?= url('/')?>" class="main-nav__link">
+        <a href="#" class="main-nav__link main-nav__link--disabled" style="opacity: 0.6; pointer-events: none;">
           <i class="main-nav__icon fas fa-graduation-cap"></i>
-          <span>Kursy</span>
-          <i class="dropdown__arrow fas fa-chevron-down"></i>
+          <div class="main-nav__link-content">
+            <span>Kursy</span>
+            <span class="badge badge--soon">Wkrótce</span>
+          </div>
         </a>
-        <ul class="dropdown__menu dropdown__menu--right">
-          <li class="dropdown__item">
-            <a href="<?= url('/')?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-chalkboard-teacher"></i> Kurs INF.03
-            </a>
-          </li>
-        </ul>
       </li>
 
       <!-- Dynamic Test Info (Visible on scroll during tests) -->

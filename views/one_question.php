@@ -61,8 +61,7 @@ $extraScripts = [
           <?= htmlspecialchars($exam['formatted_name']) ?>
         </span> - Jedno pytanie</h1>
       <p class="page-header__text">
-        Nie masz czasu na pełny test? Spoko! Ten tryb jest idealny, żeby w kilka minut wbić do głowy coś nowego. Wybierz
-        dział, wylosuj pytanie prosto z oficjalnych egzaminów i sprawdź, czy dasz radę.
+        Brak czasu na pełny test? Wykorzystaj wolną chwilę na rozwiązanie pojedynczego pytania. Wybierz dział, rozwiąż pytanie z oficjalnych arkuszy w kilka minut i małymi krokami buduj swoją gotowość do egzaminu.
       </p>
       <p class="page-header__text">
         <strong class="text-gradient">Pro Tip:</strong> Zapisuj na boku każde nowe hasło lub trudniejsze zagadnienie.

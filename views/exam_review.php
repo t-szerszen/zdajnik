@@ -16,8 +16,7 @@ $pageDescription = 'Szczegółowa analiza Twojego podejścia do egzaminu.';
   <header class="page-header" id="top">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Podgląd</span> egzaminu</h1>
-      <p class="page-header__text">Szczegółowa analiza Twojego podejścia. Przejrzyj wszystkie pytania i sprawdź, gdzie
-        popełniłeś błędy.</p>
+      <p class="page-header__text">Kompleksowa analiza rozwiązanego testu. Przeanalizuj swoje odpowiedzi, zapoznaj się z opracowaniami w ramach wiedzy eksperckiej i skutecznie eliminuj powtarzające się błędy.</p>
     </div>
   </header>
 

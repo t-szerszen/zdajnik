@@ -52,12 +52,10 @@ $extraScripts = [
       <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span>
         - Spersonalizowany test</h1>
       <p class="page-header__text">
-        Stwórz test idealnie dopasowany do Twoich potrzeb. Wybierz interesujące Cię tematy, ustaw liczbę pytań i skup
-        się na tym, co jest dla Ciebie najważniejsze.
+        Wygeneruj test dopasowany do Twoich aktualnych potrzeb. Skonfiguruj zakres tematyczny, określ liczbę pytań i systematycznie eliminuj swoje luki w wiedzy.
       </p>
       <p class="page-header__text">
-        <strong class="text-gradient">Pro Tip:</strong> Filtry inteligentnej nauki działają najskuteczniej, gdy system
-        pozna Twoje postępy. Rozwiąż kilka testów w trybie standardowym, aby w pełni odblokować ich moc!
+        <strong class="text-gradient">Pro Tip:</strong> Rozwiąż kilka testów próbnych, aby algorytm mógł skutecznie kalibrować poziom na podstawie Twoich słabych stron.
       </p>
     </div>
   </header>

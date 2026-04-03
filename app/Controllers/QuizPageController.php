@@ -26,12 +26,24 @@ class QuizPageController extends BaseController
   }
 
   /**
+   * Helper function to block non-INF.04 exams.
+   */
+  private function checkAvailability(string $code): void
+  {
+    if (strtoupper($code) !== 'INF.04') {
+      header("Location: /?message=" . urlencode("Ten egzamin będzie dostępny wkrótce!"));
+      exit;
+    }
+  }
+
+  /**
    * Wyświetla stronę quizu w trybie "jedno pytanie".
    *
    * @return void
    */
   public function showOneQuestionPage(string $code): void
   {
+    $this->checkAvailability($code);
     $exam = $this->dynamicData->getExamDetails($code);
     if ($exam) {
       $categories = $this->dynamicData->getCategoriesForExam($exam['id']);
@@ -53,6 +65,7 @@ class QuizPageController extends BaseController
    */
   public function showPersonalizedTestPage(string $code): void
   {
+    $this->checkAvailability($code);
     $exam = $this->dynamicData->getExamDetails($code);
     if (!$exam) {
       http_response_code(404);
@@ -87,6 +100,7 @@ class QuizPageController extends BaseController
    */
   public function showTestPage(string $code): void
   {
+    $this->checkAvailability($code);
     $exam = $this->dynamicData->getExamDetails($code);
     if ($exam) {
       $this->renderView('test', [

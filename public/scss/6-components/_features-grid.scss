@@ -3,23 +3,21 @@
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr); // Wymuszony układ 3 kolumn na desktopie (Zadanie 3)
-  align-items: stretch; // Naprawa: Karty w rzędzie mają tę samą wysokość dla równego wyglądu (iPad Pro)
+  align-items: flex-start; // POWRÓT: Tylko jedna karta się rozwija!
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
 
-  @include media-down(xl) {
-    grid-template-columns: repeat(3, 1fr); // Zachowaj 3 kolumny do progu XL (iPad Pro Landscape)
+  @include media-down(1400px) {
+    grid-template-columns: repeat(2, 1fr); // 2 Kolumny dla Ipad Pro i małych laptopów
+    align-items: stretch; // Równa wysokość dla symetrii
     gap: 1.5rem;
-  }
-
-  @include media-down(lg) {
-    grid-template-columns: repeat(2, 1fr);
   }
 
   @include media-down(sm) {
     grid-template-columns: 1fr;
     gap: 1.25rem;
+    align-items: stretch;
   }
 }
 
@@ -32,12 +30,35 @@
 
   &__header {
     display: flex;
-    align-items: center;
+    align-items: center; // Wyrównanie ikony i tekstu do środka pionowo
     gap: 1.25rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    min-height: 4rem; // ZAPEWNIA RÓWNE LINIE NAGŁÓWKA NAWET PRZY ALIGN-ITEMS: FLEX-START
+
+    @include media-down(1400px) {
+      align-items: flex-start; // Powrót do góry na tabletach/mobile
+    }
 
     @include media-down(xs) {
-      gap: 0.75rem; // Ciaśniejszy header na bardzo małych telefonach
+      gap: 0.75rem; 
+    }
+  }
+
+  &__title-group {
+    display: flex;
+    flex-direction: row; // DESKTOP: Badge w jednej linii z tytułem
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+
+    @include media-down(1400px) {
+      flex-direction: column; // TABLET/MOBILE: Badge pod tytułem dla braku zatorów
+      align-items: flex-start;
+      gap: 0.35rem;
+    }
+
+    .soon-badge {
+      margin-left: 0 !important;
     }
   }
 
@@ -55,7 +76,8 @@
   }
 
   // Ikona "świeci" i lekko się obraca przy najechaniu na kartę
-  &:hover &__icon {
+  // Poprawka: Nie animuj ikony, gdy karta jest "Disabled" (brak szczegółów do pokazania)
+  &:not(:has(.soon-badge)):hover &__icon {
     transform: scale(1.1) rotate(5deg);
     filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
   }
@@ -97,12 +119,24 @@
   }
 
   // Stan aktywny (rozwinięty) - dodajemy akcent z lewej strony
-  &:hover &__details {
+  // Poprawka: Rozwijaj tylko tę konkretną kartę
+  @media (hover: hover) {
+    &:hover &__details {
+      max-height: 500px;
+      opacity: 1;
+      margin-top: 1.25rem;
+
+      // Wyróżnienie rozwiniętej treści paskiem z boku
+      padding-left: 1rem;
+      border-left: 3px solid var(--accent);
+    }
+  }
+  
+  // Wsparcie dla urządzeń dotykowych
+  &.is-active &__details {
     max-height: 500px;
     opacity: 1;
     margin-top: 1.25rem;
-
-    // Wyróżnienie rozwiniętej treści paskiem z boku
     padding-left: 1rem;
     border-left: 3px solid var(--accent);
   }

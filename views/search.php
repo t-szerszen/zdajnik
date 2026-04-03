@@ -21,8 +21,7 @@ $results = $results ?? [];
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Wyszukiwarka</span> Pytań</h1>
-      <p class="page-header__text">Potrzebujesz znaleźć konkretne zagadnienie lub sprawdzić wyjaśnienie do pytania o
-        znanym ID? Skorzystaj z naszych filtrów.</p>
+      <p class="page-header__text">Szybko zlokalizuj interesujące Cię zagadnienia. Filtruj bazę tysięcy pytań po treści lub unikalnym numerze ID, aby błyskawicznie sprawdzić poprawne rozwiązania i przypisane wyjaśnienia.</p>
     </div>
   </header>
 

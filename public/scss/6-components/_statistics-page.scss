@@ -341,7 +341,7 @@
   }
 
   &--saved {
-    box-shadow: inset 6px 0 0 0 #8b5cf6, var(--glass-shadow);
+    box-shadow: inset 6px 0 0 0 var(--accent), var(--glass-shadow); // Change from purple to main accent
   }
 
   &--history {
@@ -354,8 +354,8 @@
   }
 
   &--saved {
-    background: linear-gradient(135deg, var(--glass-bg) 0%, rgba(236, 72, 153, 0.08) 100%);
-    box-shadow: inset 6px 0 0 0 #ec4899, var(--glass-shadow);
+    background: linear-gradient(135deg, var(--glass-bg) 0%, rgba(var(--accent-rgb), 0.08) 100%);
+    box-shadow: inset 6px 0 0 0 var(--accent), var(--glass-shadow);
   }
 
   // Elements

@@ -52,8 +52,7 @@ $extraScripts = [
           <?= htmlspecialchars($exam['formatted_name'])?>
         </span> - Pełny Egzamin Próbny</h1>
       <p class="page-header__text">
-        Zmierz się z pełnym egzaminem próbnym składającym się z 40 losowych pytań z naszej bazy.
-        To najlepszy sposób, by sprawdzić swoją wiedzę, zidentyfikować słabe punkty i śledzić postępy w nauce.
+        Podejdź do pełnego egzaminu próbnego. Zmierz się z symulacją zawierającą 40 losowo dobranych pytań. Weryfikuj swoją wiedzę w warunkach zbliżonych do rzeczywistych i precyzyjnie identyfikuj obszary do poprawy.
       </p>
       <p class="page-header__text">
         <strong class="text-gradient">Pro Tip:</strong> Po teście skup się na analizie błędnych odpowiedzi.

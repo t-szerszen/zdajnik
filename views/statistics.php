@@ -43,7 +43,7 @@ $extraScripts = [
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Statystyki</span> Nauki</h1>
-      <p class="page-header__text">Śledź swoje postępy, analizuj wyniki i obserwuj swoją drogę do sukcesu w Examly.</p>
+      <p class="page-header__text">Zaawansowana analityka Twojej ścieżki edukacyjnej. Monitoruj tempo przyswajania wiedzy, identyfikuj obszary wymagające uwagi i konsekwentnie zmierzaj po wymarzony wynik.</p>
     </div>
   </header>
 
@@ -368,7 +368,7 @@ else: ?>
                   <?= mb_strimwidth(htmlspecialchars($critical['question_text']), 0, 120, "...")?>
                 </span>
                 <div style="display: flex; gap: 0.5rem; white-space: nowrap; flex-shrink: 0;">
-                  <a href="<?= url('test-pytanie/' . $critical['question_id'])?>" class="btn btn--primary btn--sm"
+                  <a href="<?= url('test-pytanie/' . $critical['question_id'])?>" class="btn btn--secondary btn--sm"
                     title="Zobacz" style="padding: 0.4rem 1rem;">zobacz</a>
                 </div>
               </li>
@@ -416,7 +416,7 @@ else: ?>
                   <?= mb_strimwidth(htmlspecialchars($error['question_text']), 0, 120, "...")?>
                 </span>
                 <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
-                  <a href="<?= url('test-pytanie/' . $error['id'])?>" class="btn btn--primary btn--sm" style="padding: 0.4rem 1rem;">zobacz</a>
+                  <a href="<?= url('test-pytanie/' . $error['id'])?>" class="btn btn--secondary btn--sm" style="padding: 0.4rem 1rem;">zobacz</a>
                 </div>
               </li>
               <?php
@@ -455,7 +455,7 @@ else: ?>
                   <?= mb_strimwidth(htmlspecialchars($saved['question_text']), 0, 120, "...")?>
                 </span>
                 <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
-                  <a href="<?= url('test-pytanie/' . $saved['id'])?>" class="btn btn--primary btn--sm" style="padding: 0.4rem 1rem;">zobacz</a>
+                  <a href="<?= url('test-pytanie/' . $saved['id'])?>" class="btn btn--secondary btn--sm" style="padding: 0.4rem 1rem;">zobacz</a>
                 </div>
               </li>
               <?php
@@ -497,7 +497,7 @@ else: ?>
                   </strong>
                 </span>
                 <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
-                  <a href="<?= url('wyniki/' . $exam['id'])?>" class="btn btn--primary btn--sm" style="padding: 0.4rem 1rem;">zobacz</a>
+                  <a href="<?= url('wyniki/' . $exam['id'])?>" class="btn btn--secondary btn--sm" style="padding: 0.4rem 1rem;">zobacz</a>
                 </div>
               </li>
               <?php
