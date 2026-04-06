@@ -57,7 +57,7 @@ $extraScripts = [
         <div class="stats-page__category-selector">
           <form action="" method="GET">
             <label for="category-select" class="sr-only">Wybór kategorii</label>
-            <select id="category-select" name="category" onchange="this.form.submit()" class="stats-page__select">
+            <select id="category-select" name="category" onchange="this.form.submit()" class="stats-page__select" aria-label="Wybierz kategorię egzaminu, aby zobaczyć statystyki">
               <option value="">wybór egzaminu</option>
               <?php foreach ($categories as $cat): ?>
               <option value="<?= $cat['id']?>" <?= $selectedCategoryId == $cat['id'] ? 'selected' : '' ?>>

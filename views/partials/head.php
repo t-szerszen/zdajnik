@@ -51,7 +51,7 @@
                  Wskazuje wyszukiwarkom, który URL jest "oryginalną" wersją
                  danej strony, nawet jeśli jest dostępna pod wieloma adresami.
   -->
-  <link rel="canonical" href="<?= htmlspecialchars($canonicalUrl ?? 'https://www.examly.pl/') ?>">
+  <link rel="canonical" href="<?= htmlspecialchars($canonicalUrl ?? url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
 
   <!-- 
     @property author, robots
@@ -84,15 +84,15 @@
   <meta property="og:title" content="<?= htmlspecialchars($pageTitle ?? 'Examly - Egzaminy Zawodowe INF.03') ?>">
   <meta property="og:description" content="<?= htmlspecialchars($pageDescription ?? 'Zdobądź wiedzę i pewność przed egzaminem zawodowym.') ?>">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://www.examly.pl/">
-  <meta property="og:image" content="https://www.examly.pl/images/social-preview.jpg">
+  <meta property="og:url" content="<?= htmlspecialchars($canonicalUrl ?? url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
+  <meta property="og:image" content="<?= url('images/social-preview.jpg') ?>">
   <meta property="og:site_name" content="Examly">
 
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle ?? 'Examly - Egzaminy Zawodowe INF.03') ?>">
   <meta name="twitter:description" content="<?= htmlspecialchars($pageDescription ?? 'Sprawdź darmowe testy i materiały edukacyjne.') ?>">
-  <meta name="twitter:image" content="https://www.examly.pl/images/social-preview.jpg">
+  <meta name="twitter:image" content="<?= url('images/social-preview.jpg') ?>">
 
   <!-- ================================================================== -->
   <!-- 4. Ikony i zasoby (Assets) -->
@@ -126,14 +126,23 @@
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Examly",
-      "url": "https://www.examly.pl/",
+      "url": "<?= url('/') ?>",
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://www.examly.pl/search?q={search_term_string}",
+        "target": "<?= url('search') ?>?q={search_term_string}",
         "query-input": "required name=search_term_string"
       }
     }
   </script>
+
+  <?php if (isset($extraSchemas) && is_array($extraSchemas)): ?>
+    <?php foreach ($extraSchemas as $schema): ?>
+      <script type="application/ld+json">
+        <?= json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
+      </script>
+    <?php endforeach; ?>
+  <?php endif; ?>
+
 
   <script>
     (function() {

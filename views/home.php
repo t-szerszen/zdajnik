@@ -6,6 +6,90 @@ $pageTitle = 'INF.02 INF.03 - Testy Online i kursy | Examly';
 $pageDescription = 'Zwiększ swoje szanse na zdanie egzaminu INF.03 i INF.02. Rozwiązuj testy online z tysięcy pytań, śledź postępy i ucz się mądrzej z Examly. Zacznij dziś!';
 $canonicalUrl = 'https://www.examly.pl/';
 
+// Dodajemy uporządkowane dane dla SEO (FAQ i Funkcje platformy)
+$extraSchemas = [
+  [
+    "@context" => "https://schema.org",
+    "@type" => "FAQPage",
+    "mainEntity" => [
+      [
+        "@type" => "Question",
+        "name" => "Z czego składa się egzamin?",
+        "acceptedAnswer" => [
+          "@type" => "Answer",
+          "text" => "Egzamin podzielony jest na dwie kluczowe części: pisemną i praktyczną. Etap pisemny to test wyboru trwający 60 minut, składający się z 40 pytań z jedną prawidłową odpowiedzią. Etap praktyczny to zadanie do wykonania przy komputerze, na które przeznaczone jest 240 minut."
+        ]
+      ],
+      [
+        "@type" => "Question",
+        "name" => "Jakie są progi zdawalności?",
+        "acceptedAnswer" => [
+          "@type" => "Answer",
+          "text" => "Z części pisemnej: minimum 50% punktów. Z części praktycznej: minimum 75% punktów."
+        ]
+      ],
+      [
+        "@type" => "Question",
+        "name" => "Co w przypadku niepowodzenia?",
+        "acceptedAnswer" => [
+          "@type" => "Answer",
+          "text" => "Jeśli nie powiedzie Ci się tylko w jednej z części, możesz przystąpić do poprawki wyłącznie tej części. Oblanie obu etapów wiąże się z koniecznością ponownego zdawania całego egzaminu."
+        ]
+      ],
+      [
+        "@type" => "Question",
+        "name" => "Czy muszę podchodzić do egzaminu?",
+        "acceptedAnswer" => [
+          "@type" => "Answer",
+          "text" => "Dla uczniów technikum w nowej formule (od 2019 r., kwalifikacje INF.02 i INF.03), podejście do egzaminu jest obowiązkowe w celu ukończenia szkoły."
+        ]
+      ]
+    ]
+  ],
+  [
+    "@context" => "https://schema.org",
+    "@type" => "WebApplication",
+    "name" => "Examly - Platforma do Egzaminów Zawodowych",
+    "operatingSystem" => "All",
+    "applicationCategory" => "EducationApplication",
+    "featureList" => [
+      "Symulacja egzaminu INF.02, INF.03, INF.04",
+      "Inteligentny system statystyk i śledzenia postępów",
+      "Wyszukiwarka pytań egzaminacyjnych po ID i treści",
+      "Tryb nauki 'Jedno Pytanie' z wyjaśnieniami",
+      "Personalizowane testy na podstawie błędów",
+      "Kursy wideo dla technika informatyka (wkrótce!)"
+    ],
+    "offers" => [
+      "@type" => "Offer",
+      "price" => "0",
+      "priceCurrency" => "PLN"
+    ]
+  ],
+  [
+    "@context" => "https://schema.org",
+    "@type" => "Course",
+    "name" => "Kurs przygotowawczy INF.03 - Wkrótce!",
+    "description" => "Nadchodzący kompleksowy kurs wideo oraz pełna baza pytań egzaminacyjnych dla kwalifikacji INF.03 (Tworzenie stron i baz danych).",
+    "provider" => [
+      "@type" => "Organization",
+      "name" => "Examly",
+      "url" => "https://www.examly.pl"
+    ]
+  ],
+  [
+    "@context" => "https://schema.org",
+    "@type" => "Service",
+    "name" => "Baza pytań INF.02 i INF.03 - Uzupelnianie!",
+    "description" => "Trwają intensywne prace nad uzupełnieniem pełnej bazy pytań egzaminacyjnych dla kwalifikacji INF.02 oraz INF.03.",
+    "provider" => [
+      "@type" => "Organization",
+      "name" => "Examly",
+      "url" => "https://www.examly.pl"
+    ]
+  ]
+];
+
 /**
  * ========================================================================
  * Plik Widoku: Strona Główna (home.php)
@@ -230,9 +314,9 @@ $canonicalUrl = 'https://www.examly.pl/';
         państwowego.</p>
       <div class="exams-grid">
         <a href="#" class="exam-card exam-card--disabled" onclick="return false;">
-          <div class="exam-card__background"
-            style="background-image: url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop');">
-          </div>
+          <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop" 
+               alt="Praca przy komputerze i nauka programowania webowego INF.03" 
+               class="exam-card__background">
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.03 (dawniej E.14)</h3>
@@ -245,9 +329,9 @@ $canonicalUrl = 'https://www.examly.pl/';
         </a>
         <!-- Karta nieaktywna, z modyfikatorem BEM `--disabled` -->
         <a href="#" class="exam-card exam-card--disabled" onclick="return false;">
-          <div class="exam-card__background"
-            style="background-image: url('https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop');">
-          </div>
+          <img src="https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop" 
+               alt="Systemy i sieci komputerowe - przygotowanie do INF.02" 
+               class="exam-card__background">
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.02 (dawniej EE.08)</h3>
@@ -259,9 +343,9 @@ $canonicalUrl = 'https://www.examly.pl/';
           </div>
         </a>
         <a href="<?= url('test/INF.04') ?>" class="exam-card">
-          <div class="exam-card__background"
-            style="background-image: url('https://images.unsplash.com/photo-1605379399642-870262d3d051?q=80&w=2106&auto=format&fit=crop');">
-          </div>
+          <img src="https://images.unsplash.com/photo-1605379399642-870262d3d051?q=80&w=2106&auto=format&fit=crop" 
+               alt="Pisanie kodu i projektowanie aplikacji mobilnych INF.04" 
+               class="exam-card__background">
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.04 (dawniej E.14)</h3>

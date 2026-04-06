@@ -3,8 +3,30 @@
 /**
  * Konfiguracja komponentu head
  */
-$pageTitle = 'Podgląd pytania | Examly';
-$pageDescription = 'Analiza pytania z bazy egzaminacyjnej.';
+$pageTitle = 'Pytanie ID: ' . $question['id'] . ' | Examly';
+$pageDescription = mb_strimwidth(strip_tags($question['question_text']), 0, 155, '...');
+
+// Schema.org dla pytania (Quiz/Question)
+$extraSchemas = [
+  [
+    "@context" => "https://schema.org",
+    "@type" => "Quiz",
+    "name" => "Egzamin Zawodowy - Pytanie " . $question['id'],
+    "hasPart" => [
+      [
+        "@type" => "Question",
+        "name" => strip_tags($question['question_text']),
+        "eduQuestionType" => "Multiple choice",
+        "suggestedAnswer" => array_map(function($a) {
+          return [
+            "@type" => "Answer",
+            "text" => strip_tags($a['answer_text'])
+          ];
+        }, $question['answers'])
+      ]
+    ]
+  ]
+];
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -32,13 +54,12 @@ $pageDescription = 'Analiza pytania z bazy egzaminacyjnej.';
         <article class="quiz-card">
           <header class="quiz-card__header">
             <div class="quiz-card__header-left">
-              <span class="quiz-card__question-number">Pytanie</span>
-              <span class="quiz-card__id">ID: <?= $question['id'] ?></span>
+              <h2 class="quiz-card__question-number">Pytanie <span class="quiz-card__id">ID: <?= $question['id'] ?></span></h2>
             </div>
             <div class="quiz-card__header-actions">
               <span class="status-badge status-badge--success"><i class="fas fa-eye"></i> Tryb przeglądu</span>
               <?php if ($isUserLoggedIn): ?>
-              <button class="quiz-card__save-btn" data-question-id="<?= $question['id']?>" title="Zapisz pytanie">
+              <button class="quiz-card__save-btn" data-question-id="<?= $question['id']?>" title="Zapisz pytanie" aria-label="<?= $question['is_saved'] ? 'Usuń z zapisanych' : 'Zapisz pytanie' ?>">
                 <i class="<?= $question['is_saved'] ? 'fas' : 'far'?> fa-heart"></i>
               </button>
               <?php endif; ?>

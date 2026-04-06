@@ -3,8 +3,9 @@
 /**
  * Konfiguracja komponentu head
  */
-$pageTitle = 'Podgląd Egzaminu | Examly';
-$pageDescription = 'Szczegółowa analiza Twojego podejścia do egzaminu.';
+$score = round(($exam['meta']['correct_count'] / $exam['meta']['total_questions']) * 100);
+$pageTitle = 'Wynik: ' . $score . '% | Egzamin z ' . date('d.m.Y', strtotime($exam['meta']['completed_at'])) . ' | Examly';
+$pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego wynikiem ' . $score . '%. Przejrzyj swoje błędy i przygotuj się lepiej.';
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -30,7 +31,6 @@ $pageDescription = 'Szczegółowa analiza Twojego podejścia do egzaminu.';
 
       <section class="review-page__summary">
         <div class="review-page__score-display">
-          <?php $score = round(($exam['meta']['correct_count'] / $exam['meta']['total_questions']) * 100); ?>
           <div class="score-circle" style="--score: <?= $score?>">
             <div class="score-circle__percent">
               <?= $score?>%
@@ -94,10 +94,7 @@ else: ?>
         <article class="quiz-card" id="q-<?= $question['question_id']?>" style="animation-delay: <?= $index * 0.1?>s">
           <header class="quiz-card__header">
             <div class="quiz-card__header-left">
-              <span class="quiz-card__question-number">Pytanie
-                <?= $index + 1?>
-              </span>
-              <span class="quiz-card__id">ID: <?= $question['question_id'] ?></span>
+              <h2 class="quiz-card__question-number">Pytanie <?= $index + 1?> <span class="quiz-card__id">ID: <?= $question['question_id'] ?></span></h2>
             </div>
             <div class="quiz-card__header-actions">
               <?php if (!empty($question['was_skipped'])): ?>
@@ -109,7 +106,7 @@ else: ?>
               <?php endif; ?>
 
               <?php if ($isUserLoggedIn): ?>
-                <button class="quiz-card__save-btn" data-question-id="<?= $question['question_id']?>" title="Zapisz pytanie">
+                <button class="quiz-card__save-btn" data-question-id="<?= $question['question_id']?>" title="Zapisz pytanie" aria-label="<?= $question['is_saved'] ? 'Usuń z zapisanych' : 'Zapisz pytanie' ?>">
                   <i class="<?= $question['is_saved'] ? 'fas' : 'far'?> fa-heart"></i>
                 </button>
               <?php endif; ?>
