@@ -12,14 +12,15 @@
   --font-main: 'Outfit', sans-serif;
 
   padding: 3rem 0 5rem;
-  
+
   @include media-down(md) {
     padding: 1.5rem 0 3rem;
   }
+
   min-height: calc(100vh - 80px);
   // Wzmocniony gradient w jasnym motywie dla wyraźnej głębi i dynamiki
   background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 45%),
-    radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.14), transparent 45%);
+  radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.14), transparent 45%);
   background-color: var(--field-bg);
   font-family: var(--font-main);
   align-items: center;
@@ -123,6 +124,7 @@
     @include media-down(sm) {
       padding: 0 1rem;
     }
+
     display: grid;
     gap: 2rem;
     grid-template-columns: 380px 1fr; // Slightly wider sidebar
@@ -266,10 +268,7 @@
   }
 
   &:hover {
-    transform: translateY(-8px) scale(1.008);
-    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.12), 0 18px 36px -18px rgba(0, 0, 0, 0.15);
     border-color: rgba(var(--accent-rgb), 0.4);
-    z-index: 2;
   }
 
   // Shine Effect on all cards
@@ -319,10 +318,6 @@
 
     @include media-down(md) {
       grid-column: span 1;
-    }
-
-    &:hover {
-      transform: translateY(-4px);
     }
   }
 

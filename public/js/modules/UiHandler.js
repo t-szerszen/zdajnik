@@ -50,7 +50,7 @@ class UIHandler {
    * Metoda zawiera krytyczną logikę bezpieczeństwa (XSS protection).
    *
    * @param {HTMLElement} container - Element DOM, w którym ma być wyrenderowane pytanie.
-   * @param {object} question - Obiekt z danymi pytania (`id`, `content`, `image_path`).
+   * @param {object} question - Obiekt z danymi pytania (`id`, `content`, `image_name`).
    * @param {Array<object>} answers - Tablica obiektów z danymi odpowiedzi.
    */
   renderQuestion(container, question, answers) {
@@ -73,9 +73,9 @@ class UIHandler {
     });
 
     // Krok 2: Wygeneruj HTML dla obrazka, jeśli istnieje.
-    const imageHTML = question.image_path?.trim()
+    const imageHTML = question.image_name?.trim()
       ? `<div class="quiz-card__image-container">
-           <img src="${this.IMAGE_BASE_PATH}${escapeHTML(question.image_path)}"
+           <img src="${this.IMAGE_BASE_PATH}${escapeHTML(question.image_name)}"
                 alt="Ilustracja do pytania" class="quiz-card__image">
          </div>`
       : '';

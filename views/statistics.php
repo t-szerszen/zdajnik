@@ -388,7 +388,7 @@ endif; ?>
           <div class="stats-card stats-card--errors" id="lastMistakes">
             <div class="stats-card__header"
               style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-              <h3 class="stats-card__title" style="margin-bottom: 0;">Historia Błędów</h3>
+              <h3 class="stats-card__title" style="margin-bottom: 0;">Ostatnie błędy</h3>
               <?php if (($errorHistory['total'] ?? 0) > 0): ?>
               <a href="<?= url('historia?type=errors&category=' . $selectedCategoryId)?>"
                 class="btn btn--secondary btn--sm">

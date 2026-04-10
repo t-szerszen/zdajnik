@@ -117,9 +117,9 @@ else: ?>
             <p class="quiz-card__question-text">
               <?= nl2br(htmlspecialchars($question['question_text']))?>
             </p>
-            <?php if (!empty($question['image_path'])): ?>
+            <?php if (!empty($question['image_name'])): ?>
             <div class="quiz-card__image-container">
-              <img src="<?= url('images/questions/' . $question['image_path'])?>" alt="Ilustracja do pytania"
+              <img src="<?= url('images/questions/' . $question['image_name'])?>" alt="Ilustracja do pytania"
                 class="quiz-card__image">
             </div>
             <?php

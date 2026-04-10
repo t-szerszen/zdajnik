@@ -222,8 +222,7 @@ $extraSchemas = [
             </div>
           </div>
           <p class="feature-card__text">
-            Pobieraj gotowe do druku arkusze PDF i materiały, aby ćwiczyć w warunkach zbliżonych do prawdziwego
-            egzaminu.
+            Wyszukuj dowolne arkusze praktyczne i filtruj po występujących w nich zagadnieniach.
           </p>
           <div class="feature-card__details">
             <p>
@@ -314,9 +313,8 @@ $extraSchemas = [
         państwowego.</p>
       <div class="exams-grid">
         <a href="#" class="exam-card exam-card--disabled" onclick="return false;">
-          <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop" 
-               alt="Praca przy komputerze i nauka programowania webowego INF.03" 
-               class="exam-card__background">
+          <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop"
+            alt="Praca przy komputerze i nauka programowania webowego INF.03" class="exam-card__background">
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.03 (dawniej E.14)</h3>
@@ -329,9 +327,8 @@ $extraSchemas = [
         </a>
         <!-- Karta nieaktywna, z modyfikatorem BEM `--disabled` -->
         <a href="#" class="exam-card exam-card--disabled" onclick="return false;">
-          <img src="https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop" 
-               alt="Systemy i sieci komputerowe - przygotowanie do INF.02" 
-               class="exam-card__background">
+          <img src="https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop"
+            alt="Systemy i sieci komputerowe - przygotowanie do INF.02" class="exam-card__background">
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.02 (dawniej EE.08)</h3>
@@ -343,9 +340,8 @@ $extraSchemas = [
           </div>
         </a>
         <a href="<?= url('test/INF.04') ?>" class="exam-card">
-          <img src="https://images.unsplash.com/photo-1605379399642-870262d3d051?q=80&w=2106&auto=format&fit=crop" 
-               alt="Pisanie kodu i projektowanie aplikacji mobilnych INF.04" 
-               class="exam-card__background">
+          <img src="https://images.unsplash.com/photo-1605379399642-870262d3d051?q=80&w=2106&auto=format&fit=crop"
+            alt="Pisanie kodu i projektowanie aplikacji mobilnych INF.04" class="exam-card__background">
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.04 (dawniej E.14)</h3>

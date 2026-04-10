@@ -11,6 +11,7 @@ export class NavbarHandler {
     this.overlay = document.querySelector('[data-nav-overlay]');
     this.nav = document.querySelector('.main-nav');
     this.body = document.body;
+    this.lastScrollY = window.scrollY || 0;
 
     if (this.toggleBtn && this.drawer) {
       this.init();
@@ -26,7 +27,7 @@ export class NavbarHandler {
 
     // Obsługa dropdownów na mobile (Akordeon) i Tablet (Touch)
     const dropdowns = document.querySelectorAll('.main-nav .dropdown');
-    
+
     dropdowns.forEach(dropdown => {
       const link = dropdown.querySelector('.main-nav__link');
       if (link) {
@@ -40,12 +41,12 @@ export class NavbarHandler {
             // Zapobiegaj przejściu, dopóki dropdown nie jest otwarty
             if (!dropdown.classList.contains('is-open')) {
               e.preventDefault();
-              
+
               // Zamknij inne otwarte dropdowny
               dropdowns.forEach(d => {
                 if (d !== dropdown) d.classList.remove('is-open');
               });
-              
+
               dropdown.classList.add('is-open');
             }
           }
@@ -84,9 +85,26 @@ export class NavbarHandler {
   }
 
   handleScroll() {
-    const isScrolled = window.scrollY > 20;
-    if (this.nav) this.nav.classList.toggle('is-scrolled', isScrolled);
+    const currentScrollY = window.scrollY;
+    const isScrolled = currentScrollY > 20;
+
+    if (this.nav) {
+      this.nav.classList.toggle('is-scrolled', isScrolled);
+
+      // Smart Navbar logic
+      if (currentScrollY > 100) {
+        if (currentScrollY > this.lastScrollY) {
+          this.nav.classList.add('is-hidden');
+        } else {
+          this.nav.classList.remove('is-hidden');
+        }
+      } else {
+        this.nav.classList.remove('is-hidden');
+      }
+    }
+
     this.body.classList.toggle('is-scrolled', isScrolled);
+    this.lastScrollY = currentScrollY;
   }
 
   toggleMenu() {

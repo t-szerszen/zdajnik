@@ -17,7 +17,7 @@
   border: 1px solid var(--nav-border);
   border-radius: 100px;
   padding: 0.5rem 1.75rem;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -60,11 +60,15 @@
   0 4px 12px -2px rgba(0, 0, 0, 0.05);
 
   transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-  
+
+  &.is-hidden {
+    transform: translateY(-150%);
+  }
+
   // Gdy menu jest otwarte
   .nav-open & {
     z-index: 1300; // Upewnienie się, że nav jest na wierzchu przy otwartym menu
-    
+
     &::before {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
@@ -262,12 +266,12 @@
       display: flex;
       align-items: center;
       justify-content: center; // WYŚRODKOWANIE DLA WSZYSTKICH
-      gap: 1.25rem; 
-      background: var(--field-bg); 
-      border: 1px solid var(--border); 
-      color: var(--text); 
+      gap: 1.25rem;
+      background: var(--field-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
       position: relative; // Dla poprawnego pozycjonowania ikony/strzałki jeśli trzeba
-      
+
       html.dark & {
         background: rgba(255, 255, 255, 0.03);
       }
@@ -300,7 +304,7 @@
       @include media-down(1400px) {
         font-size: 1.25rem;
         opacity: 1;
-        color: #3b82f6; 
+        color: #3b82f6;
         position: absolute;
         left: 1.5rem; // Ikona zostaje po lewej, tekst się centruje
       }
@@ -318,11 +322,11 @@
 
     &--disabled {
       cursor: not-allowed;
-      
+
       .main-nav__link-content {
         display: flex;
         flex-direction: column;
-        line-height: normal; 
+        line-height: normal;
         gap: 0;
       }
 
@@ -333,7 +337,7 @@
         color: #fbbf24;
         letter-spacing: 1px;
         margin-top: 2px;
-        
+
         @include media-down(1400px) {
           display: none !important; // Hide 'Wkrótce' in mobile hamburger as requested
         }
@@ -363,7 +367,7 @@
 
         &:hover {
           background: rgba(var(--accent-rgb), 0.1) !important;
-          
+
           html.dark & {
             background: rgba(var(--accent-rgb), 0.05) !important; // Subtelnie w Dark Mode
           }
@@ -773,6 +777,7 @@
     opacity: 0;
     transform: scale(0.5);
   }
+
   to {
     opacity: 1;
     transform: scale(1);

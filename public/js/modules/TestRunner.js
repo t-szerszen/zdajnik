@@ -163,7 +163,7 @@ export class TestRunner {
 
     questions.forEach((qData, index) => {
       // Pobieramy dane z nowymi kluczami
-      const { question_id, question_version_id, question_text, image_path } = qData.question;
+      const { question_id, question_version_id, question_text, image_name } = qData.question;
       const answers = qData.answers;
       let answersHTML = '';
 
@@ -187,9 +187,9 @@ export class TestRunner {
       questionElement.className = 'quiz-card';
       questionElement.id = `question-${question_id}`; // ID bazowe dla DOM
 
-      const imageHTML = image_path
+      const imageHTML = image_name
         ? `<div class="quiz-card__image-container">
-             <img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_path)}"
+             <img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_name)}"
                   alt="Ilustracja do pytania" class="quiz-card__image">
            </div>`
         : '';
@@ -354,7 +354,7 @@ export class TestRunner {
     this.resultsDetailsContainer.innerHTML = '';
 
     this.questionsData.forEach((qData, index) => {
-      const { question_id, question_version_id, question_text, image_path, explanation } = qData.question;
+      const { question_id, question_version_id, question_text, image_name, explanation } = qData.question;
       const userAnswerId = userAnswers[question_version_id]; // Odczyt z mapy
       const answers = qData.answers;
 
@@ -424,7 +424,7 @@ export class TestRunner {
          </header>
         <div class="quiz-card__content">
           <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
-          ${image_path ? `<div class="quiz-card__image-container"><img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_path)}" class="quiz-card__image"></div>` : ''}
+          ${image_name ? `<div class="quiz-card__image-container"><img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_name)}" class="quiz-card__image"></div>` : ''}
         </div>
         <div class="quiz-card__answers" data-answered="true">${answersHTML}</div>
         <div class="quiz-card__actions"></div>

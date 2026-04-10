@@ -223,7 +223,7 @@ class StatisticsService
     $totalAnswered = (int) ($totalResult['total_answered'] ?? 0);
 
     $isUnlocked = $totalAnswered >= 100;
-    $unlockProgress = min(1, $totalAnswered); // Cap at 100
+    $unlockProgress = min(100, $totalAnswered); // Cap at 100
 
     // Pobierz krytyczne błędy
     $items = [];
@@ -483,7 +483,7 @@ class StatisticsService
     $sql = "SELECT 
                     qv.question_text, 
                     qv.explanation, 
-                    qv.image_path,
+                    qv.image_name,
                     ans_user.answer_text as user_answer,
                     ans_user.is_correct as is_user_correct,
                     ans_correct.answer_text as correct_answer
@@ -535,7 +535,7 @@ class StatisticsService
                                 qv.question_id,
                                 qv.question_text, 
                                 qv.explanation, 
-                                qv.image_path
+                                qv.image_name
                              FROM attempt_answers aa
                              JOIN question_versions qv ON aa.question_version_id = qv.id
                              WHERE aa.attempt_id = ?
@@ -572,7 +572,7 @@ class StatisticsService
   public function getQuestionDetails(int $questionId, ?int $userId = null): ?array
   {
     // 1. Pobierz wersję pytania
-    $sqlQ = "SELECT q.id, qv.question_text, qv.explanation, qv.image_path, qv.id as version_id, et.code as exam_code
+    $sqlQ = "SELECT q.id, qv.question_text, qv.explanation, qv.image_name, qv.id as version_id, et.code as exam_code
 		         FROM questions q
 		         JOIN question_versions qv ON q.id = qv.question_id
                  JOIN exam_types et ON q.exam_type_id = et.id

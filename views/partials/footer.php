@@ -21,81 +21,90 @@
   =======================================================================
 -->
 <footer class="footer">
-  <div class="footer__content">
+  <!-- Dynamiczny znak wodny w tle -->
+  <div class="footer__watermark" aria-hidden="true">EXAMLY</div>
 
-    <!-- Sekcja 1: Brand & Description -->
+  <div class="footer__content">
+    <!-- Sekcja 1: Brand & Socials -->
     <div class="footer__section footer__section--brand">
-      <h4 class="footer__heading">Examly</h4>
-      <p class="footer__description">
-        Twoja inteligentna platforma do nauki na egzaminy zawodowe INF.02 i INF.03.
-        Tysiące pytań, szczegółowe statystyki i tryby nauki dopasowane do Ciebie.
-      </p>
-      <div class="footer__socials">
-        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-        <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+      <div class="footer__logo-container">
+        <h5 class="footer__logo">EXAMLY</h5>
       </div>
+      <p class="footer__description">
+        Kształtujemy przyszłość edukacji zawodowej. Nowoczesna platforma, która zmienia sposób, w jaki przygotowujesz
+        się do egzaminów. Bezpieczeństwo, Szybkość, Zdany Egzamin.
+      </p>
     </div>
 
-    <!-- Sekcja 2: Nawigacja -->
+    <!-- Sekcja 2: Platforma -->
     <div class="footer__section">
-      <h4 class="footer__heading">Platforma</h4>
+      <h5 class="footer__heading">Platforma</h5>
       <ul class="footer__list">
         <li class="footer__item"><a href="<?= url('/') ?>" class="footer__link">Strona główna</a></li>
         <li class="footer__item"><a href="<?= url('rejestracja') ?>" class="footer__link">Rejestracja</a></li>
-        <li class="footer__item"><a href="<?= url('logowanie') ?>" class="footer__link">Logowanie</a></li>
-        <li class="footer__item"><a href="<?= url('statystyki') ?>" class="footer__link">Statystyki</a></li>
+        <li class="footer__item"><a href="<?= url('ustawienia') ?>" class="footer__link">Zarządzaj kontem</a></li>
+        <li class="footer__item"><a href="<?= url('search') ?>" class="footer__link">Baza pytań</a></li>
       </ul>
     </div>
 
-    <!-- Sekcja 3: Materiały -->
+    <!-- Sekcja 3: Nauka -->
     <div class="footer__section">
-      <h4 class="footer__heading">Nauka</h4>
+      <h5 class="footer__heading">Edukacja</h5>
       <ul class="footer__list">
-        <li class="footer__item"><a href="<?= url('') ?>" class="footer__link">Kurs INF.03</a></li>
-        <li class="footer__item"><a href="<?= url('jedno-pytanie/INF.03') ?>" class="footer__link">Pytania Wyzwania</a>
+        <li class="footer__item"><a href="<?= url('jedno-pytanie/INF.04') ?>" class="footer__link">Jedno pytanie</a>
         </li>
-        <li class="footer__item"><a href="<?= url('#egzaminy') ?>" class="footer__link">Symulacja Egzaminu</a></li>
-        <li class="footer__item"><a href="<?= url('historia') ?>" class="footer__link">Twoja Historia</a></li>
+        <li class="footer__item"><a href="<?= url('personalizowany-test/INF.04') ?>"
+            class="footer__link">Personalizowany test</a></li>
+        <li class="footer__item"><a href="<?= url('test/INF.04') ?>" class="footer__link">Test</a></li>
+        <li class="footer__item"><a href="<?= url('statystyki') ?>" class="footer__link">Statystyki</a></li>
       </ul>
     </div>
 
     <!-- Sekcja 4: Kontakt -->
     <div class="footer__section">
-      <h4 class="footer__heading">Kontakt</h4>
-      <ul class="footer__list">
-        <li class="footer__item">
-          <i class="footer__icon fas fa-envelope"></i>
-          <a href="mailto:kontakt@examly.pl" class="footer__link">kontakt@examly.pl</a>
-        </li>
-        <li class="footer__item">
-          <i class="footer__icon fas fa-phone"></i>
-          <a href="tel:+48784803409" class="footer__link">+48 784 803 409</a>
-        </li>
-        <li class="footer__item">
-          <i class="footer__icon fas fa-map-marker-alt"></i>
-          <span>Osieczna, Polska</span>
-        </li>
-      </ul>
+      <h5 class="footer__heading">Kontakt</h5>
+      <div class="footer__contact-info">
+        <div class="footer__contact-item">
+          <div class="footer__contact-icon">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <div class="footer__contact-text">
+            <span class="footer__contact-label">Napisz do nas</span>
+            <a href="mailto:examlyacademy@gmail.com" class="footer__contact-link">examlyacademy@gmail.com</a>
+          </div>
+        </div>
+
+        <div class="footer__contact-item">
+          <div class="footer__contact-icon">
+            <i class="fas fa-map-marker-alt"></i>
+          </div>
+          <div class="footer__contact-text">
+            <span class="footer__contact-label">Nasza Lokalizacja</span>
+            <span class="footer__contact-link">Leszno, Polska</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="footer__bottom">
-    <p class="footer__copyright">&copy; <?= date('Y') ?> Examly. Stworzone dla przyszłych informatyków. <a
-        href="<?= url('polityka-prywatnosci') ?>" class="footer__link">Polityka prywatności</a></p>
+    <div class="footer__bottom-container">
+      <div class="footer__copyright">
+        &copy; <?= date('Y') ?> Examly Studio. Wszelkie prawa zastrzeżone.
+      </div>
 
-    <div class="footer__theme-action">
-      <div class="theme-switcher">
-        <input type="checkbox" id="theme-toggle-checkbox">
-        <label for="theme-toggle-checkbox" class="theme-toggle-label" aria-label="Zmień motyw">
-          <span class="cloud cloud--1"></span>
-          <span class="cloud cloud--2"></span>
-          <span class="star star--1"></span>
-          <span class="star star--2"></span>
-          <span class="star star--3"></span>
-          <span class="ball"></span>
-        </label>
+      <div class="footer__theme-action">
+        <div class="theme-switcher">
+          <input type="checkbox" id="theme-toggle-checkbox">
+          <label for="theme-toggle-checkbox" class="theme-toggle-label" aria-label="Zmień motyw">
+            <span class="cloud cloud--1"></span>
+            <span class="cloud cloud--2"></span>
+            <span class="star star--1"></span>
+            <span class="star star--2"></span>
+            <span class="star star--3"></span>
+            <span class="ball"></span>
+          </label>
+        </div>
       </div>
     </div>
   </div>

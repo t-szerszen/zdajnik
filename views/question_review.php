@@ -17,7 +17,7 @@ $extraSchemas = [
         "@type" => "Question",
         "name" => strip_tags($question['question_text']),
         "eduQuestionType" => "Multiple choice",
-        "suggestedAnswer" => array_map(function($a) {
+        "suggestedAnswer" => array_map(function ($a) {
           return [
             "@type" => "Answer",
             "text" => strip_tags($a['answer_text'])
@@ -38,14 +38,15 @@ $extraSchemas = [
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Podgląd</span> pytania</h1>
-      <p class="page-header__text">Indywidualna weryfikacja zagadnienia. Przeanalizuj odpowiedź oraz zapoznaj się ze szczegółowym wyjaśnieniem, aby dogłębnie zrozumieć omawiany problem.</p>
+      <p class="page-header__text">Indywidualna weryfikacja zagadnienia. Przeanalizuj odpowiedź oraz zapoznaj się ze
+        szczegółowym wyjaśnieniem, aby dogłębnie zrozumieć omawiany problem.</p>
     </div>
   </header>
 
   <div class="review-page__main-wrapper">
     <div class="review-page__container">
       <div class="review-page__back-nav">
-        <a href="<?= $backUrl?>" class="review-page__back-link">
+        <a href="<?= $backUrl ?>" class="review-page__back-link">
           <i class="fas fa-chevron-left"></i> Powrót
         </a>
       </div>
@@ -54,76 +55,70 @@ $extraSchemas = [
         <article class="quiz-card">
           <header class="quiz-card__header">
             <div class="quiz-card__header-left">
-              <h2 class="quiz-card__question-number">Pytanie <span class="quiz-card__id">ID: <?= $question['id'] ?></span></h2>
+              <h2 class="quiz-card__question-number">Pytanie <span class="quiz-card__id">ID:
+                  <?= $question['id'] ?></span></h2>
             </div>
             <div class="quiz-card__header-actions">
               <span class="status-badge status-badge--success"><i class="fas fa-eye"></i> Tryb przeglądu</span>
               <?php if ($isUserLoggedIn): ?>
-              <button class="quiz-card__save-btn" data-question-id="<?= $question['id']?>" title="Zapisz pytanie" aria-label="<?= $question['is_saved'] ? 'Usuń z zapisanych' : 'Zapisz pytanie' ?>">
-                <i class="<?= $question['is_saved'] ? 'fas' : 'far'?> fa-heart"></i>
-              </button>
+                <button class="quiz-card__save-btn" data-question-id="<?= $question['id'] ?>" title="Zapisz pytanie"
+                  aria-label="<?= $question['is_saved'] ? 'Usuń z zapisanych' : 'Zapisz pytanie' ?>">
+                  <i class="<?= $question['is_saved'] ? 'fas' : 'far' ?> fa-heart"></i>
+                </button>
               <?php endif; ?>
             </div>
           </header>
 
           <div class="quiz-card__content">
             <p class="quiz-card__question-text">
-              <?= nl2br(htmlspecialchars($question['question_text']))?>
+              <?= nl2br(htmlspecialchars($question['question_text'])) ?>
             </p>
-            <?php if (!empty($question['image_path'])): ?>
-            <div class="quiz-card__image-container">
-              <img src="<?= url('images/questions/' . $question['image_path'])?>" alt="Ilustracja do pytania"
-                class="quiz-card__image">
-            </div>
-            <?php
-endif; ?>
+            <?php if (!empty($question['image_name'])): ?>
+              <div class="quiz-card__image-container">
+                <img src="<?= url('images/questions/' . $question['image_name']) ?>" alt="Ilustracja do pytania"
+                  class="quiz-card__image">
+              </div>
+              <?php
+            endif; ?>
           </div>
 
           <div class="quiz-card__answers" data-answered="true">
             <?php foreach ($question['answers'] as $index => $answer): ?>
-            <?php
-  $letter = chr(65 + $index);
-  $isCorrect = (int)$answer['is_correct'] === 1;
-  $statusClass = $isCorrect ? 'quiz-card__answer--correct' : '';
-?>
-            <div class="quiz-card__answer <?= $statusClass?>">
-              <span class="quiz-card__answer-prefix">
-                <?= $letter?>
-              </span>
-              <span class="quiz-card__answer-text">
-                <?= nl2br(htmlspecialchars($answer['answer_text']))?>
-              </span>
-            </div>
-            <?php
-endforeach; ?>
+              <?php
+              $letter = chr(65 + $index);
+              $isCorrect = (int) $answer['is_correct'] === 1;
+              $statusClass = $isCorrect ? 'quiz-card__answer--correct' : '';
+              ?>
+              <div class="quiz-card__answer <?= $statusClass ?>">
+                <span class="quiz-card__answer-prefix">
+                  <?= $letter ?>
+                </span>
+                <span class="quiz-card__answer-text">
+                  <?= nl2br(htmlspecialchars($answer['answer_text'])) ?>
+                </span>
+              </div>
+              <?php
+            endforeach; ?>
           </div>
 
           <div class="quiz-card__actions">
             <?php if (!empty($question['explanation'])): ?>
-            <div class="quiz-card__button-container">
-              <button type="button" class="btn btn--secondary btn--small toggle-explanation-btn"
-                data-target="explanation-content">
-                <i class="fas fa-lightbulb"></i> Pokaż wyjaśnienie
-              </button>
-            </div>
-            <div class="quiz-card__explanation" id="explanation-content">
-              <div class="explanation-title">
-                <i class="fas fa-magic"></i> Wyjaśnienie
+              <div class="quiz-card__button-container">
+                <button type="button" class="btn btn--secondary btn--small toggle-explanation-btn"
+                  data-target="explanation-content">
+                  <i class="fas fa-lightbulb"></i> Pokaż wyjaśnienie
+                </button>
               </div>
-              <div class="explanation-inner">
-                <?= nl2br(htmlspecialchars($question['explanation']))?>
+              <div class="quiz-card__explanation" id="explanation-content">
+                <div class="explanation-title">
+                  <i class="fas fa-magic"></i> Wyjaśnienie
+                </div>
+                <div class="explanation-inner">
+                  <?= nl2br(htmlspecialchars($question['explanation'])) ?>
+                </div>
               </div>
-            </div>
-            <?php
-endif; ?>
-
-            <div class="review-page__actions-container"
-              style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; width: 100%;">
-              <a href="<?= url('jedno-pytanie/' . $examCode . '#select-all-codes')?>"
-                class="btn btn--secondary btn--large">
-                <i class="fas fa-bolt"></i> Ćwicz słabe strony
-              </a>
-            </div>
+              <?php
+            endif; ?>
           </div>
         </article>
       </main>
@@ -132,9 +127,9 @@ endif; ?>
 
   <?php include 'partials/footer.php'; ?>
 
-  <script type="module" src="<?= url('js/components/ExplanationToggler.js')?>"></script>
+  <script type="module" src="<?= url('js/components/ExplanationToggler.js') ?>"></script>
   <script type="module">
-    import saveToggle from '<?= url('js / components / SaveToggleHandler.js')?>';
+    import saveToggle from '<?= url('js/components/SaveToggleHandler.js') ?>';
     saveToggle.init('.review-page__main');
   </script>
 </body>
