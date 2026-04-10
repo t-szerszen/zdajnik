@@ -6,122 +6,105 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 /**
- * Klasa Mailer - Usługa do wysyłania wiadomości e-mail.
+ * Serwis Poczty E-mail (Mailer).
  *
- * Ta klasa działa jako "fasada" (Facade) lub "adapter" dla biblioteki PHPMailer.
- * Jej celem jest uproszczenie procesu wysyłania e-maili i centralizacja
- * konfiguracji w jednym miejscu. Dzięki temu reszta aplikacji nie musi wiedzieć,
- * jakiej biblioteki używamy – wystarczy wywołać prostą metodę `send()`.
+ * Klasa pełni rolę "Fasady" (Facade) nad biblioteką PHPMailer, upraszczając 
+ * wysyłkę wiadomości systemowych (weryfikacje, resety haseł, powiadomienia).
+ * Realizuje:
+ * - Bezpieczne połączenie z serwerem SMTP przez STARTTLS.
+ * - Centralną konfigurację parametrów nadawcy (poświadczenia z $_ENV).
+ * - Zarządzanie szablonami wiadomości HTML.
+ * - Izolację reszty aplikacji od specyfiki zewnętrznej biblioteki mailowej.
  *
- * @version 1.1.0
+ * @version 1.2.0
  * @author Tobiasz Szerszeń
+ * @package App\Services
  */
 class Mailer
 {
-  /**
-   * Przechowuje skonfigurowaną instancję obiektu PHPMailer.
-   * @var PHPMailer
-   */
+  /** @var PHPMailer Skonfigurowana instancja silnika PHPMailer */
   private PHPMailer $mailer;
 
   /**
-   * Konstruktor inicjalizujący i konfigurujący PHPMailer do wysyłki przez SMTP.
+   * Konstruktor serwisu Mailer - Inicjalizuje połączenie SMTP.
    *
-   * Logika działania:
-   * 1. Tworzy nową instancję PHPMailer z włączoną obsługą wyjątków.
-   * 2. Konfiguruje wszystkie niezbędne parametry do połączenia z serwerem SMTP
-   *    (w tym przypadku Gmail).
-   * 3. Ustawia domyślne dane nadawcy oraz format wiadomości na HTML.
-   * 4. W przypadku błędu konfiguracji rzuca wyjątek, aby zapobiec
-   *    działaniu niepoprawnie skonfigurowanej usługi.
+   * Metoda wykonuje następujące kroki:
+   * 1. Inicjalizacja instancji PHPMailer z obsługą wyjątków.
+   * 2. Konfiguracja serwera SMTP (Host, Port, Auth) na podstawie zmiennych środowiskowych.
+   * 3. Ustawienie parametrów bezpieczeństwa (TLS) i uwierzytelnienia.
+   * 4. Konfiguracja domyślnych nagłówków nadawcy (From) i kodowania (UTF-8).
    *
-   * @throws Exception Jeśli konfiguracja mailera się nie powiedzie.
+   * @throws Exception W przypadku krytycznych błędów konfiguracji (brak poświadczeń).
    */
   public function __construct()
   {
-    // Utwórz instancję PHPMailer; przekazanie `true` włącza wyjątki.
+    // KROK 1: Inicjalizacja silnika (true = włączenie rzucania wyjątków)
     $this->mailer = new PHPMailer(true);
 
-    // --- Konfiguracja serwera SMTP ---
-    // Użyj SMTP do wysyłki.
+    // KROK 2: Konfiguracja protokołu SMTP
     $this->mailer->isSMTP();
-    // Adres serwera SMTP Gmaila.
     $this->mailer->Host = $_ENV['SMTP_HOST'];
-    // Włącz autoryzację SMTP.
     $this->mailer->SMTPAuth = true;
-    // E-mail do wysyłania wiadomości.
     $this->mailer->Username = $_ENV['SMTP_USER'];
-    // To jest hasło aplikacji Google, a nie hasło do konta.
-    // Usuwamy spacje, jeśli użytkownik je wkleił.
+    
+    // Oczyszczenie hasła z ewentualnych spacji (częsty błąd przy kopiowaniu z Google App Passwords)
     $this->mailer->Password = str_replace(' ', '', $_ENV['SMTP_PASS']);
-    // Włącz szyfrowanie TLS.
+
+    // KROK 3: Bezpieczeństwo i porty
     $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    // Port TCP do połączenia.
     $this->mailer->Port = 587;
 
-    // --- Domyślne ustawienia wiadomości ---
-    // Ustaw domyślnego nadawcę.
-    $this->mailer->setFrom($_ENV['SMTP_USER'], 'Examly');
-    // Ustaw domyślny format wiadomości na HTML.
+    // KROK 4: Domyślne ustawienia nadawcy i formatowania
+    $this->mailer->setFrom($_ENV['SMTP_USER'], 'Examly - Inteligentna Nauka');
     $this->mailer->isHTML(true);
-    // Ustaw kodowanie znaków na UTF-8.
     $this->mailer->CharSet = 'UTF-8';
   }
 
   /**
-   * Wysyła wiadomość e-mail do jednego odbiorcy.
+   * Wysyła wiadomość e-mail do wskazanego odbiorcy.
    *
-   * Metoda opakowuje logikę wysyłki w blok `try-catch`, aby gracefully
-   * obsłużyć ewentualne błędy (np. błąd połączenia z serwerem, zły adres)
-   * i zwrócić prostą wartość `true`/`false`.
-   *
-   * @param string $to Adres e-mail odbiorcy.
+   * @param string $to Adres e-mail docelowy.
    * @param string $subject Temat wiadomości.
-   * @param string $body Treść wiadomości w formacie HTML.
-   *
-   * @return bool `true`, jeśli wysyłka się powiodła, `false` w przypadku błędu.
+   * @param string $body Treść wiadomości (obsługuje HTML).
+   * @return bool True jeśli wysyłka zakończona sukcesem, false przy błędzie połączenia/SMTP.
    */
   public function send(string $to, string $subject, string $body): bool
   {
     try {
-      // Krok 1: Wyczyść listę odbiorców z poprzednich wysyłek.
-      // Kluczowe, jeśli ten sam obiekt Mailer miałby być użyty wielokrotnie.
+      // Zapobieganie wyciekowi odbiorców przy seryjnym użyciu obiektu
       $this->mailer->clearAllRecipients();
 
-      // Krok 2: Ustaw dane konkretnej wiadomości.
+      // Ustawienie parametrów konkretnej przesyłki
       $this->mailer->addAddress($to);
       $this->mailer->Subject = $subject;
       $this->mailer->Body = $body;
 
-      // Krok 3: Wyślij e-mail.
       return $this->mailer->send();
     } catch (Exception $e) {
-      // W przypadku błędu wysyłki, zapisz go w logu serwera
-      // i zwróć `false`, informując, że operacja się nie powiodła.
-      error_log('Błąd wysyłki e-maila: ' . $this->mailer->ErrorInfo . " | Exception: " . $e->getMessage());
+      // Zapisanie błędu w logu systemowym dla celów diagnostycznych
+      error_log('[Mailer Error] ' . $this->mailer->ErrorInfo . " | Msg: " . $e->getMessage());
       return false;
     }
   }
 
   /**
-   * Wysyła e-mail z linkiem potwierdzającym chęć usunięcia konta.
-   *
-   * @param string $email Adres e-mail użytkownika.
-   * @param string $link  Link weryfikacyjny (np. https://examly.pl/potwierdz-usuniecie?token=XYZ).
-   *
+   * Wysyła wiadomość potwierdzającą żądanie usunięcia konta (Soft Delete).
+   * 
+   * @param string $email
+   * @param string $link Link do akcji potwierdzającej (verify-delete-token).
    * @return bool
    */
   public function sendAccountDeletionConfirmationEmail(string $email, string $link): bool
   {
-    $subject = 'Potwierdzenie usunięcia konta - Examly';
+    $subject = 'Potwierdzenie usunięcia Twojego konta - Examly';
     $body = '
       <h1>Witaj!</h1>
       <p>Otrzymaliśmy prośbę o usunięcie Twojego konta w serwisie Examly.</p>
-      <p>Decyzja ta jest ważna, dlatego prosimy o jej potwierdzenie. Kliknij w poniższy przycisk, aby trwale rozpocząć procedurę usuwania konta (z 30-dniowym okresem karencji).</p>
-      <p style="text-align: center; margin: 20px 0;">
-        <a href="' . $link . '" style="background-color: #d9534f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">POTWIERDZAM USUNIĘCIE KONTA</a>
+      <p>To działanie jest nieodwracalne po okresie karencji (30 dni). Jeśli chcesz kontynuować, kliknij w przycisk poniżej:</p>
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="' . $link . '" style="background-color: #d9534f; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">POTWIERDZAM USUNIĘCIE KONTA</a>
       </p>
-      <p>Jeśli to nie Ty zleciłeś/aś tę operację, zignoruj tę wiadomość - Twoje konto pozostanie bezpieczne.</p>
+      <p>Jeśli ta prośba nie została wysłana przez Ciebie, zignoruj tę wiadomość. Twoje dane są bezpieczne.</p>
       <p>Pozdrawiamy,<br>Zespół Examly</p>
     ';
 
@@ -129,12 +112,11 @@ class Mailer
   }
 
   /**
-   * Wysyła e-mail z linkiem potwierdzającym w celu wyzerowania postępu edukacyjnego.
-   *
-   * @param string $email Adres e-mail użytkownika.
-   * @param string $link  Link weryfikacyjny.
-   * @param string $examCode Kod egzaminu (np. INF.02).
-   *
+   * Wysyła wiadomość potwierdzającą chęć całkowitego zresetowania postępów nauki.
+   * 
+   * @param string $email
+   * @param string $link Link do akcji potwierdzającej.
+   * @param string $examCode Kod kwalifikacji (np. INF.03).
    * @return bool
    */
   public function sendProgressAnonymizationEmail(string $email, string $link, string $examCode): bool
@@ -142,12 +124,12 @@ class Mailer
     $subject = 'Potwierdzenie wyzerowania postępu - Examly';
     $body = '
       <h1>Witaj!</h1>
-      <p>Otrzymaliśmy prośbę o wyzerowanie Twojego postępu dla egzaminu <strong>' . htmlspecialchars($examCode) . '</strong>.</p>
-      <p>Kliknij w poniższy przycisk, aby trwale zanonimizować swoje dotychczasowe próby dla tego egzaminu i całkowicie skasować go z historii konta.</p>
-      <p style="text-align: center; margin: 20px 0;">
-        <a href="' . $link . '" style="background-color: #d9534f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">POTWIERDZAM WYZEROWANIE POSTĘPU</a>
+      <p>Otrzymaliśmy prośbę o wyzerowanie Twoich postępów i statystyk dla egzaminu: <strong>' . htmlspecialchars($examCode) . '</strong>.</p>
+      <p>Potwierdzenie tej operacji spowoduje zanonimizowanie historii prób i przywrócenie stanu "0 odkrytych pytań".</p>
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="' . $link . '" style="background-color: #d9534f; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">POTWIERDZAM WYZEROWANIE POSTĘPU</a>
       </p>
-      <p>Jeśli to nie Ty zleciłeś/aś tę operację, zignoruj tę wiadomość.</p>
+      <p>Jeśli to nie Ty zleciłeś tę operację, prosimy o kontakt z administratorem.</p>
       <p>Pozdrawiamy,<br>Zespół Examly</p>
     ';
 

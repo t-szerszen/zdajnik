@@ -6,25 +6,37 @@ use App\Core\Database;
 
 /**
  * Model Odpowiedzi (Answer).
- * Zarządza pobieraniem opcji odpowiedzi dla konkretnych wersji pytań.
+ *
+ * Klasa zarządza dostępem do danych w tabeli `answers`. Odpowiada za pobieranie 
+ * opcji odpowiedzi (wariantów A, B, C, D) przypisanych do konkretnych wersji pytań 
+ * egzaminacyjnych. Wspiera pobieranie jednostkowe oraz optymalizowane pobieranie 
+ * masowe (Batch Loading) dla całych testów.
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ * @package App\Models
  */
 class Answer
 {
+  /** @var Database Instancja połączenia z bazą danych */
   private Database $db;
 
+  /**
+   * Inicjalizuje model odpowiedzi.
+   */
   public function __construct()
   {
     $this->db = Database::getInstance();
   }
 
   /**
-   * Pobiera wszystkie odpowiedzi przypisane do konkretnej wersji pytania.
-   * * @param int $questionVersionId ID wersji pytania (z tabeli question_versions).
-   * @return array Tablica odpowiedzi z kolumnami: id, answer_text, is_correct.
+   * Pobiera wszystkie aktywne odpowiedzi dla danej wersji pytania w losowej kolejności.
+   *
+   * @param int $questionVersionId Unikalny identyfikator wersji pytania.
+   * @return array Tablica asocjacyjna odpowiedzi [id, answer_text, is_correct].
    */
   public function getAnswersByVersionId(int $questionVersionId): array
   {
-    // Zmiana: Filtrujemy po question_version_id i sortujemy wg answer_order
     $sql = "SELECT id, answer_text, is_correct 
             FROM answers 
             WHERE question_version_id = ? AND is_active = 1
@@ -34,9 +46,10 @@ class Answer
   }
 
   /**
-   * Pobiera poprawną odpowiedź dla konkretnej wersji pytania.
-   * * @param int $versionId ID z tabeli question_versions.
-   * @return array|false
+   * Pobiera definicję poprawnej odpowiedzi dla danej wersji pytania.
+   *
+   * @param int $versionId ID wersji pytania.
+   * @return array|false Tablica z danymi poprawnej odpowiedzi lub false w razie braku.
    */
   public function getCorrectAnswerForVersion(int $versionId): array|false
   {
@@ -49,13 +62,20 @@ class Answer
   }
 
   /**
-   * Pobiera odpowiedzi dla wielu wersji pytań naraz (optymalizacja dla testów).
-   * * @param array<int> $versionIds Tablica ID wersji pytań.
-   * @return array Odpowiedzi pogrupowane po question_version_id.
+   * Pobiera odpowiedzi dla zestawu wersji pytań w jednym zapytaniu SQL.
+   *
+   * Metoda optymalizuje wydajność aplikacji poprzez redukcję liczby zapytań 
+   * do bazy danych (N+1 Problem) podczas generowania pełnych testów.
+   *
+   * @param array<int> $versionIds Tablica identyfikatorów wersji pytań.
+   * @return array Odpowiedzi pogrupowane wg klucza `question_version_id`.
    */
   public function getAnswersForBatch(array $versionIds): array
   {
-    if (empty($versionIds)) return [];
+    // Zabezpieczenie przed błędem SQL przy pustej tablicy wejściowej
+    if (empty($versionIds)) {
+      return [];
+    }
 
     $placeholders = implode(',', array_fill(0, count($versionIds), '?'));
     $sql = "SELECT id, question_version_id, answer_text, is_correct 
@@ -65,7 +85,7 @@ class Answer
 
     $results = $this->db->fetchAll($sql, $versionIds);
 
-    // Grupowanie wyników w tablicę asocjacyjną dla łatwiejszego dostępu w kontrolerze
+    // KROK: Grupowanie wyników w tablicę asocjacyjną dla szybkiego dostępu O(1)
     $grouped = [];
     foreach ($results as $row) {
       $grouped[$row['question_version_id']][] = $row;

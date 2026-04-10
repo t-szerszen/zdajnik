@@ -5,52 +5,72 @@ namespace App\Services;
 use App\Core\Database;
 
 /**
- * Serwis Tokenów (TokenService).
+ * Serwis Zarządzania Tokenami (TokenService).
  *
- * Klasa ta stanowi centralny punkt zarządzania cyklem życia tokenów
- * jednorazowych, które służą do autoryzacji wrażliwych operacji (np.
- * weryfikacji e-maila, resetowania hasła). Odpowiada za ich bezpieczne
- * generowanie, odczytywanie i usuwanie.
+ * Klasa odpowiada za bezpieczny cykl życia jednorazowych kluczy autoryzacyjnych (Tokenów) 
+ * oraz kodów numerycznych (OTP). Obsługuje procesy wymagające zewnętrznej weryfikacji:
+ * - Potwierdzanie adresu e-mail (Double Opt-In).
+ * - Resetowanie zapomnianego hasła.
+ * - Autoryzacja zmiany adresu e-mail.
+ * - Potwierdzanie operacji wrażliwych (usuwanie konta, reset postępu).
  *
- * @version 1.1.0
+ * Wszystkie tokeny posiadają czas wygaśnięcia (standardowo 1h) i są automatycznie 
+ * czyszczone przy generowaniu nowych kluczy.
+ *
+ * @version 1.2.0
  * @author Tobiasz Szerszeń
+ * @package App\Services
  */
 class TokenService
 {
-  /**
-   * Instancja centralnego obiektu do obsługi bazy danych (Singleton).
-   * @var Database
-   */
+  /** @var Database Instancja połączenia z bazą danych */
   private Database $db;
 
   /**
-   * Konstruktor serwisu TokenService.
-   *
-   * Pobiera instancję połączenia z bazą danych, która jest niezbędna
-   * do operacji na tabeli `user_tokens`.
+   * Inicjalizuje serwis tokenów.
    */
   public function __construct()
   {
     $this->db = Database::getInstance();
   }
 
+  /**
+   * Generuje nowy, unikalny token i (opcjonalnie) kod numeryczny.
+   *
+   * Proces generowania:
+   * 1. Usunięcie wygasłych tokenów z całej bazy (Smart Cleanup).
+   * 2. Wyczyszczenie starych tokenów tego samego typu dla danego użytkownika 
+   *    (zapewnienie posiadania tylko jednego aktywnego linku).
+   * 3. Wygenerowanie bezpiecznego kryptograficznie ciągu 64 znaków (bin2hex + random_bytes).
+   * 4. Wygenerowanie 6-cyfrowego kodu Auth Code (dla resetów haseł).
+   * 5. Zapis rekordu z okresem ważności 1 godziny.
+   *
+   * @param int $userId ID użytkownika.
+   * @param string $type Typ tokena (np. 'password_reset', 'email_verify').
+   * @param string|null $data Opcjonalne dodatkowe dane zaszyte w tokenie (np. stary e-mail).
+   * @return array|false Tablica ['token', 'code'] lub false w razie błędu DB.
+   */
   public function generateToken(int $userId, string $type, ?string $data = null): array|false
   {
-    // Sprzątamy wszystkie tokeny, których data ważności już minęła.
+    // KROK 1: Konserwacja tabeli - usuwanie rekordów przeterminowanych
     $this->db->execute('DELETE FROM user_tokens WHERE expires_at < NOW()');
 
-    // WAŻNA POPRAWKA: Najpierw usuwamy stare tokeny tego typu!
+    // KROK 2: Unieważnienie poprzednich linków tego samego typu dla użytkownika (Safety First)
     $this->deleteTokensForUserByType($userId, $type);
 
+    // KROK 3: Generowanie bezpiecznego identyfikatora (32 bajty = 64 znaki hex)
     $token = bin2hex(random_bytes(32));
     $code = null;
 
+    // KROK 4: Generowanie kodu pomocniczego (Auth Code) dla wybranych procesów
     if ($type === 'password_reset' || $type === 'email_change') {
       $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
     }
 
+    // KROK 5: Utrwalenie tokena w bazie danych
     $sql = "INSERT INTO user_tokens (user_id, token, type, token_data, auth_code, expires_at)
             VALUES (:user_id, :token, :type, :token_data, :auth_code, DATE_ADD(NOW(), INTERVAL 1 HOUR))";
+    
     $params = [
       ':user_id' => $userId,
       ':token' => $token,
@@ -67,15 +87,10 @@ class TokenService
   }
 
   /**
-   * Usuwa wszystkie tokeny danego typu dla określonego użytkownika.
-   *
-   * Jest to kluczowa metoda "sprzątająca", wywoływana po pomyślnym
-   * zakończeniu operacji (np. po weryfikacji e-maila). Zapewnia, że
-   * zużyte lub stare tokeny są usuwane, co zapobiega ich ponownemu użyciu.
-   *
-   * @param int $userId ID użytkownika, którego tokeny mają być usunięte.
-   * @param string $type Typ tokenów do usunięcia (np. 'email_verify').
-   *
+   * Usuwa wszystkie tokeny określonego typu dla danego użytkownika.
+   * 
+   * @param int $userId ID użytkownika.
+   * @param string $type Typ tokena (np. 'email_verify').
    * @return void
    */
   public function deleteTokensForUserByType(int $userId, string $type): void
@@ -85,24 +100,19 @@ class TokenService
   }
 
   /**
-   * Pobiera pełny rekord tokena z bazy na podstawie jego wartości.
+   * Pobiera i waliduje rekord tokena z bazy danych.
    *
-   * Metoda ta służy do walidacji tokena otrzymanego od użytkownika (np. z linku).
-   * Kontroler, który ją wywołuje, powinien następnie sprawdzić, czy token
-   * nie wygasł, porównując `expires_at` z aktualnym czasem.
+   * Metoda automatycznie odrzuca tokeny, które przekroczyły swój czas ważności.
    *
-   * @param string $token Wartość tokena do wyszukania.
-   *
-   * @return array|null Zwraca tablicę asocjacyjną z danymi rekordu tokena
-   * lub `null`, jeśli token nie został znaleziony.
+   * @param string $token Surowa wartość tokena (np. pobrana z adresu URL).
+   * @return array|null Tablica z danymi rekordu lub null w przypadku braku/wygasnięcia.
    */
   public function getTokenRecord(string $token): ?array
   {
+    // Pobieramy tylko tokeny, które nie wygasły
     $sql = 'SELECT * FROM user_tokens WHERE token = ? AND expires_at > NOW()';
     $result = $this->db->fetch($sql, [$token]);
 
-    // Użycie operatora trójargumentowego (ternary) zapewnia, że metoda
-    // zawsze zwróci `null` w przypadku braku wyniku, a nie `false`.
     return $result ?: null;
   }
 }

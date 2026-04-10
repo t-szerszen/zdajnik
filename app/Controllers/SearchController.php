@@ -7,31 +7,58 @@ use App\Services\DynamicDataService;
 
 /**
  * Kontroler Wyszukiwarki Pytań.
+ *
+ * Klasa odpowiada za logikę wyszukiwania i filtrowania bazy pytań egzaminacyjnych.
+ * Obsługuje wyszukiwanie tekstowe, filtrowanie po typie egzaminu oraz kategorii tematycznej.
+ * Wspiera zarówno tradycyjne renderowanie widoków, jak i dynamiczne ładowanie wyników przez AJAX.
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ * @package App\Controllers
  */
 class SearchController extends BaseController
 {
+  /** @var Question Model do operacji na pytaniach egzaminacyjnych */
   private Question $questionModel;
+
+  /** @var DynamicDataService Serwis do pobierania struktury egzaminów i kategorii */
   private DynamicDataService $dynamicData;
 
+  /**
+   * Inicjalizuje kontroler wyszukiwarki.
+   *
+   * Ustawia dostęp do modeli i serwisów danych. Akcja nie wymaga autoryzacji,
+   * co pozwala na przeglądanie bazy pytań przez gości (szczegóły pytań
+   * są chronione w ReviewController).
+   */
   public function __construct()
   {
     parent::__construct();
-    // Rezygnujemy z wymogu logowania dla samej wyszukiwarki (ReviewController i tak go wymusi przy wejściu w detal)
     $this->questionModel = new Question();
     $this->dynamicData = new DynamicDataService();
   }
 
   /**
-   * Wyświetla stronę wyszukiwarki i przetwarza wyniki.
+   * Główny punkt wejściowy wyszukiwarki - wyświetla stronę i przetwarza parametry filtrów.
+   *
+   * Metoda wykonuje następujące kroki:
+   * 1. Inicjalizacja parametrów filtra z danych wejściowych GET.
+   * 2. Wyliczenie parametrów stronicowania (limit, offset, total pages).
+   * 3. Pobranie pasujących pytań z modelu danych (tylko gdy podano filtry).
+   * 4. Wykrycie typu żądania (AJAX vs Standard) i odpowiednie wyrenderowanie wyników.
+   *
+   * @return void
    */
   public function showSearch(): void
   {
+    // KROK 1: Inicjalizacja parametrów filtra
     $filters = [
       'exam_id' => $_GET['exam_id'] ?? null,
       'topic_id' => $_GET['topic_id'] ?? null,
       'query' => $_GET['query'] ?? null
     ];
 
+    // KROK 2: Parametry stronicowania
     $page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
     $limit = 25;
 
@@ -39,10 +66,12 @@ class SearchController extends BaseController
     $totalCount = 0;
     $totalPages = 1;
 
+    // KROK 3: Wykonanie wyszukiwania (walidacja obecności co najmniej jednego filtra)
     if (!empty($filters['exam_id']) || !empty($filters['topic_id']) || !empty($filters['query'])) {
       $totalCount = $this->questionModel->countSearchQuestions($filters);
       $totalPages = max(1, (int) ceil($totalCount / $limit));
 
+      // Zabezpieczenie przed przejściem poza zakres
       if ($page > $totalPages) {
         $page = $totalPages;
       }
@@ -50,10 +79,11 @@ class SearchController extends BaseController
       $results = $this->questionModel->searchQuestions($filters, $page, $limit);
     }
 
+    // KROK 4: Renderowanie wyniku (Wykrycie AJAX)
     $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
     if ($isAjax) {
-      // Renderujemy tylko partial wyników
+      // Przygotowanie tylko fragmentu HTML dla żądania dynamicznego
       ob_start();
       $this->renderPartial('search_results_partial', [
         'results' => $results,
@@ -76,6 +106,7 @@ class SearchController extends BaseController
       exit;
     }
 
+    // Pełne renderowanie strony przy klasycznym wejściu/odświeżeniu
     $this->renderView('search', [
       'exams' => $this->dynamicData->getExams(),
       'categories' => $filters['exam_id'] ? $this->dynamicData->getCategoriesForExam((int) $filters['exam_id']) : [],
@@ -88,7 +119,14 @@ class SearchController extends BaseController
   }
 
   /**
-   * Renderuje tylko fragment HTML bez głownego layoutu.
+   * Renderuje tylko fragment HTML bez głównego layoutu aplikacji.
+   *
+   * Używane głównie przez mechanizm AJAX do dynamicznej aktualizacji listy
+   * wyników bez przeładowywania całej nawigacji i stopki.
+   *
+   * @param string $partialName Nazwa pliku widoku partial (bez rozszerzenia .php).
+   * @param array $data Dane wejściowe przekazywane do widoku.
+   * @return void
    */
   private function renderPartial(string $partialName, array $data = []): void
   {

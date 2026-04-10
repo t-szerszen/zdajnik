@@ -2,23 +2,28 @@
 
 namespace App\Controllers;
 
-use App\Core\Database;
 use App\Services\DynamicDataService;
 
 /**
- * Kontroler Stron Związanych z Quizami.
+ * Kontroler Stron Kontekstowych Quizów i Egzaminów.
  *
- * Odpowiada za renderowanie widoków HTML dla różnych trybów nauki
- * i testów w ramach kwalifikacji INF.03. Działa jako pośrednik
- * między routingiem a warstwą prezentacji (szablonami).
+ * Klasa odpowiada za przygotowanie i wyrenderowanie widoków HTML dla różnych 
+ * trybów nauki (jedno pytanie, test spersonalizowany, pełny egzamin).
+ * Stanowi warstwę pośrednią, która waliduje dostępność konkretnych 
+ * kwalifikacji zawodowych i dostarcza dane o ich strukturze do widoków.
  *
- * @version 1.1.0
+ * @version 1.2.0
  * @author Tobiasz Szerszeń
+ * @package App\Controllers
  */
 class QuizPageController extends BaseController
 {
+  /** @var DynamicDataService Serwis do pobierania struktury egzaminów i ich tematów */
   private DynamicDataService $dynamicData;
 
+  /**
+   * Inicjalizuje kontroler stron quizowych.
+   */
   public function __construct()
   {
     parent::__construct();
@@ -26,7 +31,13 @@ class QuizPageController extends BaseController
   }
 
   /**
-   * Helper function to block non-INF.04 exams.
+   * Strażnik dostępności egzaminów.
+   * 
+   * Tymczasowe zabezpieczenie blokujące dostęp do egzaminów innych niż INF.04
+   * (które są w fazie przygotowania bazy pytań).
+   *
+   * @param string $code Kod kwalifikacji (np. INF.02, INF.03, INF.04).
+   * @return void
    */
   private function checkAvailability(string $code): void
   {
@@ -37,19 +48,33 @@ class QuizPageController extends BaseController
   }
 
   /**
-   * Wyświetla stronę quizu w trybie "jedno pytanie".
+   * Wyświetla stronę quizu w trybie "Jedno pytanie po drugim".
    *
+   * Metoda wykonuje następujące kroki:
+   * 1. Walidacja dostępności danej kwalifikacji.
+   * 2. Pobranie metadanych egzaminu (nazwa, opis, kolory).
+   * 3. Pobranie listy kategorii tematycznych przypisanych do egzaminu.
+   * 4. Renderowanie widoku one_question.
+   *
+   * @param string $code Kod kwalifikacji.
    * @return void
    */
   public function showOneQuestionPage(string $code): void
   {
+    // KROK 1: Walidacja dostępności
     $this->checkAvailability($code);
+
+    // KROK 2: Pobranie metadanych egzaminu
     $exam = $this->dynamicData->getExamDetails($code);
+
     if ($exam) {
+      // KROK 3: Pobranie kategorii tematycznych
       $categories = $this->dynamicData->getCategoriesForExam($exam['id']);
+
+      // KROK 4: Renderowanie widoku
       $this->renderView('one_question', [
         'exam' => $exam,
-        'examCode' => $code, // Zachowujemy dla kompatybilności JS
+        'examCode' => $code,
         'categories' => $categories
       ]);
     } else {
@@ -59,49 +84,58 @@ class QuizPageController extends BaseController
   }
 
   /**
-   * Wyświetla stronę interfejsu do generowania spersonalizowanego testu.
+   * Wyświetla interfejs do generowania spersonalizowanego zestawu pytań.
    *
+   * Metoda wykonuje następujące kroki:
+   * 1. Walidacja dostępności i pobranie danych egzaminu.
+   * 2. Wykrycie wstępnie wybranych tematów z parametrów URL (np. ze statystyk).
+   * 3. Przygotowanie listy kategorii do filtrów w widoku.
+   * 4. Renderowanie interfejsu konfiguracji testu.
+   *
+   * @param string $code Kod kwalifikacji.
    * @return void
    */
   public function showPersonalizedTestPage(string $code): void
   {
+    // KROK 1: Walidacja i pobranie danych podstawowych
     $this->checkAvailability($code);
     $exam = $this->dynamicData->getExamDetails($code);
+
     if (!$exam) {
       http_response_code(404);
       echo "Egzamin o kodzie $code nie istnieje.";
       return;
     }
 
-    // Przygotuj domyślną tablicę danych dla widoku.
     $data = [
       'exam' => $exam,
       'examCode' => $code,
-      'selectedSubjectId' => null // Domyślnie brak wybranego tematu
+      'selectedSubjectId' => null
     ];
 
-    // Sprawdź, czy przekazano ID tematu w URL.
+    // KROK 2: Obsługa opcjonalnych parametrów preselekcji tematów
     if (isset($_GET['subject']) && is_array($_GET['subject']) && !empty($_GET['subject'][0])) {
-      // Jeśli tak, nadpisz wartość w tablicy danych.
       $data['selectedSubjectId'] = (int) $_GET['subject'][0];
     }
     
-    // Fetch categories needed for the view
+    // KROK 3: Pobranie wszystkich kategorii dla danej kwalifikacji
     $data['categories'] = $this->dynamicData->getCategoriesForExam($exam['id']);
 
-    // Wyrenderuj widok tylko raz, przekazując kompletną tablicę danych.
+    // KROK 4: Renderowanie widoku konfiguracji
     $this->renderView('personalized_test', $data);
   }
 
   /**
-   * Wyświetla stronę pełnego testu egzaminacyjnego.
+   * Wyświetla stronę głównego testu egzaminacyjnego (40 pytań, limit czasu).
    *
+   * @param string $code Kod kwalifikacji.
    * @return void
    */
   public function showTestPage(string $code): void
   {
     $this->checkAvailability($code);
     $exam = $this->dynamicData->getExamDetails($code);
+
     if ($exam) {
       $this->renderView('test', [
         'exam' => $exam,

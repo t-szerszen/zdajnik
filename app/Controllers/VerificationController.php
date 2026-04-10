@@ -8,32 +8,32 @@ use App\Services\TokenService;
 /**
  * Kontroler Weryfikacji Adresu E-mail.
  *
- * Odpowiada za finalny etap aktywacji konta użytkownika. Jego jedynym zadaniem
- * jest odebranie tokenu weryfikacyjnego z adresu URL, jego walidacja oraz,
- * w przypadku powodzenia, aktywacja powiązanego konta.
+ * Klasa obsługuje procesy weryfikacji tożsamości użytkownika poprzez tokeny przesyłane drogą mailową.
+ * Obsługuje zarówno wstępną aktywację konta, jak i zatwierdzanie zmiany adresu e-mail.
  *
- * @version 1.2.0
+ * @version 1.2.1
  * @author Tobiasz Szerszeń
+ * @package App\Controllers
  */
 class VerificationController extends BaseController
 {
   /**
-   * Instancja modelu użytkownika do interakcji z tabelą użytkowników.
+   * Instancja modelu użytkownika.
    * @var UserModel
    */
   private UserModel $userModel;
 
   /**
-   * Instancja serwisu do obsługi logiki tokenów (walidacja, usuwanie).
+   * Serwis odpowiedzialny za zarządzanie tokenami bezpieczeństwa.
    * @var TokenService
    */
   private TokenService $tokenService;
 
   /**
-   * Konstruktor kontrolera weryfikacji.
+   * Inicjalizuje kontroler weryfikacji.
    *
-   * Inicjalizuje nadrzędny BaseController oraz usługi niezbędne do
-   * przeprowadzenia procesu weryfikacji: UserModel i TokenService.
+   * Ustawia wymaganie bycia gościem (requireGuest) oraz inicjalizuje
+   * niezbędne modele i serwisy (UserModel, TokenService).
    */
   public function __construct()
   {
@@ -44,32 +44,29 @@ class VerificationController extends BaseController
   }
 
   /**
-   * Główny endpoint obsługujący proces weryfikacji konta.
+   * Przetwarza żądanie weryfikacji na podstawie tokenu z adresu URL.
    *
-   * Logika działania:
-   * 1. Sprawdza, czy użytkownik nie jest już zalogowany i czy jest w procesie weryfikacji.
-   * 2. Pobiera token z parametrów GET i sprawdza jego istnienie.
-   * 3. Waliduje token w bazie danych (czy istnieje i czy nie wygasł).
-   * 4. Jeśli token jest poprawny, aktywuje konto użytkownika w modelu.
-   * 5. Po udanej aktywacji, usuwa zużyty token w celu zachowania higieny i bezpieczeństwa.
-   * 6. Ustawia komunikat o sukcesie i przekierowuje na stronę logowania.
-   * 7. W każdym przypadku błędu, wyświetla dedykowany widok z informacją.
+   * Metoda wykonuje następujące kroki:
+   * 1. Walidacja obecności i poprawności tokenu w bazie danych.
+   * 2. Identyfikacja typu operacji (aktywacja konta vs zmiana e-maila).
+   * 3. Wykonanie odpowiedniej akcji w modelu użytkownika.
+   * 4. Sprzątanie zużytych tokenów w celu zachowania bezpieczeństwa.
+   * 5. Automatyczne logowanie użytkownika po pomyślnej weryfikacji.
    *
-   * @return void
+   * @return void Przekierowuje na stronę główną lub wyświetla błąd.
    */
   public function handle(): void
   {
-    // Strażnik #2: Sprawdź, czy w adresie URL jest token.
-    // To jest warunek, który blokuje dostęp przypadkowym, niezalogowanym użytkownikom.
+    // KROK 1: Walidacja obecności i poprawności tokenu w bazie danych
     $token = $_GET['token'] ?? null;
     if (!$token) {
-      $this->renderErrorView('Brak tokenu weryfikacyjnego.');
+      $this->renderErrorView('Brak tokenu weryfikacyjnego w żądaniu.');
       return;
     }
 
     $tokenRecord = $this->tokenService->getTokenRecord($token);
     if (!$tokenRecord) {
-      $this->renderErrorView('Token jest nieprawidłowy lub wygasł.');
+      $this->renderErrorView('Podany token jest nieprawidłowy, został już wykorzystany lub wygasł.');
       return;
     }
 
@@ -77,7 +74,8 @@ class VerificationController extends BaseController
     $userId = $tokenRecord['user_id'];
     $tokenType = $tokenRecord['type'];
 
-    // Rozdzielamy logikę na podstawie typu tokenu
+    // KROK 2: Identyfikacja typu operacji (aktywacja vs zmiana e-maila)
+    // KROK 3: Wykonanie odpowiedniej akcji w modelu użytkownika
     switch ($tokenType) {
       case 'email_verify':
         $success = $this->userModel->verifyUser($userId);
@@ -90,18 +88,15 @@ class VerificationController extends BaseController
     }
 
     if ($success) {
-      // Po udanej operacji, usuwamy zużyty token
+      // KROK 4: Sprzątanie zużytych tokenów (bezpieczeństwo One-Time Token)
       $this->tokenService->deleteTokensForUserByType($userId, $tokenType);
 
-      // --- AUTOMATYCZNE LOGOWANIE ---
-      // Pobieramy pełny obiekt użytkownika po weryfikacji
+      // KROK 5: Automatyczne logowanie użytkownika po pomyślnej weryfikacji
       $user = $this->userModel->getUserById($userId);
       if ($user) {
-        // Regenerujemy ID sesji dla bezpieczeństwa (zapobieganie Session Fixation)
+        // Zabezpieczenie przed Session Fixation
         session_regenerate_id(true);
-        // Zapisujemy obiekt użytkownika w sesji (zgodnie z logiką LoginController/AuthService)
         $_SESSION['user'] = $user;
-        // Czyścimy zbędne klucze sesji
         unset($_SESSION['verify_user_id']);
 
         $_SESSION['flash_message'] = [
@@ -109,18 +104,20 @@ class VerificationController extends BaseController
           'text' => 'Twoje konto zostało zweryfikowane! Zostałeś automatycznie zalogowany.'
         ];
 
-        // Przekierowujemy na stronę główną
         header('Location: ' . url('/'));
         exit();
       }
 
-      // Fallback (gdyby użytkownik nie został pobrany)
-      $_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Konto zweryfikowane! Możesz się teraz zalogować.'];
+      // Przypadek awaryjny (jeśli użytkownik zniknął z BD w międzyczasie)
+      $_SESSION['flash_message'] = [
+        'type' => 'success', 
+        'text' => 'Konto zweryfikowane pomyślnie! Możesz się teraz zalogować.'
+      ];
       unset($_SESSION['verify_user_id']);
       header('Location: ' . url('logowanie'));
       exit();
     } else {
-      $this->renderErrorView('Wystąpił nieoczekiwany błąd podczas przetwarzania tokenu.');
+      $this->renderErrorView('Wystąpił nieoczekiwany błąd serwera podczas przetwarzania procesu weryfikacji.');
     }
   }
 
@@ -129,13 +126,9 @@ class VerificationController extends BaseController
   // ========================================================================
 
   /**
-   * Renderuje ustandaryzowany widok błędu weryfikacji.
+   * Renderuje ustandaryzowany widok błędu dla procesu weryfikacji.
    *
-   * Centralizuje logikę wyświetlania strony błędu, aby zapewnić spójny
-   * wygląd i komunikację z użytkownikiem we wszystkich scenariuszach błędów.
-   *
-   * @param string $message Komunikat błędu do wyświetlenia na stronie.
-   * 
+   * @param string $message Treść komunikatu o błędzie do wyświetlenia użytkownikowi.
    * @return void
    */
   private function renderErrorView(string $message): void

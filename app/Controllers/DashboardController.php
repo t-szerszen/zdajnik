@@ -3,33 +3,59 @@
 namespace App\Controllers;
 
 use App\Services\StatisticsService;
-use App\Models\SavedQuestion;
 
+/**
+ * Kontroler Panelu Głównego (Dashboard/Statystyki).
+ *
+ * Klasa odpowiada za zbieranie i przygotowanie kompleksowych danych analitycznych
+ * dla zalogowanego użytkownika. Dashboard stanowi centrum dowodzenia postępami
+ * nauki, śledząc błędy, przewidywane wyniki egzaminu oraz trendy wydajności.
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ * @package App\Controllers
+ */
 class DashboardController extends BaseController
 {
+  /** @var StatisticsService Serwis analityczny dostarczający surowe i przetworzone dane statystyczne */
   private StatisticsService $statsService;
 
+  /**
+   * Inicjalizuje kontroler panelu głównego.
+   * 
+   * Ustawia dostęp do serwisu statystyk. Wszelkie operacje w tej klasie
+   * wymagają uprzedniego uwierzytelnienia użytkownika.
+   */
   public function __construct()
   {
     parent::__construct();
-    // Sztywno ustawiony limit 5 dla dashboardu
     $this->statsService = new StatisticsService();
   }
 
   /**
-   * Wyświetla stronę statystyk użytkownika (Dashboard).
+   * Przygotowuje i wyświetla stronę statystyk użytkownika (Dashboard).
+   *
+   * Metoda wykonuje następujące kroki:
+   * 1. Wymaganie autoryzacji (Require Auth).
+   * 2. Wyznaczenie profilu egzaminu (wybrana kwalifikacja INF.0X).
+   * 3. Pobranie kluczowych metryk (progres ogólny, opanowanie materiału, trendy).
+   * 4. Agregacja list pomocniczych (ostatnie błędy, błędy krytyczne, niedawne egzaminy).
+   * 5. Renderowanie widoku statystyk z kompletnym zestawem danych.
+   *
+   * @return void
    */
   public function showDashboard(): void
   {
+    // KROK 1: Weryfikacja tożsamości
     $this->requireAuth();
-
-    $examTypes = $this->statsService->getUserExams($this->currentUser->getId());
-    $selectedExamTypeId = (int) ($_GET['category'] ?? $examTypes[0]['id'] ?? 0);
     $userId = $this->currentUser->getId();
 
-    // Dla dashboardu zawsze limit 5 (domyślny w metodach, ale warto być explicite lub polegać na defaultLimit)
-    // Metody getErrorHistory, getCriticalErrors, etc. mają domyślny limit 5.
+    // KROK 2: Wybór aktualnego kontekstu (kwalifikacji) z parametrów URL
+    $examTypes = $this->statsService->getUserExams($this->currentUser->getId());
+    $selectedExamTypeId = (int) ($_GET['category'] ?? $examTypes[0]['id'] ?? 0);
 
+    // KROK 3 & 4: Gromadzenie kompletnych danych analitycznych
+    // Pobieramy dane z محدودzeniem (limit) do 5 najświeższych rekordów dla widoku panelu.
     $data = [
       'categories' => $examTypes,
       'selectedCategoryId' => $selectedExamTypeId,
@@ -45,6 +71,7 @@ class DashboardController extends BaseController
       'savedQuestions' => $this->statsService->getSavedQuestions($userId, $selectedExamTypeId, 5)
     ];
 
+    // KROK 5: Przekazanie danych do modułu statystyk
     $this->renderView('statistics', $data);
   }
 }

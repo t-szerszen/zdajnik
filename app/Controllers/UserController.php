@@ -3,49 +3,63 @@
 namespace App\Controllers;
 
 /**
- * Kontroler Akcji Zalogowanego Użytkownika.
+ * Kontroler Użytkownika (UserController).
  *
- * Obsługuje strony i akcje dostępne tylko dla uwierzytelnionych
- * użytkowników, takie jak wyświetlanie statystyk czy wylogowanie.
+ * Obsługuje podstawowe akcje profilowe oraz systemowe zarezerwowane wyłącznie 
+ * dla zalogowanych użytkowników. Zapewnia ochronę dostępu do widoków prywatnych 
+ * poprzez wymuszenie sesji w konstruktorze.
  *
- * @version 1.0.0
+ * Główne funkcjonalności:
+ * - Serwowanie widoku statystyk użytkownika.
+ * - Bezpieczny proces wylogowania (niszczenie sesji).
+ *
+ * @version 1.1.0
  * @author Tobiasz Szerszeń
+ * @package App\Controllers
  */
 class UserController extends BaseController
 {
   /**
-   * Konstruktor, który zabezpiecza wszystkie akcje w tym kontrolerze.
-   *
-   * Jeśli użytkownik nie jest zalogowany, zostaje przekierowany na stronę logowania.
+   * Konstruktor zabezpieczający dostęp do metod kontrolera.
+   * Wywołuje requireAuth() z BaseController, blokując dostęp dla gości.
    */
   public function __construct()
   {
     parent::__construct();
+    // KROK: Weryfikacja tożsamości przed renderowaniem jakiejkolwiek akcji
     $this->requireAuth();
   }
 
   /**
-   * Wyświetla stronę ze statystykami użytkownika.
-   *
-   * @return void
+   * Renderuje widok panelu statystyk i osiągnięć użytkownika.
+   * Dane do tego widoku są pobierane asynchronicznie przez ApiController.
    */
   public function showStatistics(): void
   {
-    $this->renderView('statistics');
+    $this->renderView('statistics', [
+      'pageTitle' => 'Twoje Statystyki - Examly'
+    ]);
   }
 
   /**
-   * Wylogowuje użytkownika.
+   * Wykonuje procedurę wylogowania użytkownika.
    *
-   * Niszczy bieżącą sesję i przekierowuje na stronę logowania.
+   * Proces obejmuje:
+   * 1. Wyczyszczenie tablicy $_SESSION.
+   * 2. Fizyczne zniszczenie pliku sesji na serwerze.
+   * 3. Przekierowanie do strony powitalnej/logowania.
    *
    * @return void
    */
   public function logout(): void
   {
-    session_unset(); // Usuwa wszystkie zmienne sesyjne
-    session_destroy(); // Niszczy sesję
+    // KROK 1: Czyszczenie stanu sesji
+    session_unset(); 
 
+    // KROK 2: Terminacja sesji systemowej
+    session_destroy(); 
+
+    // KROK 3: Redirekcja do bramki logowania
     header('Location: ' . url('logowanie'));
     exit();
   }

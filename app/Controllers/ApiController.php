@@ -9,49 +9,42 @@ use App\Models\Attempt;
 use App\Models\SavedQuestion;
 
 /**
- * Główny kontroler API do obsługi logiki quizu.
+ * Kontroler API (ApiController).
  *
- * Odpowiada za obsługę żądań HTTP przychodzących z aplikacji klienckiej (frontend),
- * komunikację z modelami bazy danych oraz zwracanie danych w standardowym formacie JSON.
- * Jest to centralny punkt logiki biznesowej aplikacji po stronie serwera, zarządzający
- * pobieraniem pytań, weryfikacją odpowiedzi i zapisywaniem postępów użytkownika.
+ * Centralna brama komunikacyjna (JSON REST API) dla interfejsu użytkownika (Frontend).
+ * Odpowiada za dostarczanie dynamicznych danych quizu i serwowanie logiki biznesowej 
+ * w trybie asynchronicznym (AJAX).
  *
- * @version 1.2.0
+ * Główne obszary odpowiedzialności:
+ * - Pobieranie pytań z uwzględnieniem zaawansowanego filtrowania (Discovery, Spaced Repetition).
+ * - Weryfikacja poprawności udzielanych odpowiedzi "w locie".
+ * - Masowe utrwalanie wyników egzaminów i progresu nauki.
+ * - Zarządzanie stanem schowka (zapisane pytania).
+ * - Egzekwowanie polityki dostępu (Opcje Premium / Gatekeeper).
+ *
+ * @version 1.3.0
  * @author Tobiasz Szerszeń
+ * @package App\Controllers
  */
 class ApiController extends BaseController
 {
-  /**
-   * @var Question Model do operacji na tabeli pytań.
-   */
+  /** @var Question Model do operacji na bazie pytań */
   private Question $questionModel;
 
-  /**
-   * @var Answer Model do operacji na tabeli odpowiedzi.
-   */
+  /** @var Answer Model do operacji na odpowiedziach */
   private Answer $answerModel;
 
-  /**
-   * @var UserProgress Model do śledzenia i zapisywania postępów użytkownika.
-   */
+  /** @var UserProgress Model do utrwalania statystyk nauki */
   private UserProgress $userProgressModel;
 
-  /**
-   * @var Attempt Model do zarządzania historią i wynikami egzaminów.
-   */
+  /** @var Attempt Model do zapisu historii podejść */
   private Attempt $attemptModel;
 
-  /**
-   * @var SavedQuestion Model do zarządzania zapisanymi pytaniami.
-   */
+  /** @var SavedQuestion Model do zarządzania schowkiem użytkownika */
   private SavedQuestion $savedQuestionModel;
 
   /**
-   * Konstruktor klasy ApiController.
-   *
-   * Inicjalizuje wszystkie niezbędne obiekty modeli, które stanowią warstwę
-   * dostępu do danych. Każdy model jest odpowiedzialny za operacje na
-   * konkretnej części bazy danych (pytania, odpowiedzi, postępy, egzaminy).
+   * Projektuje i inicjalizuje mosty do warstwy danych.
    */
   public function __construct()
   {
@@ -63,30 +56,41 @@ class ApiController extends BaseController
     $this->savedQuestionModel = new SavedQuestion();
   }
 
+  // --- ENDPOINTY POBIERANIA PYTAŃ (READ) ---
+
   /**
-   * Endpoint: Pobiera pojedyncze pytanie.
+   * Endpoint: Pobiera pojedyncze, przefiltrowane pytanie.
+   * Obsługuje tryb "Jedno pytanie" oraz wyświetlanie progresu puli.
+   * 
+   * @param string $examCode Kod kwalifikacji (np. INF.03).
    */
   public function getQuestion(string $examCode): void
   {
     $this->ensureGetRequest();
+    
+    // KROK: Pobranie fizycznych rekordów z bazy przez filtr centralny
     $result = $this->fetchFilteredQuestions($examCode, 1);
 
-    if (!$result['success'])
+    if (!$result['success']) {
       return;
+    }
 
     $question = $result['questions'][0] ?? null;
 
+    // Obsługa scenariusza, w którym brak pytań spełniających filtry (np. wszystko odkryte)
     if (!$question) {
       $this->sendJsonResponse([
         'success' => true,
         'status' => 'no_questions_left',
-        'message' => 'Gratulacje! Brak dostępnych pytań.',
+        'message' => 'Gratulacje! Przerobiłeś już wszystkie dostępne pytania w tej sekcji.',
       ]);
       return;
     }
 
+    // Dołączenie wariantów odpowiedzi
     $answers = $this->answerModel->getAnswersByVersionId($question['question_version_id']);
 
+    // Detekcja stanu zapisu dla zalogowanych
     if ($this->isUserLoggedIn) {
       $question['is_saved'] = $this->savedQuestionModel->isSaved($this->currentUser->getId(), $question['question_id']);
     }
@@ -105,12 +109,15 @@ class ApiController extends BaseController
   }
 
   /**
-   * Endpoint: Pobiera spersonalizowany test.
+   * Endpoint: Pobiera zestaw pytań do testu personalizowanego.
+   * 
+   * @param string $examCode Kod kwalifikacji.
    */
   public function getPersonalizedTest(string $examCode): void
   {
     $this->ensureGetRequest();
 
+    // Walidacja limitu (bezpieczne granice 10-40)
     $limit = isset($_GET['question_count']) ? (int) $_GET['question_count'] : 20;
     $limit = max(10, min(40, $limit));
 
@@ -126,7 +133,7 @@ class ApiController extends BaseController
       $this->sendJsonResponse([
         'success' => true,
         'status' => 'no_questions_left',
-        'message' => 'Brak wystarczającej liczby pytań.',
+        'message' => 'Baza posiada zbyt mało pytań spełniających Twoje kryteria filtrowania.',
       ]);
       return;
     }
@@ -144,7 +151,7 @@ class ApiController extends BaseController
   }
 
   /**
-   * Endpoint: Pobiera pełny arkusz egzaminacyjny.
+   * Endpoint: Pobiera standardowy arkusz egzaminacyjny (40 losowych pytań).
    */
   public function getFullTest(string $examCode): void
   {
@@ -153,10 +160,11 @@ class ApiController extends BaseController
     $examTypeId = $this->questionModel->getExamTypeIdByCode($examCode);
 
     if (!$examTypeId) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Egzamin nie istnieje.'], 404);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy kod egzaminu.'], 404);
       return;
     }
 
+    // Wybieramy wszystkie tematy przypisane do tej kwalifikacji
     $allTopicIds = $this->questionModel->getTopicIdsByExamType($examTypeId);
     $questions = $this->questionModel->getQuestions($allTopicIds, 40, $examTypeId);
 
@@ -172,8 +180,10 @@ class ApiController extends BaseController
     $this->sendJsonResponse(['success' => true, 'questions' => $questionsData]);
   }
 
+  // --- ENDPOINTY ZAPISU I WERYFIKACJI (WRITE) ---
+
   /**
-   * Endpoint: Sprawdza poprawność odpowiedzi i zapisuje progres.
+   * Endpoint: Weryfikuje poprawność pojedynczej odpowiedzi i natychmiast utrwala progres.
    */
   public function checkAnswer(): void
   {
@@ -183,10 +193,11 @@ class ApiController extends BaseController
     $userAnswerId = (int) ($_POST['answer_id'] ?? 0);
 
     if (!$qvId || !$userAnswerId) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Brak wymaganych parametrów.'], 400);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Brak wymaganych parametrów (version_id/answer_id).'], 400);
       return;
     }
 
+    // Pobranie wzorcowej poprawnej odpowiedzi dla danej wersji
     $correctAnswer = $this->answerModel->getCorrectAnswerForVersion($qvId);
     if (!$correctAnswer) {
       $this->sendJsonResponse(['success' => false, 'message' => 'Błąd wersji pytania.'], 404);
@@ -195,7 +206,7 @@ class ApiController extends BaseController
 
     $isCorrect = $userAnswerId === (int) $correctAnswer['id'];
 
-    // Wykorzystujemy BaseController do zapisu progresu
+    // Utrwalenie progresu dla zalogowanych (Micro-save)
     if ($this->isUserLoggedIn) {
       $questionId = $this->questionModel->getQuestionIdByVersionId($qvId);
       if ($questionId) {
@@ -210,18 +221,22 @@ class ApiController extends BaseController
     ]);
   }
 
+  /**
+   * Endpoint: Wykonuje masowy zapis progresu (Bulk Save).
+   * Używane głównie przy synchronizacji stanu po trybach offline lub długich sesjach.
+   */
   public function saveProgressBulk(): void
   {
     $this->ensurePostRequest();
 
     if (!$this->isUserLoggedIn) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Wymagane uwierzytelnienie'], 403);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Funkcja dostępna tylko dla zalogowanych.'], 403);
       return;
     }
 
     $progressData = json_decode(file_get_contents('php://input'), true);
     if (!is_array($progressData)) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowe dane.'], 400);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy format danych JSON.'], 400);
       return;
     }
 
@@ -233,11 +248,17 @@ class ApiController extends BaseController
       }
     }
 
-    $this->sendJsonResponse(['success' => true, 'message' => 'Postęp został zapisany.']);
+    $this->sendJsonResponse(['success' => true, 'message' => 'Postęp zaktualizowany pomyślnie.']);
   }
 
   /**
-   * Endpoint: Zapisuje wynik całego podejścia.
+   * Endpoint: Zapisuje kompletną historię zakończonego egzaminu.
+   *
+   * Metoda wykonuje operacje atomowe:
+   * 1. Rejestracja nagłówka próby w modelu Attempt.
+   * 2. Wykonanie Batch Progress Update (aktualizacja statystyk dla wielu pytań naraz).
+   *
+   * @return void
    */
   public function saveAttempt(): void
   {
@@ -248,15 +269,17 @@ class ApiController extends BaseController
       return;
     }
 
+    // Dekodowanie wejścia JSON Raw
     $input = json_decode(file_get_contents('php://input'), true);
     $userId = $this->currentUser->getId();
 
     $examTypeId = $this->questionModel->getExamTypeIdByCode($input['examCode'] ?? 'INF.03');
     if (!$examTypeId) {
-      $this->sendJsonResponse(['error' => 'Invalid exam type'], 400);
+      $this->sendJsonResponse(['error' => 'Nieprawidłowy typ egzaminu'], 400);
       return;
     }
 
+    // KROK 1: Przygotowanie paczki danych historycznych
     $attemptData = [
       'user_id' => $userId,
       'exam_type_id' => $examTypeId,
@@ -267,32 +290,35 @@ class ApiController extends BaseController
     ];
 
     $answersDetails = $input['answers'] ?? [];
+    
+    // KROK 2: Transakcyjny zapis w bazie danych
     $attemptId = $this->attemptModel->createAttempt($attemptData, $input['topicIds'] ?? [], $answersDetails);
 
     if ($attemptId) {
+      // KROK 3: Masowa aktualizacja statystyk pytań
       $this->userProgressModel->updateBatchProgress($userId, $answersDetails);
       $this->sendJsonResponse(['success' => true, 'attempt_id' => $attemptId]);
     } else {
-      $this->sendJsonResponse(['error' => 'Failed to save attempt'], 500);
+      $this->sendJsonResponse(['error' => 'Błąd krytyczny podczas zapisu próby.'], 500);
     }
   }
 
   /**
-   * Endpoint: Przełącza stan zapisania pytania (Saved Question Toggle).
+   * Endpoint: Przełącza stan zapisania pytania w schowku (Toggle).
    */
   public function toggleSavedQuestion(): void
   {
     $this->ensurePostRequest();
 
     if (!$this->isUserLoggedIn) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Wymagane uwierzytelnienie.'], 403);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Zaloguj się, aby zarządzać zapisanymi pytaniami.'], 403);
       return;
     }
 
     $questionId = (int) ($_POST['question_id'] ?? 0);
 
     if (!$questionId) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Brak ID pytania.'], 400);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Brak identyfikatora pytania.'], 400);
       return;
     }
 
@@ -303,26 +329,35 @@ class ApiController extends BaseController
       $this->sendJsonResponse([
         'success' => true,
         'is_saved' => $isSaved,
-        'message' => $isSaved ? 'Pytanie zostało zapisane.' : 'Pytanie zostało usunięte z zapisanych.'
+        'message' => $isSaved ? 'Dodano do zapisanych.' : 'Usunięto z zapisanych.'
       ]);
     } else {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Wystąpił błąd podczas zapisywania.'], 500);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Błąd po stronie serwera.'], 500);
     }
   }
 
-  // ========================================================================
-  // METODY POMOCNICZE (PRIVATE)
-  // ========================================================================
+  // --- LOGIKA WEWNĘTRZNA (PRIVATE HELPERS) ---
 
   /**
-   * Centralna metoda do pobierania pytań (Zoptymalizowana pod BaseController).
+   * Centralna logika filtrowania i pobierania rekordów z bazy pytań.
+   *
+   * Realizuje:
+   * 1. Detekcję filtrów tematycznych.
+   * 2. Egzekwowanie polityki dostępu "Premium" (wymóg zalogowania).
+   * 3. Obsługę mechanizmu Gatekeeper (blokada modów nauki do momentu zebrania 100 odpowiedzi).
+   * 4. Wybór odpowiedniego algorytmu z modelu Question (Spaced Repetition, Discovery, Accuracy).
+   * 5. Pobieranie danych o progresie ogólnym puli (Pool Progress).
+   *
+   * @param string $examCode Kod egzaminu.
+   * @param int $limit Liczba pytań do pobrania.
+   * @return array [success => bool, questions => array, pool_progress => array]
    */
   private function fetchFilteredQuestions(string $examCode, int $limit): array
   {
     $subjectIds = $_GET['subject'] ?? [];
 
     if (!$examCode || empty($subjectIds)) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Brak parametrów filtrowania.'], 400);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nie wybrano żadnego tematu egzaminacyjnego.'], 400);
       return ['success' => false, 'questions' => []];
     }
 
@@ -330,15 +365,15 @@ class ApiController extends BaseController
     $subjectIds = array_map('intval', $subjectIds);
     $specialFilter = $_GET['premium_option'] ?? null;
 
-    // Wykorzystujemy właściwości z BaseController
+    // KROK: Weryfikacja uprawnień do filtrów zaawansowanych
     if ($specialFilter && !$this->isUserLoggedIn) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Opcje premium są dla zalogowanych.'], 403);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Filtry zaawansowane wymagają konta użytkownika.'], 403);
       return ['success' => false, 'questions' => []];
     }
 
     $userId = $this->isUserLoggedIn ? $this->currentUser->getId() : null;
 
-    // Gatekeeper dla opcji "Do poprawy" ('toImprove')
+    // KROK: Mechanizm Gatekeeper (Wymagana próbka danych dla precyzyjnych algorytmów)
     if ($specialFilter === 'toImprove' || $specialFilter === 'toRemind') {
       if ($userId) {
         $answeredCount = $this->userProgressModel->countAnsweredQuestionsForExam($userId, $examTypeId);
@@ -346,13 +381,14 @@ class ApiController extends BaseController
           $this->sendJsonResponse([
             'success' => false,
             'status' => 'gatekeeper',
-            'message' => 'Musisz odpowiedzieć na co najmniej 100 pytań z tego egzaminu, aby odblokować tę funkcję.'
+            'message' => 'Musisz odpowiedzieć na co najmniej 100 pytań, abyśmy mogli przeanalizować Twoje słabe strony.'
           ], 403);
           return ['success' => false, 'questions' => []];
         }
       }
     }
 
+    // KROK: Wybór algorytmu losowania
     $questions = [];
     if ($specialFilter && $this->isUserLoggedIn) {
       $questions = match ($specialFilter) {
@@ -376,43 +412,32 @@ class ApiController extends BaseController
   }
 
   /**
-   * Weryfikuje, czy żądanie jest typu POST.
-   * Jeśli nie, przerywa skrypt i wysyła odpowiedź 405 Method Not Allowed.
-   * 
-   * @return void
+   * Zapewnia, że żądanie wywołano metodą POST.
    */
   private function ensurePostRequest(): void
   {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Metoda niedozwolona. Wymagany POST.'], 405);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Metoda niedozwolona (Wymagany POST).'], 405);
       exit();
     }
   }
 
   /**
-   * Weryfikuje, czy żądanie jest typu GET.
-   * Jeśli nie, przerywa skrypt i wysyła odpowiedź 405 Method Not Allowed.
-   * 
-   * @return void
+   * Zapewnia, że żądanie wywołano metodą GET.
    */
   private function ensureGetRequest(): void
   {
     if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Metoda niedozwolona. Wymagany GET.'], 405);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Metoda niedozwolona (Wymagany GET).'], 405);
       exit();
     }
   }
 
   /**
-   * Centralna funkcja do wysyłania odpowiedzi w formacie JSON.
+   * Wysyła standardową odpowiedź JSON i kończy wykonanie skryptu.
    *
-   * Ustawia odpowiednie nagłówki HTTP, konwertuje tablicę PHP na format JSON
-   * i wysyła ją do klienta, zapewniając spójność wszystkich odpowiedzi API.
-   *
-   * @param array<mixed> $data Tablica asocjacyjna z danymi do wysłania.
-   * @param int $statusCode Kod statusu HTTP (domyślnie 200 OK).
-   * 
-   * @return void
+   * @param array $data Dane do wysłania.
+   * @param int $statusCode Kod HTTP.
    */
   private function sendJsonResponse(array $data, int $statusCode = 200): void
   {

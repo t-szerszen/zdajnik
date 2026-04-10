@@ -3,26 +3,33 @@
 namespace App\Core;
 
 /**
- * Klasa Router - Centralny mechanizm mapowania URL na akcje kontrolerów.
+ * Klasa Router - Zaawansowany Mechanizm Kierowania Żądań (Routing).
  *
- * Zastępuje hybrydowe podejście (Switch + Regex) jednolitym systemem rejestracji tras.
- * Obsługuje parametryzowane ścieżki, metody HTTP oraz automatyczne wstrzykiwanie
- * parametrów do metod kontrolerów.
+ * Klasa odpowiada za mapowanie czytelnych adresów URL na specyficzne działania 
+ * w kontrolerach. Router obsługuje:
+ * - Rejestrację tras dla metod GET oraz POST.
+ * - Parametryzowane ścieżki w formacie {param} (np. test/{code}).
+ * - Dynamiczne wstrzykiwanie parametrów z URL bezpośrednio do metod kontrolerów.
+ * - Automatyczną obsługę błędów 404/500 przy braku trasy lub kontrolera.
  *
- * @version 2.0.0
- * @author Twoje Imię / Refactor by Examly Architect
+ * @version 2.1.0
+ * @author Tobiasz Szerszeń
+ * @package App\Core
  */
 class Router
 {
   /**
    * Tabela zarejestrowanych tras.
-   * Struktura: ['METHOD' => ['pattern' => 'handler']]
+   * Struktura: ['METHOD' => ['#RegexPattern#' => 'Controller@method']]
+   * @var array
    */
   private array $routes = [];
 
   /**
-   * Konstruktor inicjalizujący definicje tras.
-   * W większych aplikacjach definicje te wynosi się do pliku routes.php.
+   * Konstruktor inicjalizujący definicje tras aplikacji.
+   * 
+   * Uruchamia metodę registerRoutes(), w której znajduje się kompletna mapa 
+   * nawigacyjna systemu.
    */
   public function __construct()
   {
@@ -30,10 +37,11 @@ class Router
   }
 
   /**
-   * Rejestruje trasę dla metody GET.
+   * Rejestruje trasę typu GET.
    *
-   * @param string $path Ścieżka URL (np. 'test/{code}').
-   * @param string $handler Format 'Controller@method'.
+   * @param string $path Ścieżka URL (np. 'rejestracja' lub 'test/{code}').
+   * @param string $handler Nazwa kontrolera i metody w formacie 'Controller@method'.
+   * @return void
    */
   public function get(string $path, string $handler): void
   {
@@ -41,10 +49,11 @@ class Router
   }
 
   /**
-   * Rejestruje trasę dla metody POST.
+   * Rejestruje trasę typu POST.
    *
    * @param string $path Ścieżka URL.
-   * @param string $handler Format 'Controller@method'.
+   * @param string $handler Nazwa kontrolera i metody.
+   * @return void
    */
   public function post(string $path, string $handler): void
   {
@@ -52,137 +61,170 @@ class Router
   }
 
   /**
-   * Główna metoda przetwarzająca żądanie.
+   * Główna metoda przetwarzająca aktualne żądanie przychodzące.
+   *
+   * Metoda wykonuje następujące kroki:
+   * 1. Wyznaczenie czystego URI oraz metody żądania (GET/POST).
+   * 2. Dopasowanie URI do zarejestrowanych wzorców tras (Regex).
+   * 3. Ekstrakcja nazwanych parametrów z adresu (jeśli ścieżka była dynamiczna).
+   * 4. Uruchomienie wybranego kontrolera przez metodę dispatch().
+   * 5. Fallback - obsługa błędu 404 w przypadku braku dopasowania.
+   *
+   * @return void
    */
   public function handleRequest(): void
   {
-    // 1. Pobierz URI i Metodę
+    // KROK 1: Przygotowanie danych wejściowych z zapytania
     $uri = trim($_GET['url'] ?? '', '/');
     $method = $_SERVER['REQUEST_METHOD'];
 
-    // 2. Szukaj dopasowania
+    // KROK 2: Analiza zarejestrowanych tras w poszukiwaniu wzorca
     foreach ($this->routes[$method] ?? [] as $pattern => $handler) {
       if (preg_match($pattern, $uri, $matches)) {
-        // Usuń dopasowania numeryczne, zostaw nazwane parametry
+        // KROK 3: Ekstrakcja parametrów nazwanych z mapy Regex (np. code=INF.04)
         $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
 
+        // KROK 4: Finalizacja żądania w wybranym kontrolerze
         $this->dispatch($handler, $params);
         return;
       }
     }
 
-    // 3. Fallback - 404
+    // KROK 5: Protokół błędu dla nieznanego adresu
     $this->abort(404);
   }
 
   /**
-   * Prywatna metoda rejestracji trasy i kompilacji Regex.
+   * Rejestruje trasę i automatycznie kompiluje ją do wyrażenia regularnego.
+   *
+   * Metoda konwertuje przyjazną składnię {param} na bezpieczne, nazwane 
+   * grupy przechwytujące Regex (?P<param>[^/]+).
+   * 
+   * @param string $method Metoda HTTP.
+   * @param string $path Surowa ścieżka URL.
+   * @param string $handler Handler kontrolera.
+   * @return void
    */
   private function addRoute(string $method, string $path, string $handler): void
   {
-    // Zamiana {param} na Regex named group (?P<param>[^/]+)
-    // [^/]+ oznacza "wszystko do kolejnego ukośnika"
+    // Zamiana tagów {parametrycznych} na wzorceRegex
     $regexPath = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<$1>[^/]+)', $path);
 
-    // Dodanie anchorów początku i końca stringa
+    // Kotwiczenie wzorca (wymuszenie dopasowania całego URI)
     $regexPath = '#^' . $regexPath . '$#';
 
     $this->routes[$method][$regexPath] = $handler;
   }
 
   /**
-   * Uruchamia odpowiedni kontroler i metodę.
+   * Instancjonuje odpowiedni kontroler i wywołuje na nim metodę akcji.
+   *
+   * Metoda wykonuje następujące kroki:
+   * 1. Rozbicie handlera na nazwy klas i metod.
+   * 2. Sprawdzenie integralności systemu (istnienie klasy i metody).
+   * 3. Uruchomienie akcji z dynamicznym przekazaniem parametrów (Injection).
+   *
+   * @param string $handler 'Controller@method'.
+   * @param array $params Tablica parametrów wyciągniętych z adresu URL.
+   * @return void
    */
   private function dispatch(string $handler, array $params): void
   {
+    // KROK 1: Identyfikacja kontenera i akcji
     [$controllerName, $methodName] = explode('@', $handler);
     $fullControllerName = "App\\Controllers\\$controllerName";
 
+    // KROK 2: Weryfikacja spójności składnika
     if (!class_exists($fullControllerName)) {
-      $this->abort(500, "Controller class '$fullControllerName' not found.");
+      $this->abort(500, "Błąd aplikacji: Nie znaleziono klasy '$fullControllerName'.");
       return;
     }
 
     $controller = new $fullControllerName();
 
     if (!method_exists($controller, $methodName)) {
-      $this->abort(500, "Method '$methodName' not found in '$controllerName'.");
+      $this->abort(500, "Błąd aplikacji: Brak metody '$methodName' w kontrolerze '$controllerName'.");
       return;
     }
 
-    // Wywołanie metody z rozpakowanymi parametrami
-    // Np. showTestPage(string $code) otrzyma wartość z URL
+    // KROK 3: Wywołanie docelowej logiki (Action Trigger)
     call_user_func_array([$controller, $methodName], $params);
   }
 
+  /**
+   * Centralizuje przerwanie działania żądania z kodem błędu.
+   *
+   * @param int $code Kod stanu HTTP.
+   * @param string $message Opcjonalny komunikat błędu logowany wewnętrznie.
+   * @return void
+   */
   private function abort(int $code, string $message = ''): void
   {
     if (!empty($message)) {
       error_log($message);
     }
 
+    // Oddelegowanie renderowania widoku błędu do dedykowanego kontrolera
     $errorController = new \App\Controllers\ErrorController();
     $errorController->showError($code);
     exit;
   }
 
   /**
-   * Definicja wszystkich tras w aplikacji.
-   * To jest "mapa" Twojej aplikacji.
+   * Kompletna mapa drogowa aplikacji Examly.
+   * 
+   * Służy do konfiguracji wszystkich punktów wejścia (endpointów) systemu.
+   * Grupuje trasy funkcjonalnie (Auth, Statystyki, Nauka, API).
+   * 
+   * @return void
    */
   private function registerRoutes(): void
   {
-    // --- Strony Główne i Auth ---
+    // --- STREFY GŁÓWNE I UWIERZYTELNIANIE ---
     $this->get('', 'HomeController@show');
     $this->get('polityka-prywatnosci', 'HomeController@showPrivacyPolicy');
     $this->get('logowanie', 'LoginController@showLoginForm');
     $this->post('logowanie', 'LoginController@processLogin');
     $this->get('rejestracja', 'RegisterController@showRegistrationForm');
     $this->post('rejestracja', 'RegisterController@processRegistration');
-    $this->get('weryfikacja', 'VerificationController@handle'); // Token w query string obsługiwany wewnątrz
+    $this->get('weryfikacja', 'VerificationController@handle'); 
     $this->get('wyloguj', 'UserController@logout');
 
-    // Auth Google
+    // Integracja z Google API (OAuth 2.0)
     $this->get('auth/google', 'GoogleAuthController@redirectToGoogle');
     $this->get('auth/google/callback', 'GoogleAuthController@handleGoogleCallback');
 
-    // Reset Hasła i Email Auth
-    $this->get('autoryzacja-email', 'RegisterController@showVerificationPage'); // lub handleSendVerificationEmail zależnie od logiki query param, tu warto rozdzielić na osobne trasy w przyszłości
-    // Rozdzielenie logiki autoryzacji email (przykład czystszego podejścia):
-    // $this->get('autoryzacja-email/wyslij', 'RegisterController@handleSendVerificationEmail'); 
-
+    // Bezpieczeństwo konta: Reset hasła i aktywacja e-mail
+    $this->get('autoryzacja-email', 'RegisterController@showVerificationPage'); 
     $this->get('reset-hasla', 'PasswordResetController@showForgotPasswordForm');
     $this->post('reset-hasla', 'PasswordResetController@handleForgotPasswordRequest');
     $this->get('nowe-haslo', 'PasswordResetController@showNewPasswordForm');
     $this->post('nowe-haslo', 'PasswordResetController@handleNewPasswordRequest');
 
-    // --- Użytkownik i Ustawienia ---
+    // --- ANALITYKA I PROFIL UŻYTKOWNIKA ---
     $this->get('statystyki', 'DashboardController@showDashboard');
     $this->get('historia', 'HistoryController@showHistory');
 
-    // Ustawienia
+    // Zarządzanie ustawieniami i danymi osobowymi
     $this->get('ustawienia', 'SettingsController@index');
     $this->get('ustawienia/{action}', 'SettingsController@index');
     $this->post('ustawienia/{action}', 'SettingsController@handleAction');
     $this->post('usun-konto', 'SettingsController@handleAccountDeletion');
     $this->get('potwierdz-usuniecie', 'SettingsController@confirmDeletion');
     $this->get('potwierdz-anonimizacje', 'SettingsController@confirmProgressAnonymization');
-
-    // Weryfikacja zmiany maila
     $this->get('zmiana-email', 'SettingsController@showVerifyEmailForm');
     $this->post('zmiana-email', 'SettingsController@handleVerifyEmailRequest');
 
-    // --- Quizy i Nauka (Web) ---
-    // Teraz parametry są czytelne w URL
+    // --- MODUŁY NAUKI I QUIZY (WEB INTERFACE) ---
     $this->get('jedno-pytanie/{code}', 'QuizPageController@showOneQuestionPage');
     $this->get('personalizowany-test/{code}', 'QuizPageController@showPersonalizedTestPage');
     $this->get('test/{code}', 'QuizPageController@showTestPage');
 
-    // --- Review / Wyniki ---
+    // --- PRZEGLĄD WYNIKÓW I HISTORII ---
     $this->get('test-pytanie/{questionId}', 'ReviewController@showQuestionReview');
     $this->get('wyniki/{attemptId}', 'ReviewController@showExamReview');
 
-    // --- API (JSON) ---
+    // --- INTERFEJSY API (JSON INTERACTION) ---
     $this->get('api/question/{examCode}', 'ApiController@getQuestion');
     $this->get('api/test/personalized/{examCode}', 'ApiController@getPersonalizedTest');
     $this->get('api/test/full/{examCode}', 'ApiController@getFullTest');
@@ -191,7 +233,7 @@ class Router
     $this->post('api/save-progress-bulk', 'ApiController@saveProgressBulk');
     $this->post('api/toggle-saved', 'ApiController@toggleSavedQuestion');
 
-    // --- Wyszukiwarka ---
+    // --- WYSZUKIWARKA I FILTRACJA ---
     $this->get('search', 'SearchController@showSearch');
   }
 }

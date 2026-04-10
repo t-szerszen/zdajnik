@@ -4,29 +4,58 @@ namespace App\Models;
 
 use App\Core\Database;
 
+/**
+ * Model Postępu Użytkownika (UserProgress).
+ *
+ * Klasa odpowiada za precyzyjne śledzenie statystyk nauki dla każdego pytania. 
+ * Rejestruje liczbę prób, poprawnych i błędnych odpowiedzi oraz pytania pominięte.
+ * Wykorzystuje zaawansowane zapytania SQL (`ON DUPLICATE KEY UPDATE`), aby:
+ * - Tworzyć nowe rekordy postępu przy pierwszym zetknięciu z pytaniem.
+ * - Inkrementować liczniki przy każdej kolejnej próbie (Upsert).
+ *
+ * Dane te są kluczowe dla algorytmów doboru pytań (np. Spaced Repetition) 
+ * oraz wizualizacji progresu na Dashboardzie.
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ * @package App\Models
+ */
 class UserProgress
 {
+  /** @var Database Instancja połączenia z bazą danych */
   private Database $db;
 
+  /**
+   * Inicjalizuje model postępu.
+   */
   public function __construct()
   {
     $this->db = Database::getInstance();
   }
 
   /**
-   * Masowa aktualizacja postępu po zakończeniu testu.
-   * Obsługuje również pominięte pytania (answer_id = NULL).
+   * Masowa aktualizacja postępu po zakończeniu całego zestawu pytań (testu).
+   *
+   * Metoda przetwarza tablicę szczegółów odpowiedzi i wykonuje serię zapytań UPSERT.
+   * Obsługuje dwa stany:
+   * 1. Pytania pominięte (skipped): Inkrementuje `attempts_count` oraz `skipped_count`.
+   * 2. Pytania udzielone: Aktualizuje statystyki poprawności oraz flagę `last_result`.
+   *
+   * @param int $userId ID użytkownika.
+   * @param array $answersDetails Szczegółowa tablica wyników (question_version_id, answer_id, is_correct).
+   * @return void
    */
   public function updateBatchProgress(int $userId, array $answersDetails): void
   {
-    if (empty($answersDetails))
+    if (empty($answersDetails)) {
       return;
+    }
 
     foreach ($answersDetails as $detail) {
       $qvId = (int) $detail['question_version_id'];
       $answerId = $detail['answer_id'] ?? null;
 
-      // Jeśli pytanie zostało pominięte
+      // KROK A: Obsługa pytań pominiętych (brak wyboru odpowiedzi)
       if ($answerId === null) {
         $sql = "INSERT INTO user_progress (user_id, question_id, attempts_count, correct_count, incorrect_count, skipped_count, last_result)
                   SELECT ?, qv.question_id, 1, 0, 0, 1, 0
@@ -38,8 +67,9 @@ class UserProgress
                       last_result = 0";
 
         $this->db->execute($sql, [$userId, $qvId]);
-      } else {
-        // Pytanie zostało udzielone - normalna logika
+      } 
+      // KROK B: Obsługa pytań udzielonych (prawidłowo lub błędnie)
+      else {
         $sql = "INSERT INTO user_progress (user_id, question_id, attempts_count, correct_count, incorrect_count, skipped_count, last_result)
                   SELECT ?, qv.question_id, 1, a.is_correct, (1 - a.is_correct), 0, a.is_correct
                   FROM question_versions qv
@@ -56,6 +86,14 @@ class UserProgress
     }
   }
 
+  /**
+   * Zapisuje postęp dla pojedynczego pytania (używane w trybie "jedno pytanie").
+   *
+   * @param int $userId
+   * @param int $questionId ID bazowego pytania (nie wersji).
+   * @param int $isCorrect 1 dla odpowiedzi poprawnej, 0 dla błędnej.
+   * @return bool
+   */
   public function saveProgress(int $userId, int $questionId, int $isCorrect): bool
   {
     $sql = "INSERT INTO user_progress 
@@ -72,7 +110,11 @@ class UserProgress
   }
 
   /**
-   * Usuwa postęp użytkownika dla podanego typu egzaminu.
+   * Trwale usuwa całą historię postępu użytkownika dla wybranej kwalifikacji.
+   * 
+   * @param int $userId
+   * @param int $examTypeId ID kwalifikacji (np. INF.04).
+   * @return bool
    */
   public function deleteProgress(int $userId, int $examTypeId): bool
   {
@@ -83,7 +125,12 @@ class UserProgress
   }
 
   /**
-   * Zlicza liczbę pytań, na które użytkownik odpowiedział w danym egzaminie.
+   * Oblicza liczbę unikalnych pytań, na które użytkownik udzielił odpowiedzi.
+   * Pytania tylko przeglądane (pominięte) nie są wliczane do unikalnego progresu.
+   * 
+   * @param int $userId
+   * @param int $examTypeId
+   * @return int Liczba "odkrytych" pytań.
    */
   public function countAnsweredQuestionsForExam(int $userId, int $examTypeId): int
   {

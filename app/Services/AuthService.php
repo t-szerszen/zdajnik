@@ -2,141 +2,132 @@
 
 namespace App\Services;
 
+use App\Core\Database;
 use App\Models\UserModel;
 use App\Models\User;
 use App\Services\Validator;
 
 /**
- * Kontroler Uwierzytelniania (Serwis Autoryzacji).
+ * Serwis Uwierzytelniania (AuthService).
  *
- * Klasa-serwis, która orkiestruje procesy rejestracji i logowania użytkowników.
- * Nie jest to typowy kontroler MVC odbierający żądania HTTP, lecz centralna
- * usługa wykorzystywana przez inne kontrolery (np. LoginController). Odpowiada za
- * walidację danych, komunikację z modelem użytkownika oraz zarządzanie sesją.
+ * Centralna usługa orkiestrująca wysokopoziomowe procesy bezpieczeństwa:
+ * - Rejestracja kont lokalnych z automatyczną inicjalizacją procesu weryfikacji.
+ * - Logowanie tradycyjne (Email/Password) z obsługą Soft Delete i reaktywacji.
+ * - Zarządzanie stanem sesji użytkownika i kontrola statusu weryfikacji e-mail.
  *
- * @version 1.2.0
+ * Klasa łączy logikę walidacji (Validator) z operacjami bazodanowymi (UserModel), 
+ * izolując kontrolery od detali implementacyjnych procesu auth.
+ *
+ * @version 1.3.0
  * @author Tobiasz Szerszeń
+ * @package App\Services
  */
 class AuthService
 {
-  /**
-   * Instancja modelu użytkownika, zapewniająca dostęp do bazy danych.
-   * @var UserModel
-   */
+  /** @var Database Instancja połączenia z bazą dancyh */
+  private Database $db;
+
+  /** @var UserModel Model operacji na danych użytkowników */
   private UserModel $userModel;
 
-  /**
-   * Obiekt aktualnie zalogowanego użytkownika.
-   * Przechowuje dane użytkownika po pomyślnym zalogowaniu.
-   * @var User|null
-   */
-  private ?User $loggedUser;
+  /** @var Validator Serwis walidujący reguły biznesowe danych wejściowych */
+  private Validator $validator;
 
-  private ?Validator $validator;
+  /** @var User|null Obiekt aktualnie uwierzytelnionego użytkownika w ramach sesji */
+  private ?User $loggedUser = null;
 
   /**
-   * Konstruktor serwisu autoryzacji.
-   * Inicjalizuje instancję modelu UserModel, która jest niezbędna do
-   * wszystkich operacji na danych użytkowników.
+   * Inicjalizuje serwis autoryzacji i wymagane komponenty.
    */
   public function __construct()
   {
+    $this->db = Database::getInstance();
     $this->userModel = new UserModel();
     $this->validator = new Validator();
   }
 
   /**
-   * Orkiestruje proces rejestracji nowego użytkownika.
+   * Zarządza kompletnym procesem rejestracji nowego użytkownika.
    *
-   * Logika działania:
-   * 1. Waliduje dane wejściowe z formularza za pomocą metody `validateRegistrationData`.
-   * 2. Jeśli walidacja nie powiedzie się, natychmiast zwraca tablicę z błędami.
-   * 3. Jeśli dane są poprawne, zleca modelowi `UserModel` rejestrację użytkownika w bazie danych.
-   * 4. W przypadku sukcesu, zapisuje ID nowego użytkownika w sesji na potrzeby
-   *    późniejszego procesu weryfikacji e-mail.
-   * 5. Zwraca tablicę z wynikiem operacji.
+   * Metoda wykonuje następujące kroki:
+   * 1. Detekcja błędów w danych formularza (Validator).
+   * 2. Formatowanie danych (trim, sanitization) przed zapisem.
+   * 3. Próba utworzenia rekordu w bazie danych (UserModel).
+   * 4. Inicjalizacja sesji weryfikacyjnej (verify_user_id) dla procesu Double Opt-In.
    *
-   * @param array<string, string> $formData Dane z formularza rejestracji.
-   * 
-   * @return array<string, mixed> Wynik operacji w formacie: `['success' => bool, 'errors' => array]`.
+   * @param array<string, string> $formData Surowe dane z formularza rejestracji.
+   * @return array<string, mixed> Wynik operacji [success => bool, errors => array].
    */
   public function register(array $formData): array
   {
-    // Krok 1: Walidacja danych wejściowych.
+    // KROK 1: Walidacja reguł biznesowych (np. unikalność e-mail, siła hasła)
     $errors = $this->validator->validateRegistrationData($formData);
 
-    // Krok 2: Jeśli wystąpiły błędy, zwróć je natychmiast.
     if (!empty($errors)) {
       return ['success' => false, 'errors' => $errors];
     }
 
-    // Krok 3: Przygotowanie danych i rejestracja użytkownika przez model.
+    // KROK 2: Przygotowanie paczki danych do zapisu
     $userData = [
       'first_name' => trim($formData['first_name']),
       'last_name' => trim($formData['last_name']),
       'email' => trim($formData['email']),
       'password' => $formData['password'],
     ];
+
+    // KROK 3: Fizyczna rejestracja w bazie
     $success = $this->userModel->register($userData);
 
-    // Krok 4: Obsługa wyniku operacji na bazie danych.
+    // KROK 4: Finalizacja etapu rejestracji i przygotowanie do weryfikacji e-mail
     if ($success) {
-      // Zapisz ID nowego użytkownika do sesji. Jest to kluczowe dla procesu
-      // weryfikacji e-mail, który nastąpi w kolejnym kroku.
-      $_SESSION['verify_user_id'] = $this->userModel->getLastInsertId();
+      // Zapamiętujemy ID użytkownika w sesji, aby umożliwić wysyłkę e-maila aktywacyjnego
+      $_SESSION['verify_user_id'] = $this->db->lastInsertId();
       return ['success' => true, 'errors' => []];
     }
 
-    // Krok 5: Obsługa błędu po stronie serwera/modelu.
-    return ['success' => false, 'errors' => ['Rejestracja nie powiodła się z powodu błędu serwera.']];
+    return ['success' => false, 'errors' => ['Wystąpił nieoczekiwany błąd serwera podczas rejestracji.']];
   }
 
   /**
-   * Orkiestruje proces logowania użytkownika.
+   * Zarządza procesem logowania użytkownika lokalnego.
    *
-   * Logika działania:
-   * 1. Sprawdza, czy e-mail i hasło zostały podane.
-   * 2. Zleca modelowi `UserModel` próbę zalogowania na podstawie przekazanych danych.
-   * 3. Jeśli logowanie się powiedzie, model zwraca obiekt `User`.
-   * 4. Sprawdza, czy konto użytkownika zostało zweryfikowane e-mailowo.
-   * 5. Jeśli nie, zwraca specjalny status błędu `not_verified` i zapisuje ID
-   *    użytkownika w sesji, aby umożliwić ponowne wysłanie linku weryfikacyjnego.
-   * 6. Jeśli konto jest zweryfikowane, zapisuje obiekt użytkownika w sesji.
-   * 7. W przypadku niepowodzenia logowania, zwraca ogólny błąd.
+   * Metoda wykonuje następujące kroki:
+   * 1. Wstępna weryfikacja obecności wymaganych pól.
+   * 2. Próba uwierzytelnienia (UserModel) - obsługa zahashowanych haseł i reaktywacji kont.
+   * 3. Sprawdzenie statusu weryfikacji e-mail.
+   * 4. Inicjalizacja sesji uwierzytelnionej ($_SESSION['user']).
    *
-   * @param array<string, string> $formData Dane z formularza logowania ('email', 'password').
-   * 
-   * @return array<string, mixed> Wynik operacji. Może zawierać klucze `success`, `errors` lub `error_type`.
+   * @param array<string, string> $formData Dane logowania (email, password).
+   * @return array<string, mixed> Wynik z opcjonalnym error_type dla specyficznych błędów.
    */
   public function login(array $formData): array
   {
-    // Krok 1: Podstawowa walidacja istnienia danych.
+    // KROK 1: Walidacja wstępna (obecność pól)
     $email = $formData['email'] ?? '';
     $password = $formData['password'] ?? '';
+
     if (empty($email) || empty($password)) {
-      return ['success' => false, 'errors' => ['Pola e-mail i hasło są wymagane.']];
+      return ['success' => false, 'errors' => ['Podaj adres e-mail oraz hasło.']];
     }
 
-    // Krok 2: Próba zalogowania przez model. Model zwraca obiekt User lub null.
+    // KROK 2: Proces uwierzytelnienia w bazie danych
     $user = $this->userModel->login($formData);
 
-    // Krok 3: Obsługa różnych scenariuszy po próbie logowania.
     if ($user instanceof User) {
-      // Scenariusz A: Użytkownik istnieje, ale jego konto nie jest zweryfikowane.
+      // KROK 3: Kontrola bezpieczeństwa - weryfikacja Double Opt-In
       if (!$user->isVerified()) {
-        // Zapisz ID do sesji, aby umożliwić ponowne wysłanie e-maila weryfikacyjnego.
+        // Blokada dostępu do czasu potwierdzenia adresu e-mail
         $_SESSION['verify_user_id'] = $user->getId();
-        // Zwróć specjalny typ błędu, który frontend może zinterpretować i wyświetlić odpowiedni komunikat.
         return ['success' => false, 'error_type' => 'not_verified'];
       }
 
-      // Scenariusz B: Sukces! Użytkownik poprawnie zalogowany i zweryfikowany.
+      // KROK 4: Ustanowienie sesji zalogowanej
       $this->loggedUser = $user;
       $_SESSION['user'] = $this->loggedUser;
       return ['success' => true];
     }
 
-    // Scenariusz C: Niepowodzenie. Model zwrócił null, co oznacza błędne dane.
-    return ['success' => false, 'errors' => ['Niepoprawny e-mail lub hasło.']];
+    // KROK 5: Fallback dla błędnych poświadczeń
+    return ['success' => false, 'errors' => ['Nieprawidłowy adres e-mail lub hasło.']];
   }
 }

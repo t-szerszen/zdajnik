@@ -4,29 +4,57 @@ namespace App\Controllers;
 
 use App\Services\StatisticsService;
 
+/**
+ * Kontroler Historii Użytkownika.
+ *
+ * Klasa odpowiada za wyświetlanie szczegółowych zestawień historycznych dla zalogowanego użytkownika.
+ * Obsługuje listowanie błędów krytycznych, ogólnej historii błędów, zapisanych pytań
+ * oraz archiwalnych podejść do egzaminów.
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ * @package App\Controllers
+ */
 class HistoryController extends BaseController
 {
+  /** @var StatisticsService Serwis do pobierania zestawień historycznych i statystyk */
   private StatisticsService $statsService;
 
+  /**
+   * Inicjalizuje kontroler historii.
+   *
+   * @return void
+   */
   public function __construct()
   {
     parent::__construct();
-    // Inicjalizacja serwisu bez limitu (limit = null obsługiwany jest w serwisie jako brak limitu)
+    // Serwis statystyk inicjalizowany do pobierania pełnych zestawień danych
     $this->statsService = new StatisticsService();
   }
 
   /**
-   * Wyświetla pełną historię dla danego typu.
+   * Wyświetla pełną historię dla wybranego typu (egzaminy, błędy, zapisane).
+   *
+   * Metoda wykonuje następujące kroki:
+   * 1. Autoryzacja dostępu do prywatnych danych historii.
+   * 2. Wyznaczenie kontekstu egzaminu (identyfikacja wybranej kategorii).
+   * 3. Określenie typu danych historycznych (exams, critical, errors, saved).
+   * 4. Agregacja odpowiednich rekordów z bazy danych przez serwis statystyk.
+   * 5. Renderowanie kompletnego widoku historii.
+   *
+   * @return void
    */
   public function showHistory(): void
   {
+    // KROK 1: Weryfikacja tożsamości użytkownika
     $this->requireAuth();
+    $userId = $this->currentUser->getId();
 
+    // KROK 2: Ustalenie kontekstu kategorii (egzaminu)
     $examTypes = $this->statsService->getExamTypes();
-    // Pobranie aktualnie wybranej kategorii (domyślnie pierwsza) - dla kontekstu danych
     $selectedExamTypeId = (int)($_GET['category'] ?? $examTypes[0]['id'] ?? 0);
     
-    // Znajdź kod kategorii na podstawie ID
+    // Mapowanie ID kategorii na czytelny kod (INF.0X)
     $selectedCategoryCode = '';
     foreach ($examTypes as $type) {
         if ((int)$type['id'] === $selectedExamTypeId) {
@@ -34,18 +62,18 @@ class HistoryController extends BaseController
             break;
         }
     }
-    $userId = $this->currentUser->getId();
     
-    $type = $_GET['type'] ?? 'exams'; // Domyślnie egzaminy
+    // KROK 3: Identyfikacja typu żądanej historii
+    $type = $_GET['type'] ?? 'exams'; 
     
     $viewData = [
       'type' => $type,
       'selectedCategoryId' => $selectedExamTypeId,
       'selectedCategoryCode' => $selectedCategoryCode,
-      'categories' => $examTypes, // w razie potrzeby zmiany kategorii w historii
+      'categories' => $examTypes,
     ];
 
-    // Pobieranie danych w zależności od typu
+    // KROK 4: Pobieranie danych w zależności od wybranego profilu historii
     switch ($type) {
       case 'critical':
         $viewData['title'] = ' Krytycznych błędów';
@@ -77,6 +105,7 @@ class HistoryController extends BaseController
         break;
     }
 
+    // KROK 5: Renderowanie końcowego widoku
     $this->renderView('history', $viewData);
   }
 }

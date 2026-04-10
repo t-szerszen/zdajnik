@@ -5,34 +5,38 @@ namespace App\Controllers;
 use App\Models\User;
 
 /**
- * Kontroler Bazowy.
+ * Podstawowy Kontroler Aplikacji (BaseController).
  *
- * Klasa nadrzędna dla wszystkich innych kontrolerów w aplikacji.
- * Odpowiada za logikę, która musi być wykonana przy każdym żądaniu,
- * np. startowanie sesji, sprawdzanie statusu logowania i renderowanie widoków.
+ * Klasa nadrzędna dla wszystkich kontrolerów w systemie. Implementuje mechanizmy
+ * współdzielone przez całą aplikację, takie jak:
+ * - Automatyczna detekcja statusu sesji i uwierzytelnienia użytkownika.
+ * - Standaryzowane renderowanie widoków z wstrzykiwaniem danych globalnych.
+ * - Strażnicy dostępu (Middleware-like helpers) dla gości i zalogowanych użytkowników.
  *
- * @version 1.0.0
+ * Wszystkie kontrolery funkcjonalne POWINNY dziedziczyć po tej klasie.
+ *
+ * @version 1.1.0
  * @author Tobiasz Szerszeń
+ * @package App\Controllers
  */
 class BaseController
 {
-  /**
-   * @var bool Status zalogowania użytkownika.
-   */
+  /** @var bool Flaga określająca, czy żądanie pochodzi od zalogowanego użytkownika */
   protected bool $isUserLoggedIn = false;
 
-  /**
-   * @var User|null Obiekt zalogowanego użytkownika lub null.
-   */
+  /** @var User|null Obiekt-encja zalogowanego użytkownika lub null dla gości */
   protected ?User $currentUser = null;
 
   /**
-   * Konstruktor uruchamiany przy każdym żądaniu do dowolnego kontrolera,
-   * który po nim dziedziczy.
+   * Konstruktor bazowy - uruchamiany przy każdym żądaniu do aplikacji.
+   * 
+   * Automatycznie sprawdza stan sesji PHP i inicjalizuje właściwości 
+   * uwierzytelnienia, które są następnie dostępne we wszystkich 
+   * kontrolerach pochodnych.
    */
   public function __construct()
   {
-    // Sprawdź status logowania i ustaw właściwości
+    // Inicjalizacja stanu użytkownika na podstawie danych z superglobalnej sesji
     if (isset($_SESSION['user']) && $_SESSION['user'] instanceof User) {
       $this->isUserLoggedIn = true;
       $this->currentUser = $_SESSION['user'];
@@ -40,31 +44,36 @@ class BaseController
   }
 
   /**
-   * Renderuje widok, przekazując do niego dane.
+   * Renderuje wskazany widok i dostarcza do niego dane.
    *
-   * @param string $viewName Nazwa pliku widoku (bez .php).
-   * @param array<string, mixed> $data Tablica danych do przekazania do widoku.
-   * 
+   * Automatycznie udostępnia w każdym widoku zmienne globalne:
+   * - $isUserLoggedIn: bool
+   * - $currentUser: User|null
+   *
+   * @param string $viewName Relatywna ścieżka do pliku widoku w folderze views/ (bez .php).
+   * @param array<string, mixed> $data Asocjacyjna tablica danych do wypakowania w widoku.
    * @return void
    */
   protected function renderView(string $viewName, array $data = []): void
   {
-    // Udostępnij dane z kontrolera bazowego każdemu widokowi
+    // KROK 1: Udostępnienie zmiennych globalnych kontekstu aplikacji
     $isUserLoggedIn = $this->isUserLoggedIn;
     $currentUser = $this->currentUser;
 
-    // Zamień klucze tablicy na zmienne (np. $data['errors'] -> $errors)
+    // KROK 2: Eksportowanie danych lokalnych do zmiennych symbolicznych
     extract($data);
 
-    // Dołącz plik widoku
+    // KROK 3: Dołączenie fizycznego pliku szablonu
     include __DIR__ . "/../../views/{$viewName}.php";
   }
 
   /**
-   * Wymusza, aby użytkownik NIE był zalogowany (był gościem).
-   * Jeśli jest zalogowany, przekierowuje go na stronę główną.
+   * Strażnik Gościa: Wymusza, aby użytkownik NIE był zalogowany.
    * 
-   * @return void
+   * Używane na stronach takich jak logowanie czy rejestracja, aby 
+   * zalogowani użytkownicy nie mieli do nich dostępu.
+   * 
+   * @return void Wykonuje przekierowanie i przerywa skrypt, jeśli warunek nie jest spełniony.
    */
   protected function requireGuest(): void
   {
@@ -75,10 +84,11 @@ class BaseController
   }
 
   /**
-   * Wymusza, aby użytkownik był zalogowany.
-   * Jeśli nie jest, przekierowuje go na stronę logowania.
+   * Strażnik Autoryzacji: Wymusza, aby użytkownik BYŁ zalogowany.
    * 
-   * @return void
+   * Używane na stronach chronionych (np. profil, statystyki, testy).
+   * 
+   * @return void Wykonuje przekierowanie do logowania, jeśli użytkownik jest gościem.
    */
   protected function requireAuth(): void
   {

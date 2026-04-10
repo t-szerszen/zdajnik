@@ -2,18 +2,52 @@
 
 namespace App\Models;
 
+/**
+ * Encja Użytkownika (Data Object).
+ *
+ * Klasa reprezentuje pojedynczy rekord użytkownika pobrany z bazy danych.
+ * Służy jako niemutowalny (w ramach sesji) obiekt transferu danych (DTO), 
+ * przechowujący kluczowe parametry profilu, uprawnienia oraz statusy 
+ * uwierzytelnienia (lokalnego lub Google).
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ * @package App\Models
+ */
 class User
 {
+  /** @var int Unikalny identyfikator użytkownika w systemie */
   private int $id;
+
+  /** @var string|null Zewnętrzny identyfikator konta Google (jeśli połączone) */
   private ?string $googleId;
+
+  /** @var string Dostawca tożsamości: 'local' lub 'google' */
   private string $authProvider;
+
+  /** @var string Imię użytkownika */
   private string $firstName;
+
+  /** @var string|null Nazwisko użytkownika */
   private ?string $lastName;
+
+  /** @var string Podstawowy adres e-mail (używany do logowania) */
   private string $email;
+
+  /** @var bool Flaga określająca, czy adres e-mail przeszedł weryfikację */
   private bool $isVerified;
+
+  /** @var bool Status konta (np. false dla kont zablokowanych) */
   private bool $isActive;
+
+  /** @var string Rola w systemie (np. 'user', 'admin') */
   private string $role;
 
+  /**
+   * Tworzy nowy obiekt użytkownika na podstawie surowych danych z bazy.
+   *
+   * @param array $data Asocjacyjna tablica rekordów SQL.
+   */
   public function __construct(array $data)
   {
     $this->id = (int) $data['id'];
@@ -27,42 +61,67 @@ class User
     $this->role = $data['role'];
   }
 
+  // --- GETTERY ---
+
+  /** @return int */
   public function getId(): int
   {
     return $this->id;
   }
+
+  /** @return string|null */
   public function getGoogleId(): ?string
   {
     return $this->googleId;
   }
+
+  /** @return string */
   public function getAuthProvider(): string
   {
     return $this->authProvider;
   }
+
+  /** @return string */
   public function getFirstName(): string
   {
     return $this->firstName;
   }
+
+  /** @return string|null */
   public function getLastName(): string
   {
     return $this->lastName;
   }
+
+  /**
+   * Zwraca sformatowane imię i nazwisko użytkownika.
+   * 
+   * @return string
+   */
   public function getFullName(): string
   {
     return "{$this->firstName} {$this->lastName}";
   }
+
+  /** @return string */
   public function getEmail(): string
   {
     return $this->email;
   }
+
+  /** @return string */
   public function getRole(): string
   {
     return $this->role;
   }
+
+  /** @return bool */
   public function isVerified(): bool
   {
     return $this->isVerified;
   }
+
+  /** @return bool */
   public function isActive(): bool
   {
     return $this->isActive;

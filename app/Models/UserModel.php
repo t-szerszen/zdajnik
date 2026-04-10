@@ -7,44 +7,79 @@ use App\Models\User;
 use Exception;
 
 /**
- * Model Użytkownika (User).
+ * Model Użytkownika (UserModel).
  *
- * Klasa ta stanowi jedyny, bezpieczny punkt dostępu do danych w tabeli `users`.
- * Hermetyzuje całą logikę operacji na użytkownikach, od rejestracji i logowania
- * po weryfikację i pobieranie danych. Zwraca obiekty-encje typu `User`,
- * a nie surowe tablice danych, co podnosi jakość i spójność kodu.
+ * Klasa stanowi centralny punkt dostępu do danych w tabeli `users`. Hermetyzuje 
+ * całą logikę biznesową związaną z cyklem życia konta użytkownika:
+ * - Autentykacja (logowanie lokalne i przez Google OAuth).
+ * - Zarządzanie tożsamością (rejestracja, weryfikacja e-mail, reset hasła).
+ * - Aktualizacja profilu (zmiana imienia, nazwiska, adresu e-mail).
+ * - Zaawansowane mechanizmy prywatności: Soft Delete z 30-dniową karencją 
+ *   oraz automatyczna anonimizacja danych po okresie wygaszenia.
  *
- * @version 1.1.0
+ * Zwraca obiekty-encje typu `User`, zapewniając silne typowanie w warstwie kontrolerów.
+ *
+ * @version 1.2.0
  * @author Tobiasz Szerszeń
+ * @package App\Models
  */
 class UserModel
 {
-  /**
-   * Instancja centralnego obiektu do obsługi bazy danych (Singleton).
-   * @var Database
-   */
+  /** @var Database Instancja połączenia z bazą danych */
   private Database $db;
 
   /**
-   * Konstruktor modelu User.
-   *
-   * Pobiera instancję połączenia z bazą danych, która będzie używana
-   * we wszystkich metodach tego modelu.
+   * Inicjalizuje model użytkownika.
    */
   public function __construct()
   {
     $this->db = Database::getInstance();
   }
 
+  // --- METODY DOSTĘPU (READ) ---
+
   /**
-   * Sprawdza, czy w bazie danych istnieje użytkownik o podanym adresie e-mail.
-   *
-   * Używane głównie w procesie walidacji formularza rejestracyjnego, aby
-   * zapobiec tworzeniu zduplikowanych kont.
-   *
+   * Zwraca bazowe zapytanie SQL uwzględniające tylko aktywne (nieusunięte) konta.
+   * 
+   * @return string
+   */
+  private function getActiveUserSql(): string
+  {
+    return "SELECT * FROM users WHERE deleted_at IS NULL AND is_active = 1";
+  }
+
+  /**
+   * Pobiera użytkownika po jego unikalnym identyfikatorze ID.
+   * 
+   * @param int $id ID użytkownika.
+   * @return User|null Instancja User lub null w razie braku aktywnego rekordu.
+   */
+  public function getUserById(int $id): ?User
+  {
+    $sql = $this->getActiveUserSql() . " AND id = ?";
+    $data = $this->db->fetch($sql, [$id]);
+    return $data ? new User($data) : null;
+  }
+
+  /**
+   * Pobiera użytkownika na podstawie adresu e-mail.
+   * 
+   * @param string $email Adres e-mail.
+   * @return User|null
+   */
+  public function getUserByEmail(string $email): ?User
+  {
+    $sql = 'SELECT id, google_id, first_name, last_name, email, is_verified, role FROM users WHERE email = ?';
+    $user_data = $this->db->fetch($sql, [$email]);
+
+    return $user_data ? new User($user_data) : null;
+  }
+
+  /**
+   * Sprawdza, czy w systemie rezerwacji figuruje już dany adres e-mail.
+   * 
    * @param string $email Adres e-mail do sprawdzenia.
-   *
-   * @return bool `true`, jeśli e-mail istnieje w bazie, w przeciwnym razie `false`.
+   * @return bool True jeśli e-mail zajęty.
    */
   public function checkEmail(string $email): bool
   {
@@ -52,56 +87,97 @@ class UserModel
     return $this->db->fetch($sql, [$email]) !== false;
   }
 
-  /**
-   * Zmienia status weryfikacji użytkownika na "zweryfikowany" (`is_verified = 1`).
-   *
-   * @param int $userId ID użytkownika do zweryfikowania.
-   *
-   * @return bool `true` w przypadku sukcesu, `false` w przypadku błędu.
-   */
-  public function verifyUser(int $userId): bool
-  {
-    $sql = 'UPDATE users SET is_verified = 1 WHERE id = ?';
-    return $this->db->execute($sql, [$userId]);
-  }
+  // --- AUTENTYKACJA (AUTH) ---
 
   /**
-   * Bazowe zapytanie uwzględniające Soft Delete.
+   * Przetwarza próbę logowania lokalnego (login + hasło).
+   *
+   * Metoda wykonuje następujące kroki:
+   * 1. Wyszukanie rekordu użytkownika po adresie e-mail (pomijając Soft Delete).
+   * 2. Wykonanie bezpiecznej weryfikacji hasła (password_verify).
+   * 3. Obsługa reaktywacji konta, jeśli użytkownik zalogował się w okresie karencji (Soft Delete).
+   * 4. Zwrócenie zainicjalizowanego obiektu User.
+   *
+   * @param array $data Dane logowania (email, password).
+   * @return User|null Obiekt użytkownika przy sukcesie, null przy błędnych poświadczeniach.
    */
-  private function getActiveUserSql(): string
-  {
-    return "SELECT * FROM users WHERE deleted_at IS NULL AND is_active = 1";
-  }
-
   public function login(array $data): ?User
   {
-    // Zmiana: Szukamy po emailu, ignorantując flagę deleted_at/is_active na tym etapie
-    // Pozwoli to na wykrycie użytkownika w okresie karencji
-
-    // Oryginalnie: $sql = $this->getActiveUserSql() . " AND email = ? AND auth_provider = 'local'";
-    // Nowe podejście:
+    // KROK 1: Lokalizacja rekordu (szukamy również wśród kont oznaczonych do usunięcia)
     $sql = "SELECT * FROM users WHERE email = ? AND auth_provider = 'local'";
     $user_data = $this->db->fetch($sql, [$data['email']]);
 
+    // KROK 2: Weryfikacja poświadczeń
     if ($user_data && password_verify($data['password'], $user_data['password_hash'])) {
-      // Sprawdź czy użytkownik jest soft-deleted (karencja)
+      
+      // KROK 3: Automatyczna reaktywacja (Anulowanie Soft Delete)
       if ((int) $user_data['is_active'] === 0 && !empty($user_data['deleted_at'])) {
-        // Reaktywuj konto
         $this->reactivateUser($user_data['id']);
-        // Odśwież dane (np. is_active=1)
         $user_data['is_active'] = 1;
         $user_data['deleted_at'] = null;
       }
 
-      // Jeśli użytkownik jest nieaktywny z innego powodu (np. ban), 
-      // można by tu dodać warunek, ale w tym zadaniu skupiamy się na soft delete.
-
       unset($user_data['password_hash']);
       return new User($user_data);
+    }
+
+    return null;
+  }
+
+  /**
+   * Obsługuje logowanie/rejestrację przez Google OAuth.
+   *
+   * Metoda "Find or Create":
+   * 1. Próba znalezienia użytkownika po ID Google lub adresie e-mail.
+   * 2. Reaktywacja konta w razie potrzeby.
+   * 3. Automatyczne powiązanie (Linking) konta lokalnego z Google, jeśli e-mail się zgadza.
+   * 4. Utworzenie nowego konta w przypadku pierwszego logowania.
+   *
+   * @param string $googleId Unikalne ID dostarczone przez Google.
+   * @param string $email Adres e-mail z Google.
+   * @param string $firstName Imię.
+   * @param string|null $lastName Nazwisko.
+   * @return User|null
+   */
+  public function findOrCreateGoogleUser(string $googleId, string $email, string $firstName, ?string $lastName): ?User
+  {
+    // KROK 1: Sprawdzenie istnienia użytkownika
+    $sql = "SELECT * FROM users WHERE (google_id = ? OR email = ?) LIMIT 1";
+    $userData = $this->db->fetch($sql, [$googleId, $email]);
+
+    if ($userData) {
+      // KROK 2: Obsługa reaktywacji
+      if ((int) $userData['is_active'] === 0 && !empty($userData['deleted_at'])) {
+        $this->reactivateUser($userData['id']);
+        $userData['is_active'] = 1;
+        $userData['deleted_at'] = null;
+      }
+
+      $user = new User($userData);
+      
+      // KROK 3: Powiązanie konta (jeśli wcześniej logował się tylko lokalnie)
+      if (!$user->getGoogleId()) {
+        $this->db->execute("UPDATE users SET google_id = ?, auth_provider = 'google', is_verified = 1 WHERE id = ?", [$googleId, $user->getId()]);
+        return $this->getUserById($user->getId());
+      }
+      return $user;
+    }
+
+    // KROK 4: Tworzenie nowego konta (Auto-registration)
+    if ($this->registerWithGoogleId($googleId, $email, $firstName, $lastName)) {
+      return $this->getUserById($this->db->lastInsertId());
     }
     return null;
   }
 
+  // --- ZAPIS (WRITE) ---
+
+  /**
+   * Rejestruje nowego użytkownika lokalnego w bazie danych.
+   * 
+   * @param array $data Dane rejestracyjne (first_name, last_name, email, password).
+   * @return bool
+   */
   public function register(array $data): bool
   {
     $sql = "INSERT INTO users (auth_provider, first_name, last_name, email, password_hash)
@@ -115,36 +191,15 @@ class UserModel
     ]);
   }
 
-  // Fragment UserModel.php
-  public function findOrCreateGoogleUser(string $googleId, string $email, string $firstName, ?string $lastName): ?User
-  {
-    // Szukamy po googleId lub emailu. NIE używamy getActiveUserSql(), aby obsłużyć reaktywację.
-    $sql = "SELECT * FROM users WHERE (google_id = ? OR email = ?) LIMIT 1";
-    $userData = $this->db->fetch($sql, [$googleId, $email]);
-
-    if ($userData) {
-      // Sprawdź czy konto wymaga reaktywacji
-      if ((int) $userData['is_active'] === 0 && !empty($userData['deleted_at'])) {
-        $this->reactivateUser($userData['id']);
-        $userData['is_active'] = 1;
-        $userData['deleted_at'] = null;
-      }
-
-      $user = new User($userData);
-      // Jeśli znaleziony po emailu, a nie miał google_id - aktualizujemy
-      if (!$user->getGoogleId()) {
-        $this->db->execute("UPDATE users SET google_id = ?, auth_provider = 'google', is_verified = 1 WHERE id = ?", [$googleId, $user->getId()]);
-        return $this->getUserById($user->getId());
-      }
-      return $user;
-    }
-
-    if ($this->registerWithGoogleId($googleId, $email, $firstName, $lastName)) {
-      return $this->getUserById($this->db->lastInsertId());
-    }
-    return null;
-  }
-
+  /**
+   * Tworzy konto użytkownika na podstawie danych z Google.
+   * 
+   * @param string $googleId
+   * @param string $firstName
+   * @param string|null $lastName
+   * @param string $email
+   * @return bool
+   */
   public function registerWithGoogleId(string $googleId, string $email, string $firstName, ?string $lastName): bool
   {
     $sql = "INSERT INTO users (google_id, auth_provider, first_name, last_name, email, is_verified) 
@@ -153,67 +208,11 @@ class UserModel
   }
 
   /**
-   * Zwraca ID ostatnio wstawionego wiersza do tabeli `users`.
-   *
-   * Metoda-proxy, wywoływana bezpośrednio po `register()` w celu uzyskania
-   * ID nowego użytkownika na potrzeby procesu weryfikacji e-mail.
-   *
-   * @return int|null ID użytkownika lub `null` w przypadku błędu.
-   */
-  public function getLastInsertId(): ?int
-  {
-    return $this->db->lastInsertId();
-  }
-
-  public function getUserById(int $id): ?User
-  {
-    $sql = $this->getActiveUserSql() . " AND id = ?";
-    $data = $this->db->fetch($sql, [$id]);
-    return $data ? new User($data) : null;
-  }
-
-  /**
-   * Pobiera obiekt użytkownika na podstawie jego adresu e-mail.
-   *
-   * @param string $email Adres e-mail użytkownika.
-   *
-   * @return User|null Obiekt User lub null, jeśli nie znaleziono.
-   */
-  public function getUserByEmail(string $email): ?User
-  {
-    $sql = 'SELECT id, google_id, first_name, last_name, email, is_verified, role FROM users WHERE email = ?';
-    $user_data = $this->db->fetch($sql, [$email]);
-
-    return $user_data ? new User($user_data) : null;
-  }
-
-  /**
-   * Sprawdza, czy podane hasło jest zgodne z hasłem użytkownika w bazie.
-   *
-   * @param int    $userId   ID użytkownika do sprawdzenia.
-   * @param string $password Hasło do weryfikacji.
-   *
-   * @return bool `true`, jeśli hasło jest poprawne, w przeciwnym razie `false`.
-   */
-  public function checkPassword(int $userId, string $password): bool
-  {
-    $sql = 'SELECT password_hash FROM users WHERE id = ?';
-    $user_data = $this->db->fetch($sql, [$userId]);
-
-    if ($user_data && password_verify($password, $user_data['password_hash'])) {
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Aktualizuje hasło użytkownika w bazie danych.
-   *
-   * @param int    $userId      ID użytkownika, któremu zmieniamy hasło.
-   * @param string $newPassword Nowe, niezaszyfrowane hasło.
-   *
-   * @return bool `true` w przypadku sukcesu, `false` w przypadku błędu.
+   * Aktualizuje poświadczenia hasła użytkownika.
+   * 
+   * @param int $userId
+   * @param string $newPassword Surowe hasło (zostanie zahashowane).
+   * @return bool
    */
   public function updatePassword(int $userId, string $newPassword): bool
   {
@@ -224,19 +223,27 @@ class UserModel
   }
 
   /**
-   * Aktualizuje imię i nazwisko użytkownika.
-   *
-   * @param int    $userId      ID użytkownika.
-   * @param string $firstName   Nowe imię.
-   * @param string $lastName    Nowe nazwisko.
-   *
-   * @return bool `true` w przypadku sukcesu.
+   * Zmienia flagę weryfikacji konta na aktywną (is_verified = 1).
+   * 
+   * @param int $userId
+   * @return bool
+   */
+  public function verifyUser(int $userId): bool
+  {
+    $sql = 'UPDATE users SET is_verified = 1 WHERE id = ?';
+    return $this->db->execute($sql, [$userId]);
+  }
+
+  /**
+   * Aktualizuje imię i nazwisko profilu użytkownika.
+   * 
+   * @return bool Status operacji. W przypadku sukcesu aktualizuje również obiekt sesji.
    */
   public function updateName(int $userId, string $firstName, string $lastName): bool
   {
     $sql = 'UPDATE users SET first_name = ?, last_name = ? WHERE id = ?';
     if ($this->db->execute($sql, [$firstName, $lastName, $userId])) {
-      // Po udanej aktualizacji w bazie, zaktualizuj obiekt użytkownika w sesji
+      // Synchronizacja aktualnego obiektu sesji z nowymi danymi w bazie
       $_SESSION['user'] = $this->getUserById($userId);
       return true;
     }
@@ -244,45 +251,58 @@ class UserModel
   }
 
   /**
-   * Aktualizuje adres e-mail użytkownika i od razu ustawia konto jako zweryfikowane.
-   * Używane po pomyślnym kliknięciu w link potwierdzający zmianę e-maila.
-   *
-   * @param int    $userId   ID użytkownika.
-   * @param string $newEmail Nowy, zweryfikowany adres e-mail.
-   *
-   * @return bool `true` w przypadku sukcesu.
+   * Zmienia adres e-mail i wymusza ponowną (bądź natychmiastową) weryfikację.
+   * 
+   * @param int $userId
+   * @param string $newEmail Nowy adres e-mail.
+   * @return bool
    */
   public function updateAndVerifyEmail(int $userId, string $newEmail): bool
   {
-    // Ustawiamy is_verified na 1, ponieważ nowy e-mail został właśnie zweryfikowany
     $sql = 'UPDATE users SET email = ?, is_verified = 1 WHERE id = ?';
     return $this->db->execute($sql, [$newEmail, $userId]);
   }
 
   /**
-   * Implementacja Soft Delete.
+   * Sprawdza poprawność hasła dla konkretnego ID użytkownika.
+   * 
+   * @param int $userId
+   * @param string $password Hasło do sprawdzenia.
+   * @return bool
    */
+  public function checkPassword(int $userId, string $password): bool
+  {
+    $sql = 'SELECT password_hash FROM users WHERE id = ?';
+    $user_data = $this->db->fetch($sql, [$userId]);
+
+    return $user_data && password_verify($password, $user_data['password_hash']);
+  }
+
+  // --- ZARZĄDZANIE KONTEM I PRYWATNOŚĆ (PRIVACY) ---
+
   /**
-   * Zgłasza żądanie usunięcia konta (Soft Delete) z 30-dniowym okresem karencji.
-   * Przed wykonaniem operacji uruchamia "Smart Cleanup" - anonimizację starych kont.
+   * Zgłasza żądanie usunięcia konta (Soft Delete).
    *
-   * @param int $userId ID użytkownika.
+   * Ustawia flagę `is_active = 0` i zapisuje czas żądania w `deleted_at`. 
+   * Uruchamia również automatyczny proces anonimizacji dla rekordów starszych niż 30 dni.
+   *
+   * @param int $userId ID użytkownika żądającego usunięcia.
    * @return bool
    */
   public function requestDeletion(int $userId): bool
   {
-    // 1. Smart Cleanup: Anonimizuj konta starsze niż 30 dni
+    // KROK: Smart Cleanup - anonimizacja rekordów, którym upłynął termin karencji
     $this->anonymizeOldUsers();
 
-    // 2. Soft Delete aktualnego użytkownika
+    // KROK: Oznaczenie bieżącego konta jako nieaktywne (Soft Delete)
     $sql = "UPDATE users SET is_active = 0, deleted_at = NOW() WHERE id = ?";
     return $this->db->execute($sql, [$userId]);
   }
 
   /**
-   * Reaktywuje konto użytkownika (anuluje usuwanie).
-   *
-   * @param int $userId ID użytkownika.
+   * Anuluje proces usuwania konta i przywraca mu pełną aktywność.
+   * 
+   * @param int $userId
    * @return bool
    */
   public function reactivateUser(int $userId): bool
@@ -292,12 +312,19 @@ class UserModel
   }
 
   /**
-   * Wykonuje anonimizację użytkowników, którzy mają deleted_at starszy niż 30 dni.
+   * Systemowa procedura anonimizacji starych kont użytkowników (Privacy Robot).
    *
-   * @return int Liczba zanonimizowanych rekordów (opcjonalnie, tutaj void/bool).
+   * Metoda identyfikuje konta w stanie Soft Delete, które przekroczyły 30-dniowy 
+   * okres karencji i trwale odcina powiązania z danymi osobowymi:
+   * 1. Rozwiązanie powiązań w historii podejść (user_id = NULL w attempts).
+   * 2. Całkowite usunięcie postępu nauki (user_progress).
+   * 3. Zastąpienie danych w tabeli `users` placeholderami i sumami kontrolnymi MD5.
+   * 
+   * @return void
    */
   private function anonymizeOldUsers(): void
   {
+    // KROK 1: Identyfikacja kandydatów do wygaszenia
     $sqlFetch = "SELECT id FROM users WHERE is_active = 0 AND deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)";
     $usersToAnonymize = $this->db->fetchAll($sqlFetch);
 
@@ -308,15 +335,16 @@ class UserModel
     $userIds = array_column($usersToAnonymize, 'id');
     $placeholders = implode(',', array_fill(0, count($userIds), '?'));
 
-    // Anonimizacja progresu egzaminacyjnego
+    // KROK 2: Anonimizacja historii (odwiązanie statystyk od osoby)
     $sqlAttempts = "UPDATE attempts SET user_id = NULL WHERE user_id IN ($placeholders)";
     $this->db->execute($sqlAttempts, $userIds);
 
+    // KROK 3: Wyczyszczenie szczegółowego progresu (oszczędność miejsca i prywatność)
     $sqlProgress = "DELETE FROM user_progress WHERE user_id IN ($placeholders)";
     $this->db->execute($sqlProgress, $userIds);
 
-    // Anonimizacja w tabeli users
-    $sql = "UPDATE users 
+    // KROK 4: Zakamuflowanie rekordu użytkownika
+    $sqlUserUpdate = "UPDATE users 
             SET 
               google_id = NULL,
               email = CONCAT('anon_', MD5(id), '@examly.pl'),
@@ -326,6 +354,6 @@ class UserModel
               auth_provider = 'local'
             WHERE id IN ($placeholders)";
 
-    $this->db->execute($sql, $userIds);
+    $this->db->execute($sqlUserUpdate, $userIds);
   }
 }
