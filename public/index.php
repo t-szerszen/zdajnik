@@ -8,14 +8,14 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
-$dotenv->load(); // To MUSI być tutaj
+$dotenv->load();
 
 // Wczytanie pliku konfiguracyjnego.
-// Config.php teraz będzie widział zmienne ze środowiska (.env),
+// config.php teraz będzie widział zmienne ze środowiska (.env),
 // bo ładujemy go PO załadowaniu Dotenv.
 require_once __DIR__ . '/../config.php';
 
-// helpers.php jest ładowane w config.php, więc nie musimy tego robić tutaj ponownie.
+// helpers.php jest ładowane w config.php
 
 use App\Core\Router;
 
