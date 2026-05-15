@@ -61,6 +61,7 @@ export class TestRunner {
     this.handleAnswerSelection = this.handleAnswerSelection.bind(this);
     this.togglePause = this.togglePause.bind(this);
     this.resumeTest = this.resumeTest.bind(this);
+    this.lastScrollY = window.scrollY;
     this.handleSyncScroll = this.handleSyncScroll.bind(this);
 
     // Krok 4: Pierwsza próba wyszukania elementów
@@ -117,7 +118,7 @@ export class TestRunner {
     this.startTimer(duration);
 
     // Krok 6: Synchronizacja widoczności timera w navie
-    window.addEventListener('scroll', this.handleSyncScroll);
+    window.addEventListener('scroll', this.handleSyncScroll, { passive: true });
   }
 
   /**
@@ -125,13 +126,27 @@ export class TestRunner {
    * @private
    */
   handleSyncScroll() {
+    const currentScrollY = window.scrollY;
+
     if (!this.testHeader || window.innerWidth <= 1024) {
-      // Wyłączone na mobilkach i tabletach (Zadanie 3)
       document.body.classList.remove('test-scrolled-past-header');
+      this.lastScrollY = currentScrollY;
       return;
     }
+
     const headerBottom = this.testHeader.offsetTop + this.testHeader.offsetHeight;
-    document.body.classList.toggle('test-scrolled-past-header', window.scrollY > headerBottom);
+    const isScrollingUp = currentScrollY < this.lastScrollY;
+    const isPastHeader = currentScrollY > headerBottom;
+
+    // Bańka włącza się tylko przy jechaniu w górę i byciu poniżej nagłówka
+    if (isPastHeader && isScrollingUp) {
+      document.body.classList.add('test-scrolled-past-header');
+    } else {
+      // Przy jeździe w dół lub byciu nad nagłówkiem - chowamy natychmiast
+      document.body.classList.remove('test-scrolled-past-header');
+    }
+
+    this.lastScrollY = currentScrollY;
   }
 
   /**

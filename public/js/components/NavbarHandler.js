@@ -86,24 +86,36 @@ export class NavbarHandler {
 
   handleScroll() {
     const currentScrollY = window.scrollY;
-    const isScrolled = currentScrollY > 20;
+    const isScrollingUp = currentScrollY < this.lastScrollY;
+    const isAtTop = currentScrollY <= 20;
 
     if (this.nav) {
-      this.nav.classList.toggle('is-scrolled', isScrolled);
+      // 1. Logika 'is-scrolled' (Bańka)
+      // Dodajemy klasę bańki TYLKO jeśli jedziemy w górę i nie jesteśmy na samej górze.
+      // Przy jeździe w dół nie chcemy, aby nav "skakał" w tryb bańki przed schowaniem się.
+      if (currentScrollY > 20 && isScrollingUp) {
+        this.nav.classList.add('is-scrolled');
+        this.body.classList.add('is-scrolled');
+      } else if (isAtTop) {
+        this.nav.classList.remove('is-scrolled');
+        this.body.classList.remove('is-scrolled');
+      }
 
-      // Smart Navbar logic
+      // 2. Smart Navbar logic (Hiding/Showing)
       if (currentScrollY > 100) {
         if (currentScrollY > this.lastScrollY) {
+          // Przewijanie w dół - chowamy nawigację
           this.nav.classList.add('is-hidden');
         } else {
+          // Przewijanie w górę - pokazujemy nawigację
           this.nav.classList.remove('is-hidden');
         }
       } else {
+        // Blisko góry zawsze pokazujemy
         this.nav.classList.remove('is-hidden');
       }
     }
 
-    this.body.classList.toggle('is-scrolled', isScrolled);
     this.lastScrollY = currentScrollY;
   }
 
