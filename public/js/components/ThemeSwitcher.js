@@ -4,7 +4,7 @@
 class ThemeSwitcher {
   constructor(checkboxId) {
     this.checkbox = document.getElementById(checkboxId);
-    
+
     if (!this.checkbox) {
       console.error(`ThemeSwitcher: Nie znaleziono elementu o ID "${checkboxId}".`);
       return;
@@ -30,7 +30,7 @@ class ThemeSwitcher {
   setTheme(theme) {
     // Zastosuj zmianę wizualną
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    
+
     // Zapisz wybór użytkownika w pamięci przeglądarki, aby przetrwał odświeżenie
     try {
       localStorage.setItem('theme', theme);

@@ -72,7 +72,7 @@ class ApiController extends BaseController
   public function getQuestion(string $examCode): void
   {
     $this->ensureGetRequest();
-    
+
     // KROK: Pobranie fizycznych rekordów z bazy przez filtr centralny
     $result = $this->fetchFilteredQuestions($examCode, 1);
 
@@ -295,7 +295,7 @@ class ApiController extends BaseController
     ];
 
     $answersDetails = $input['answers'] ?? [];
-    
+
     // KROK 2: Transakcyjny zapis w bazie danych
     $attemptId = $this->attemptModel->createAttempt($attemptData, $input['topicIds'] ?? [], $answersDetails);
 
@@ -365,7 +365,7 @@ class ApiController extends BaseController
 
     $newAvatarPath = null;
     $avatarsDir = $_SERVER['DOCUMENT_ROOT'] . '/images/avatars/';
-    
+
     // Upewnij się, że katalog istnieje
     if (!is_dir($avatarsDir)) {
       mkdir($avatarsDir, 0755, true);
@@ -394,15 +394,15 @@ class ApiController extends BaseController
         // Generowanie unikalnej nazwy
         $extension = $typeMatch[1] === 'jpeg' ? 'jpg' : $typeMatch[1];
         if (!in_array($extension, ['jpg', 'png', 'webp'])) {
-           $extension = 'webp'; // fallback
+          $extension = 'webp'; // fallback
         }
-        
+
         $filename = 'custom_' . $userId . '_' . time() . '.' . $extension;
         $newAvatarPath = $filename;
-        
+
         if (file_put_contents($avatarsDir . $filename, $data) === false) {
-           $this->sendJsonResponse(['success' => false, 'message' => 'Błąd zapisu pliku na serwerze.'], 500);
-           return;
+          $this->sendJsonResponse(['success' => false, 'message' => 'Błąd zapisu pliku na serwerze.'], 500);
+          return;
         }
       } else {
         $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy format obrazu.'], 400);
@@ -425,7 +425,7 @@ class ApiController extends BaseController
     // Aktualizacja w bazie
     if ($this->userModel->updateAvatar($userId, $newAvatarPath)) {
       $this->sendJsonResponse([
-        'success' => true, 
+        'success' => true,
         'message' => 'Awatar zaktualizowany.',
         'avatar_path' => $newAvatarPath
       ]);

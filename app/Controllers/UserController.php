@@ -54,10 +54,10 @@ class UserController extends BaseController
   public function logout(): void
   {
     // KROK 1: Czyszczenie stanu sesji
-    session_unset(); 
+    session_unset();
 
     // KROK 2: Terminacja sesji systemowej
-    session_destroy(); 
+    session_destroy();
 
     // KROK 3: Redirekcja do bramki logowania
     header('Location: ' . url('logowanie'));

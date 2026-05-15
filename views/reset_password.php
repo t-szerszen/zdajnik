@@ -1,4 +1,20 @@
 <?php
+/**
+ * @file reset_password.php
+ * @description
+ * Widok ustawiania nowego hasła (krok 2).
+ * Formularz dostępny po kliknięciu w link z wiadomości e-mail.
+ * Wymaga podania kodu autoryzacyjnego wyświetlonego w poprzednim kroku
+ * oraz silnego hasła spełniającego politykę bezpieczeństwa.
+ *
+ * @variables
+ * - $token (string): Zabezpieczony token z adresu URL.
+ * - $_SESSION['flash_message'] (array|null): Komunikaty błędów lub sukcesu.
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
+
 $pageTitle = 'Ustaw Nowe Hasło | Examly';
 $noIndex = true;
 ?>

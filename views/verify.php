@@ -1,4 +1,16 @@
 <?php
+/**
+ * @file verify.php
+ * @description
+ * Widok potwierdzenia weryfikacji po kliknięciu w link z e-maila.
+ *
+ * @variables
+ * - $status (string)
+ * - $message (string)
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
 
 /**
  * Konfiguracja komponentu head
@@ -44,7 +56,7 @@ $canonicalUrl = 'https://www.examly.pl/weryfikacja';
       =====================================================================
     -->
     <div class="form-card">
-      
+
       <!-- WARUNEK: SUKCES -->
       <?php if ($status === 'success'): ?>
 
@@ -62,7 +74,7 @@ $canonicalUrl = 'https://www.examly.pl/weryfikacja';
           </a>
         </div>
 
-      <!-- WARUNEK: BŁĄD -->
+        <!-- WARUNEK: BŁĄD -->
       <?php else: ?>
 
         <div class="form-card__header">

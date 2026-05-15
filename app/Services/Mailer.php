@@ -46,7 +46,7 @@ class Mailer
     $this->mailer->Host = $_ENV['SMTP_HOST'];
     $this->mailer->SMTPAuth = true;
     $this->mailer->Username = $_ENV['SMTP_USER'];
-    
+
     // Oczyszczenie hasła z ewentualnych spacji (częsty błąd przy kopiowaniu z Google App Passwords)
     $this->mailer->Password = str_replace(' ', '', $_ENV['SMTP_PASS']);
 

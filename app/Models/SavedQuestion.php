@@ -86,6 +86,6 @@ class SavedQuestion
   {
     $sql = "SELECT COUNT(*) as total FROM saved_questions WHERE user_id = ?";
     $result = $this->db->fetch($sql, [$userId]);
-    return (int)($result['total'] ?? 0);
+    return (int) ($result['total'] ?? 0);
   }
 }

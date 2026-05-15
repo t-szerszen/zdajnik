@@ -117,7 +117,7 @@ class QuizPageController extends BaseController
     if (isset($_GET['subject']) && is_array($_GET['subject']) && !empty($_GET['subject'][0])) {
       $data['selectedSubjectId'] = (int) $_GET['subject'][0];
     }
-    
+
     // KROK 3: Pobranie wszystkich kategorii dla danej kwalifikacji
     $data['categories'] = $this->dynamicData->getCategoriesForExam($exam['id']);
 

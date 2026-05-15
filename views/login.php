@@ -1,4 +1,17 @@
 <?php
+/**
+ * @file login.php
+ * @description
+ * Widok logowania użytkownika.
+ *
+ * @variables
+ * - $noIndex (bool)
+ * - $pageTitle (string)
+ * - $canonicalUrl (string)
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
 
 /**
  * Konfiguracja komponentu head
@@ -92,7 +105,8 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
         <div class="alert alert--error" role="alert">
           <ul class="alert__list">
             <?php foreach ($errors as $error): ?>
-              <li class="alert__item"><i class="fas fa-exclamation-circle" style="margin-right: 0.5rem;"></i><?= $error ?></li>
+              <li class="alert__item"><i class="fas fa-exclamation-circle" style="margin-right: 0.5rem;"></i><?= $error ?>
+              </li>
             <?php endforeach; ?>
           </ul>
         </div>
@@ -104,8 +118,7 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
         <div class="form-card__input-wrapper">
           <i class="fas fa-envelope form-card__input-icon"></i>
           <input type="email" id="email" name="email" class="form-card__input form-card__input--with-icon"
-            value="<?= htmlspecialchars($formData['email'] ?? '') ?>"
-            placeholder="Twój adres e-mail" required>
+            value="<?= htmlspecialchars($formData['email'] ?? '') ?>" placeholder="Twój adres e-mail" required>
         </div>
       </div>
 
@@ -130,10 +143,10 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
       <div class="form-card__divider">lub</div>
 
       <div class="form-card__action-container" style="margin-top: 0; margin-bottom: 2rem;">
-          <a href="<?= url('auth/google') ?>" class="form-card__google-btn">
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-              Zaloguj się przez Google
-          </a>
+        <a href="<?= url('auth/google') ?>" class="form-card__google-btn">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+          Zaloguj się przez Google
+        </a>
       </div>
 
       <!-- Stopka formularza z dodatkowymi linkami -->

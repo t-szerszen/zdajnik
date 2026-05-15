@@ -75,7 +75,7 @@ export class TestRunner {
   refreshUIElements() {
     const root = document;
     const view = this.testView || document;
-    
+
     this.progressBar = view.querySelector('#test-progress-bar') || root.getElementById('test-progress-bar');
     this.progressText = view.querySelector('#test-progress-text') || root.getElementById('test-progress-text');
     this.timerEl = view.querySelector('#timer') || root.getElementById('timer');
@@ -549,7 +549,7 @@ export class TestRunner {
     if (!this.questionsWrapper) return;
 
     const total = this.questionsData.length;
-    
+
     // Zliczamy unikalne karty pytań, które mają zaznaczoną chociaż jedną odpowiedź (.selected)
     const cards = this.questionsWrapper.querySelectorAll('.quiz-card');
     const count = Array.from(cards).filter(card => card.querySelector('.selected')).length;

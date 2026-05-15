@@ -1,3 +1,12 @@
+/**
+ * @file CountdownButton.js
+ * @description
+ * Komponent obsługujący przyciski z odliczaniem czasu (np. przy resetowaniu haseł).
+ * Automatycznie blokuje przycisk na określony czas pobrany z atrybutów data-remaining.
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
 class CountdownButton {
   constructor(buttonId) {
     this.button = document.getElementById(buttonId);

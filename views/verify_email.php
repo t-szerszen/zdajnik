@@ -1,4 +1,15 @@
 <?php
+/**
+ * @file verify_email.php
+ * @description
+ * Informacja o wysłaniu e-maila weryfikacyjnego po rejestracji.
+ *
+ * @variables
+ * - $email (string)
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
 
 /**
  * Konfiguracja komponentu head
@@ -63,7 +74,8 @@ $canonicalUrl = 'https://www.examly.pl/autoryzacja-email';
 
       <!-- Blok na jednorazowe komunikaty (np. "E-mail wysłano ponownie.") -->
       <?php if (isset($flashMessage) && is_array($flashMessage)): ?>
-        <div class="alert alert--<?= htmlspecialchars($flashMessage['type']) ?>" role="alert" style="margin-bottom: 2rem;">
+        <div class="alert alert--<?= htmlspecialchars($flashMessage['type']) ?>" role="alert"
+          style="margin-bottom: 2rem;">
           <i class="fas fa-info-circle" style="margin-right: 0.5rem;"></i>
           <?= htmlspecialchars($flashMessage['text']) ?>
         </div>
@@ -77,13 +89,8 @@ $canonicalUrl = 'https://www.examly.pl/autoryzacja-email';
             Przycisk z logiką cooldown:
             Zarządzany przez verification/index.js
           -->
-          <button
-            type="submit"
-            id="resendButton"
-            class="btn btn--primary btn--full-width"
-            data-text="Wyślij ponownie e-mail"
-            data-remaining="<?= $remaining ?>"
-            <?= $remaining > 0 ? 'disabled' : '' ?>>
+          <button type="submit" id="resendButton" class="btn btn--primary btn--full-width"
+            data-text="Wyślij ponownie e-mail" data-remaining="<?= $remaining ?>" <?= $remaining > 0 ? 'disabled' : '' ?>>
             <?php if ($remaining > 0): ?>
               Wyślij ponownie za <span id="countdown"><?= $remaining ?></span>s
             <?php else: ?>

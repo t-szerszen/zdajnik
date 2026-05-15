@@ -109,7 +109,7 @@ class UserModel
 
     // KROK 2: Weryfikacja poświadczeń
     if ($user_data && password_verify($data['password'], $user_data['password_hash'])) {
-      
+
       // KROK 3: Automatyczna reaktywacja (Anulowanie Soft Delete)
       if ((int) $user_data['is_active'] === 0 && !empty($user_data['deleted_at'])) {
         $this->reactivateUser($user_data['id']);
@@ -154,7 +154,7 @@ class UserModel
       }
 
       $user = new User($userData);
-      
+
       // KROK 3: Powiązanie konta (jeśli wcześniej logował się tylko lokalnie)
       if (!$user->getGoogleId()) {
         $this->db->execute("UPDATE users SET google_id = ?, auth_provider = 'google', is_verified = 1 WHERE id = ?", [$googleId, $user->getId()]);

@@ -110,7 +110,7 @@ class VerificationController extends BaseController
 
       // Przypadek awaryjny (jeśli użytkownik zniknął z BD w międzyczasie)
       $_SESSION['flash_message'] = [
-        'type' => 'success', 
+        'type' => 'success',
         'text' => 'Konto zweryfikowane pomyślnie! Możesz się teraz zalogować.'
       ];
       unset($_SESSION['verify_user_id']);

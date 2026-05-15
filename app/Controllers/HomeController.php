@@ -41,7 +41,7 @@ class HomeController extends BaseController
   {
     // KROK: Pobranie struktury kwalifikacji i ich kategorii tematycznych
     $examsCategories = $this->loadExamsAndTopics();
-    
+
     // KROK: Wyświetlenie widoku startowego z dynamiczną listą egzaminów
     $this->renderView('home', [
       'examsCategories' => $examsCategories,
@@ -72,7 +72,7 @@ class HomeController extends BaseController
   {
     // KROK 1: Pobranie unikalnych kodów kwalifikacji (INF.02, INF.03, etc.)
     $exams = $this->dynamicDataService->getExams();
-    
+
     $examsCategories = [];
     foreach ($exams as $exam) {
       // KROK 2: Pobranie podkategorii (Topików) dla każdej kwalifikacji

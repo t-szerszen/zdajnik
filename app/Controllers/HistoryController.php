@@ -52,20 +52,20 @@ class HistoryController extends BaseController
 
     // KROK 2: Ustalenie kontekstu kategorii (egzaminu)
     $examTypes = $this->statsService->getExamTypes();
-    $selectedExamTypeId = (int)($_GET['category'] ?? $examTypes[0]['id'] ?? 0);
-    
+    $selectedExamTypeId = (int) ($_GET['category'] ?? $examTypes[0]['id'] ?? 0);
+
     // Mapowanie ID kategorii na czytelny kod (INF.0X)
     $selectedCategoryCode = '';
     foreach ($examTypes as $type) {
-        if ((int)$type['id'] === $selectedExamTypeId) {
-            $selectedCategoryCode = $type['code'];
-            break;
-        }
+      if ((int) $type['id'] === $selectedExamTypeId) {
+        $selectedCategoryCode = $type['code'];
+        break;
+      }
     }
-    
+
     // KROK 3: Identyfikacja typu żądanej historii
-    $type = $_GET['type'] ?? 'exams'; 
-    
+    $type = $_GET['type'] ?? 'exams';
+
     $viewData = [
       'type' => $type,
       'selectedCategoryId' => $selectedExamTypeId,
@@ -79,20 +79,20 @@ class HistoryController extends BaseController
         $viewData['title'] = ' Krytycznych błędów';
         $viewData['backTo'] = 'criticalMistakes';
         $result = $this->statsService->getCriticalErrors($userId, $selectedExamTypeId, null);
-        $viewData['items'] = $result['items']; 
+        $viewData['items'] = $result['items'];
         break;
 
       case 'errors':
         $viewData['title'] = ' Błędów';
         $viewData['backTo'] = 'lastMistakes';
-        $result = $this->statsService->getErrorHistory($userId, $selectedExamTypeId, null); 
+        $result = $this->statsService->getErrorHistory($userId, $selectedExamTypeId, null);
         $viewData['items'] = $result['items'];
         break;
 
       case 'saved':
         $viewData['title'] = ' Zapisanych Pytań';
         $viewData['backTo'] = 'savedQuestions';
-        $result = $this->statsService->getSavedQuestions($userId, $selectedExamTypeId, null); 
+        $result = $this->statsService->getSavedQuestions($userId, $selectedExamTypeId, null);
         $viewData['items'] = $result['items'];
         break;
 

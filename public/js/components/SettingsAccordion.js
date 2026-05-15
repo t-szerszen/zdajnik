@@ -1,5 +1,11 @@
 /**
+ * @file SettingsAccordion.js
+ * @description
  * Zarządza działaniem akordeonu na stronie ustawień.
+ * Odpowiada za otwieranie i zamykanie sekcji profilu, e-maila oraz hasła.
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
  */
 class SettingsAccordion {
   constructor(accordionContainerId) {

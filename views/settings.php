@@ -61,7 +61,8 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
     <div class="settings-accordion" id="settings-accordion">
 
       <!-- Sekcja: Zdjęcie Profilowe (Avatar) -->
-      <div class="settings-card <?= ($activeForm === 'avatar' || empty($activeForm)) ? 'is-open' : '' ?>" id="avatar-uploader">
+      <div class="settings-card <?= ($activeForm === 'avatar' || empty($activeForm)) ? 'is-open' : '' ?>"
+        id="avatar-uploader">
         <div class="settings-card__header">
           <div class="settings-card__title-group">
             <h3 class="settings-card__title">
@@ -73,15 +74,16 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
           <i class="fas fa-chevron-down settings-card__icon"></i>
         </div>
         <div class="settings-card__content avatar-section-content">
-          
+
           <div class="avatar-manager">
             <div class="avatar-manager__preview">
               <div class="avatar-manager__img-wrapper" id="avatar-loader">
-                <?php 
-                  $currentAvatarPath = $currentUser->getAvatarPath();
-                  $avatarSrc = $currentAvatarPath ? url('images/avatars/' . $currentAvatarPath) : url('images/default-avatar.png');
+                <?php
+                $currentAvatarPath = $currentUser->getAvatarPath();
+                $avatarSrc = $currentAvatarPath ? url('images/avatars/' . $currentAvatarPath) : url('images/default-avatar.png');
                 ?>
-                <img src="<?= htmlspecialchars($avatarSrc) ?>" alt="Twój profil" id="avatar-preview-img" class="avatar-manager__img">
+                <img src="<?= htmlspecialchars($avatarSrc) ?>" alt="Twój profil" id="avatar-preview-img"
+                  class="avatar-manager__img">
                 <div class="avatar-manager__spinner">
                   <i class="fas fa-circle-notch fa-spin"></i>
                 </div>
@@ -89,7 +91,8 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
               <button class="btn btn--outline" id="avatar-upload-btn">
                 <i class="fas fa-upload"></i> Wgraj własne zdjęcie
               </button>
-              <input type="file" id="avatar-file-input" accept="image/jpeg, image/png, image/webp" style="display: none;">
+              <input type="file" id="avatar-file-input" accept="image/jpeg, image/png, image/webp"
+                style="display: none;">
             </div>
 
             <div class="avatar-manager__divider"><span>LUB</span></div>
@@ -409,11 +412,11 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
   <script type="module">
     import CountdownButton from '<?= url('js/components/CountdownButton.js') ?>';
     import AvatarUploader from '<?= url('js/features/settings/AvatarUploader.js') ?>';
-    
+
     <?php if (!$isGoogleUser): ?>
       new CountdownButton('changeEmailBtn');
     <?php endif; ?>
-    
+
     // Inicjalizacja uploadera awatarów
     new AvatarUploader();
   </script>

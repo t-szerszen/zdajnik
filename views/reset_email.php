@@ -1,4 +1,20 @@
 <?php
+/**
+ * @file reset_email.php
+ * @description
+ * Widok weryfikacji zmiany adresu e-mail.
+ * Ten widok pozwala użytkownikowi na sfinalizowanie procesu zmiany adresu e-mail
+ * poprzez wprowadzenie 6-cyfrowego kodu bezpieczeństwa wysłanego na nowy adres.
+ * Zabezpiecza przed literówkami w nowych adresach oraz zapewnia autoryzację.
+ *
+ * @variables
+ * - $token (string): Zabezpieczony token autoryzacyjny przekazany w adresie URL.
+ * - $_SESSION['flash_message'] (array|null): Komunikaty błędów (np. błędny kod) lub sukcesu.
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
+
 $pageTitle = 'Weryfikacja Nowego Adresu E-mail | Examly';
 $noIndex = true;
 ?>

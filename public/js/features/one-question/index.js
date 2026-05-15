@@ -65,7 +65,7 @@ class Quiz {
     // Krok 2: Użyj delegacji zdarzeń do obsługi kliknięć wewnątrz kontenera quizu.
     // Jest to wydajniejsze niż dodawanie wielu listenerów do dynamicznych elementów.
     this.quizContainer.addEventListener('click', this.handleInteraction.bind(this));
-    
+
     // Krok 3: Sprawdź URL pod kątem autostartu
     this.handleAutoStart();
   }
@@ -78,12 +78,12 @@ class Quiz {
     const urlParams = new URLSearchParams(window.location.search);
     const hash = window.location.hash;
     const shouldAutoStart = urlParams.get('selectAll') === 'true' || urlParams.get('autoStart') === 'true' || hash === '#select-all-codes';
-    
+
     if (shouldAutoStart) {
-        // Małe opóźnienie, aby TopicFormEnhancer zdążył przetworzyć checkboxy
-        setTimeout(() => {
-            this.topicForm.dispatchEvent(new Event('submit', { cancelable: true }));
-        }, 100);
+      // Małe opóźnienie, aby TopicFormEnhancer zdążył przetworzyć checkboxy
+      setTimeout(() => {
+        this.topicForm.dispatchEvent(new Event('submit', { cancelable: true }));
+      }, 100);
     }
   }
 
@@ -130,9 +130,9 @@ class Quiz {
           // KROK KLUCZOWY: Zapisujemy question_version_id do stanu klasy
           this.currentExplanation = data.question.explanation;
           this.currentQuestionVersionId = data.question.question_version_id;
-          
+
           ui.renderQuestion(this.quizContainer, data.question, data.answers);
-          
+
           // Aktualizacja paska postępu
           if (data.pool_progress) {
             this.updateProgressBar(data.pool_progress);

@@ -279,6 +279,7 @@
       opacity: 0.3;
       filter: blur(2px);
     }
+
     .avatar-manager__spinner {
       opacity: 1;
     }
@@ -299,6 +300,7 @@
       content: '';
       flex: 1;
       border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
       html.dark & {
         border-bottom-color: rgba(255, 255, 255, 0.1);
       }

@@ -70,7 +70,7 @@ class TokenService
     // KROK 5: Utrwalenie tokena w bazie danych
     $sql = "INSERT INTO user_tokens (user_id, token, type, token_data, auth_code, expires_at)
             VALUES (:user_id, :token, :type, :token_data, :auth_code, DATE_ADD(NOW(), INTERVAL 1 HOUR))";
-    
+
     $params = [
       ':user_id' => $userId,
       ':token' => $token,

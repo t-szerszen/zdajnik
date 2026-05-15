@@ -18,7 +18,7 @@
     position: absolute;
     inset: 0;
     background: radial-gradient(circle at 50% 0%, rgba(var(--footer-accent-rgb), 0.08) 0%, transparent 60%),
-                radial-gradient(circle at 0% 100%, rgba(var(--footer-accent-rgb), 0.03) 0%, transparent 40%);
+      radial-gradient(circle at 0% 100%, rgba(var(--footer-accent-rgb), 0.03) 0%, transparent 40%);
     pointer-events: none;
   }
 
@@ -30,11 +30,10 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, 
-      transparent, 
-      rgba(var(--footer-accent-rgb), 0.3), 
-      transparent
-    );
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(var(--footer-accent-rgb), 0.3),
+        transparent);
     opacity: 0.5;
   }
 

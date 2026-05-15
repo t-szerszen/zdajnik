@@ -133,7 +133,7 @@ class GoogleAuthController extends BaseController
       // Obsługa błędów zewnętrznych serwerów API lub bazy danych
       error_log('[GoogleAuth Error] ' . $e->getMessage());
       $_SESSION['flash_message'] = [
-        'type' => 'error', 
+        'type' => 'error',
         'text' => 'Wystąpił błąd podczas logowania przez Google. Spróbuj ponownie później.'
       ];
       header('Location: ' . url('logowanie'));

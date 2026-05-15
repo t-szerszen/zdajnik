@@ -148,7 +148,7 @@ class TopicFormEnhancer {
       this.selectAllCheckbox.checked = true;
       // Kluczowe: wywołujemy handler, który zaznacza podrzędne checkboxy 
       // I (co najważniejsze) odblokowuje sekcję premium metodą updatePremiumOptionsState
-      this.handleSelectAll(); 
+      this.handleSelectAll();
     } else {
       // Jeśli nie wymuszamy zaznaczenia, po prostu odświeżamy stan UI
       this.updatePremiumOptionsState();
@@ -158,7 +158,7 @@ class TopicFormEnhancer {
     const premiumParam = urlParams.get('premium');
     if (premiumParam && this.isUserLoggedIn) {
       const targetCheckbox = this.form.querySelector(`.premium-checkbox[value="${premiumParam}"]`);
-      
+
       // Sprawdzamy czy checkbox istnieje i czy został odblokowany w kroku 1
       if (targetCheckbox && !targetCheckbox.disabled) {
         targetCheckbox.checked = true;
@@ -177,7 +177,7 @@ class TopicFormEnhancer {
     // initFromUrl załatwia sprawę updatePremiumOptionsState, ale dla bezpieczeństwa
     // przy ręcznym odświeżaniu strony bez parametrów:
     if (!window.location.search && !window.location.hash) {
-         this.updatePremiumOptionsState();
+      this.updatePremiumOptionsState();
     }
   }
 

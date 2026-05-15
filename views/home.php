@@ -1,5 +1,18 @@
 <?php
 /**
+ * @file home.php
+ * @description
+ * Strona główna platformy (Landing Page).
+ *
+ * @variables
+ * - $pageTitle (string)
+ * - $extraSchemas (array): Dane strukturalne
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
+
+/**
  * Konfiguracja komponentu head
  */
 $pageTitle = 'INF.02 INF.03 - Testy Online i kursy | Examly';

@@ -51,7 +51,7 @@ class Database
       // KROK 3: Konfiguracja bezpieczeństwa i wygody
       // ERRMODE_EXCEPTION rzuca wyjątkami przy błędach SQL (bezpieczniejsze niż tryb cichy)
       $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-      
+
       // FETCH_ASSOC zwraca wyniki jako tablice asocjacyjne (klucz => wartość)
       $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     } catch (PDOException $e) {

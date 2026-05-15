@@ -81,17 +81,21 @@ class Validator
     // KROK: Minimalna długość
     if (mb_strlen($password) < 8) {
       $errors[] = 'Hasło musi posiadać co najmniej 8 znaków.';
-    } 
+    }
     // KROK: Prewencja wycieków danych (Pwned Passwords API)
     elseif ($this->isPasswordPwned($password)) {
       $errors[] = 'To hasło zostało odnalezione w publicznych wyciekach danych. Ze względów bezpieczeństwa wybierz inne.';
-    } 
+    }
     // KROK: Sprawdzenie stopnia złożoności (Entropy)
     else {
-      if (!preg_match('/[A-Z]/', $password)) $errors[] = 'Hasło musi zawierać przynajmniej jedną wielką literę.';
-      if (!preg_match('/[a-z]/', $password)) $errors[] = 'Hasło musi zawierać przynajmniej jedną małą literę.';
-      if (!preg_match('/[0-9]/', $password)) $errors[] = 'Hasło musi zawierać przynajmniej jedną cyfrę.';
-      if (!preg_match('/[\W_]/', $password)) $errors[] = 'Hasło musi zawierać przynajmniej jeden znak specjalny.';
+      if (!preg_match('/[A-Z]/', $password))
+        $errors[] = 'Hasło musi zawierać przynajmniej jedną wielką literę.';
+      if (!preg_match('/[a-z]/', $password))
+        $errors[] = 'Hasło musi zawierać przynajmniej jedną małą literę.';
+      if (!preg_match('/[0-9]/', $password))
+        $errors[] = 'Hasło musi zawierać przynajmniej jedną cyfrę.';
+      if (!preg_match('/[\W_]/', $password))
+        $errors[] = 'Hasło musi zawierać przynajmniej jeden znak specjalny.';
     }
 
     // KROK: Zgodność obu pól

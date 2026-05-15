@@ -69,7 +69,7 @@ class LoginController extends BaseController
       // Bezpieczeństwo: Zapobieganie Session Fixation
       session_regenerate_id(true);
       unset($_SESSION['verify_user_id']);
-      
+
       header('Location: ' . url('/'));
       exit();
     }

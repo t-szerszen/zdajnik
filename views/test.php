@@ -1,4 +1,16 @@
 <?php
+/**
+ * @file test.php
+ * @description
+ * Główny interfejs rozwiązywania pełnego egzaminu próbnego (40 pytań).
+ *
+ * @variables
+ * - $exam (array)
+ * - $examCode (string)
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
 
 /**
  * Konfiguracja komponentu head
@@ -49,10 +61,11 @@ $extraScripts = [
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">
-          <?= htmlspecialchars($exam['formatted_name'])?>
+          <?= htmlspecialchars($exam['formatted_name']) ?>
         </span> - Pełny Egzamin Próbny</h1>
       <p class="page-header__text">
-        Podejdź do pełnego egzaminu próbnego. Zmierz się z symulacją zawierającą 40 losowo dobranych pytań. Weryfikuj swoją wiedzę w warunkach zbliżonych do rzeczywistych i precyzyjnie identyfikuj obszary do poprawy.
+        Podejdź do pełnego egzaminu próbnego. Zmierz się z symulacją zawierającą 40 losowo dobranych pytań. Weryfikuj
+        swoją wiedzę w warunkach zbliżonych do rzeczywistych i precyzyjnie identyfikuj obszary do poprawy.
       </p>
       <p class="page-header__text">
         <strong class="text-gradient">Pro Tip:</strong> Po teście skup się na analizie błędnych odpowiedzi.
@@ -80,7 +93,7 @@ $extraScripts = [
       <div class="stats-page__blob stats-page__blob--2"></div>
     </div>
 
-    <main id="test-container" class="test-container" data-exam-code="<?= htmlspecialchars($examCode)?>">
+    <main id="test-container" class="test-container" data-exam-code="<?= htmlspecialchars($examCode) ?>">
 
       <!-- Stan 1: Ekran ładowania -->
       <div id="loading-screen" class="test-loading">
@@ -94,7 +107,7 @@ $extraScripts = [
         <header class="test-header">
           <div class="test-header__content-left">
             <h1 class="test-header__title">Egzamin <span class="text-gradient">
-                <?= htmlspecialchars($examCode)?>
+                <?= htmlspecialchars($examCode) ?>
               </span></h1>
             <div id="test-progress-text" class="test-header__progress-info">
               Postęp: <span>0 / 40</span>
@@ -144,7 +157,7 @@ $extraScripts = [
       <div class="review-page__container">
 
         <div class="review-page__back-nav">
-          <a href="<?= url('/')?>" class="review-page__back-link">
+          <a href="<?= url('/') ?>" class="review-page__back-link">
             <i class="fas fa-chevron-left"></i> Wróć na stronę główną
           </a>
         </div>
@@ -170,7 +183,7 @@ $extraScripts = [
   <?php include 'partials/footer.php'; ?>
 
   <!-- Główny skrypt aplikacji dla tego widoku, zarządzający całą logiką testu -->
-  <script type="module" src="<?= url('js/features/test/index.js')?>"></script>
+  <script type="module" src="<?= url('js/features/test/index.js') ?>"></script>
 </body>
 
 </html>

@@ -1,4 +1,16 @@
 <?php
+/**
+ * @file question_review.php
+ * @description
+ * Podgląd szczegółów pojedynczego pytania (identyfikator, statystyki, zgłoszenia błędu).
+ *
+ * @variables
+ * - $question (array)
+ * - $answers (array)
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
 
 /**
  * Konfiguracja komponentu head

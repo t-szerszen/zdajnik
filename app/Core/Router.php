@@ -187,7 +187,7 @@ class Router
     $this->post('logowanie', 'LoginController@processLogin');
     $this->get('rejestracja', 'RegisterController@showRegistrationForm');
     $this->post('rejestracja', 'RegisterController@processRegistration');
-    $this->get('weryfikacja', 'VerificationController@handle'); 
+    $this->get('weryfikacja', 'VerificationController@handle');
     $this->get('wyloguj', 'UserController@logout');
 
     // Integracja z Google API (OAuth 2.0)
@@ -195,7 +195,7 @@ class Router
     $this->get('auth/google/callback', 'GoogleAuthController@handleGoogleCallback');
 
     // Bezpieczeństwo konta: Reset hasła i aktywacja e-mail
-    $this->get('autoryzacja-email', 'RegisterController@showVerificationPage'); 
+    $this->get('autoryzacja-email', 'RegisterController@showVerificationPage');
     $this->get('reset-hasla', 'PasswordResetController@showForgotPasswordForm');
     $this->post('reset-hasla', 'PasswordResetController@handleForgotPasswordRequest');
     $this->get('nowe-haslo', 'PasswordResetController@showNewPasswordForm');

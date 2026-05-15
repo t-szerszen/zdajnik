@@ -1,3 +1,18 @@
+<?php
+/**
+ * @file footer.php
+ * @description
+ * Główny komponent stopki strony. Zawiera linki nawigacyjne, informacje kontaktowe,
+ * przełącznik motywu (ThemeSwitcher) oraz globalny kontener na powiadomienia Toast.
+ *
+ * @variables
+ * - Brak specyficznych zmiennych (korzysta z URL helperów).
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
+?>
+
 <!-- 
   =======================================================================
   Komponent: Kontener na powiadomienia (Toast)

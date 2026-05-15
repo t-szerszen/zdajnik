@@ -1,4 +1,16 @@
 <?php
+/**
+ * @file register.php
+ * @description
+ * Widok rejestracji nowego użytkownika.
+ *
+ * @variables
+ * - $noIndex (bool)
+ * - $pageTitle (string)
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
 
 /**
  * Konfiguracja komponentu head
@@ -69,7 +81,8 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
         <div class="alert alert--error" role="alert">
           <ul class="alert__list">
             <?php foreach ($errors as $error): ?>
-              <li class="alert__item"><i class="fas fa-exclamation-circle" style="margin-right: 0.5rem;"></i><?= htmlspecialchars($error) ?></li>
+              <li class="alert__item"><i class="fas fa-exclamation-circle"
+                  style="margin-right: 0.5rem;"></i><?= htmlspecialchars($error) ?></li>
             <?php endforeach; ?>
           </ul>
         </div>
@@ -82,8 +95,7 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
           <div class="form-card__input-wrapper">
             <i class="fas fa-user form-card__input-icon"></i>
             <input type="text" id="first_name" name="first_name" class="form-card__input form-card__input--with-icon"
-              value="<?= htmlspecialchars($formData['first_name'] ?? '') ?>"
-              placeholder="Jan" required>
+              value="<?= htmlspecialchars($formData['first_name'] ?? '') ?>" placeholder="Jan" required>
           </div>
         </div>
 
@@ -91,8 +103,7 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
         <div class="form-card__group">
           <label for="last_name" class="form-card__label">Nazwisko</label>
           <input type="text" id="last_name" name="last_name" class="form-card__input"
-            value="<?= htmlspecialchars($formData['last_name'] ?? '') ?>"
-            placeholder="Kowalski" required>
+            value="<?= htmlspecialchars($formData['last_name'] ?? '') ?>" placeholder="Kowalski" required>
         </div>
       </div>
 
@@ -102,9 +113,7 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
         <div class="form-card__input-wrapper">
           <i class="fas fa-envelope form-card__input-icon"></i>
           <input type="email" id="email" name="email" class="form-card__input form-card__input--with-icon"
-            value="<?= htmlspecialchars($formData['email'] ?? '') ?>"
-            placeholder="jankowalski@example.com"
-            required>
+            value="<?= htmlspecialchars($formData['email'] ?? '') ?>" placeholder="jankowalski@example.com" required>
         </div>
       </div>
 
@@ -125,8 +134,8 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
         <label for="confirm_password" class="form-card__label">Potwierdź hasło</label>
         <div class="password-wrapper">
           <i class="fas fa-shield-alt form-card__input-icon"></i>
-          <input type="password" id="confirm_password" name="confirm_password" class="form-card__input form-card__input--with-icon"
-            placeholder="Powtórz swoje hasło" required>
+          <input type="password" id="confirm_password" name="confirm_password"
+            class="form-card__input form-card__input--with-icon" placeholder="Powtórz swoje hasło" required>
           <i class="fas fa-eye password-toggle-icon"></i>
         </div>
       </div>

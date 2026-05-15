@@ -1,5 +1,18 @@
 <?php
 /**
+ * @file search.php
+ * @description
+ * Wyszukiwarka pytań z zaawansowanym filtrowaniem.
+ *
+ * @variables
+ * - $categories (array)
+ * - $totalCount (int)
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
+
+/**
  * Widok Wyszukiwarki Pytań | Examly
  */
 $pageTitle = 'Wyszukiwarka Pytań | Examly';
@@ -21,7 +34,8 @@ $results = $results ?? [];
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Wyszukiwarka</span> Pytań</h1>
-      <p class="page-header__text">Szybko zlokalizuj interesujące Cię zagadnienia. Filtruj bazę tysięcy pytań po treści lub unikalnym numerze ID, aby błyskawicznie sprawdzić poprawne rozwiązania i przypisane wyjaśnienia.</p>
+      <p class="page-header__text">Szybko zlokalizuj interesujące Cię zagadnienia. Filtruj bazę tysięcy pytań po treści
+        lub unikalnym numerze ID, aby błyskawicznie sprawdzić poprawne rozwiązania i przypisane wyjaśnienia.</p>
     </div>
   </header>
 
@@ -76,7 +90,7 @@ $results = $results ?? [];
 
       <!-- Sekcja Wyników -->
       <section class="search-page__results">
-          <?php include __DIR__ . '/partials/search_results_partial.php'; ?>
+        <?php include __DIR__ . '/partials/search_results_partial.php'; ?>
       </section>
 
     </div>

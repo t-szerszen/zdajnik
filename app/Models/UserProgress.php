@@ -67,7 +67,7 @@ class UserProgress
                       last_result = 0";
 
         $this->db->execute($sql, [$userId, $qvId]);
-      } 
+      }
       // KROK B: Obsługa pytań udzielonych (prawidłowo lub błędnie)
       else {
         $sql = "INSERT INTO user_progress (user_id, question_id, attempts_count, correct_count, incorrect_count, skipped_count, last_result)
@@ -138,8 +138,8 @@ class UserProgress
             FROM user_progress up
             JOIN questions q ON up.question_id = q.id
             WHERE up.user_id = ? AND q.exam_type_id = ? AND (up.correct_count + up.incorrect_count) > 0";
-    
+
     $result = $this->db->fetch($sql, [$userId, $examTypeId]);
-    return (int)($result['answered_count'] ?? 0);
+    return (int) ($result['answered_count'] ?? 0);
   }
 }

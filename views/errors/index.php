@@ -1,4 +1,17 @@
 <?php
+/**
+ * @file index.php
+ * @description
+ * Widok strony błędu HTTP (np. 404, 500).
+ *
+ * @variables
+ * - $errorCode (int)
+ * - $errorMessage (string)
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
+
 // Wartości domyślne, jeśli nie przekazano ich z kontrolera
 $pageTitle = $pageTitle ?? 'Błąd | Examly';
 $errorCode = $errorCode ?? 404;

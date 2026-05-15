@@ -1,4 +1,15 @@
 <?php
+/**
+ * @file one_question.php
+ * @description
+ * Tryb nauki "Jedno Pytanie" ze Spaced Repetition.
+ *
+ * @variables
+ * - $exam (array)
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
 
 /**
  * Konfiguracja komponentu head
@@ -61,7 +72,8 @@ $extraScripts = [
           <?= htmlspecialchars($exam['formatted_name']) ?>
         </span> - Jedno pytanie</h1>
       <p class="page-header__text">
-        Brak czasu na pełny test? Wykorzystaj wolną chwilę na rozwiązanie pojedynczego pytania. Wybierz dział, rozwiąż pytanie z oficjalnych arkuszy w kilka minut i małymi krokami buduj swoją gotowość do egzaminu.
+        Brak czasu na pełny test? Wykorzystaj wolną chwilę na rozwiązanie pojedynczego pytania. Wybierz dział, rozwiąż
+        pytanie z oficjalnych arkuszy w kilka minut i małymi krokami buduj swoją gotowość do egzaminu.
       </p>
       <p class="page-header__text">
         <strong class="text-gradient">Pro Tip:</strong> Zapisuj na boku każde nowe hasło lub trudniejsze zagadnienie.

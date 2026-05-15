@@ -2,9 +2,9 @@ FROM php:8.2-apache
 
 # Install dependencies (unzip and git are required by Composer)
 RUN apt-get update && apt-get install -y \
-    unzip \
-    git \
-    && docker-php-ext-install pdo pdo_mysql
+  unzip \
+  git \
+  && docker-php-ext-install pdo pdo_mysql
 
 # Enable mod_rewrite
 RUN a2enmod rewrite

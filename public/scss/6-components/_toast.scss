@@ -50,18 +50,23 @@
   // Modyfikatory kolorów
   &--info {
     border-left-color: var(--accent);
+
     .toast__icon {
       color: var(--accent);
     }
   }
+
   &--success {
     border-left-color: #16a34a;
+
     .toast__icon {
       color: #16a34a;
     }
   }
+
   &--error {
     border-left-color: #dc2626;
+
     .toast__icon {
       color: #dc2626;
     }

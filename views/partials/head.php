@@ -1,20 +1,21 @@
 <?php
-
 /**
- * ========================================================================
- * Komponent: Nagłówek HTML (<head>)
- * ========================================================================
- *
- * @description Ten komponent generuje całą sekcję <head> dla każdej
- * podstrony. Jest zaprojektowany tak, aby być elastycznym –
- * przyjmuje zmienne z widoku, który go dołącza, ale posiada
- * również solidne wartości domyślne dla kluczowych tagów SEO.
+ * @file head.php
+ * @description
+ * Główny blok <head> dokumentu HTML. Odpowiada za inicjalizację metadanych SEO
+ * (Meta Tags, Open Graph, Schema.org), import zasobów zewnętrznych (Google Fonts, 
+ * FontAwesome) oraz ładowanie skompilowanych stylów SCSS i skryptów systemowych.
  *
  * @variables
- * - $pageTitle (string): Tytuł strony.
- * - $pageDescription (string): Opis dla meta tagu description.
- * - $canonicalUrl (string): Kanoniczny URL strony.
- * - (Opcjonalnie) Można dodać więcej zmiennych dla tagów OG, etc.
+ * - $pageTitle (string): Tytuł strony (wyświetlany w karcie przeglądarki).
+ * - $pageDescription (string): Opis meta description dla wyszukiwarek.
+ * - $canonicalUrl (string): Kanoniczny adres URL strony.
+ * - $extraScripts (array|null): Dodatkowe ścieżki do skryptów JS.
+ * - $extraSchemas (array|null): Dodatkowe dane strukturalne JSON-LD.
+ * - $noIndex (bool|null): Jeśli true, strona otrzyma tag 'noindex'.
+ *
+ * @version 1.2.0
+ * @author Tobiasz Szerszeń
  */
 ?>
 
@@ -43,7 +44,8 @@
                  pokazuje pod tytułem strony w wynikach wyszukiwania.
                  Powinien być zwięzły (ok. 155 znaków) i zachęcający.
   -->
-  <meta name="description" content="<?= htmlspecialchars($pageDescription ?? 'Examly to platforma edukacyjna z testami i materiałami do egzaminów zawodowych. Przygotuj się skutecznie do egzaminu INF.03.') ?>">
+  <meta name="description"
+    content="<?= htmlspecialchars($pageDescription ?? 'Examly to platforma edukacyjna z testami i materiałami do egzaminów zawodowych. Przygotuj się skutecznie do egzaminu INF.03.') ?>">
 
   <!-- 
     @property canonical
@@ -67,12 +69,12 @@
 
   // Sprawdź, czy strona ma być wyłączona z indeksowania
   if (isset($noIndex) && $noIndex === true) {
-      $index_directive = 'noindex';
+    $index_directive = 'noindex';
   }
 
   // Sprawdź, czy roboty nie mają podążać za linkami
   if (isset($noFollow) && $noFollow === true) {
-      $follow_directive = 'nofollow';
+    $follow_directive = 'nofollow';
   }
   ?>
   <meta name="robots" content="<?= $index_directive ?>, <?= $follow_directive ?>">
@@ -82,7 +84,8 @@
   <!-- ================================================================== -->
   <!-- Protokół Open Graph (Facebook, LinkedIn, Pinterest, etc.) -->
   <meta property="og:title" content="<?= htmlspecialchars($pageTitle ?? 'Examly - Egzaminy Zawodowe INF.03') ?>">
-  <meta property="og:description" content="<?= htmlspecialchars($pageDescription ?? 'Zdobądź wiedzę i pewność przed egzaminem zawodowym.') ?>">
+  <meta property="og:description"
+    content="<?= htmlspecialchars($pageDescription ?? 'Zdobądź wiedzę i pewność przed egzaminem zawodowym.') ?>">
   <meta property="og:type" content="website">
   <meta property="og:url" content="<?= htmlspecialchars($canonicalUrl ?? url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
   <meta property="og:image" content="<?= url('images/social-preview.jpg') ?>">
@@ -91,7 +94,8 @@
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle ?? 'Examly - Egzaminy Zawodowe INF.03') ?>">
-  <meta name="twitter:description" content="<?= htmlspecialchars($pageDescription ?? 'Sprawdź darmowe testy i materiały edukacyjne.') ?>">
+  <meta name="twitter:description"
+    content="<?= htmlspecialchars($pageDescription ?? 'Sprawdź darmowe testy i materiały edukacyjne.') ?>">
   <meta name="twitter:image" content="<?= url('images/social-preview.jpg') ?>">
 
   <!-- ================================================================== -->
@@ -106,7 +110,8 @@
   -->
   <link rel="apple-touch-icon" href="<?= url('apple-touch-icon.png') ?>"> <!-- Upewnij się, że ten plik istnieje -->
 
-  <link rel="stylesheet" href="<?= url('scss/main.css?v=' . filemtime($_SERVER['DOCUMENT_ROOT'] . '/scss/main.css')) ?>">
+  <link rel="stylesheet"
+    href="<?= url('scss/main.css?v=' . filemtime($_SERVER['DOCUMENT_ROOT'] . '/scss/main.css')) ?>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -138,14 +143,14 @@
   <?php if (isset($extraSchemas) && is_array($extraSchemas)): ?>
     <?php foreach ($extraSchemas as $schema): ?>
       <script type="application/ld+json">
-        <?= json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
-      </script>
+            <?= json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
+          </script>
     <?php endforeach; ?>
   <?php endif; ?>
 
 
   <script>
-    (function() {
+    (function () {
       try {
         // Sprawdź zapisany motyw w localStorage
         const savedTheme = localStorage.getItem('theme');

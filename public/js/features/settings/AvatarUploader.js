@@ -105,12 +105,12 @@ export default class AvatarUploader {
     if (data.success) {
       // Zaktualizuj obrazki na stronie
       const newPath = '/images/avatars/' + data.avatar_path + '?v=' + Date.now();
-      
+
       // Podgląd w ustawieniach
       if (this.previewImg) {
         this.previewImg.src = newPath;
       }
-      
+
       // Ikona w nawigacji
       const navAvatar = document.querySelector('.navbar__avatar');
       if (navAvatar) {
@@ -152,7 +152,7 @@ export default class AvatarUploader {
           canvas.height = targetSize;
 
           const ctx = canvas.getContext('2d');
-          
+
           // Wygładzanie obrazu
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';

@@ -161,7 +161,7 @@ class SettingsController extends BaseController
     if ($this->userModel->requestDeletion($userId)) {
       // KROK 3: Usunięcie zużytego tokenu
       $this->tokenService->deleteTokensForUserByType($userId, 'account_deletion');
-      
+
       // KROK 4: Wylogowanie użytkownika (zniszczenie sesji)
       $this->terminateSession();
 
@@ -268,7 +268,7 @@ class SettingsController extends BaseController
 
     // Walidacja nowego adresu i hasła przez zewnętrzny serwis
     $errors = $this->validator->validateEmailChange($newEmail, $password, $this->currentUser->getId());
-    
+
     if (!empty($errors)) {
       $this->redirectWithFlash('error', $errors, 'email');
     }
@@ -368,7 +368,7 @@ class SettingsController extends BaseController
     }
 
     $userId = $this->currentUser->getId();
-    
+
     // Weryfikacja czy użytkownik rzeczywiście posiada postęp w danym egzaminie
     $startedExams = $this->attemptModel->getStartedExamsByUser($userId);
     $examCode = '';
@@ -432,7 +432,7 @@ class SettingsController extends BaseController
 
     // KROK 2: Analiza ilości danych (answeredCount) w celu optymalizacji bazy danych
     $answeredCount = $this->userProgressModel->countAnsweredQuestionsForExam($userId, $examTypeId);
-    
+
     // KROK 3: Przetwarzanie historii prób (attempts) w zależności od stopnia progresu
     if ($answeredCount <= 40) {
       // Dla małej ilości danych wykonujemy twarde usunięcie (mniej śmieci w DB)

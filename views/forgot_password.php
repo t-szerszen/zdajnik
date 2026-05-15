@@ -1,4 +1,22 @@
 <?php
+/**
+ * @file forgot_password.php
+ * @description
+ * Widok żądania resetu hasła (krok 1).
+ * Wyświetla formularz umożliwiający użytkownikowi podanie adresu e-mail
+ * w celu otrzymania linku i kodu autoryzacyjnego do resetowania hasła.
+ * Zawiera wbudowane zabezpieczenie anty-spamowe (CountdownButton).
+ *
+ * @variables
+ * - $remaining (int|null): Ilość sekund blokady przed kolejnym wysłaniem e-maila.
+ * - $_SESSION['flash_message'] (array|null): Komunikaty błędów lub sukcesu.
+ * - $_SESSION['password_reset_code'] (string|null): Opcjonalny kod bezpieczeństwa
+ *   do wyświetlenia użytkownikowi, jeśli system tego wymaga.
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
+
 $pageTitle = 'Resetowanie Hasła | Examly';
 $noIndex = true;
 ?>

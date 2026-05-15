@@ -18,11 +18,11 @@
   // --- Motyw Jasny (Domyślny) -------------------------------------------------
 
   // Fundament - system warstw (layering)
-  --bg: #f4f6f9;           // Główne tło (lekko szare - odróżnia się od kart)
-  --surface: #ffffff;      // Karty, kontenery, panele
-  --text: #1a202c;         // Tekst główny (głęboki grafit - nie czysty #000)
-  --text-rgb: 26, 32, 44;  // RGB tekstu (do rgba())
-  --text-muted: #64748b;   // Tekst pomocniczy, etykiety
+  --bg: #f4f6f9; // Główne tło (lekko szare - odróżnia się od kart)
+  --surface: #ffffff; // Karty, kontenery, panele
+  --text: #1a202c; // Tekst główny (głęboki grafit - nie czysty #000)
+  --text-rgb: 26, 32, 44; // RGB tekstu (do rgba())
+  --text-muted: #64748b; // Tekst pomocniczy, etykiety
 
   // Kolory akcentowe
   --accent: #3b82f6;
@@ -149,5 +149,3 @@ html.dark {
   --glass-border: rgba(255, 255, 255, 0.06);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
 }
-
-

@@ -1,4 +1,16 @@
 <?php
+/**
+ * @file personalized_test.php
+ * @description
+ * Kreator i widok testu spersonalizowanego (wybrane działy).
+ *
+ * @variables
+ * - $exam (array)
+ * - $topics (array)
+ *
+ * @version 1.1.0
+ * @author Tobiasz Szerszeń
+ */
 
 /**
  * Konfiguracja komponentu head
@@ -52,10 +64,12 @@ $extraScripts = [
       <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span>
         - Spersonalizowany test</h1>
       <p class="page-header__text">
-        Wygeneruj test dopasowany do Twoich aktualnych potrzeb. Skonfiguruj zakres tematyczny, określ liczbę pytań i systematycznie eliminuj swoje luki w wiedzy.
+        Wygeneruj test dopasowany do Twoich aktualnych potrzeb. Skonfiguruj zakres tematyczny, określ liczbę pytań i
+        systematycznie eliminuj swoje luki w wiedzy.
       </p>
       <p class="page-header__text">
-        <strong class="text-gradient">Pro Tip:</strong> Rozwiąż kilka testów próbnych, aby algorytm mógł skutecznie kalibrować poziom na podstawie Twoich słabych stron.
+        <strong class="text-gradient">Pro Tip:</strong> Rozwiąż kilka testów próbnych, aby algorytm mógł skutecznie
+        kalibrować poziom na podstawie Twoich słabych stron.
       </p>
     </div>
   </header>
