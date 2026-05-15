@@ -60,6 +60,75 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
 
     <div class="settings-accordion" id="settings-accordion">
 
+      <!-- Sekcja: Zdjęcie Profilowe (Avatar) -->
+      <div class="settings-card <?= ($activeForm === 'avatar' || empty($activeForm)) ? 'is-open' : '' ?>" id="avatar-uploader">
+        <div class="settings-card__header">
+          <div class="settings-card__title-group">
+            <h3 class="settings-card__title">
+              <i class="fas fa-camera"></i>
+              <span>Zdjęcie profilowe</span>
+            </h3>
+            <p class="settings-card__description">Wgraj swoje zdjęcie lub wybierz gotowy awatar.</p>
+          </div>
+          <i class="fas fa-chevron-down settings-card__icon"></i>
+        </div>
+        <div class="settings-card__content avatar-section-content">
+          
+          <div class="avatar-manager">
+            <div class="avatar-manager__preview">
+              <div class="avatar-manager__img-wrapper" id="avatar-loader">
+                <?php 
+                  $currentAvatarPath = $currentUser->getAvatarPath();
+                  $avatarSrc = $currentAvatarPath ? url('images/avatars/' . $currentAvatarPath) : url('images/default-avatar.png');
+                ?>
+                <img src="<?= htmlspecialchars($avatarSrc) ?>" alt="Twój profil" id="avatar-preview-img" class="avatar-manager__img">
+                <div class="avatar-manager__spinner">
+                  <i class="fas fa-circle-notch fa-spin"></i>
+                </div>
+              </div>
+              <button class="btn btn--outline" id="avatar-upload-btn">
+                <i class="fas fa-upload"></i> Wgraj własne zdjęcie
+              </button>
+              <input type="file" id="avatar-file-input" accept="image/jpeg, image/png, image/webp" style="display: none;">
+            </div>
+
+            <div class="avatar-manager__divider"><span>LUB</span></div>
+
+            <div class="avatar-manager__defaults">
+              <p class="avatar-manager__defaults-title">Wybierz gotowy awatar:</p>
+              <div class="avatar-manager__grid">
+                <!-- Przygotowane domyślne awatary -->
+                <button class="default-avatar-btn" data-src="defaults/1.svg">
+                  <img src="<?= url('images/avatars/defaults/1.svg') ?>" alt="Default 1">
+                </button>
+                <button class="default-avatar-btn" data-src="defaults/2.svg">
+                  <img src="<?= url('images/avatars/defaults/2.svg') ?>" alt="Default 2">
+                </button>
+                <button class="default-avatar-btn" data-src="defaults/3.svg">
+                  <img src="<?= url('images/avatars/defaults/3.svg') ?>" alt="Default 3">
+                </button>
+                <button class="default-avatar-btn" data-src="defaults/4.svg">
+                  <img src="<?= url('images/avatars/defaults/4.svg') ?>" alt="Default 4">
+                </button>
+                <button class="default-avatar-btn" data-src="defaults/5.svg">
+                  <img src="<?= url('images/avatars/defaults/5.svg') ?>" alt="Default 5">
+                </button>
+                <button class="default-avatar-btn" data-src="defaults/6.svg">
+                  <img src="<?= url('images/avatars/defaults/6.svg') ?>" alt="Default 6">
+                </button>
+                <button class="default-avatar-btn" data-src="defaults/7.svg">
+                  <img src="<?= url('images/avatars/defaults/7.svg') ?>" alt="Default 7">
+                </button>
+                <button class="default-avatar-btn" data-src="defaults/8.svg">
+                  <img src="<?= url('images/avatars/defaults/8.svg') ?>" alt="Default 8">
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       <!-- Sekcja: Dane Osobowe -->
       <div class="settings-card <?= ($activeForm === 'name') ? 'is-open' : '' ?>">
         <div class="settings-card__header">
@@ -339,9 +408,14 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
   <script type="module" src="<?= url('js/components/show-password-toggle.js') ?>"></script>
   <script type="module">
     import CountdownButton from '<?= url('js/components/CountdownButton.js') ?>';
+    import AvatarUploader from '<?= url('js/features/settings/AvatarUploader.js') ?>';
+    
     <?php if (!$isGoogleUser): ?>
       new CountdownButton('changeEmailBtn');
     <?php endif; ?>
+    
+    // Inicjalizacja uploadera awatarów
+    new AvatarUploader();
   </script>
 </body>
 

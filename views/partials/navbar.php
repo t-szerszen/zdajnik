@@ -131,7 +131,10 @@ else: ?>
       <li class="main-nav__item dropdown main-nav__item--user">
         <a href="<?= url('statystyki')?>" class="main-nav__link main-nav__link--user" aria-label="Profil użytkownika">
           <div class="main-nav__user-info-mobile">
-            <img src="<?= url('images/user.png')?>" alt="Avatar" class="main-nav__user-avatar">
+            <?php
+              $navAvatarSrc = $currentUser->getAvatarPath() ? url('images/avatars/' . $currentUser->getAvatarPath()) : url('images/user.png');
+            ?>
+            <img src="<?= htmlspecialchars($navAvatarSrc) ?>" alt="Avatar" class="main-nav__user-avatar navbar__avatar">
             <div class="main-nav__user-text">
               <span class="main-nav__user-name">Mój Profil</span>
               <span class="main-nav__user-status">Zalogowano</span>

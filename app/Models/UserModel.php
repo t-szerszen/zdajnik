@@ -69,7 +69,7 @@ class UserModel
    */
   public function getUserByEmail(string $email): ?User
   {
-    $sql = 'SELECT id, google_id, first_name, last_name, email, is_verified, role FROM users WHERE email = ?';
+    $sql = 'SELECT id, google_id, first_name, last_name, email, is_verified, role, avatar_path FROM users WHERE email = ?';
     $user_data = $this->db->fetch($sql, [$email]);
 
     return $user_data ? new User($user_data) : null;
@@ -251,6 +251,25 @@ class UserModel
   }
 
   /**
+   * Aktualizuje ścieżkę do awatara użytkownika.
+   * 
+   * @param int $userId
+   * @param string|null $avatarPath Ścieżka do pliku awatara (np. defaults/1.svg) lub null
+   * @return bool
+   */
+  public function updateAvatar(int $userId, ?string $avatarPath): bool
+  {
+    $sql = 'UPDATE users SET avatar_path = ? WHERE id = ?';
+    if ($this->db->execute($sql, [$avatarPath, $userId])) {
+      if (isset($_SESSION['user'])) {
+        $_SESSION['user'] = $this->getUserById($userId);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Zmienia adres e-mail i wymusza ponowną (bądź natychmiastową) weryfikację.
    * 
    * @param int $userId
@@ -351,7 +370,8 @@ class UserModel
               first_name = 'Anonimowy',
               last_name = 'Użytkownik',
               password_hash = 'ANONYMIZED',
-              auth_provider = 'local'
+              auth_provider = 'local',
+              avatar_path = NULL
             WHERE id IN ($placeholders)";
 
     $this->db->execute($sqlUserUpdate, $userIds);

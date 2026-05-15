@@ -43,6 +43,9 @@ class User
   /** @var string Rola w systemie (np. 'user', 'admin') */
   private string $role;
 
+  /** @var string|null Ścieżka do zdjęcia profilowego (awatara) */
+  private ?string $avatarPath = null;
+
   /**
    * Tworzy nowy obiekt użytkownika na podstawie surowych danych z bazy.
    *
@@ -59,6 +62,7 @@ class User
     $this->isVerified = (bool) $data['is_verified'];
     $this->isActive = (bool) ($data['is_active'] ?? true);
     $this->role = $data['role'];
+    $this->avatarPath = $data['avatar_path'] ?? null;
   }
 
   // --- GETTERY ---
@@ -125,5 +129,11 @@ class User
   public function isActive(): bool
   {
     return $this->isActive;
+  }
+
+  /** @return string|null */
+  public function getAvatarPath(): ?string
+  {
+    return $this->avatarPath;
   }
 }

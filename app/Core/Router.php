@@ -232,6 +232,7 @@ class Router
     $this->post('api/save-attempt', 'ApiController@saveAttempt');
     $this->post('api/save-progress-bulk', 'ApiController@saveProgressBulk');
     $this->post('api/toggle-saved', 'ApiController@toggleSavedQuestion');
+    $this->post('api/user/avatar', 'ApiController@updateAvatar');
 
     // --- WYSZUKIWARKA I FILTRACJA ---
     $this->get('search', 'SearchController@showSearch');

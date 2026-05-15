@@ -7,6 +7,7 @@ use App\Models\Answer;
 use App\Models\UserProgress;
 use App\Models\Attempt;
 use App\Models\SavedQuestion;
+use App\Models\UserModel;
 
 /**
  * Kontroler API (ApiController).
@@ -43,6 +44,9 @@ class ApiController extends BaseController
   /** @var SavedQuestion Model do zarządzania schowkiem użytkownika */
   private SavedQuestion $savedQuestionModel;
 
+  /** @var UserModel Model do aktualizacji danych użytkownika */
+  private UserModel $userModel;
+
   /**
    * Projektuje i inicjalizuje mosty do warstwy danych.
    */
@@ -54,6 +58,7 @@ class ApiController extends BaseController
     $this->userProgressModel = new UserProgress();
     $this->attemptModel = new Attempt();
     $this->savedQuestionModel = new SavedQuestion();
+    $this->userModel = new UserModel();
   }
 
   // --- ENDPOINTY POBIERANIA PYTAŃ (READ) ---
@@ -333,6 +338,99 @@ class ApiController extends BaseController
       ]);
     } else {
       $this->sendJsonResponse(['success' => false, 'message' => 'Błąd po stronie serwera.'], 500);
+    }
+  }
+
+  /**
+   * Endpoint: Aktualizacja awatara użytkownika (Custom Base64 lub Default).
+   */
+  public function updateAvatar(): void
+  {
+    $this->ensurePostRequest();
+
+    if (!$this->isUserLoggedIn) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Wymagane uwierzytelnienie.'], 403);
+      return;
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!isset($input['type']) || !isset($input['avatar'])) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Brak wymaganych parametrów.'], 400);
+      return;
+    }
+
+    $userId = $this->currentUser->getId();
+    $type = $input['type']; // 'default' lub 'custom'
+    $avatarData = $input['avatar'];
+
+    $newAvatarPath = null;
+    $avatarsDir = $_SERVER['DOCUMENT_ROOT'] . '/images/avatars/';
+    
+    // Upewnij się, że katalog istnieje
+    if (!is_dir($avatarsDir)) {
+      mkdir($avatarsDir, 0755, true);
+    }
+
+    if ($type === 'default') {
+      // Walidacja czy plik domyślny istnieje
+      $defaultPath = 'defaults/' . basename($avatarData);
+      if (file_exists($avatarsDir . $defaultPath)) {
+        $newAvatarPath = $defaultPath;
+      } else {
+        $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy awatar domyślny.'], 400);
+        return;
+      }
+    } elseif ($type === 'custom') {
+      // Obsługa Base64 (WebP/JPEG)
+      if (preg_match('/^data:image\/(\w+);base64,/', $avatarData, $typeMatch)) {
+        $data = substr($avatarData, strpos($avatarData, ',') + 1);
+        $data = base64_decode($data);
+
+        if ($data === false) {
+          $this->sendJsonResponse(['success' => false, 'message' => 'Błąd dekodowania obrazu.'], 400);
+          return;
+        }
+
+        // Generowanie unikalnej nazwy
+        $extension = $typeMatch[1] === 'jpeg' ? 'jpg' : $typeMatch[1];
+        if (!in_array($extension, ['jpg', 'png', 'webp'])) {
+           $extension = 'webp'; // fallback
+        }
+        
+        $filename = 'custom_' . $userId . '_' . time() . '.' . $extension;
+        $newAvatarPath = $filename;
+        
+        if (file_put_contents($avatarsDir . $filename, $data) === false) {
+           $this->sendJsonResponse(['success' => false, 'message' => 'Błąd zapisu pliku na serwerze.'], 500);
+           return;
+        }
+      } else {
+        $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy format obrazu.'], 400);
+        return;
+      }
+    } else {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nieznany typ operacji.'], 400);
+      return;
+    }
+
+    // Usunięcie starego customowego awatara
+    $oldAvatar = $this->currentUser->getAvatarPath();
+    if ($oldAvatar && strpos($oldAvatar, 'custom_') === 0) {
+      $oldFile = $avatarsDir . $oldAvatar;
+      if (file_exists($oldFile)) {
+        unlink($oldFile);
+      }
+    }
+
+    // Aktualizacja w bazie
+    if ($this->userModel->updateAvatar($userId, $newAvatarPath)) {
+      $this->sendJsonResponse([
+        'success' => true, 
+        'message' => 'Awatar zaktualizowany.',
+        'avatar_path' => $newAvatarPath
+      ]);
+    } else {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Błąd aktualizacji bazy danych.'], 500);
     }
   }
 

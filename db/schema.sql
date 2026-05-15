@@ -1,194 +1,322 @@
-/*
-=============================================================================
-DOKUMENTACJA SYSTEMU BAZY DANYCH EGZAMINACYJNYCH
-=============================================================================
-Opis: System do zarządzania egzaminami, wersjonowania pytań i śledzenia postępów.
-Silnik: InnoDB | Kodowanie: utf8mb4 (pełne wsparcie Unicode/Emoji)
-=============================================================================
-*/
+/*M!999999\- enable the sandbox mode */
+-- MariaDB dump 10.19-11.4.10-MariaDB, for Linux (aarch64)
+--
+-- Host: db    Database: examly_db
+-- ------------------------------------------------------
+-- Server version	8.0.45
 
--- ---------------------------------------------------------
--- SEKCOJA 1: UŻYTKOWNICY I BEZPIECZEŃSTWO
--- ---------------------------------------------------------
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*M!100616 SET @OLD_NOTE_VERBOSITY=@@NOTE_VERBOSITY, NOTE_VERBOSITY=0 */;
 
--- Tabela przechowująca dane użytkowników i metodę autoryzacji.
-CREATE TABLE users (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  google_id VARCHAR(255) DEFAULT NULL,            -- ID z Google OAuth (unikalne)
-  auth_provider ENUM('local', 'google') NOT NULL DEFAULT 'local',
-  first_name VARCHAR(100) NOT NULL,
-  last_name VARCHAR(100) NOT NULL,
-  email VARCHAR(255) NOT NULL,
-  password_hash CHAR(255) DEFAULT NULL,           -- Hash hasła (puste dla Google Auth)
-  is_verified TINYINT(1) DEFAULT 0,               -- Czy e-mail został potwierdzony
-  role ENUM('user', 'admin') DEFAULT 'user',      -- Role systemowe (RBAC)
-  is_active TINYINT(1) NOT NULL DEFAULT 1,        -- Flaga aktywności konta
-  deleted_at DATETIME DEFAULT NULL,               -- Soft Delete: data "usunięcia"
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  UNIQUE KEY uq_email (email),
-  UNIQUE KEY uq_google_id (google_id)
+--
+-- Table structure for table `answers`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `answers` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `question_version_id` int unsigned NOT NULL,
+  `answer_text` text NOT NULL,
+  `answer_order` int unsigned NOT NULL DEFAULT '1',
+  `is_correct` tinyint(1) NOT NULL DEFAULT '0',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_answer_order` (`question_version_id`,`answer_order`),
+  CONSTRAINT `answers_ibfk_1` FOREIGN KEY (`question_version_id`) REFERENCES `question_versions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `attempt_answers`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `attempt_answers` (
+  `attempt_id` int unsigned NOT NULL,
+  `question_version_id` int unsigned NOT NULL,
+  `answer_id` int unsigned DEFAULT NULL,
+  `is_correct` tinyint(1) NOT NULL DEFAULT '0',
+  `answered_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`attempt_id`,`question_version_id`),
+  KEY `question_version_id` (`question_version_id`),
+  KEY `answer_id` (`answer_id`),
+  CONSTRAINT `attempt_answers_ibfk_1` FOREIGN KEY (`attempt_id`) REFERENCES `attempts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `attempt_answers_ibfk_2` FOREIGN KEY (`question_version_id`) REFERENCES `question_versions` (`id`),
+  CONSTRAINT `attempt_answers_ibfk_3` FOREIGN KEY (`answer_id`) REFERENCES `answers` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `attempt_topics`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `attempt_topics` (
+  `attempt_id` int unsigned NOT NULL,
+  `topic_id` int unsigned NOT NULL,
+  PRIMARY KEY (`attempt_id`,`topic_id`),
+  KEY `topic_id` (`topic_id`),
+  CONSTRAINT `attempt_topics_ibfk_1` FOREIGN KEY (`attempt_id`) REFERENCES `attempts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `attempt_topics_ibfk_2` FOREIGN KEY (`topic_id`) REFERENCES `topics` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `attempts`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `attempts` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int unsigned DEFAULT NULL,
+  `exam_type_id` int unsigned NOT NULL,
+  `test_type` enum('full_exam','personalized') NOT NULL,
+  `started_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `completed_at` datetime DEFAULT NULL,
+  `correct_count` int NOT NULL DEFAULT '0',
+  `total_questions` int NOT NULL DEFAULT '0',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `exam_type_id` (`exam_type_id`),
+  KEY `attempts_ibfk_1` (`user_id`),
+  CONSTRAINT `attempts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `attempts_ibfk_2` FOREIGN KEY (`exam_type_id`) REFERENCES `exam_types` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `exam_types`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `exam_types` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `description` text,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `question_versions`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `question_versions` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `question_id` int unsigned NOT NULL,
+  `version_num` int NOT NULL DEFAULT '1',
+  `question_text` text NOT NULL,
+  `image_name` varchar(500) DEFAULT NULL,
+  `explanation` text,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_qv` (`question_id`,`version_num`),
+  CONSTRAINT `question_versions_ibfk_1` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `questions`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `questions` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `exam_type_id` int unsigned NOT NULL,
+  `topic_id` int unsigned NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `exam_type_id` (`exam_type_id`),
+  KEY `topic_id` (`topic_id`),
+  CONSTRAINT `questions_ibfk_1` FOREIGN KEY (`exam_type_id`) REFERENCES `exam_types` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `questions_ibfk_2` FOREIGN KEY (`topic_id`) REFERENCES `topics` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `saved_questions`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `saved_questions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `question_id` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_user_question` (`user_id`,`question_id`),
+  KEY `idx_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `schema_migrations`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `schema_migrations` (
+  `version` varchar(128) NOT NULL,
+  PRIMARY KEY (`version`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `topics`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `topics` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `exam_type_id` int unsigned NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `description` text,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_topic` (`exam_type_id`,`name`),
+  CONSTRAINT `topics_ibfk_1` FOREIGN KEY (`exam_type_id`) REFERENCES `exam_types` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `user_progress`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_progress` (
+  `user_id` int unsigned NOT NULL,
+  `question_id` int unsigned NOT NULL,
+  `attempts_count` int NOT NULL DEFAULT '0',
+  `correct_count` int NOT NULL DEFAULT '0',
+  `incorrect_count` int NOT NULL DEFAULT '0',
+  `skipped_count` int NOT NULL DEFAULT '0',
+  `last_result` tinyint(1) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`,`question_id`),
+  KEY `question_id` (`question_id`),
+  CONSTRAINT `user_progress_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `user_progress_ibfk_2` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `user_tokens`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_tokens` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int unsigned NOT NULL,
+  `token` varchar(512) NOT NULL,
+  `type` enum('email_verify','password_reset','email_change','account_deletion','progress_anonymization') NOT NULL,
+  `token_data` varchar(255) DEFAULT NULL,
+  `auth_code` varchar(50) DEFAULT NULL,
+  `expires_at` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user` (`user_id`),
+  KEY `idx_token` (`token`),
+  CONSTRAINT `user_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `users`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `google_id` varchar(255) COLLATE utf8mb4_polish_ci DEFAULT NULL,
+  `auth_provider` enum('local','google') COLLATE utf8mb4_polish_ci NOT NULL DEFAULT 'local',
+  `first_name` varchar(100) COLLATE utf8mb4_polish_ci NOT NULL,
+  `last_name` varchar(100) COLLATE utf8mb4_polish_ci DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_polish_ci NOT NULL,
+  `avatar_path` varchar(255) COLLATE utf8mb4_polish_ci DEFAULT NULL,
+  `password_hash` char(255) COLLATE utf8mb4_polish_ci DEFAULT NULL,
+  `is_verified` tinyint(1) DEFAULT '0',
+  `role` enum('user','admin') COLLATE utf8mb4_polish_ci DEFAULT 'user',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_email` (`email`),
+  UNIQUE KEY `uq_google_id` (`google_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_polish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Tokeny krótkotrwałe (weryfikacja, reset hasła, zmiana e-mail).
-CREATE TABLE user_tokens (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  user_id INT UNSIGNED NOT NULL,
-  token VARCHAR(512) NOT NULL,
-  type ENUM('email_verify','password_reset','email_change','account_deletion') NOT NULL,
-  token_data VARCHAR(255) DEFAULT NULL,           -- Np. nowy e-mail przy zmianie
-  expires_at DATETIME NOT NULL,
-  deleted_at DATETIME DEFAULT NULL,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  KEY idx_user (user_id),
-  KEY idx_token (token),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+--
+-- Dumping routines for database 'examly_db'
+--
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
--- ---------------------------------------------------------
--- SEKCJA 2: STRUKTURA TREŚCI (EGZAMINY I TEMATY)
--- ---------------------------------------------------------
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Główne kategorie egzaminacyjne (np. Prawo Jazdy, Matura).
-CREATE TABLE exam_types (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  code VARCHAR(50) NOT NULL,                      -- Krótki kod (np. 'PJ-B')
-  name VARCHAR(200) NOT NULL,                      -- Pełna nazwa
-  description TEXT,
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
-  deleted_at DATETIME DEFAULT NULL,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  UNIQUE KEY unique_code (code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- Dump completed
 
--- Podkategorie/Tematy wewnątrz danego egzaminu.
-CREATE TABLE topics (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  exam_type_id INT UNSIGNED NOT NULL,
-  name VARCHAR(200) NOT NULL,
-  description TEXT,
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
-  deleted_at DATETIME DEFAULT NULL,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  UNIQUE KEY unique_topic (exam_type_id, name),    -- Unikalność nazwy w obrębie egzaminu
-  FOREIGN KEY (exam_type_id) REFERENCES exam_types(id) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+--
+-- Dbmate schema migrations
+--
 
--- ---------------------------------------------------------
--- SEKCJA 3: PYTANIA I WERSJONOWANIE
--- ---------------------------------------------------------
-
--- Tabela bazowa pytania (kontener logiczny).
--- Zastosowano wzorzec wersjonowania treści (oddzielenie ID od treści).
-CREATE TABLE questions (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  exam_type_id INT UNSIGNED NOT NULL,
-  topic_id INT UNSIGNED NOT NULL,
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
-  deleted_at DATETIME DEFAULT NULL,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  FOREIGN KEY (exam_type_id) REFERENCES exam_types(id) ON DELETE RESTRICT,
-  FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Faktyczna treść pytania (pozwala na edycję bez niszczenia historii wyników).
-CREATE TABLE question_versions (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  question_id INT UNSIGNED NOT NULL,
-  version_num INT NOT NULL DEFAULT 1,             -- Numer wersji (inkrementowany ręcznie)
-  question_text TEXT NOT NULL,
-  image_path VARCHAR(500) NULL,                   -- Opcjonalna ścieżka do grafiki
-  explanation TEXT NULL,                          -- Wyjaśnienie poprawnej odpowiedzi
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
-  deleted_at DATETIME DEFAULT NULL,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  UNIQUE KEY uq_qv (question_id, version_num),    -- Tylko jedna wersja o danym numerze dla pytania
-  FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Opcje odpowiedzi przypisane do konkretnej wersji pytania.
-CREATE TABLE answers (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  question_version_id INT UNSIGNED NOT NULL,
-  answer_text TEXT NOT NULL,
-  answer_order INT UNSIGNED NOT NULL DEFAULT 1,   -- Kolejność wyświetlania
-  is_correct TINYINT(1) NOT NULL DEFAULT 0,       -- Czy to poprawna odpowiedź?
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
-  deleted_at DATETIME DEFAULT NULL,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  UNIQUE KEY uq_answer_order (question_version_id, answer_order),
-  FOREIGN KEY (question_version_id) REFERENCES question_versions(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- ---------------------------------------------------------
--- SEKCJA 4: ANALITYKA I WYNIKI UŻYTKOWNIKA
--- ---------------------------------------------------------
-
--- Nagłówek sesji testowej (próby podejścia do egzaminu).
-CREATE TABLE attempts (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  user_id INT UNSIGNED NOT NULL,
-  exam_type_id INT UNSIGNED NOT NULL,
-  test_type ENUM('full_exam','personalized') NOT NULL, -- Rodzaj generowania testu
-  started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  completed_at DATETIME DEFAULT NULL,             -- Data zakończenia (NULL = w trakcie)
-  correct_count INT NOT NULL DEFAULT 0,           -- Suma poprawnych odpowiedzi
-  total_questions INT NOT NULL DEFAULT 0,         -- Liczba pytań w teście
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
-  FOREIGN KEY (exam_type_id) REFERENCES exam_types(id) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Relacja N:M określająca, z jakich tematów składała się próba (dla testów personalizowanych).
-CREATE TABLE attempt_topics (
-  attempt_id INT UNSIGNED NOT NULL,
-  topic_id INT UNSIGNED NOT NULL,
-  PRIMARY KEY (attempt_id, topic_id),
-  FOREIGN KEY (attempt_id) REFERENCES attempts(id) ON DELETE CASCADE,
-  FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Zapis konkretnych odpowiedzi udzielonych przez użytkownika.
--- answer_id może być NULL jeśli użytkownik pominął pytanie (skip)
-CREATE TABLE attempt_answers (
-  attempt_id INT UNSIGNED NOT NULL,
-  question_version_id INT UNSIGNED NOT NULL,      -- Referencja do wersji (wiemy co widział user)
-  answer_id INT UNSIGNED DEFAULT NULL,            -- Wybrana odpowiedź (NULL = pominięte pytanie)
-  is_correct TINYINT(1) NOT NULL DEFAULT 0,       -- Cache: czy odpowiedź była poprawna (0 dla skipped)
-  answered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (attempt_id, question_version_id),
-  FOREIGN KEY (attempt_id) REFERENCES attempts(id) ON DELETE CASCADE,
-  FOREIGN KEY (question_version_id) REFERENCES question_versions(id) ON DELETE NO ACTION,
-  FOREIGN KEY (answer_id) REFERENCES answers(id) ON DELETE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Tabela zbiorcza (Cache statystyk).
--- Służy do szybkiego wyciągania postępu (np. "ile razy to pytanie było błędne?").
-CREATE TABLE user_progress (
-  user_id INT UNSIGNED NOT NULL,
-  question_id INT UNSIGNED NOT NULL,
-  attempts_count INT NOT NULL DEFAULT 0,          -- Ile razy user widział to pytanie
-  correct_count INT NOT NULL DEFAULT 0,           -- Ile razy odpowiedział poprawnie
-  incorrect_count INT NOT NULL DEFAULT 0,         -- Ile razy odpowiedział błędnie
-  skipped_count INT NOT NULL DEFAULT 0,           -- Ile razy user pominął to pytanie
-  last_result TINYINT(1) NOT NULL,                -- Wynik ostatniej próby (0 = błędna, 1 = poprawna)
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (user_id, question_id),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+LOCK TABLES `schema_migrations` WRITE;
+INSERT INTO `schema_migrations` (version) VALUES
+  ('20260207130033'),
+  ('20260218102245'),
+  ('20260218105514'),
+  ('20260218120000'),
+  ('20260218143259'),
+  ('20260220213620'),
+  ('20260220222647'),
+  ('20260326114113'),
+  ('20260410105320'),
+  ('20260515181036');
+UNLOCK TABLES;

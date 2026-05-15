@@ -123,7 +123,7 @@
 
     form {
       max-width: 500px;
-      padding: 0.5rem 0 2rem 2.75rem; // Align with title text
+      padding: 1.5rem 0 2rem 2.75rem; // Align with title text
 
       @include media-down(sm) {
         padding-left: 0;
@@ -217,6 +217,136 @@
 
     .settings-card__header {
       background-color: rgba(59, 130, 246, 0.02);
+    }
+  }
+}
+
+// --- AVATAR MANAGER ---
+.avatar-manager {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0.5rem 0 2rem 0;
+
+  @include media-down(sm) {
+    padding-left: 0;
+  }
+
+  &__preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  &__img-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.05);
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+
+    html.dark & {
+      border-color: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.3s ease;
+  }
+
+  &__spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    color: var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+  }
+
+  // Stan ładowania
+  #avatar-loader.is-active {
+    .avatar-manager__img {
+      opacity: 0.3;
+      filter: blur(2px);
+    }
+    .avatar-manager__spinner {
+      opacity: 1;
+    }
+  }
+
+  &__divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 2rem 0;
+    color: var(--muted-text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      html.dark & {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    span {
+      padding: 0 1rem;
+      opacity: 0.6;
+    }
+  }
+
+  &__defaults-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  &__grid {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .default-avatar-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+
+    &:hover {
+      transform: scale(1.1) translateY(-2px);
+      box-shadow: 0 8px 15px rgba(59, 130, 246, 0.2);
+      border-color: var(--accent);
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
   }
 }
