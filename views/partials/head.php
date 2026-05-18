@@ -93,8 +93,9 @@
     content="<?= htmlspecialchars($pageDescription ?? 'Zdobądź wiedzę i pewność przed egzaminem zawodowym.') ?>">
   <meta property="og:type" content="website">
   <meta property="og:url" content="<?= htmlspecialchars($canonicalUrl ?? url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
-  <!-- TODO: Podmień na finalną grafikę social share (zalecane min. 1200x630), np. /images/seo/social-preview.jpg -->
-  <meta property="og:image" content="<?= url('images/social-preview.jpg') ?>">
+  <meta property="og:image" content="<?= url('images/company/examly-og-1200x630.png') ?>">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Examly - platforma do nauki i testów egzaminów zawodowych">
   <meta property="og:locale" content="pl_PL">
   <meta property="og:site_name" content="Examly">
@@ -104,17 +105,16 @@
   <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle ?? 'Examly - Egzaminy Zawodowe INF.03') ?>">
   <meta name="twitter:description"
     content="<?= htmlspecialchars($pageDescription ?? 'Sprawdź darmowe testy i materiały edukacyjne.') ?>">
-  <!-- TODO: Uzupełnij o konto marki, np. @examlypl -->
   <meta name="twitter:site" content="@examlypl">
-  <meta name="twitter:image" content="<?= url('images/social-preview.jpg') ?>">
+  <meta name="twitter:image" content="<?= url('images/company/examly-twitter-1200x600.png') ?>">
 
   <!-- ================================================================== -->
   <!-- 4. Ikony i zasoby (Assets) -->
   <!-- ================================================================== -->
-  <!-- TODO: Upewnij się, że istnieją wszystkie favicony i web app icons w /public -->
-  <link rel="icon" href="<?= url('favicon.ico') ?>" type="image/x-icon">
-  <link rel="icon" type="image/png" sizes="32x32" href="<?= url('favicon-32x32.png') ?>">
-  <link rel="icon" type="image/png" sizes="16x16" href="<?= url('favicon-16x16.png') ?>">
+  <link rel="icon" href="<?= url('images/company/favicon.ico') ?>" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="32x32" href="<?= url('images/company/favicon-32x32.png') ?>">
+  <link rel="icon" type="image/png" sizes="16x16" href="<?= url('images/company/favicon-16x16.png') ?>">
+  <link rel="icon" type="image/png" sizes="48x48" href="<?= url('images/company/favicon-48x48.png') ?>">
   <link rel="manifest" href="<?= url('site.webmanifest') ?>">
 
   <!-- 
@@ -122,7 +122,7 @@
     @description Ikona wyświetlana na ekranie głównym urządzeń Apple (iPhone, iPad),
                  gdy użytkownik doda skrót do Twojej strony. Ważne dla brandingu.
   -->
-  <link rel="apple-touch-icon" href="<?= url('apple-touch-icon.png') ?>"> <!-- Upewnij się, że ten plik istnieje -->
+  <link rel="apple-touch-icon" sizes="180x180" href="<?= url('images/company/apple-touch-icon.png') ?>">
 
   <link rel="stylesheet"
     href="<?= url('scss/main.css?v=' . filemtime($_SERVER['DOCUMENT_ROOT'] . '/scss/main.css')) ?>">
@@ -159,7 +159,7 @@
       "@type": "Organization",
       "name": "Examly",
       "url": "<?= url('/') ?>",
-      "logo": "<?= url('images/logo.png') ?>"
+      "logo": "<?= url('images/company/examly-logo-512.png') ?>"
     }
   </script>
 
