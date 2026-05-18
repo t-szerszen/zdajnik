@@ -35,7 +35,7 @@ use App\Models\User;
   <div class="main-nav__logo">
     <a href="<?= url() ?>" aria-label="Strona główna Examly">
       <!-- TODO: Podmień na finalne logo marki w /public/images/logo.png -->
-      <img src="<?= url('images/logo.png') ?>" alt="Examly" class="logo">
+      <img src="<?= url('images/company/examly.svg') ?>" alt="Examly" class="logo">
     </a>
   </div>
 

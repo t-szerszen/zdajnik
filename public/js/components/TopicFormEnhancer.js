@@ -218,6 +218,14 @@ class TopicFormEnhancer {
         checkbox.checked = false;
       }
     });
+
+    this.form.dispatchEvent(new CustomEvent('premiumoptions:statechange', {
+      detail: {
+        isEnabled,
+        isUserLoggedIn: this.isUserLoggedIn,
+        anyTopicSelected
+      }
+    }));
   }
 }
 

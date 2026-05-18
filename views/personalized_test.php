@@ -153,10 +153,12 @@ $extraScripts = [
         </fieldset>
 
         <!-- Krok 3: Opcje inteligentnej nauki -->
-        <fieldset class="config-step hidden" data-step="3">
+        <fieldset class="config-step hidden" data-step="3" data-premium-filters-root>
           <legend class="config-step__title">
             <span class="config-step__number">3</span>
             Chcesz uczyć się inteligentnie? (Opcjonalnie)
+            <button type="button" class="topic-selector__help-btn hidden" data-premium-tutorial-trigger
+              aria-label="Pokaż poradnik opcji specjalnych" title="Pokaż poradnik opcji specjalnych">?</button>
           </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label premium-option">
@@ -234,6 +236,10 @@ $extraScripts = [
   <script type="module" src="<?= url('js/features/personalized-test/index.js') ?>"></script>
   <!-- Skrypt pomocniczy do obsługi checkboxów (np. "zaznacz wszystko") -->
   <script type="module" src="<?= url('js/components/TopicFormEnhancer.js') ?>"></script>
+  <script>
+    window.examlyPremiumTutorialConfig = { mode: 'personalized-test' };
+  </script>
+  <script type="module" src="<?= url('js/components/PremiumOptionsTutorial.js') ?>"></script>
 </body>
 
 </html>

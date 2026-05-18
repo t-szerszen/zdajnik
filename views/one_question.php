@@ -121,9 +121,11 @@ $extraScripts = [
         </fieldset>
 
         <!-- Grupa: Opcje inteligentnej nauki (potencjalnie dla użytkowników premium) -->
-        <fieldset class="topic-selector__fieldset">
+        <fieldset class="topic-selector__fieldset topic-selector__fieldset--premium" data-premium-filters-root>
           <legend class="topic-selector__sub-legend topic-selector__sub-legend--premium">
             <i class="fas fa-brain section-icon"></i> Inteligentna nauka
+            <button type="button" class="topic-selector__help-btn hidden" data-premium-tutorial-trigger
+              aria-label="Pokaż poradnik opcji specjalnych" title="Pokaż poradnik opcji specjalnych">?</button>
           </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label premium-option">
@@ -190,6 +192,10 @@ $extraScripts = [
   <!-- Skrypty JS ładowane jako moduły na końcu strony -->
   <!-- Skrypt pomocniczy, dodający funkcjonalności do formularza (np. "zaznacz wszystko") -->
   <script type="module" src="<?= url('js/components/TopicFormEnhancer.js') ?>"></script>
+  <script>
+    window.examlyPremiumTutorialConfig = { mode: 'one-question' };
+  </script>
+  <script type="module" src="<?= url('js/components/PremiumOptionsTutorial.js') ?>"></script>
   <!-- Główny skrypt aplikacji dla tego widoku, obsługujący logikę pobierania i wyświetlania pytań -->
   <script type="module" src="<?= url('js/features/one-question/index.js') ?>"></script>
 </body>

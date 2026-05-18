@@ -62,16 +62,16 @@ $extraScripts = [
     </div>
   </header>
 
-  <section class="stats-page">
+  <section class="stats-page" data-stats-tutorial-root>
     <div class="stats-page__container">
 
       <!-- SIDEBAR -->
       <aside class="stats-page__sidebar">
 
         <!-- Category Selector -->
-        <div class="stats-page__category-selector">
+        <div class="stats-page__category-selector" id="stats-category-selector">
           <form action="" method="GET">
-            <label for="category-select" class="sr-only">Wybór kategorii</label>
+            <label for="category-select" class="visually-hidden">Wybór kategorii</label>
             <select id="category-select" name="category" onchange="this.form.submit()" class="stats-page__select"
               aria-label="Wybierz kategorię egzaminu, aby zobaczyć statystyki">
               <option value="">wybór egzaminu</option>
@@ -86,7 +86,7 @@ $extraScripts = [
         </div>
 
         <!-- Mastery Pie Chart -->
-        <div class="stats-card stats-card--mastery">
+        <div class="stats-card stats-card--mastery" id="stats-mastery-card">
           <div class="stats-card__header-minimal">
             <h3 class="stats-card__title">Twoje Opanowanie</h3>
           </div>
@@ -181,7 +181,7 @@ $extraScripts = [
       <section class="stats-page__content">
 
         <!-- Efficiency Trend Chart -->
-        <div class="stats-card stats-card--trend">
+        <div class="stats-card stats-card--trend" id="stats-trend-card">
           <h2 class="stats-card__title">Trend Skuteczności (Średnia Krocząca)</h2>
           <div class="stats-card__chart">
             <?php if (empty($efficiencyTrend)): ?>
@@ -210,7 +210,7 @@ $extraScripts = [
         <div class="stats-page__cards-grid">
 
           <!-- Main Stats Card -->
-          <div class="stats-card stats-card--main">
+          <div class="stats-card stats-card--main" id="stats-key-metrics-card">
             <div class="stats-card__header">
               <h3 class="stats-card__title stats-card__title--no-margin"><i class="fas fa-trophy"></i> Kluczowe Wyniki</h3>
             </div>
@@ -513,6 +513,12 @@ $extraScripts = [
 
         </div>
 
+        <div class="stats-page__tutorial-restart">
+          <button type="button" class="btn btn--secondary" data-restart-stats-tutorial>
+            <i class="fas fa-route"></i> Uruchom samouczek statystyk ponownie
+          </button>
+        </div>
+
       </section>
     </div>
   </section>
@@ -520,6 +526,7 @@ $extraScripts = [
 
   <?php include 'partials/footer.php'; ?>
   <script type="module" src="<?= url('js/components/EfficiencyChart.js') ?>"></script>
+  <script type="module" src="<?= url('js/features/statistics/StatisticsTutorial.js') ?>"></script>
 </body>
 
 </html>
