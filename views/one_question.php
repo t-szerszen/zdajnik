@@ -58,6 +58,7 @@ $extraScripts = [
   <!-- Dołączenie reużywalnego komponentu paska nawigacyjnego -->
   <?php include 'partials/navbar.php'; ?>
 
+  <main class="main-content-wrapper">
   <!-- 
     =====================================================================
     Nagłówek strony (Page Header)
@@ -100,7 +101,7 @@ $extraScripts = [
         <!-- Grupa: Główne kategorie tematyczne -->
         <fieldset class="topic-selector__fieldset">
           <legend class="topic-selector__sub-legend">
-            <i class="fas fa-layer-group" style="margin-right: 8px; opacity: 0.7;"></i> Główne kategorie
+            <i class="fas fa-layer-group section-icon"></i> Główne kategorie
           </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label">
@@ -122,7 +123,7 @@ $extraScripts = [
         <!-- Grupa: Opcje inteligentnej nauki (potencjalnie dla użytkowników premium) -->
         <fieldset class="topic-selector__fieldset">
           <legend class="topic-selector__sub-legend topic-selector__sub-legend--premium">
-            <i class="fas fa-brain" style="margin-right: 8px; opacity: 0.7;"></i> Inteligentna nauka
+            <i class="fas fa-brain section-icon"></i> Inteligentna nauka
           </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label premium-option">
@@ -153,15 +154,15 @@ $extraScripts = [
 
         <button type="submit" class="btn btn--primary btn--full-width btn--large">
           <span>Rozpocznij naukę</span>
-          <i class="fas fa-play" style="margin-left: 10px;"></i>
+          <i class="fas fa-play"></i>
         </button>
       </form>
     </aside>
 
     <!-- Główna treść (Main Content), gdzie dynamicznie ładowane jest pytanie -->
-    <main class="quiz-page-layout__main-content">
+    <section class="quiz-page-layout__main-content">
       <!-- Session/Pool Progress Bar -->
-      <div id="quiz-progress-bar" class="quiz-progress" style="display:none; margin-bottom: 2rem;">
+      <div id="quiz-progress-bar" class="quiz-progress hidden" style="margin-bottom: 2rem;">
         <div class="quiz-progress__header">
           <span class="quiz-progress__label">Udzielone odpowiedzi: <strong id="progress-counts">0 / 0</strong></span>
           <span class="quiz-progress__percentage" id="progress-percent">0%</span>
@@ -176,11 +177,12 @@ $extraScripts = [
         Początkowo zawiera placeholder. Jego zawartość jest w całości
         zarządzana przez skrypt /public/js/features/one-question/index.js
       -->
-      <div id="quiz-container" style="margin-top: 20px;">
+      <div id="quiz-container" class="quiz-container--spaced">
         <p class="quiz-placeholder">Wybierz przynajmniej jeden temat, aby rozpocząć naukę.</p>
       </div>
-    </main>
+    </section>
   </div>
+  </main>
 
   <!-- Dołączenie reużywalnego komponentu stopki -->
   <?php include 'partials/footer.php'; ?>

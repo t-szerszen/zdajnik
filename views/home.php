@@ -157,7 +157,7 @@ $extraSchemas = [
           <!-- CTA widoczne tylko dla gości -->
           <?php if (!$isUserLoggedIn): ?>
             <a href="<?= url('rejestracja') ?>" class="btn btn--secondary btn--large">
-              <i class="fas fa-user-plus" style="margin-right: 0.5rem;"></i> Załóż darmowe konto
+              <i class="fas fa-user-plus"></i> Załóż darmowe konto
             </a>
           <?php endif; ?>
         </div>
@@ -289,7 +289,7 @@ $extraSchemas = [
           </p>
           <div class="search-feature-card__cta">
             <a href="<?= url('search') ?>" class="btn btn--primary btn--large">
-              <i class="fas fa-search" style="margin-right: 0.5rem;"></i> Wypróbuj wyszukiwarkę
+              <i class="fas fa-search"></i> Wypróbuj wyszukiwarkę
             </a>
           </div>
         </div>
@@ -333,8 +333,7 @@ $extraSchemas = [
             <h3 class="exam-card__title">INF.03 (dawniej E.14)</h3>
             <p class="exam-card__subtitle">
               Programowanie webowe<br>
-              <span class="soon-badge"
-                style="margin-left: 0; margin-top: 0.5rem; display: inline-block;">Wkrótce!</span>
+              <span class="soon-badge soon-badge--block">Wkrótce!</span>
             </p>
           </div>
         </a>
@@ -347,8 +346,7 @@ $extraSchemas = [
             <h3 class="exam-card__title">INF.02 (dawniej EE.08)</h3>
             <p class="exam-card__subtitle">
               Sprzęt, systemy i sieci<br>
-              <span class="soon-badge"
-                style="margin-left: 0; margin-top: 0.5rem; display: inline-block;">Wkrótce!</span>
+              <span class="soon-badge soon-badge--block">Wkrótce!</span>
             </p>
           </div>
         </a>

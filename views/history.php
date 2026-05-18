@@ -23,6 +23,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
 <body class="auth-page-background">
   <?php include 'partials/navbar.php'; ?>
 
+  <main class="main-content-wrapper">
   <header class="page-header" id="top">
     <div class="page-header__content">
       <h1 class="page-header__title">
@@ -36,7 +37,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
     </div>
   </header>
 
-  <main class="stats-page">
+  <section class="stats-page">
     <div class="stats-page__container stats-page__container--single-col">
 
       <div class="stats-page__back-nav">
@@ -73,7 +74,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
             ?>
             <a href="<?= url('jedno-pytanie/' . $selectedCategoryCode . '?premium=' . $premiumParam . '&selectAll=true#select-all-codes') ?>"
               class="btn btn--primary btn--sm">
-              <i class="fas fa-play" style="margin-right: 0.5rem;"></i> Ćwicz wszystkie (
+              <i class="fas fa-play"></i> Ćwicz wszystkie (
               <?= count($items) ?>)
             </a>
             <?php
@@ -83,7 +84,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
         <div class="stats-card__content">
           <?php if (empty($items)): ?>
             <div class="stats-card__empty">
-              <div class="stats-card__empty-icon" style="font-size: 5rem; margin-bottom: 2rem;">
+              <div class="stats-card__empty-icon">
                 <?php if ($type === 'exams'): ?>
                   📑
                   <?php
@@ -95,7 +96,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
                   <?php
                 endif; ?>
               </div>
-              <h3 style="font-weight: 800; font-size: 1.5rem; margin-bottom: 1rem;">
+              <h3 class="stats-card__empty-title">
                 <?php if ($type === 'exams'): ?>
                   Twoja historia jest pusta
                   <?php
@@ -107,7 +108,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
                   <?php
                 endif; ?>
               </h3>
-              <p style="max-width: 450px; margin-bottom: 2rem;">
+              <p class="stats-card__empty-message">
                 <?php if ($type === 'exams'): ?>
                   Czas zmierzyć się z pierwszym arkuszem i sprawdzić swoje umiejętności!
                   <?php
@@ -190,8 +191,8 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
 
                   <?php
                 elseif ($type === 'errors' || $type === 'saved'): ?>
-                  <div class="stats-card__list-item stats-card__list-item--history" style="padding: 1.25rem 1.5rem;">
-                    <span class="stats-card__question-text" style="font-weight: 700; color: var(--text);">
+                  <div class="stats-card__list-item stats-card__list-item--history">
+                    <span class="stats-card__question-text stats-card__question-text--strong">
                       <?php if (!empty($item['topic_name'])): ?>
                         <span class="stats-card__topic-badge">
                           <?= htmlspecialchars($item['topic_name']) ?>
@@ -216,11 +217,12 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
         </div>
       </div>
 
-      <div class="centered" style="margin-top: 2rem;">
+      <div class="centered--push-down">
         <a href="#top" class="btn btn--primary btn--large">Przewiń na górę</a>
       </div>
 
     </div>
+  </section>
   </main>
   <?php include 'partials/footer.php'; ?>
 </body>

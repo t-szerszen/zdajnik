@@ -138,11 +138,12 @@ export class TestRunner {
     const isScrollingUp = currentScrollY < this.lastScrollY;
     const isPastHeader = currentScrollY > headerBottom;
 
-    // Bańka włącza się tylko przy jechaniu w górę i byciu poniżej nagłówka
-    if (isPastHeader && isScrollingUp) {
+    // Ukrywamy główny nagłówek testu i pokazujemy zminimalizowaną bańkę w nawigacji,
+    // gdy użytkownik zjedzie poniżej głównego nagłówka.
+    if (isPastHeader) {
       document.body.classList.add('test-scrolled-past-header');
     } else {
-      // Przy jeździe w dół lub byciu nad nagłówkiem - chowamy natychmiast
+      // Przy powrocie na sam szczyt nad nagłówek - przywracamy jego widoczność
       document.body.classList.remove('test-scrolled-past-header');
     }
 
@@ -210,7 +211,7 @@ export class TestRunner {
         : '';
 
       questionElement.innerHTML = `
-          <header class="quiz-card__header">
+          <div class="quiz-card__header">
             <div class="quiz-card__header-left">
               <span class="quiz-card__question-number">Pytanie ${index + 1} / ${questions.length}</span>
               <span class="quiz-card__id">ID: ${question_id}</span>
@@ -222,7 +223,7 @@ export class TestRunner {
              </button>
            ` : ''}
            </div>
-         </header>
+         </div>
         <div class="quiz-card__content">
           <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
           ${imageHTML}
@@ -241,6 +242,8 @@ export class TestRunner {
     this.isTestInProgress = false;
     this.stopTimer();
     window.removeEventListener('beforeunload', this.handleBeforeUnload);
+    window.removeEventListener('scroll', this.handleSyncScroll);
+    document.body.classList.remove('test-scrolled-past-header');
 
     let correctAnswersCount = 0;
     const topicIdsInTest = new Set();
@@ -423,7 +426,7 @@ export class TestRunner {
       });
 
       card.innerHTML = `
-          <header class="quiz-card__header">
+          <div class="quiz-card__header">
               <div class="quiz-card__header-left">
                 <span class="quiz-card__question-number">Pytanie ${index + 1}</span>
                 <span class="quiz-card__id">ID: ${question_id}</span>
@@ -436,7 +439,7 @@ export class TestRunner {
                ` : ''}
                ${badgeHTML}
              </div>
-         </header>
+         </div>
         <div class="quiz-card__content">
           <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
           ${image_name ? `<div class="quiz-card__image-container"><img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_name)}" class="quiz-card__image"></div>` : ''}

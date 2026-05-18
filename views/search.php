@@ -31,6 +31,7 @@ $results = $results ?? [];
 <body class="auth-page-background">
   <?php include 'partials/navbar.php'; ?>
 
+  <main class="main-content-wrapper">
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Wyszukiwarka</span> Pytań</h1>
@@ -39,7 +40,7 @@ $results = $results ?? [];
     </div>
   </header>
 
-  <main class="search-page">
+  <section class="search-page">
     <div class="search-page__container">
 
       <section class="search-page__filters">
@@ -94,6 +95,7 @@ $results = $results ?? [];
       </section>
 
     </div>
+  </section>
   </main>
 
   <?php include 'partials/footer.php'; ?>

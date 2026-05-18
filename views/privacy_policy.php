@@ -24,6 +24,7 @@ $pageDescription = 'Przeczytaj politykę prywatności serwisu Examly. Dowiedz si
 <body class="auth-page-background">
   <?php include 'partials/navbar.php'; ?>
 
+  <main class="main-content-wrapper">
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Polityka</span> Prywatności</h1>
@@ -32,7 +33,7 @@ $pageDescription = 'Przeczytaj politykę prywatności serwisu Examly. Dowiedz si
     </div>
   </header>
 
-  <main class="legal-page">
+  <section class="legal-page">
     <div class="legal-page__container">
 
       <div class="legal-page__meta">
@@ -195,6 +196,7 @@ $pageDescription = 'Przeczytaj politykę prywatności serwisu Examly. Dowiedz si
       </article>
 
     </div>
+  </section>
   </main>
 
   <?php include 'partials/footer.php'; ?>

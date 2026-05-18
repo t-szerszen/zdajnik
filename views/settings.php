@@ -27,6 +27,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
 <body class="auth-page-background">
   <?php include 'partials/navbar.php'; ?>
 
+  <main class="main-content-wrapper">
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Ustawienia</span> Konta</h1>
@@ -34,7 +35,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
     </div>
   </header>
 
-  <main class="settings-page container">
+  <section class="settings-page container">
 
     <?php
     /**
@@ -92,7 +93,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                 <i class="fas fa-upload"></i> Wgraj własne zdjęcie
               </button>
               <input type="file" id="avatar-file-input" accept="image/jpeg, image/png, image/webp"
-                style="display: none;">
+                class="file-input--hidden">
             </div>
 
             <div class="avatar-manager__divider"><span>LUB</span></div>
@@ -182,7 +183,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
             <?php endif; ?>
 
             <button type="submit" class="btn btn--primary">
-              <i class="fas fa-save" style="margin-right: 0.5rem;"></i> Zaktualizuj profil
+              <i class="fas fa-save"></i> Zaktualizuj profil
             </button>
           </form>
         </div>
@@ -205,12 +206,12 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
         <div class="settings-card__content">
           <?php if ($isGoogleUser): ?>
             <div class="info-card__message">
-              <i class="fab fa-google" style="margin-right: 0.5rem; color: var(--accent);"></i>
+              <i class="fab fa-google"></i>
               Twoje konto jest powiązane z usługą Google. Adres e-mail można zmienić tylko w ustawieniach konta Google.
             </div>
           <?php else: ?>
             <div class="info-card__message">
-              <i class="fas fa-info-circle" style="margin-right: 0.5rem; color: var(--accent);"></i>
+              <i class="fas fa-info-circle"></i>
               Po przejściu procesu zmiany adresu e-mail, konto zostanie automatycznie zweryfikowane.
             </div>
             <form method="POST" action="<?= url('ustawienia/change_email') ?>">
@@ -234,12 +235,12 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
               </div>
               <button type="submit" id="changeEmailBtn" class="btn btn--primary"
                 data-remaining="<?= $emailChangeRemaining ?? 0 ?>"
-                data-text="<i class='fas fa-paper-plane' style='margin-right: 0.5rem;'></i> Zmień e-mail"
+                data-text="<i class='fas fa-paper-plane'></i> Zmień e-mail"
                 <?= ($emailChangeRemaining ?? 0) > 0 ? 'disabled' : '' ?>>
                 <?php if (($emailChangeRemaining ?? 0) > 0): ?>
                   Wyślij ponownie za <span id="countdown"><?= $emailChangeRemaining ?></span>s
                 <?php else: ?>
-                  <i class="fas fa-paper-plane" style="margin-right: 0.5rem;"></i> Zmień e-mail
+                  <i class="fas fa-paper-plane"></i> Zmień e-mail
                 <?php endif; ?>
               </button>
             </form>
@@ -300,7 +301,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                 </div>
               </div>
               <button type="submit" class="btn btn--primary">
-                <i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i> Zmień hasło
+                <i class="fas fa-check-circle"></i> Zmień hasło
               </button>
               <p><a href="<?= url('reset-hasla') ?>" class="form-card__forgot-password">Nie pamiętasz hasła?</a></p>
             </form>
@@ -322,7 +323,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
         </div>
         <div class="settings-card__content">
           <div class="alert alert--warning settings-card__alert">
-            <i class="fas fa-exclamation-circle" style="margin-right: 0.5rem;"></i>
+            <i class="fas fa-exclamation-circle"></i>
             <strong>Uwaga:</strong> Postęp we wskazanym egzaminie zostanie trwale wyzerowany. Anonimowe dane
             statystyczne z Twoich prób pozostaną w systemie w celach analitycznych.
           </div>
@@ -360,7 +361,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
               </div>
             <?php endif; ?>
             <button type="submit" class="btn btn--danger btn--full-width" <?= empty($startedExams) ? 'disabled' : '' ?>>
-              <i class="fas fa-eraser" style="margin-right: 0.5rem;"></i> Wyzeruj postęp
+              <i class="fas fa-eraser"></i> Wyzeruj postęp
             </button>
           </form>
         </div>
@@ -380,7 +381,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
         </div>
         <div class="settings-card__content">
           <div class="alert alert--error settings-card__alert">
-            <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i>
+            <i class="fas fa-exclamation-triangle"></i>
             <strong>Uwaga:</strong> Usunięcie konta spowoduje bezpowrotną utratę wszystkich postępów w nauce oraz
             statystyk egzaminacyjnych.
           </div>
@@ -398,11 +399,12 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
               </div>
             <?php endif; ?>
             <button type="submit" class="btn btn--danger btn--full-width">
-              <i class="fas fa-trash-alt" style="margin-right: 0.5rem;"></i> Usuń konto
+              <i class="fas fa-trash-alt"></i> Usuń konto
             </button>
           </form>
         </div>
       </div>
+  </section>
   </main>
 
   <?php include 'partials/footer.php'; ?>

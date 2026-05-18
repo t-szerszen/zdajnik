@@ -58,6 +58,13 @@
     color: var(--muted-text);
     line-height: 1.6;
     margin-bottom: 2rem;
+
+    // Ikony wewnątrz message (Google, info) — automatyczny kolor accent
+    // Zastępuje style="color: var(--accent);" z settings.php
+    i {
+      color: var(--accent);
+      margin-right: 0; // margin-right obsługiwane przez globalną regułę .btn i — tu resetujemy
+    }
   }
 
   // Element: kontener na akcje (przyciski)

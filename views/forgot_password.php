@@ -45,7 +45,7 @@ $noIndex = true;
           <strong>Twój kod bezpieczeństwa to: 
             <?= htmlspecialchars(substr($_SESSION['password_reset_code'], 0, 3) . '-' . substr($_SESSION['password_reset_code'], 3, 3)); ?>
           </strong>
-          <p style="font-size: 0.9em; margin-top: 0.5rem;">Użyj go na stronie resetowania hasła, na którą link wysłaliśmy Ci w e-mailu.</p>
+          <p>Użyj go na stronie resetowania hasła, na którą link wysłaliśmy Ci w e-mailu.</p>
         </div>
         <?php unset($_SESSION['password_reset_code']); ?>
       <?php endif; ?>

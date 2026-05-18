@@ -60,7 +60,7 @@ use App\Models\User;
 
       <!-- Element nawigacji z menu rozwijanym (dropdown) -->
       <li class="main-nav__item dropdown">
-        <a href="#" class="main-nav__link main-nav__link--disabled" style="opacity: 0.6; pointer-events: none;">
+        <a href="#" class="main-nav__link main-nav__link--disabled">
           <i class="main-nav__icon fas fa-microchip"></i>
           <div class="main-nav__link-content">
             <span>INF.02</span>
@@ -70,7 +70,7 @@ use App\Models\User;
       </li>
 
       <li class="main-nav__item dropdown">
-        <a href="#" class="main-nav__link main-nav__link--disabled" style="opacity: 0.6; pointer-events: none;">
+        <a href="#" class="main-nav__link main-nav__link--disabled">
           <i class="main-nav__icon fas fa-laptop-code"></i>
           <div class="main-nav__link-content">
             <span>INF.03</span>
@@ -105,7 +105,7 @@ use App\Models\User;
       </li>
 
       <li class="main-nav__item dropdown">
-        <a href="#" class="main-nav__link main-nav__link--disabled" style="opacity: 0.6; pointer-events: none;">
+        <a href="#" class="main-nav__link main-nav__link--disabled">
           <i class="main-nav__icon fas fa-graduation-cap"></i>
           <div class="main-nav__link-content">
             <span>Kursy</span>

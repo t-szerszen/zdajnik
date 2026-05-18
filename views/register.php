@@ -81,8 +81,7 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
         <div class="alert alert--error" role="alert">
           <ul class="alert__list">
             <?php foreach ($errors as $error): ?>
-              <li class="alert__item"><i class="fas fa-exclamation-circle"
-                  style="margin-right: 0.5rem;"></i><?= htmlspecialchars($error) ?></li>
+              <li class="alert__item"><i class="fas fa-exclamation-circle"></i><?= htmlspecialchars($error) ?></li>
             <?php endforeach; ?>
           </ul>
         </div>
@@ -143,7 +142,7 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
       <!-- Kontener z głównym przyciskiem akcji -->
       <div class="form-card__action-container">
         <button type="submit" class="btn btn--primary btn--full-width">
-          Zarejestruj się <i class="fas fa-user-plus" style="margin-left: 0.5rem;"></i>
+          Zarejestruj się <i class="fas fa-user-plus"></i>
         </button>
       </div>
 

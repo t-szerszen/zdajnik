@@ -130,4 +130,38 @@
     background-color: #3f3f46;
     color: #9ca3af;
   }
+
+  // Ikony wewnątrz przycisków — domyślny margines
+  i {
+    margin-right: 0.5rem;
+
+    &:last-child:not(:first-child) {
+      margin-right: 0;
+      margin-left: 0.5rem;
+    }
+
+    &:only-child {
+      margin-right: 0;
+    }
+  }
+
+  // Kompaktowy przycisk — zmniejszony padding (używany w listach kart statystyk)
+  &--compact {
+    padding: 0.4rem 1rem;
+  }
+
+  // Przycisk z ramką (outline)
+  &--outline {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+
+    &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(var(--accent-rgb), 0.05);
+      transform: translateY(-2px);
+    }
+  }
 }

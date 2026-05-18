@@ -57,8 +57,9 @@ $extraScripts = [
 
   <?php include 'partials/navbar.php'; ?>
 
-  <!-- Nagłówek wprowadzający w kontekst strony -->
-  <header class="page-header">
+  <main class="main-content-wrapper">
+    <!-- Nagłówek wprowadzający w kontekst strony -->
+    <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">
           <?= htmlspecialchars($exam['formatted_name']) ?>
@@ -93,7 +94,7 @@ $extraScripts = [
       <div class="stats-page__blob stats-page__blob--2"></div>
     </div>
 
-    <main id="test-container" class="test-container" data-exam-code="<?= htmlspecialchars($examCode) ?>">
+    <section id="test-container" class="test-container" data-exam-code="<?= htmlspecialchars($examCode) ?>">
 
       <!-- Stan 1: Ekran ładowania -->
       <div id="loading-screen" class="test-loading">
@@ -103,12 +104,12 @@ $extraScripts = [
       </div>
 
       <!-- Stan 2: Widok aktywnego testu (początkowo ukryty) -->
-      <div id="test-view" class="hidden">
-        <header class="test-header">
+      <section id="test-view" class="hidden">
+        <div class="test-header">
           <div class="test-header__content-left">
-            <h1 class="test-header__title">Egzamin <span class="text-gradient">
+            <h2 class="test-header__title">Egzamin <span class="text-gradient">
                 <?= htmlspecialchars($examCode) ?>
-              </span></h1>
+              </span></h2>
             <div id="test-progress-text" class="test-header__progress-info">
               Postęp: <span>0 / 40</span>
             </div>
@@ -126,17 +127,17 @@ $extraScripts = [
               <i class="fas fa-pause"></i>
             </button>
           </div>
-        </header>
+        </div>
 
         <!-- Kontener, do którego JS dynamicznie wstrzykuje pytania -->
         <div id="questions-wrapper" class="questions-wrapper"></div>
 
-        <footer class="test-footer">
+        <div class="test-footer">
           <button id="finish-test-btn" class="btn btn--primary">Zakończ i sprawdź test</button>
-        </footer>
-      </div>
+        </div>
+      </section>
 
-    </main>
+    </section>
   </div>
 
   <!-- Stan 2.5: Nakładka PAUZY -->
@@ -152,7 +153,7 @@ $extraScripts = [
   </div>
 
   <!-- Stan 3: Ekran wyników (początkowo ukryty, poza głównym kontenerem) -->
-  <div id="results-screen" class="hidden">
+  <section id="results-screen" class="hidden">
     <div class="review-page__main-wrapper">
       <div class="review-page__container">
 
@@ -168,17 +169,19 @@ $extraScripts = [
 
         <h2 id="review-section-title" class="review-page__section-title">Szczegóły pytań</h2>
 
-        <main id="results-details" class="review-page__questions">
+        <section id="results-details" class="review-page__questions">
           <!-- Szczegóły generowane przez JS -->
-        </main>
+        </section>
 
-        <div class="centered" style="margin-top: 4rem;">
+        <div class="centered--push-down">
           <a href="#top" class="btn btn--primary btn--large">Przewiń na górę</a>
         </div>
 
       </div>
     </div>
-  </div>
+  </section>
+
+  </main>
 
   <?php include 'partials/footer.php'; ?>
 

@@ -26,23 +26,21 @@ $errorIcon = $errorIcon ?? 'fas fa-exclamation-circle';
 <body class="home-page-background">
   <?php include __DIR__ . '/../partials/navbar.php'; ?>
 
-  <main class="error-page"
-    style="min-height: 80vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
+  <main class="error-page">
     <div class="error-page__content">
-      <h1 class="gradient-text" style="font-size: 8rem; margin: 0; line-height: 1;">
+      <h1 class="gradient-text error-page__code">
         <?= htmlspecialchars($errorCode) ?>
       </h1>
-      <div style="font-size: 4rem; color: var(--accent); margin-bottom: 1rem;">
+      <div class="error-page__icon">
         <i class="<?= htmlspecialchars($errorIcon) ?>"></i>
       </div>
-      <h2 style="font-size: 2rem; margin-bottom: 1rem; color: var(--text-color);">
+      <h2 class="error-page__title">
         <?= htmlspecialchars($errorTitle) ?>
       </h2>
-      <p
-        style="margin-bottom: 2rem; color: var(--text-muted); max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+      <p class="error-page__message">
         <?= htmlspecialchars($errorMessage) ?>
       </p>
-      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <div class="error-page__actions">
         <a href="<?= url('/') ?>" class="btn btn--secondary">
           <i class="fas fa-home"></i> Strona główna
         </a>

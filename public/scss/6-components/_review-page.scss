@@ -29,7 +29,7 @@
   &::before,
   &::after {
     content: '';
-    position: absolute;
+    position: fixed;
     width: 600px;
     height: 600px;
     border-radius: 50%;
@@ -321,6 +321,34 @@
       margin: 0.5rem auto;
       font-weight: 600;
     }
+
+    // Tekst pomocniczy (mniejszy) w empty-state
+    p + p {
+      font-size: 0.9em;
+      margin-top: 0.5rem;
+      opacity: 0.7;
+    }
+  }
+
+  // Małe ikony w stat-value (bullseye, clock, calendar)
+  .stat-value i {
+    font-size: 0.8em;
+    margin-right: 0.25rem;
+    color: var(--accent);
+  }
+
+  // Data z godziną w stat-box
+  &__date-value {
+    font-size: 1.1rem;
+    line-height: 1.2;
+  }
+
+  // Mała data/godzina pod wartością w stat-box
+  &__date-small {
+    display: block;
+    opacity: 0.6;
+    font-size: 0.8rem;
+    margin-top: 2px;
   }
 }
 

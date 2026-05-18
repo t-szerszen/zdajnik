@@ -113,11 +113,11 @@ class PersonalizedTest {
 
     // Krok 2: Ukryj bieżący krok.
     if (currentStepElement) {
-      currentStepElement.style.display = 'none';
+      currentStepElement.classList.add('hidden');
     }
 
     // Krok 3: Pokaż krok docelowy i zaktualizuj stan.
-    targetStepElement.style.display = 'block';
+    targetStepElement.classList.remove('hidden');
     this.currentStep = targetStep;
   }
 
@@ -163,10 +163,10 @@ class PersonalizedTest {
           <h2>Trwa przygotowywanie Twojego testu...</h2><div class="spinner"></div>
         </div>
         <div id="test-view" class="hidden">
-          <header class="test-header">
+          <div class="test-header">
             <div class="test-header__content-left">
                <div id="test-progress-text" class="test-header__progress-info">Postęp: <span>0 / 0</span></div>
-               <h1 class="test-header__title">Test Spersonalizowany - <span class="text-gradient">${this.examCode}</span></h1>
+               <h2 class="test-header__title">Test Spersonalizowany - <span class="text-gradient">${this.examCode}</span></h2>
             </div>
             <div class="test-header__progress-container">
                <div id="test-progress-bar" class="test-header__progress-bar" style="width: 0%"></div>
@@ -177,11 +177,11 @@ class PersonalizedTest {
                  <i class="fas fa-pause"></i>
                </button>
             </div>
-          </header>
+          </div>
           <div id="questions-wrapper" class="questions-wrapper"></div>
-          <footer class="test-footer">
+          <div class="test-footer">
             <button id="finish-test-btn" class="btn btn--primary">Zakończ i sprawdź test</button>
-          </footer>
+          </div>
           <!-- Nakładka PAUZY -->
           <div id="pause-overlay" class="test-pause-overlay hidden">
             <div class="test-pause-overlay__content">

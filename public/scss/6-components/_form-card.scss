@@ -64,6 +64,12 @@
     color: var(--muted-text);
     margin: 0;
     font-weight: 500;
+
+    // Modyfikator: mniejszy podtytuł (np. info w stopce karty)
+    &--small {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
   }
 
   &__group {
@@ -144,6 +150,16 @@
     i {
       font-size: 1.5rem;
       color: var(--accent);
+      margin-right: 0; // Resetuj globalny margin z _button.scss
+    }
+
+    // Modyfikatory ikon statusu
+    &--success i {
+      color: var(--success-color, #16a34a);
+    }
+
+    &--error i {
+      color: var(--error-color, #dc2626);
     }
   }
 
@@ -187,6 +203,17 @@
 
   &__action-container {
     margin: 2.5rem 0 2rem 0;
+
+    // Modyfikator: bez marginesu górnego (np. po alercie)
+    &--no-top {
+      margin-top: 0;
+    }
+
+    // Modyfikator: kontener przycisku Google
+    &--google {
+      margin-top: 0;
+      margin-bottom: 2rem;
+    }
   }
 
   &__divider {

@@ -132,7 +132,7 @@ $filters = $filters ?? [];
   <div class="stats-card__empty">
     <div class="stats-card__empty-icon">🔍</div>
     <p>Nie znaleźliśmy pytań spełniających Twoje kryteria.</p>
-    <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.6;">Spróbuj wpisać inną frazę lub zmienić filtry.
+    <p class="stats-card__empty-hint">Spróbuj wpisać inną frazę lub zmienić filtry.
     </p>
   </div>
 <?php else: ?>

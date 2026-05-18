@@ -33,7 +33,7 @@
   &::before,
   &::after {
     content: '';
-    position: absolute;
+    position: fixed;
     width: 600px;
     height: 600px;
     border-radius: 50%;
@@ -611,6 +611,11 @@
     align-items: center;
     margin-bottom: 0.6rem;
 
+    // Modifikator: wyrównanie do góry (gdy jest więcej niż jedna linia)
+    &--top {
+      align-items: flex-start;
+    }
+
     .topic-name {
       font-size: 0.9rem;
       font-weight: 700;
@@ -629,6 +634,8 @@
       padding: 4px 10px;
       border-radius: 6px;
       white-space: nowrap; // Don't wrap count
+      display: block;
+      margin-bottom: 4px;
     }
   }
 
@@ -834,6 +841,10 @@
       font-weight: 800;
       color: var(--accent);
     }
+  }
+
+  &__exam-info {
+    flex: 1;
   }
 
   &__item-content {
@@ -1074,7 +1085,7 @@
   }
 
   &__lock-icon {
-    font-size: 2rem;
+    font-size: 1.25rem; // Zmienna dla kontekstu inline (nie overlay)
     margin-bottom: 1.5rem;
     background: var(--bg);
     width: 64px;
@@ -1089,15 +1100,29 @@
 
   &__lock-text {
     font-weight: 700;
-    font-size: 1.1rem;
-    color: var(--text);
-    margin-bottom: 2rem;
+    font-size: 0.85rem; // Domyślny: kontekst inline
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
     max-width: 250px;
+
+    // Kontekst overlay — większy tekst
+    .stats-card__locked-overlay & {
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 2rem;
+    }
   }
 
   &__unlock-progress {
     width: 100%;
     max-width: 200px;
+  }
+
+  &__unlock-text {
+    text-align: right;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    color: var(--text-muted);
   }
 
   // --- TOPIC BADGE ---
@@ -1146,5 +1171,146 @@
   &__action {
     margin-top: 1rem;
     text-align: center;
+  }
+
+  // ============================================================
+  // DODATKOWE KLASY ZMIGROWANE Z ATRYBUTÓW STYLE="" W WIDOKACH
+  // ============================================================
+
+  // Rząd z ikoną zamka i treścią (prognoza nieodblokowana)
+  &__lock-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  // Obszar treści obok ikony zamka
+  &__lock-body {
+    flex: 1;
+  }
+
+  // Kontener liczy tematu (Opanowane / Poznano)
+  &__topic-counts {
+    text-align: right;
+  }
+
+  // Tekst "Poznano: X/Y" w rozbiciu tematycznym
+  &__topic-attempted {
+    font-size: 0.70rem;
+    color: var(--muted-text);
+    font-weight: 600;
+    display: block;
+    padding-right: 4px;
+  }
+
+  // Grupa przycisków w pozycji listy ("zobacz", itp.)
+  &__item-btn-group {
+    display: flex;
+    gap: 0.5rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  // Kontener wykresu (np. trend skuteczności)
+  &__chart-container {
+    height: 250px;
+    width: 100%;
+  }
+
+  // Wartość wyniku w liście egzaminów
+  &__score-value {
+    margin-left: 0.5rem;
+  }
+
+  // Wskazówka w pustym stanie karty
+  &__empty-hint {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+
+  // Etykieta postępu (np. "Postęp analizy: X/100")
+  &__progress-label {
+    font-size: 0.75rem;
+    color: var(--muted-text);
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+  }
+
+  // Kontener paska postępu w pustym stanie (ogranicz szerokość)
+  &__empty-progress {
+    width: 100%;
+    max-width: 250px;
+    margin-top: 1.5rem;
+  }
+
+  // Modyfikator paska postępu: mały (6px)
+  &__progress-bar--sm {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  // Modyfikator paska postępu: średnio duży (8px)
+  &__progress-bar--md {
+    height: 8px;
+    background: rgba(var(--text-rgb), 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  // Modyfikatory klasy mastery-activity
+  &__mastery-activity--mb {
+    margin-bottom: 0.25rem;
+  }
+
+  &__mastery-activity--sm {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-top: 0;
+  }
+
+  // Tytuł bez dolnego marginesu (w nagłówku karty z linkiem "zobacz wszystkie")
+  &__title--no-margin {
+    margin-bottom: 0 !important;
+  }
+
+  // Ikona "chevron right" w przycisku "zobacz wszystkie"
+  &__see-all-icon {
+    font-size: 0.8em;
+  }
+
+  // Ikona serduszka w tytule karty Zapisane
+  &__heart-icon {
+    color: var(--accent);
+    margin-right: 8px;
+    margin-left: 0;
+  }
+
+  // Tytuł pustego stanu (history.php)
+  &__empty-title {
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  // Komunikat pustego stanu (history.php)
+  &__empty-message {
+    max-width: 450px;
+    margin-bottom: 2rem;
+    color: var(--muted-text);
+    line-height: 1.6;
+  }
+
+  // Wariant question-text z mocnym stylem (history.php errors/saved)
+  &__question-text--strong {
+    font-weight: 700;
+    color: var(--text);
   }
 }

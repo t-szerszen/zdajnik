@@ -8,3 +8,4 @@ public/scss/*.css
 public/scss/*.css.map
 .DS_Store
 *.zip
+AGENTS.md

@@ -72,7 +72,7 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
     <?php if (isset($_SESSION['flash_message']) && is_array($_SESSION['flash_message'])): ?>
       <div class="centered">
         <div class="alert alert--<?= htmlspecialchars($_SESSION['flash_message']['type']) ?>" role="alert">
-          <i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>
+          <i class="fas fa-check-circle"></i>
           <?= htmlspecialchars($_SESSION['flash_message']['text']) ?>
         </div>
       </div>
@@ -105,7 +105,7 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
         <div class="alert alert--error" role="alert">
           <ul class="alert__list">
             <?php foreach ($errors as $error): ?>
-              <li class="alert__item"><i class="fas fa-exclamation-circle" style="margin-right: 0.5rem;"></i><?= $error ?>
+              <li class="alert__item"><i class="fas fa-exclamation-circle"></i><?= $error ?>
               </li>
             <?php endforeach; ?>
           </ul>
@@ -136,13 +136,13 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
       <!-- Kontener z głównym przyciskiem akcji -->
       <div class="form-card__action-container">
         <button type="submit" class="btn btn--primary btn--full-width">
-          Zaloguj się <i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i>
+          Zaloguj się <i class="fas fa-arrow-right"></i>
         </button>
       </div>
 
       <div class="form-card__divider">lub</div>
 
-      <div class="form-card__action-container" style="margin-top: 0; margin-bottom: 2rem;">
+      <div class="form-card__action-container form-card__action-container--google">
         <a href="<?= url('auth/google') ?>" class="form-card__google-btn">
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
           Zaloguj się przez Google

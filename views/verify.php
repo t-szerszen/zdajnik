@@ -61,8 +61,8 @@ $canonicalUrl = 'https://www.examly.pl/weryfikacja';
       <?php if ($status === 'success'): ?>
 
         <div class="form-card__header">
-          <div class="form-card__icon-circle">
-            <i class="fas fa-check-circle" style="color: var(--success-color, #16a34a);"></i>
+          <div class="form-card__icon-circle form-card__icon-circle--success">
+            <i class="fas fa-check-circle"></i>
           </div>
           <h1 class="form-card__title">Weryfikacja zakończona!</h1>
           <p class="form-card__subtitle"><?= htmlspecialchars($message) ?></p>
@@ -70,7 +70,7 @@ $canonicalUrl = 'https://www.examly.pl/weryfikacja';
 
         <div class="form-card__action-container">
           <a href="<?= url('logowanie') ?>" class="btn btn--primary btn--full-width">
-            Przejdź do logowania <i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i>
+            Przejdź do logowania <i class="fas fa-arrow-right"></i>
           </a>
         </div>
 
@@ -78,8 +78,8 @@ $canonicalUrl = 'https://www.examly.pl/weryfikacja';
       <?php else: ?>
 
         <div class="form-card__header">
-          <div class="form-card__icon-circle">
-            <i class="fas fa-times-circle" style="color: var(--error-color, #dc2626);"></i>
+          <div class="form-card__icon-circle form-card__icon-circle--error">
+            <i class="fas fa-times-circle"></i>
           </div>
           <h1 class="form-card__title">Wystąpił błąd</h1>
           <p class="form-card__subtitle"><?= htmlspecialchars($message) ?></p>

@@ -74,15 +74,14 @@ $canonicalUrl = 'https://www.examly.pl/autoryzacja-email';
 
       <!-- Blok na jednorazowe komunikaty (np. "E-mail wysłano ponownie.") -->
       <?php if (isset($flashMessage) && is_array($flashMessage)): ?>
-        <div class="alert alert--<?= htmlspecialchars($flashMessage['type']) ?>" role="alert"
-          style="margin-bottom: 2rem;">
-          <i class="fas fa-info-circle" style="margin-right: 0.5rem;"></i>
+        <div class="alert alert--<?= htmlspecialchars($flashMessage['type']) ?>" role="alert">
+          <i class="fas fa-info-circle"></i>
           <?= htmlspecialchars($flashMessage['text']) ?>
         </div>
       <?php endif; ?>
 
       <!-- Akcje karty: Formularz do ponownego wysłania e-maila -->
-      <div class="form-card__action-container" style="margin-top: 0;">
+      <div class="form-card__action-container form-card__action-container--no-top">
         <form method="GET">
           <input type="hidden" name="send" value="true">
           <!-- 
@@ -101,7 +100,7 @@ $canonicalUrl = 'https://www.examly.pl/autoryzacja-email';
       </div>
 
       <div class="form-card__footer">
-        <p class="form-card__subtitle" style="font-size: 0.9rem; opacity: 0.8;">
+        <p class="form-card__subtitle form-card__subtitle--small">
           Nie widzisz wiadomości? Sprawdź folder SPAM.
         </p>
       </div>

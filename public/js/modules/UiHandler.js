@@ -94,14 +94,14 @@ class UIHandler {
     // Krok 4: Zbuduj finalny szablon całej karty pytania i wstaw go do kontenera.
     container.innerHTML = `
       <section class="quiz-card">
-        <header class="quiz-card__header">
+        <div class="quiz-card__header">
           <div class="quiz-card__header-left">
-            <h2 class="quiz-card__question-number">Pytanie <span class="quiz-card__id">ID: ${question.question_id}</span></h2>
+            <div class="quiz-card__id">ID: ${question.question_id}</div>
           </div>
           <div class="quiz-card__header-actions">
             ${saveBtnHTML}
           </div>
-        </header>
+        </div>
         <div class="quiz-card__content">
           <p class="quiz-card__question-text">${escapeHTML(question.question_text)}</p>
           ${imageHTML}

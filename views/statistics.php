@@ -53,6 +53,7 @@ $extraScripts = [
 <body class="auth-page-background">
   <?php include 'partials/navbar.php'; ?>
 
+  <main class="main-content-wrapper">
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Statystyki</span> Nauki</h1>
@@ -61,7 +62,7 @@ $extraScripts = [
     </div>
   </header>
 
-  <main class="stats-page">
+  <section class="stats-page">
     <div class="stats-page__container">
 
       <!-- SIDEBAR -->
@@ -120,13 +121,13 @@ $extraScripts = [
             </div>
           </div>
 
-          <p class="stats-card__mastery-activity" style="margin-bottom: 0.25rem;">
+          <p class="stats-card__mastery-activity stats-card__mastery-activity--mb">
             Opanowano: <strong>
               <?= $masteryStats['mastered'] ?>
             </strong> /
             <?= $masteryStats['total'] ?> pytań
           </p>
-          <p class="stats-card__mastery-activity" style="font-size: 0.75rem; opacity: 0.7; margin-top: 0;">
+          <p class="stats-card__mastery-activity stats-card__mastery-activity--sm">
             Poznano:
             <?= ($masteryStats['attempted'] ?? 0) ?> /
             <?= $masteryStats['total'] ?> pytań
@@ -142,23 +143,22 @@ $extraScripts = [
               <div class="stats-card__empty stats-card__empty--compact">
                 <p>Rozpocznij naukę, aby zobaczyć postęp.</p>
                 <a href="<?= url('jedno-pytanie/' . $selectedCategoryCode) ?>" class="btn btn--primary btn--sm"
-                  style="margin-top: 1rem;">Wybierz temat</a>
+                  >Wybierz temat</a>
               </div>
               <?php
             else: ?>
               <?php foreach ($topicStats as $topic): ?>
                 <div class="stats-card__topic-item">
-                  <div class="stats-card__topic-label" style="align-items: flex-start;">
-                    <span class="topic-name" style="margin-top: 4px;">
+                  <div class="stats-card__topic-label stats-card__topic-label--top">
+                    <span class="topic-name">
                       <?= mb_strimwidth(htmlspecialchars($topic['name']), 0, 30, '...') ?>
                     </span>
-                    <div style="text-align: right;">
-                      <span class="topic-count" style="display: block; margin-bottom: 4px;">Opanowane:
+                    <div class="stats-card__topic-counts">
+                      <span class="topic-count">Opanowane:
                         <?= $topic['mastered'] ?> /
                         <?= $topic['total'] ?>
                       </span>
-                      <span
-                        style="font-size: 0.70rem; color: var(--muted-text); font-weight: 600; display: block; padding-right: 4px;">Poznano:
+                      <span class="stats-card__topic-attempted">Poznano:
                         <?= $topic['attempted'] ?> /
                         <?= $topic['total'] ?>
                       </span>
@@ -188,15 +188,15 @@ $extraScripts = [
               <div class="stats-card__empty">
                 <div class="stats-card__empty-icon">📈</div>
                 <p>Twój wykres skuteczności jest jeszcze pusty.</p>
-                <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem; font-style: italic;">Rozwiąż pierwszy
+                <p class="stats-card__empty-hint">Rozwiąż pierwszy
                   egzamin, abyśmy mogli wygenerować Twój trend!</p>
                 <a href="<?= url('test/' . $selectedCategoryCode) ?>" class="btn btn--primary"
-                  style="margin-top: 1.5rem;">Rozpocznij test</a>
+                  >Rozpocznij test</a>
               </div>
               <?php
             else: ?>
 
-              <div style="height: 250px; width: 100%;">
+              <div class="stats-card__chart-container">
                 <canvas id="efficiencyTrendChart"
                   data-chart-data='<?= json_encode($efficiencyTrend, JSON_HEX_APOS | JSON_HEX_QUOT) ?>'></canvas>
               </div>
@@ -212,7 +212,7 @@ $extraScripts = [
           <!-- Main Stats Card -->
           <div class="stats-card stats-card--main">
             <div class="stats-card__header">
-              <h3 class="stats-card__title" style="margin: 0;"><i class="fas fa-trophy"></i> Kluczowe Wyniki</h3>
+              <h3 class="stats-card__title stats-card__title--no-margin"><i class="fas fa-trophy"></i> Kluczowe Wyniki</h3>
             </div>
 
             <div class="stats-card__grid-items">
@@ -259,8 +259,7 @@ $extraScripts = [
             $isPredictedUnlocked = $examsAnalyzed >= $minExams;
             ?>
 
-            <div class="stats-card__predicted <?= !$isPredictedUnlocked ? 'stats-card__predicted--locked' : '' ?>"
-              style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--subtle-border); position: relative;">
+            <div class="stats-card__predicted <?= !$isPredictedUnlocked ? 'stats-card__predicted--locked' : '' ?>">
 
               <?php if ($isPredictedUnlocked): ?>
                 <span class="stats-card__icon">📊</span>
@@ -277,25 +276,22 @@ $extraScripts = [
                 </div>
                 <?php
               else: ?>
-                <div style="display: flex; align-items: flex-start; gap: 0.75rem; width: 100%;">
-                  <div class="stats-card__lock-icon" style="font-size: 1.25rem;">🔒</div>
-                  <div style="flex: 1;">
-                    <p class="stats-card__lock-text"
-                      style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-muted);">
+                <div class="stats-card__lock-row">
+                  <div class="stats-card__lock-icon">🔒</div>
+                  <div class="stats-card__lock-body">
+                    <p class="stats-card__lock-text">
                       Przewidywany wynik dostępny po
                       <?= $minExams ?> pełnych egzaminach
                     </p>
                     <?php
                     $lockedPercent = min(100, round(($examsAnalyzed / $minExams) * 100));
                     ?>
-                    <div class="stats-card__progress-bar"
-                      style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
+                    <div class="stats-card__progress-bar stats-card__progress-bar--sm">
                       <div class="stats-card__progress-fill"
-                        style="width: <?= $lockedPercent ?>%; height: 100%; background: var(--accent); transition: width 0.3s ease;">
+                        style="width: <?= $lockedPercent ?>%;">
                       </div>
                     </div>
-                    <p class="stats-card__unlock-text"
-                      style="text-align: right; font-size: 0.75rem; margin-top: 0.25rem; color: var(--text-muted);">
+                    <p class="stats-card__unlock-text">
                       <?= $examsAnalyzed ?>/
                       <?= $minExams ?>
                     </p>
@@ -309,14 +305,13 @@ $extraScripts = [
           <!-- Critical Errors Card (with lock overlay) -->
           <div class="stats-card stats-card--critical <?= !$criticalErrors['is_unlocked'] ? 'stats-card--locked' : '' ?>"
             id="criticalMistakes">
-            <div class="stats-card__header"
-              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-              <h3 class="stats-card__title" style="margin-bottom: 0;">🔥 Krytyczne Błędy</h3>
+            <div class="stats-card__header">
+              <h3 class="stats-card__title stats-card__title--no-margin">🔥 Krytyczne Błędy</h3>
               <?php if ($criticalErrors['is_unlocked'] && ($criticalErrors['total_critical'] ?? 0) > 0): ?>
                 <a href="<?= url('historia?type=critical&category=' . $selectedCategoryId) ?>"
                   class="btn btn--secondary btn--sm">
                   zobacz wszystkie (
-                  <?= $criticalErrors['total_critical'] ?>) <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
+                  <?= $criticalErrors['total_critical'] ?>) <i class="stats-card__see-all-icon fas fa-chevron-right"></i>
                 </a>
                 <?php
               endif; ?>
@@ -354,15 +349,13 @@ $extraScripts = [
                       endif; ?>
                     </p>
 
-                    <div style="width: 100%; max-width: 250px; margin-top: 1.5rem;">
-                      <div class="stats-card__progress-bar"
-                        style="height: 8px; background: rgba(var(--text-rgb), 0.1); border-radius: 4px; overflow: hidden; margin-bottom: 1rem;">
+                    <div class="stats-card__empty-progress">
+                      <div class="stats-card__progress-bar stats-card__progress-bar--md">
                         <div class="stats-card__progress-fill"
-                          style="width: <?= min(100, $criticalErrors['unlock_progress'] ?? 0) ?>%; height: 100%; background: var(--accent); transition: width 0.6s ease;">
+                          style="width: <?= min(100, $criticalErrors['unlock_progress'] ?? 0) ?>%;">
                         </div>
                       </div>
-                      <p
-                        style="font-size: 0.75rem; color: var(--muted-text); font-weight: 700; margin: 0; text-align: center;">
+                      <p class="stats-card__progress-label">
                         Postęp analizy:
                         <?= $criticalErrors['total_answered'] ?? 0 ?>/100 pytań
                       </p>
@@ -382,9 +375,9 @@ $extraScripts = [
                       <span class="stats-card__question-text" title="<?= htmlspecialchars($critical['question_text']) ?>">
                         <?= mb_strimwidth(htmlspecialchars($critical['question_text']), 0, 120, "...") ?>
                       </span>
-                      <div style="display: flex; gap: 0.5rem; white-space: nowrap; flex-shrink: 0;">
-                        <a href="<?= url('test-pytanie/' . $critical['question_id']) ?>" class="btn btn--secondary btn--sm"
-                          title="Zobacz" style="padding: 0.4rem 1rem;">zobacz</a>
+                      <div class="stats-card__item-btn-group">
+                        <a href="<?= url('test-pytanie/' . $critical['question_id']) ?>" class="btn btn--secondary btn--sm btn--compact"
+                          title="Zobacz">zobacz</a>
                       </div>
                     </li>
                     <?php
@@ -401,14 +394,13 @@ $extraScripts = [
 
           <!-- Recent Errors Card -->
           <div class="stats-card stats-card--errors" id="lastMistakes">
-            <div class="stats-card__header"
-              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-              <h3 class="stats-card__title" style="margin-bottom: 0;">Ostatnie błędy</h3>
+            <div class="stats-card__header">
+              <h3 class="stats-card__title stats-card__title--no-margin">Ostatnie błędy</h3>
               <?php if (($errorHistory['total'] ?? 0) > 0): ?>
                 <a href="<?= url('historia?type=errors&category=' . $selectedCategoryId) ?>"
                   class="btn btn--secondary btn--sm">
                   zobacz wszystkie (
-                  <?= $errorHistory['total'] ?? 0 ?>) <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
+                  <?= $errorHistory['total'] ?? 0 ?>) <i class="stats-card__see-all-icon fas fa-chevron-right"></i>
                 </a>
                 <?php
               endif; ?>
@@ -430,9 +422,8 @@ $extraScripts = [
                     <span class="stats-card__question-text" title="<?= htmlspecialchars($error['question_text']) ?>">
                       <?= mb_strimwidth(htmlspecialchars($error['question_text']), 0, 120, "...") ?>
                     </span>
-                    <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
-                      <a href="<?= url('test-pytanie/' . $error['id']) ?>" class="btn btn--secondary btn--sm"
-                        style="padding: 0.4rem 1rem;">zobacz</a>
+                    <div class="stats-card__item-btn-group">
+                      <a href="<?= url('test-pytanie/' . $error['id']) ?>" class="btn btn--secondary btn--sm btn--compact">zobacz</a>
                     </div>
                   </li>
                   <?php
@@ -446,15 +437,13 @@ $extraScripts = [
 
           <!-- Saved Questions Card -->
           <div class="stats-card stats-card--saved" id="savedQuestions">
-            <div class="stats-card__header"
-              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-              <h3 class="stats-card__title" style="margin-bottom: 0;"><i class="fas fa-heart"
-                  style="color: var(--accent); margin-right: 8px;"></i> Zapisane</h3>
+            <div class="stats-card__header">
+              <h3 class="stats-card__title stats-card__title--no-margin"><i class="stats-card__heart-icon fas fa-heart"></i> Zapisane</h3>
               <?php if (($savedQuestions['total'] ?? 0) > 0): ?>
                 <a href="<?= url('historia?type=saved&category=' . $selectedCategoryId) ?>"
                   class="btn btn--secondary btn--sm">
                   zobacz wszystkie (
-                  <?= $savedQuestions['total'] ?? 0 ?>) <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
+                  <?= $savedQuestions['total'] ?? 0 ?>) <i class="stats-card__see-all-icon fas fa-chevron-right"></i>
                 </a>
                 <?php
               endif; ?>
@@ -470,9 +459,8 @@ $extraScripts = [
                     <span class="stats-card__question-text" title="<?= htmlspecialchars($saved['question_text']) ?>">
                       <?= mb_strimwidth(htmlspecialchars($saved['question_text']), 0, 120, "...") ?>
                     </span>
-                    <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
-                      <a href="<?= url('test-pytanie/' . $saved['id']) ?>" class="btn btn--secondary btn--sm"
-                        style="padding: 0.4rem 1rem;">zobacz</a>
+                    <div class="stats-card__item-btn-group">
+                      <a href="<?= url('test-pytanie/' . $saved['id']) ?>" class="btn btn--secondary btn--sm btn--compact">zobacz</a>
                     </div>
                   </li>
                   <?php
@@ -484,14 +472,13 @@ $extraScripts = [
 
           <!-- Exam History Card -->
           <div class="stats-card stats-card--history" id="examsHistory">
-            <div class="stats-card__header"
-              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-              <h3 class="stats-card__title" style="margin-bottom: 0;">Ostatnie Egzaminy</h3>
+            <div class="stats-card__header">
+              <h3 class="stats-card__title stats-card__title--no-margin">Ostatnie Egzaminy</h3>
               <?php if (($recentExams['total'] ?? 0) > 0): ?>
                 <a href="<?= url('historia?type=exams&category=' . $selectedCategoryId) ?>"
                   class="btn btn--secondary btn--sm">
                   zobacz wszystkie (
-                  <?= $recentExams['total'] ?? 0 ?>) <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
+                  <?= $recentExams['total'] ?? 0 ?>) <i class="stats-card__see-all-icon fas fa-chevron-right"></i>
                 </a>
                 <?php
               endif; ?>
@@ -506,16 +493,14 @@ $extraScripts = [
               else: ?>
                 <?php foreach ($recentExams['items'] as $exam): ?>
                   <li class="stats-card__list-item">
-                    <span>
+                    <span class="stats-card__exam-info">
                       <?= htmlspecialchars($exam['display_name']) ?>
-                      <strong class="<?= $exam['score'] >= 50 ? 'text-success' : 'text-danger' ?>"
-                        style="margin-left: 0.5rem;">
+                      <strong class="<?= $exam['score'] >= 50 ? 'text-success' : 'text-danger' ?> stats-card__score-value">
                         <?= $exam['score'] ?>%
                       </strong>
                     </span>
-                    <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
-                      <a href="<?= url('wyniki/' . $exam['id']) ?>" class="btn btn--secondary btn--sm"
-                        style="padding: 0.4rem 1rem;">zobacz</a>
+                    <div class="stats-card__item-btn-group">
+                      <a href="<?= url('wyniki/' . $exam['id']) ?>" class="btn btn--secondary btn--sm btn--compact">zobacz</a>
                     </div>
                   </li>
                   <?php
@@ -530,6 +515,7 @@ $extraScripts = [
 
       </section>
     </div>
+  </section>
   </main>
 
   <?php include 'partials/footer.php'; ?>

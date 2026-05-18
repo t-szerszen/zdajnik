@@ -43,6 +43,12 @@
   padding: 2rem;
 }
 
+// Modifikator kontenera quizu z odstępem górnym
+// Zastępuje style="margin-top: 20px" z views/one_question.php
+.quiz-container--spaced {
+  margin-top: 20px;
+}
+
 // Media query dla mniejszych ekranów
 @include media-down(lg) {
   .quiz-page-layout {

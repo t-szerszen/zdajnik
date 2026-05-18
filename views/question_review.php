@@ -47,6 +47,7 @@ $extraSchemas = [
 <body class="review-page">
   <?php include 'partials/navbar.php'; ?>
 
+  <main class="main-content-wrapper">
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Podgląd</span> pytania</h1>
@@ -63,9 +64,9 @@ $extraSchemas = [
         </a>
       </div>
 
-      <main class="review-page__main">
+      <section class="review-page__main">
         <article class="quiz-card">
-          <header class="quiz-card__header">
+          <div class="quiz-card__header">
             <div class="quiz-card__header-left">
               <h2 class="quiz-card__question-number">Pytanie <span class="quiz-card__id">ID:
                   <?= $question['id'] ?></span></h2>
@@ -79,7 +80,7 @@ $extraSchemas = [
                 </button>
               <?php endif; ?>
             </div>
-          </header>
+          </div>
 
           <div class="quiz-card__content">
             <p class="quiz-card__question-text">
@@ -133,9 +134,10 @@ $extraSchemas = [
             endif; ?>
           </div>
         </article>
-      </main>
+      </section>
     </div>
   </div>
+  </main>
 
   <?php include 'partials/footer.php'; ?>
 

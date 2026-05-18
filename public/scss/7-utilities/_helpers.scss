@@ -20,3 +20,16 @@
 .text-danger {
   color: #dc2626 !important;
 }
+
+// Ukryty input plików (zastępuje style="display: none;")
+.file-input--hidden {
+  display: none;
+}
+
+// Wariant .centered z większym marginesem górnym
+.centered--push-down {
+  display: flex;
+  margin-top: 4rem;
+  justify-content: center;
+  width: 100%;
+}

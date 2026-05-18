@@ -58,6 +58,7 @@ $extraScripts = [
 
   <?php include 'partials/navbar.php'; ?>
 
+  <main class="main-content-wrapper">
   <!-- Nagłówek wprowadzający w kontekst strony -->
   <header class="page-header">
     <div class="page-header__content">
@@ -133,7 +134,7 @@ $extraScripts = [
         </fieldset>
 
         <!-- Krok 2: Wybór liczby pytań -->
-        <fieldset class="config-step" data-step="2" style="display: none;">
+        <fieldset class="config-step hidden" data-step="2">
           <legend class="config-step__title">
             <span class="config-step__number">2</span>
             Określ liczbę pytań
@@ -152,7 +153,7 @@ $extraScripts = [
         </fieldset>
 
         <!-- Krok 3: Opcje inteligentnej nauki -->
-        <fieldset class="config-step" data-step="3" style="display: none;">
+        <fieldset class="config-step hidden" data-step="3">
           <legend class="config-step__title">
             <span class="config-step__number">3</span>
             Chcesz uczyć się inteligentnie? (Opcjonalnie)
@@ -191,10 +192,10 @@ $extraScripts = [
       Główny kontener na dynamicznie renderowany test.
       Początkowo pusty, zostaje wypełniony przez JS po wysłaniu formularza.
     -->
-    <main id="quiz-container"></main>
+    <section id="quiz-container"></section>
 
     <!-- Stan 3: Ekran wyników (początkowo ukryty, poza głównym kontenerem) -->
-    <div id="results-screen" class="hidden">
+    <section id="results-screen" class="hidden">
       <div class="review-page__main-wrapper">
         <div class="review-page__container">
 
@@ -210,18 +211,19 @@ $extraScripts = [
 
           <h2 id="review-section-title" class="review-page__section-title">Szczegóły pytań</h2>
 
-          <main id="results-details" class="review-page__questions">
+          <section id="results-details" class="review-page__questions">
             <!-- Szczegóły generowane przez JS -->
-          </main>
+          </section>
 
-          <div class="centered" style="margin-top: 4rem;">
+          <div class="centered--push-down">
             <a href="#top" class="btn btn--primary btn--large">Przewiń na górę</a>
           </div>
 
         </div>
       </div>
-    </div>
+    </section>
   </div>
+  </main>
 
   <?php include 'partials/footer.php'; ?>
 

@@ -27,6 +27,7 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
 <body class="review-page">
   <?php include 'partials/navbar.php'; ?>
 
+  <main class="main-content-wrapper">
   <header class="page-header" id="top">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Podgląd</span> egzaminu</h1>
@@ -57,7 +58,7 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
           <div class="review-page__stat-box">
             <span class="stat-label">Wynik punktowy</span>
             <span class="stat-value text-gradient">
-              <i class="fas fa-bullseye" style="font-size: 0.8em; margin-right: 0.25rem;"></i>
+              <i class="fas fa-bullseye"></i>
               <?= $exam['meta']['correct_count'] ?> /
               <?= $exam['meta']['total_questions'] ?>
             </span>
@@ -67,7 +68,7 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
             <div class="review-page__stat-box">
               <span class="stat-label">Czas pracy</span>
               <span class="stat-value">
-                <i class="fas fa-clock" style="font-size: 0.8em; margin-right: 0.25rem;"></i>
+                <i class="fas fa-clock"></i>
                 <?php
                 $min = floor($exam['meta']['duration_seconds'] / 60);
                 $sec = $exam['meta']['duration_seconds'] % 60;
@@ -80,10 +81,10 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
 
           <div class="review-page__stat-box">
             <span class="stat-label">Data podejścia</span>
-            <span class="stat-value" style="font-size: 1.1rem; line-height: 1.2;">
-              <i class="fas fa-calendar-alt" style="font-size: 0.8em; margin-right: 0.25rem; color: var(--accent);"></i>
+            <span class="stat-value review-page__date-value">
+              <i class="fas fa-calendar-alt"></i>
               <?= date('d.m.Y', strtotime($exam['meta']['completed_at'])) ?>
-              <small style="display: block; opacity: 0.6; font-size: 0.8rem; margin-top: 2px;">
+              <small class="review-page__date-small">
                 Godzina
                 <?= date('H:i', strtotime($exam['meta']['completed_at'])) ?>
               </small>
@@ -94,19 +95,19 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
 
       <h2 class="review-page__section-title">Szczegóły pytań</h2>
 
-      <main class="review-page__questions">
+      <section class="review-page__questions">
         <?php if (empty($exam['questions'])): ?>
           <div class="review-page__empty-state">
             <i class="fas fa-history"></i>
             <p>Brak szczegółowych danych o odpowiedziach dla tej próby.</p>
-            <p style="font-size: 0.9em; margin-top: 0.5rem; opacity: 0.7;">Może to dotyczyć starych egzaminów rozwiązanych
+            <p>Może to dotyczyć starych egzaminów rozwiązanych
               przed wdrożeniem pełnego śledzenia historii.</p>
           </div>
           <?php
         else: ?>
           <?php foreach ($exam['questions'] as $index => $question): ?>
             <article class="quiz-card" id="q-<?= $question['question_id'] ?>" style="animation-delay: <?= $index * 0.1 ?>s">
-              <header class="quiz-card__header">
+              <div class="quiz-card__header">
                 <div class="quiz-card__header-left">
                   <h2 class="quiz-card__question-number">Pytanie <?= $index + 1 ?> <span class="quiz-card__id">ID:
                       <?= $question['question_id'] ?></span></h2>
@@ -128,7 +129,7 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
                     </button>
                   <?php endif; ?>
                 </div>
-              </header>
+              </div>
 
               <div class="quiz-card__content">
                 <p class="quiz-card__question-text">
@@ -197,13 +198,14 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
           endforeach; ?>
           <?php
         endif; ?>
-      </main>
+      </section>
 
-      <div class="centered" style="margin-top: 4rem;">
+      <div class="centered--push-down">
         <a href="#top" class="btn btn--primary btn--large">Przewiń na górę</a>
       </div>
     </div>
   </div>
+  </main>
 
   <?php include 'partials/footer.php'; ?>
 

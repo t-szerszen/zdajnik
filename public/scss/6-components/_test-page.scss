@@ -17,8 +17,9 @@ body.test-page {
   &::before,
   &::after {
     content: '';
-    position: absolute;
+    position: fixed;
     width: 600px;
+
     height: 600px;
     border-radius: 50%;
     filter: blur(120px);

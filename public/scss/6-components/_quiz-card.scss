@@ -94,14 +94,15 @@
   }
 
   &__question-number {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--muted-text);
-    background: var(--field-bg);
-    padding: 0.35rem 0.75rem;
-    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
   }
 
   &__id {
