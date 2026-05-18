@@ -160,7 +160,9 @@ class PersonalizedTest {
       <!-- Wrapper dla widoku testu - to ten element zostanie ukryty przez TestRunner -->
       <div class="test-container"> 
         <div id="loading-screen" class="test-loading hidden">
+          <div role="status" aria-live="polite">
           <h2>Trwa przygotowywanie Twojego testu...</h2><div class="spinner"></div>
+          </div>
         </div>
         <div id="test-view" class="hidden">
           <div class="test-header">
@@ -173,7 +175,7 @@ class PersonalizedTest {
             </div>
             <div class="test-header__meta">
                <div id="timer" class="timer">00:00</div>
-               <button id="pause-test-btn" class="test-header__pause-btn" title="Zapauzuj egzamin">
+               <button id="pause-test-btn" class="test-header__pause-btn" title="Zapauzuj egzamin" aria-label="Zapauzuj egzamin" aria-pressed="false">
                  <i class="fas fa-pause"></i>
                </button>
             </div>
@@ -190,7 +192,7 @@ class PersonalizedTest {
               </div>
               <h2>Test Zapauzowany</h2>
               <p>Czas został zatrzymany. Możesz spokojnie zająć się innymi sprawami i wrócić do testu, gdy będziesz gotowy.</p>
-              <button id="resume-test-btn" class="btn btn--primary btn--large">Wznów egzamin</button>
+              <button id="resume-test-btn" class="btn btn--primary btn--large" aria-label="Wznów egzamin">Wznów egzamin</button>
             </div>
           </div>
         </div>

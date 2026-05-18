@@ -85,7 +85,7 @@ class UIHandler {
     if (window.examlyAppState.isUserLoggedIn) {
       const heartType = question.is_saved ? 'fas' : 'far';
       saveBtnHTML = `
-        <button class="quiz-card__save-btn" data-question-id="${question.question_id}" title="Zapisz pytanie" aria-label="${question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}">
+        <button class="quiz-card__save-btn" data-question-id="${question.question_id}" title="Zapisz pytanie" aria-label="${question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-pressed="${question.is_saved ? 'true' : 'false'}">
           <i class="${heartType} fa-heart"></i>
         </button>
       `;

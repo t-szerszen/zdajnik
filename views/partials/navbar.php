@@ -34,7 +34,8 @@ use App\Models\User;
   <!-- Sekcja 1: Logo i link do strony głównej -->
   <div class="main-nav__logo">
     <a href="<?= url() ?>" aria-label="Strona główna Examly">
-      <img src="/path/to/your/logo.png" alt="Logo Examly" class="logo">
+      <!-- TODO: Podmień na finalne logo marki w /public/images/logo.png -->
+      <img src="<?= url('images/logo.png') ?>" alt="Examly" class="logo">
     </a>
   </div>
 
@@ -51,7 +52,7 @@ use App\Models\User;
     <div class="main-nav__drawer-header">
       <div class="main-nav__logo">
         <a href="<?= url() ?>">
-          <img src="/path/to/your/logo.png" alt="Logo Examly" class="logo">
+          <img src="<?= url('images/logo.png') ?>" alt="Examly" class="logo">
         </a>
       </div>
     </div>
@@ -60,23 +61,23 @@ use App\Models\User;
 
       <!-- Element nawigacji z menu rozwijanym (dropdown) -->
       <li class="main-nav__item dropdown">
-        <a href="#" class="main-nav__link main-nav__link--disabled">
+        <span class="main-nav__link main-nav__link--disabled" aria-disabled="true">
           <i class="main-nav__icon fas fa-microchip"></i>
           <div class="main-nav__link-content">
             <span>INF.02</span>
             <span class="badge badge--soon">Wkrótce</span>
           </div>
-        </a>
+        </span>
       </li>
 
       <li class="main-nav__item dropdown">
-        <a href="#" class="main-nav__link main-nav__link--disabled">
+        <span class="main-nav__link main-nav__link--disabled" aria-disabled="true">
           <i class="main-nav__icon fas fa-laptop-code"></i>
           <div class="main-nav__link-content">
             <span>INF.03</span>
             <span class="badge badge--soon">Wkrótce</span>
           </div>
-        </a>
+        </span>
       </li>
 
       <li class="main-nav__item dropdown">
@@ -105,17 +106,18 @@ use App\Models\User;
       </li>
 
       <li class="main-nav__item dropdown">
-        <a href="#" class="main-nav__link main-nav__link--disabled">
+        <span class="main-nav__link main-nav__link--disabled" aria-disabled="true">
           <i class="main-nav__icon fas fa-graduation-cap"></i>
           <div class="main-nav__link-content">
             <span>Kursy</span>
             <span class="badge badge--soon">Wkrótce</span>
           </div>
-        </a>
+        </span>
       </li>
 
       <!-- Dynamic Test Info (Visible on scroll during tests) -->
-      <div class="main-nav__test-info" id="nav-test-info">
+      <li class="main-nav__item main-nav__item--test-info">
+      <div class="main-nav__test-info" id="nav-test-info" aria-live="polite">
         <div class="nav-test-meta">
           <span id="nav-test-progress-text">0/0</span>
           <div class="nav-test-progress-bar-wrap">
@@ -123,10 +125,11 @@ use App\Models\User;
           </div>
         </div>
         <div id="nav-timer" class="nav-test-timer">00:00</div>
-        <button id="nav-pause-btn" class="nav-test-pause-btn" title="Zapauzuj egzamin">
+        <button id="nav-pause-btn" class="nav-test-pause-btn" title="Zapauzuj egzamin" aria-label="Zapauzuj egzamin">
           <i class="fas fa-pause"></i>
         </button>
       </div>
+      </li>
 
       <?php if (!$isUserLoggedIn): ?>
         <li class="main-nav__item main-nav__item--auth">

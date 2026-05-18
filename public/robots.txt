@@ -1,0 +1,18 @@
+# robots.txt dla Examly
+# TODO: Jeśli sitemap ma inny adres, podmień URL poniżej.
+
+User-agent: *
+Allow: /
+
+# Obszary systemowe, które nie powinny się indeksować
+Disallow: /api/
+Disallow: /logowanie
+Disallow: /rejestracja
+Disallow: /wyloguj
+Disallow: /reset-hasla
+Disallow: /reset-email
+Disallow: /ustawienia
+Disallow: /verify
+Disallow: /verify-email
+
+Sitemap: https://www.examly.pl/sitemap.xml

@@ -25,6 +25,8 @@
   <!-- ================================================================== -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
 
   <!-- 
     @property theme-color
@@ -32,6 +34,7 @@
                  co poprawia spójność wizualną marki i postrzeganie strony.
   -->
   <meta name="theme-color" content="#7928CA">
+  <meta name="color-scheme" content="light dark">
 
   <!-- ================================================================== -->
   <!-- 2. Kluczowe Tagi SEO (Tytuł, Opis, Kanoniczny URL) -->
@@ -78,6 +81,8 @@
   }
   ?>
   <meta name="robots" content="<?= $index_directive ?>, <?= $follow_directive ?>">
+  <meta name="googlebot"
+    content="<?= $index_directive ?>, <?= $follow_directive ?>, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
   <!-- ================================================================== -->
   <!-- 3. Podglądy w mediach społecznościowych (Open Graph & Twitter) -->
@@ -88,7 +93,10 @@
     content="<?= htmlspecialchars($pageDescription ?? 'Zdobądź wiedzę i pewność przed egzaminem zawodowym.') ?>">
   <meta property="og:type" content="website">
   <meta property="og:url" content="<?= htmlspecialchars($canonicalUrl ?? url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
+  <!-- TODO: Podmień na finalną grafikę social share (zalecane min. 1200x630), np. /images/seo/social-preview.jpg -->
   <meta property="og:image" content="<?= url('images/social-preview.jpg') ?>">
+  <meta property="og:image:alt" content="Examly - platforma do nauki i testów egzaminów zawodowych">
+  <meta property="og:locale" content="pl_PL">
   <meta property="og:site_name" content="Examly">
 
   <!-- Twitter Cards -->
@@ -96,12 +104,18 @@
   <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle ?? 'Examly - Egzaminy Zawodowe INF.03') ?>">
   <meta name="twitter:description"
     content="<?= htmlspecialchars($pageDescription ?? 'Sprawdź darmowe testy i materiały edukacyjne.') ?>">
+  <!-- TODO: Uzupełnij o konto marki, np. @examlypl -->
+  <meta name="twitter:site" content="@examlypl">
   <meta name="twitter:image" content="<?= url('images/social-preview.jpg') ?>">
 
   <!-- ================================================================== -->
   <!-- 4. Ikony i zasoby (Assets) -->
   <!-- ================================================================== -->
+  <!-- TODO: Upewnij się, że istnieją wszystkie favicony i web app icons w /public -->
   <link rel="icon" href="<?= url('favicon.ico') ?>" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="32x32" href="<?= url('favicon-32x32.png') ?>">
+  <link rel="icon" type="image/png" sizes="16x16" href="<?= url('favicon-16x16.png') ?>">
+  <link rel="manifest" href="<?= url('site.webmanifest') ?>">
 
   <!-- 
     @property apple-touch-icon
@@ -137,6 +151,15 @@
         "target": "<?= url('search') ?>?q={search_term_string}",
         "query-input": "required name=search_term_string"
       }
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Examly",
+      "url": "<?= url('/') ?>",
+      "logo": "<?= url('images/logo.png') ?>"
     }
   </script>
 

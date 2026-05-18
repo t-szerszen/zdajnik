@@ -21,6 +21,7 @@ export default class SearchHandler {
     // Zapobiegamy domyślnemu wysyłaniu formularza
     this.form.addEventListener('submit', (e) => {
       e.preventDefault();
+      if (!this.isQueryValid(true)) return;
       this.performSearch();
     });
 
@@ -35,7 +36,10 @@ export default class SearchHandler {
 
     // Nasłuchujemy zmian na inputach z opóźnieniem (debounce)
     if (this.input) {
-      this.input.addEventListener('input', () => resetPageAndSearch(true));
+      this.input.addEventListener('input', () => {
+        this.isQueryValid(false);
+        resetPageAndSearch(true);
+      });
     }
 
     // Nasłuchujemy zmian na selectach - wyszukujemy od razu
@@ -74,7 +78,27 @@ export default class SearchHandler {
     }, delay);
   }
 
+  isQueryValid(showValidationMessage = false) {
+    if (!this.input) return true;
+
+    const query = this.input.value.trim();
+    const hasShortQuery = query.length > 0 && query.length < 3;
+
+    if (hasShortQuery) {
+      this.input.setCustomValidity('Wpisz co najmniej 3 znaki, aby rozpocząć wyszukiwanie.');
+      if (showValidationMessage) {
+        this.input.reportValidity();
+      }
+      return false;
+    }
+
+    this.input.setCustomValidity('');
+    return true;
+  }
+
   async performSearch() {
+    if (!this.isQueryValid(false)) return;
+
     // Zbieramy dane z formularza
     const formData = new FormData(this.form);
     const searchParams = new URLSearchParams(formData);
@@ -87,6 +111,7 @@ export default class SearchHandler {
     window.history.replaceState({}, '', requestUrl);
 
     try {
+      this.resultsContainer.setAttribute('aria-busy', 'true');
       this.showSkeletons();
 
       // Używamy fetch z nagłówkiem oznaczającym AJAX (częsty standard, na którym opiera się PHP $_SERVER['HTTP_X_REQUESTED_WITH'])
@@ -112,6 +137,8 @@ export default class SearchHandler {
     } catch (error) {
       console.error('Błąd wyszukiwania:', error);
       this.showError();
+    } finally {
+      this.resultsContainer.setAttribute('aria-busy', 'false');
     }
   }
 
@@ -131,7 +158,7 @@ export default class SearchHandler {
     // Jeśli szukamy ID, często jest 1 wynik, jeśli wpisujemy tekst - wiele.
     // Pokażmy np. 6 szkieletów zastępczo.
     const skeletonsHtml = `
-            <div class="search-results">
+            <div class="search-results" role="status" aria-live="polite">
                 <h2 class="search-results__count skeleton-text skeleton-text--title"></h2>
                 <div class="search-results__grid">
                     ${Array(6).fill(0).map(() => `
@@ -162,7 +189,7 @@ export default class SearchHandler {
 
   showError() {
     this.resultsContainer.innerHTML = `
-            <div class="stats-card__empty">
+            <div class="stats-card__empty" role="alert">
                 <div class="stats-card__empty-icon">⚠️</div>
                 <p>Wystąpił błąd podczas wyszukiwania.</p>
                 <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.6;">Spróbuj odświeżyć stronę lub spróbować ponownie za chwilę.</p>

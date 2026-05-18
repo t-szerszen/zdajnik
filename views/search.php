@@ -43,15 +43,16 @@ $results = $results ?? [];
   <section class="search-page">
     <div class="search-page__container">
 
-      <section class="search-page__filters">
-        <form action="<?= url('search') ?>" method="GET" class="search-form">
+      <section class="search-page__filters" aria-labelledby="search-filters-title">
+        <h2 id="search-filters-title" class="visually-hidden">Filtry wyszukiwania</h2>
+        <form action="<?= url('search') ?>" method="GET" class="search-form" role="search" aria-label="Wyszukiwarka pytań">
           <input type="hidden" name="page" id="search-page-input" value="<?= htmlspecialchars($page ?? 1) ?>">
           <div class="search-form__grid">
 
             <!-- Egzamin -->
             <div class="search-form__field">
               <label for="exam_id" class="search-form__label">Egzamin</label>
-              <select name="exam_id" id="exam_id" class="search-form__select" onchange="this.form.submit()">
+              <select name="exam_id" id="exam_id" class="search-form__select">
                 <option value="">Wybierz egzamin</option>
                 <?php foreach ($exams as $exam): ?>
                   <option value="<?= $exam['id'] ?>" <?= ($filters['exam_id'] == $exam['id']) ? 'selected' : '' ?>>
@@ -81,7 +82,7 @@ $results = $results ?? [];
                 <i class="fas fa-search search-form__input-icon"></i>
                 <input type="text" name="query" id="query" class="search-form__input"
                   placeholder="np. podzespoły komputerowe lub 402"
-                  value="<?= htmlspecialchars($filters['query'] ?? '') ?>" autocomplete="off">
+                  value="<?= htmlspecialchars($filters['query'] ?? '') ?>" autocomplete="off" minlength="3">
               </div>
             </div>
 
@@ -90,7 +91,7 @@ $results = $results ?? [];
       </section>
 
       <!-- Sekcja Wyników -->
-      <section class="search-page__results">
+      <section class="search-page__results" aria-live="polite" aria-busy="false" role="region" aria-label="Wyniki wyszukiwania">
         <?php include __DIR__ . '/partials/search_results_partial.php'; ?>
       </section>
 

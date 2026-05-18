@@ -218,7 +218,7 @@ export class TestRunner {
             </div>
             <div class="quiz-card__header-actions">
            ${window.examlyAppState.isUserLoggedIn ? `
-             <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz pytanie">
+             <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz pytanie" aria-label="${qData.question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-pressed="${qData.question.is_saved ? 'true' : 'false'}">
                <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
              </button>
            ` : ''}
@@ -642,6 +642,8 @@ export class TestRunner {
     if (!this.isTestInProgress) return;
 
     this.stopTimer();
+    if (this.pauseBtn) this.pauseBtn.setAttribute('aria-pressed', 'true');
+    if (this.navPauseBtn) this.navPauseBtn.setAttribute('aria-pressed', 'true');
     if (this.pauseOverlay) this.pauseOverlay.classList.remove('hidden');
     if (this.questionsWrapper) this.questionsWrapper.classList.add('questions-wrapper--blurred');
   }
@@ -654,6 +656,8 @@ export class TestRunner {
     if (!this.isTestInProgress) return;
 
     this.runTimer();
+    if (this.pauseBtn) this.pauseBtn.setAttribute('aria-pressed', 'false');
+    if (this.navPauseBtn) this.navPauseBtn.setAttribute('aria-pressed', 'false');
     if (this.pauseOverlay) this.pauseOverlay.classList.add('hidden');
     if (this.questionsWrapper) this.questionsWrapper.classList.remove('questions-wrapper--blurred');
   }
