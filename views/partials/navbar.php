@@ -38,6 +38,20 @@ use App\Models\User;
     </a>
   </div>
 
+  <!-- Dynamic Test Info (Visible on scroll during tests) -->
+  <div class="main-nav__test-info" id="nav-test-info" aria-live="polite">
+    <div class="nav-test-meta">
+      <span id="nav-test-progress-text">0/0</span>
+      <div class="nav-test-progress-bar-wrap">
+        <div id="nav-test-progress-bar" class="nav-test-progress-bar"></div>
+      </div>
+    </div>
+    <div id="nav-timer" class="nav-test-timer">00:00</div>
+    <button id="nav-pause-btn" class="nav-test-pause-btn" title="Zapauzuj egzamin" aria-label="Zapauzuj egzamin">
+      <i class="fas fa-pause"></i>
+    </button>
+  </div>
+
   <!-- Przycisk Hamburgera (Widoczny tylko na mobile) -->
   <button class="main-nav__hamburger" id="nav-toggle" aria-label="Menu" data-toggle-nav>
     <span></span>
@@ -112,22 +126,6 @@ use App\Models\User;
             <span class="badge badge--soon">Wkrótce</span>
           </div>
         </span>
-      </li>
-
-      <!-- Dynamic Test Info (Visible on scroll during tests) -->
-      <li class="main-nav__item main-nav__item--test-info">
-      <div class="main-nav__test-info" id="nav-test-info" aria-live="polite">
-        <div class="nav-test-meta">
-          <span id="nav-test-progress-text">0/0</span>
-          <div class="nav-test-progress-bar-wrap">
-            <div id="nav-test-progress-bar" class="nav-test-progress-bar"></div>
-          </div>
-        </div>
-        <div id="nav-timer" class="nav-test-timer">00:00</div>
-        <button id="nav-pause-btn" class="nav-test-pause-btn" title="Zapauzuj egzamin" aria-label="Zapauzuj egzamin">
-          <i class="fas fa-pause"></i>
-        </button>
-      </div>
       </li>
 
       <?php if (!$isUserLoggedIn): ?>

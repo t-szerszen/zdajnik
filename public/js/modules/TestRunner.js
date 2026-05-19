@@ -128,7 +128,7 @@ export class TestRunner {
   handleSyncScroll() {
     const currentScrollY = window.scrollY;
 
-    if (!this.testHeader || window.innerWidth <= 1024) {
+    if (!this.testHeader || window.innerWidth < 768) {
       document.body.classList.remove('test-scrolled-past-header');
       this.lastScrollY = currentScrollY;
       return;

@@ -702,7 +702,13 @@
     box-shadow: var(--shadow-sm);
     animation: slideDownFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
-    @include media-down(1400px) {
+    @media (max-width: 900px) {
+      gap: 0.75rem;
+      margin: 0 0.75rem;
+      padding: 0.3rem 0.7rem;
+    }
+
+    @media (max-width: 767.98px) {
       display: none !important;
     }
 
@@ -730,6 +736,10 @@
     background: var(--border);
     border-radius: 100px;
     overflow: hidden;
+
+    @media (max-width: 900px) {
+      width: 72px;
+    }
   }
 
   .nav-test-progress-bar {
@@ -747,6 +757,11 @@
     padding: 0.2rem 0.75rem;
     border-radius: 50px;
     font-variant-numeric: tabular-nums;
+
+    @media (max-width: 900px) {
+      font-size: 0.85rem;
+      padding: 0.2rem 0.55rem;
+    }
   }
 
   .nav-test-pause-btn {
