@@ -52,13 +52,33 @@ class DashboardController extends BaseController
 
     // KROK 2: Wybór aktualnego kontekstu (kwalifikacji) z parametrów URL
     $examTypes = $this->statsService->getUserExams($this->currentUser->getId());
-    $selectedExamTypeId = (int) ($_GET['category'] ?? $examTypes[0]['id'] ?? 0);
+    $requestedCategory = $_GET['category'] ?? null;
+    $selectedExamTypeId = null;
+
+    if ($requestedCategory !== null && ctype_digit((string) $requestedCategory) && (int) $requestedCategory > 0) {
+      $requestedCategoryId = (int) $requestedCategory;
+      $allowedExamIds = array_map(static fn($exam) => (int) $exam['id'], $examTypes);
+
+      if (in_array($requestedCategoryId, $allowedExamIds, true)) {
+        $selectedExamTypeId = $requestedCategoryId;
+      }
+    }
+
+    if ($selectedExamTypeId === null) {
+      $this->renderView('statistics', [
+        'categories' => $examTypes,
+        'selectedCategoryId' => null,
+        'hasSelectedCategory' => false
+      ]);
+      return;
+    }
 
     // KROK 3 & 4: Gromadzenie kompletnych danych analitycznych
     // Pobieramy dane z محدودzeniem (limit) do 5 najświeższych rekordów dla widoku panelu.
     $data = [
       'categories' => $examTypes,
       'selectedCategoryId' => $selectedExamTypeId,
+      'hasSelectedCategory' => true,
       'overallProgress' => $this->statsService->getOverallProgress($userId, $selectedExamTypeId),
       'masteryStats' => $this->statsService->getMasteryStats($userId, $selectedExamTypeId),
       'topicStats' => $this->statsService->getTopicStats($userId, $selectedExamTypeId),

@@ -21,7 +21,8 @@ $pageDescription = 'Śledź swoje postępy, analizuj wyniki i obserwuj swoją dr
 
 // Dane przekazane z kontrolera
 $categories = $categories ?? [];
-$selectedCategoryId = $selectedCategoryId ?? 0;
+$selectedCategoryId = $selectedCategoryId ?? null;
+$hasSelectedCategory = $hasSelectedCategory ?? ($selectedCategoryId !== null && (int) $selectedCategoryId > 0);
 $masteryStats = $masteryStats ?? ['total' => 0, 'mastered' => 0, 'percent' => 0];
 $topicStats = $topicStats ?? [];
 $records = $records ?? ['best_score' => 0, 'last_exam' => 'Brak', 'last_activity' => 'Brak', 'total_exams' => 0, 'avg_duration' => 0];
@@ -76,7 +77,7 @@ $extraScripts = [
               aria-label="Wybierz kategorię egzaminu, aby zobaczyć statystyki">
               <option value="">wybór egzaminu</option>
               <?php foreach ($categories as $cat): ?>
-                <option value="<?= $cat['id'] ?>" <?= $selectedCategoryId == $cat['id'] ? 'selected' : '' ?>>
+                <option value="<?= $cat['id'] ?>" <?= $hasSelectedCategory && (int) $selectedCategoryId === (int) $cat['id'] ? 'selected' : '' ?>>
                   <?= htmlspecialchars($cat['code']) ?>
                 </option>
                 <?php
@@ -85,6 +86,7 @@ $extraScripts = [
           </form>
         </div>
 
+        <?php if ($hasSelectedCategory): ?>
         <!-- Mastery Pie Chart -->
         <div class="stats-card stats-card--mastery" id="stats-mastery-card">
           <div class="stats-card__header-minimal">
@@ -174,9 +176,20 @@ $extraScripts = [
             endif; ?>
           </div>
         </div>
+        <?php endif; ?>
 
       </aside>
 
+      <?php if (!$hasSelectedCategory): ?>
+        <section class="stats-page__content">
+          <div class="stats-card">
+            <div class="stats-card__empty">
+              <div class="stats-card__empty-icon">📊</div>
+              <p>Wybierz egzamin, aby zobaczyć statystyki.</p>
+            </div>
+          </div>
+        </section>
+      <?php else: ?>
       <!-- MAIN CONTENT GRID -->
       <section class="stats-page__content">
 
@@ -520,6 +533,7 @@ $extraScripts = [
         </div>
 
       </section>
+      <?php endif; ?>
     </div>
   </section>
   </main>
