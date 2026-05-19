@@ -19,26 +19,25 @@ function initRotatingWord() {
 
 function initSpotlight() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const hero = document.querySelector('.hero-section');
-  if (!hero) return;
+  const landing = document.querySelector('.home-page');
+  if (!landing) return;
 
   let raf = null;
   const onMove = (event) => {
     if (raf) return;
     raf = requestAnimationFrame(() => {
-      const rect = hero.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / rect.width) * 100;
-      const y = ((event.clientY - rect.top) / rect.height) * 100;
-      hero.style.setProperty('--spotlight-x', `${Math.max(0, Math.min(100, x))}%`);
-      hero.style.setProperty('--spotlight-y', `${Math.max(0, Math.min(100, y))}%`);
+      const x = (event.clientX / window.innerWidth) * 100;
+      const y = (event.clientY / window.innerHeight) * 100;
+      landing.style.setProperty('--spotlight-x', `${Math.max(0, Math.min(100, x))}%`);
+      landing.style.setProperty('--spotlight-y', `${Math.max(0, Math.min(100, y))}%`);
       raf = null;
     });
   };
 
-  hero.addEventListener('pointermove', onMove, { passive: true });
-  hero.addEventListener('pointerleave', () => {
-    hero.style.setProperty('--spotlight-x', '50%');
-    hero.style.setProperty('--spotlight-y', '35%');
+  landing.addEventListener('pointermove', onMove, { passive: true });
+  landing.addEventListener('pointerleave', () => {
+    landing.style.setProperty('--spotlight-x', '50%');
+    landing.style.setProperty('--spotlight-y', '16%');
   });
 }
 
@@ -74,9 +73,24 @@ function initSearchMockupPulse() {
   }, 2600);
 }
 
+function initFeatureCards() {
+  const cards = document.querySelectorAll('.feature-card');
+  if (!cards.length || !window.matchMedia('(pointer: coarse)').matches) return;
+
+  cards.forEach((card) => {
+    card.addEventListener('click', () => {
+      cards.forEach((item) => {
+        if (item !== card) item.classList.remove('is-active');
+      });
+      card.classList.toggle('is-active');
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initRotatingWord();
   initSpotlight();
   initMagneticPrimaryCta();
   initSearchMockupPulse();
+  initFeatureCards();
 });

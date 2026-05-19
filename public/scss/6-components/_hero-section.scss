@@ -17,16 +17,12 @@
   padding: 7rem 1.5rem 5rem;
   overflow: hidden;
   isolation: isolate;
-  --spotlight-x: 50%;
-  --spotlight-y: 35%;
 
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-      radial-gradient(circle at var(--spotlight-x) var(--spotlight-y), rgba(59, 130, 246, 0.18), transparent 36%),
-      radial-gradient(circle at 78% 14%, rgba(124, 58, 237, 0.15), transparent 30%);
+    background: radial-gradient(circle at var(--spotlight-x) var(--spotlight-y), rgba(59, 130, 246, 0.16), transparent 30%);
     pointer-events: none;
     z-index: 0;
     -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
@@ -163,9 +159,12 @@
   padding: 0.8rem 0.9rem;
   border: 1px solid rgba(var(--accent-rgb), 0.2);
   border-radius: 0.8rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--landing-card-bg);
+  box-shadow: var(--landing-soft-shadow);
   font-size: 0.88rem;
   color: var(--muted-text);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 
   span {
     display: block;
@@ -177,12 +176,13 @@
 }
 
 .hero-console {
-  border: 1px solid rgba(var(--accent-rgb), 0.22);
-  border-radius: 1rem;
-  background: linear-gradient(145deg, rgba(12, 20, 38, 0.92), rgba(26, 17, 46, 0.82));
-  backdrop-filter: blur(8px);
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  border-radius: 1.15rem;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(239, 246, 255, 0.72));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   padding: 1rem;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--landing-card-shadow);
   opacity: 0;
   animation: hero-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   animation-delay: 0.35s;
@@ -191,7 +191,7 @@
     display: flex;
     align-items: center;
     gap: 0.45rem;
-    color: rgba(255, 255, 255, 0.84);
+    color: #334155;
     font-size: 0.88rem;
     margin-bottom: 0.9rem;
   }
@@ -212,29 +212,29 @@
   }
 
   &__body {
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(var(--accent-rgb), 0.12);
     border-radius: 0.85rem;
     padding: 0.85rem;
-    background: rgba(9, 12, 20, 0.55);
+    background: rgba(255, 255, 255, 0.62);
   }
 
   &__label {
     margin: 0;
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: #64748b;
   }
 
   &__value {
     margin: 0.25rem 0 0.7rem;
     font-size: 1rem;
     font-weight: 700;
-    color: white;
+    color: #0f172a;
   }
 
   &__progress {
     height: 10px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(59, 130, 246, 0.12);
     margin-bottom: 0.8rem;
     overflow: hidden;
   }
@@ -248,10 +248,10 @@
 
   &__chart {
     margin-bottom: 0.85rem;
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    border: 1px solid rgba(var(--accent-rgb), 0.12);
     border-radius: 0.7rem;
     padding: 0.55rem 0.6rem 0.4rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(248, 250, 252, 0.78);
   }
 
   &__chart-head {
@@ -260,10 +260,10 @@
     justify-content: space-between;
     font-size: 0.78rem;
     margin-bottom: 0.25rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: #64748b;
 
     strong {
-      color: #86efac;
+      color: #16a34a;
       font-size: 0.8rem;
     }
   }
@@ -276,7 +276,7 @@
 
   &__chart-line-bg {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.17);
+    stroke: rgba(15, 23, 42, 0.12);
     stroke-width: 2.6;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -299,13 +299,66 @@
     padding: 0;
     display: grid;
     gap: 0.55rem;
-    color: rgba(255, 255, 255, 0.82);
+    color: #334155;
     font-size: 0.86rem;
 
     i {
       margin-right: 0.45rem;
       color: #7ca2ff;
     }
+  }
+}
+
+html.dark .hero-metric {
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: none;
+}
+
+html.dark .hero-console {
+  border-color: rgba(var(--accent-rgb), 0.22);
+  background: linear-gradient(145deg, rgba(12, 20, 38, 0.92), rgba(26, 17, 46, 0.82));
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.26);
+
+  &__header {
+    color: rgba(255, 255, 255, 0.84);
+  }
+
+  &__body {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(9, 12, 20, 0.55);
+  }
+
+  &__label {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  &__value {
+    color: white;
+  }
+
+  &__progress {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  &__chart {
+    border-color: rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  &__chart-head {
+    color: rgba(255, 255, 255, 0.7);
+
+    strong {
+      color: #86efac;
+    }
+  }
+
+  &__chart-line-bg {
+    stroke: rgba(255, 255, 255, 0.17);
+  }
+
+  &__events {
+    color: rgba(255, 255, 255, 0.82);
   }
 }
 
