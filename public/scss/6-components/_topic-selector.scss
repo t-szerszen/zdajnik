@@ -112,6 +112,10 @@
       transform: translateY(-1px);
       background: rgba(var(--accent-rgb), 0.18);
     }
+
+    &--margin {
+      margin-right: 0.5rem;
+    }
   }
 
   &__label {

@@ -123,9 +123,9 @@ $extraScripts = [
         <!-- Grupa: Opcje inteligentnej nauki (potencjalnie dla użytkowników premium) -->
         <fieldset class="topic-selector__fieldset topic-selector__fieldset--premium" data-premium-filters-root>
           <legend class="topic-selector__sub-legend topic-selector__sub-legend--premium">
-            <i class="fas fa-brain section-icon"></i> Inteligentna nauka
-            <button type="button" class="topic-selector__help-btn hidden" data-premium-tutorial-trigger
+              <button type="button" class="topic-selector__help-btn--margin hidden" data-premium-tutorial-trigger
               aria-label="Pokaż poradnik opcji specjalnych" title="Pokaż poradnik opcji specjalnych">?</button>
+            <i class="fas fa-brain section-icon"></i> Inteligentna nauka
           </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label premium-option">

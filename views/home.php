@@ -136,7 +136,7 @@ $extraSchemas = [
   <!-- Dołączenie reużywalnego komponentu paska nawigacyjnego -->
   <?php include 'partials/navbar.php'; ?>
 
-  <main class="home-page">
+  <main class="home-page" data-home-experience>
     <!-- 
       =====================================================================
       Sekcja 1: Hero Section
@@ -147,20 +147,63 @@ $extraSchemas = [
       =====================================================================
     -->
     <section class="hero-section">
-      <div class="hero-section__content">
-        <h1 class="hero-section__title"><span class="text-gradient">Zdaj</span> egzamin zawodowy bez stresu.</h1>
-        <p class="hero-section__subtitle">Opanuj cały materiał dzięki naszej inteligentnej platformie z tysiącami pytań
-          i zdobądź wynik o którym marzysz.</p>
-        <div class="hero-section__cta-group">
-          <a href="<?= url('#egzaminy') ?>" class="btn btn--primary btn--large">Rozpocznij egzamin próbny</a>
-
-          <!-- CTA widoczne tylko dla gości -->
-          <?php if (!$isUserLoggedIn): ?>
-            <a href="<?= url('rejestracja') ?>" class="btn btn--secondary btn--large">
-              <i class="fas fa-user-plus"></i> Załóż darmowe konto
-            </a>
-          <?php endif; ?>
+      <div class="hero-section__grid">
+        <div class="hero-section__content">
+          <p class="hero-section__lockup">
+            <span class="hero-section__lockup-badge">Examly</span>
+            <span class="hero-section__lockup-text">Egzamin pod kontrolą</span>
+          </p>
+          <h1 class="hero-section__title">
+            Zdaj egzamin zawodowy
+            <span class="hero-section__title-accent" data-hero-rotating-word>spokojnie</span>
+          </h1>
+          <p class="hero-section__subtitle">Trenuj na inteligentnej platformie z realnymi pytaniami, szybkim feedbackiem i
+            statystyką, która pokazuje gdzie podbijesz wynik najszybciej.</p>
+          <div class="hero-section__cta-group">
+            <a href="<?= url('#egzaminy') ?>" class="btn btn--primary btn--large hero-section__cta-primary">Rozpocznij egzamin próbny</a>
+            <a href="<?= url('#topics-section') ?>" class="btn btn--secondary btn--large hero-section__cta-secondary">Zobacz jak działa</a>
+            <?php if (!$isUserLoggedIn): ?>
+              <a href="<?= url('rejestracja') ?>" class="btn btn--secondary btn--large">
+                <i class="fas fa-user-plus"></i> Załóż darmowe konto
+              </a>
+            <?php endif; ?>
+          </div>
+          <div class="hero-section__metrics" aria-label="Najważniejsze metryki platformy">
+            <div class="hero-metric"><span>+18%</span> średni wzrost skuteczności</div>
+            <div class="hero-metric"><span>22 min</span> dziennie do stabilnego progresu</div>
+            <div class="hero-metric"><span>INF.04</span> najczęściej trenowana kwalifikacja</div>
+          </div>
         </div>
+        <aside class="hero-console" aria-label="Podgląd działania platformy">
+          <div class="hero-console__header">
+            <span class="hero-console__dot"></span>
+            <span class="hero-console__dot"></span>
+            <span class="hero-console__dot"></span>
+            <strong>Mission Control</strong>
+          </div>
+          <div class="hero-console__body">
+            <p class="hero-console__label">Aktywna sesja</p>
+            <p class="hero-console__value">INF.04 / Inteligentna nauka</p>
+            <div class="hero-console__chart">
+              <div class="hero-console__chart-head">
+                <span>Twój progress</span>
+                <strong>+12%</strong>
+              </div>
+              <svg viewBox="0 0 320 90" class="hero-console__chart-svg" aria-hidden="true">
+                <polyline class="hero-console__chart-line-bg" points="0,70 45,64 88,52 130,58 172,36 215,42 258,20 320,26"></polyline>
+                <polyline class="hero-console__chart-line" points="0,70 45,64 88,52 130,58 172,36 215,42 258,20 320,26"></polyline>
+              </svg>
+            </div>
+            <div class="hero-console__progress">
+              <div class="hero-console__progress-fill"></div>
+            </div>
+            <ul class="hero-console__events">
+              <li><i class="fas fa-check-circle"></i> Ostatnie błędy: przeanalizowane</li>
+              <li><i class="fas fa-bolt"></i> Słabe punkty: 3 pytania do powtórki</li>
+              <li><i class="fas fa-heart"></i> Zapisane: gotowe do sprintu 10 min</li>
+            </ul>
+          </div>
+        </aside>
       </div>
     </section>
 
@@ -281,8 +324,8 @@ $extraSchemas = [
     <section class="search-feature-section">
       <div class="search-feature-card">
         <div class="search-feature-card__content">
-          <h2 class="search-feature-card__title">Zapomniałeś jakiegoś pytania? <span class="text-gradient">Znajdź je
-              teraz.</span></h2>
+          <p class="search-feature-card__eyebrow">Flow Search</p>
+          <h2 class="search-feature-card__title">Zapomniałeś pytania? <span class="text-gradient">Znajdź je w 3 sekundy.</span></h2>
           <p class="search-feature-card__text">
             Nasza wyszukiwarka pozwala na błyskawiczne znalezienie pytania po treści lub jego unikalnym numerze ID.
             Dzięki temu szybko sprawdzisz poprawne odpowiedzi i obszerne wyjaśnienia.
@@ -299,8 +342,8 @@ $extraSchemas = [
               <span></span><span></span><span></span>
             </div>
             <div class="search-preview-mockup__content">
-              <div class="search-preview-mockup__bar">402</div>
-              <div class="search-preview-mockup__item">
+              <div class="search-preview-mockup__bar" data-search-demo-term>402</div>
+              <div class="search-preview-mockup__item" data-search-demo-item>
                 <div class="search-preview-mockup__line" style="width: 80%"></div>
                 <div class="search-preview-mockup__line" style="width: 60%"></div>
                 <div class="search-preview-mockup__line search-preview-mockup__line--short"></div>
@@ -488,6 +531,7 @@ $extraSchemas = [
 
   <!-- Dołączenie reużywalnego komponentu stopki -->
   <?php include 'partials/footer.php'; ?>
+  <script type="module" src="<?= url('js/features/home/index.js') ?>"></script>
 </body>
 
 </html>
