@@ -20,11 +20,11 @@ class PremiumOptionsTutorial {
 
   buildSteps() {
     const descriptions = {
-      toDiscover: 'Pokazuje pytania, których jeszcze nie widziałeś. Idealny filtr, gdy chcesz szybko poszerzać zakres materiału.',
-      toImprove: 'Kieruje Cię do pytań, w których skuteczność jest niższa. Najlepsza opcja, gdy chcesz podnieść wynik punktowo.',
-      toRemind: 'Wybiera pytania najdawniej powtarzane, żeby odświeżać wiedzę zanim wypadnie z pamięci.',
-      lastMistakes: 'Skupia się na ostatnio popełnionych błędach. Szybka pętla naprawcza po sesji testowej.',
-      saved: 'Ładuje pytania zapisane przez Ciebie ręcznie. Dobre do pracy na własnej liście najtrudniejszych zagadnień.'
+      toDiscover: 'Wybiera pytania, których jeszcze nie rozwiązywałeś. Użyj, gdy chcesz poszerzyć zakres nauki.',
+      toImprove: 'Pokazuje pytania z niższą skutecznością. Użyj, gdy chcesz poprawić słabe punkty.',
+      toRemind: 'Dobiera pytania dawno niepowtarzane. Użyj, żeby odświeżyć materiał przed testem.',
+      lastMistakes: 'Wraca do ostatnich błędów. Użyj, żeby szybko poprawić świeże pomyłki.',
+      saved: 'Pokazuje zapisane pytania. Użyj do pracy z własną listą trudnych zagadnień.'
     };
 
     const orderedValues = ['toDiscover', 'toImprove', 'toRemind', 'lastMistakes', 'saved'];
@@ -40,7 +40,7 @@ class PremiumOptionsTutorial {
       steps.push({
         target: label,
         title,
-        description: descriptions[value] || 'Opcja specjalna wspierająca inteligentny dobór pytań.'
+        description: descriptions[value] || 'Filtr pomaga dobrać pytania do konkretnego celu nauki.'
       });
     });
 

@@ -158,7 +158,9 @@ $extraScripts = [
             <span class="config-step__number">3</span>
             Chcesz uczyć się inteligentnie? (Opcjonalnie)
             <button type="button" class="topic-selector__help-btn hidden" data-premium-tutorial-trigger
-              aria-label="Pokaż poradnik opcji specjalnych" title="Pokaż poradnik opcji specjalnych">?</button>
+              aria-label="Pokaż poradnik filtrów" title="Pokaż poradnik filtrów">
+              <i class="fas fa-question" aria-hidden="true"></i>
+            </button>
           </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label premium-option">

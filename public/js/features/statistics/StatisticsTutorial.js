@@ -21,42 +21,42 @@ class StatisticsTutorial {
       {
         selector: '#stats-category-selector',
         title: 'Wybór egzaminu',
-        description: 'Tutaj wybierasz kwalifikację. Wszystkie metryki i wykresy poniżej aktualizują się pod wybrany egzamin.'
+        description: 'Wybierz kwalifikację. Metryki i wykresy pokażą wyniki tylko dla tego egzaminu.'
       },
       {
         selector: '#stats-mastery-card',
         title: 'Twoje opanowanie materiału',
-        description: 'To szybki obraz postępu: ile pytań opanowałeś, ile już poznałeś i jak wygląda rozkład po tematach.'
+        description: 'Sprawdź, ile materiału masz już opanowane i które tematy wymagają powtórki.'
       },
       {
         selector: '#stats-trend-card',
         title: 'Trend skuteczności',
-        description: 'Wykres pokazuje kierunek zmian Twoich wyników. Najważniejsze pytanie: czy z tygodnia na tydzień idziesz w górę.'
+        description: 'Zobacz, czy Twoja skuteczność rośnie w kolejnych sesjach nauki.'
       },
       {
         selector: '#stats-key-metrics-card',
         title: 'Kluczowe wyniki',
-        description: 'To Twoja tablica wyników: najlepszy wynik, średni czas, liczba testów i ostatni rezultat. Patrz na regularność, nie tylko rekord.'
+        description: 'Tu znajdziesz najlepszy wynik, średni czas, liczbę testów i ostatni rezultat.'
       },
       {
         selector: '#criticalMistakes',
         title: 'Krytyczne błędy',
-        description: 'Lista pytań, które najczęściej obniżają wynik. To najlepszy materiał na celowaną powtórkę przed kolejnym egzaminem.'
+        description: 'To pytania, które najczęściej obniżają wynik. Zacznij powtórkę właśnie od nich.'
       },
       {
         selector: '#lastMistakes',
         title: 'Ostatnie błędy',
-        description: 'Świeże pomyłki z ostatnich sesji. Przerobienie ich od razu daje najszybszy efekt nauki.'
+        description: 'Wróć do świeżych pomyłek, zanim utrwalą się złe odpowiedzi.'
       },
       {
         selector: '#savedQuestions',
         title: 'Zapisane pytania',
-        description: 'Twoja prywatna lista trudnych lub ważnych pytań. Warto wracać do niej przed każdym podejściem.'
+        description: 'To Twoja lista ważnych pytań. Używaj jej do szybkiej powtórki.'
       },
       {
         selector: '#examsHistory',
         title: 'Historia egzaminów',
-        description: 'Tu śledzisz stabilność wyników i realny progres. Regularna historia to najlepszy prognostyk zdanego egzaminu.'
+        description: 'Porównuj wyniki testów i sprawdzaj, czy robisz stabilny postęp.'
       }
     ];
 

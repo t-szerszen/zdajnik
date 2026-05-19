@@ -97,6 +97,9 @@
   }
 
   &__help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 28px;
     height: 28px;
     border-radius: 999px;
@@ -107,6 +110,11 @@
     cursor: pointer;
     flex-shrink: 0;
     transition: all 0.2s ease;
+
+    i {
+      font-size: 0.8rem;
+      line-height: 1;
+    }
 
     &:hover {
       transform: translateY(-1px);
