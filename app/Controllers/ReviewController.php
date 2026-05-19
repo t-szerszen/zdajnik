@@ -68,7 +68,17 @@ class ReviewController extends BaseController
       $topic = $_GET['topic_id'] ?? '';
       $backUrl = url('search') . "?exam_id=$exam&topic_id=$topic&query=" . urlencode($query);
     } else {
+      $cat = $_GET['category'] ?? '';
+      $anchor = $_GET['anchor'] ?? '';
       $backUrl = url('statystyki');
+
+      if (ctype_digit((string) $cat) && (int) $cat > 0) {
+        $backUrl .= '?category=' . (int) $cat;
+      }
+
+      if (is_string($anchor) && preg_match('/^[A-Za-z][A-Za-z0-9_-]*$/', $anchor)) {
+        $backUrl .= '#' . $anchor;
+      }
     }
 
     // KROK 4: Renderowanie widoku
@@ -115,7 +125,14 @@ class ReviewController extends BaseController
       $cat = $_GET['category'] ?? 0;
       $backUrl = url('historia') . '?type=' . $type . '&category=' . $cat;
     } else {
-      $backUrl = url('statystyki') . '#examsHistory';
+      $cat = $_GET['category'] ?? '';
+      $backUrl = url('statystyki');
+
+      if (ctype_digit((string) $cat) && (int) $cat > 0) {
+        $backUrl .= '?category=' . (int) $cat;
+      }
+
+      $backUrl .= '#examsHistory';
     }
 
     // KROK 5: Renderowanie widoku

@@ -84,6 +84,13 @@ $extraScripts = [
               endforeach; ?>
             </select>
           </form>
+          <div class="stats-page__default-exam hidden" data-default-stats-exam>
+            <label class="stats-page__default-exam-label">
+              <input type="checkbox" data-default-stats-exam-checkbox>
+              <span>Ustaw ten egzamin jako domyślny dla statystyk</span>
+            </label>
+            <p class="stats-page__default-exam-helper">Przy kolejnym wejściu od razu pokażemy statystyki tego egzaminu.</p>
+          </div>
         </div>
 
         <?php if ($hasSelectedCategory): ?>
@@ -389,7 +396,7 @@ $extraScripts = [
                         <?= mb_strimwidth(htmlspecialchars($critical['question_text']), 0, 120, "...") ?>
                       </span>
                       <div class="stats-card__item-btn-group">
-                        <a href="<?= url('test-pytanie/' . $critical['question_id']) ?>" class="btn btn--secondary btn--sm btn--compact"
+                        <a href="<?= url('test-pytanie/' . $critical['question_id']) ?>?source=stats&category=<?= $selectedCategoryId ?>&anchor=criticalMistakes" class="btn btn--secondary btn--sm btn--compact"
                           title="Zobacz">zobacz</a>
                       </div>
                     </li>
@@ -436,7 +443,7 @@ $extraScripts = [
                       <?= mb_strimwidth(htmlspecialchars($error['question_text']), 0, 120, "...") ?>
                     </span>
                     <div class="stats-card__item-btn-group">
-                      <a href="<?= url('test-pytanie/' . $error['id']) ?>" class="btn btn--secondary btn--sm btn--compact">zobacz</a>
+                      <a href="<?= url('test-pytanie/' . $error['id']) ?>?source=stats&category=<?= $selectedCategoryId ?>&anchor=lastMistakes" class="btn btn--secondary btn--sm btn--compact">zobacz</a>
                     </div>
                   </li>
                   <?php
@@ -473,7 +480,7 @@ $extraScripts = [
                       <?= mb_strimwidth(htmlspecialchars($saved['question_text']), 0, 120, "...") ?>
                     </span>
                     <div class="stats-card__item-btn-group">
-                      <a href="<?= url('test-pytanie/' . $saved['id']) ?>" class="btn btn--secondary btn--sm btn--compact">zobacz</a>
+                      <a href="<?= url('test-pytanie/' . $saved['id']) ?>?source=stats&category=<?= $selectedCategoryId ?>&anchor=savedQuestions" class="btn btn--secondary btn--sm btn--compact">zobacz</a>
                     </div>
                   </li>
                   <?php
@@ -513,7 +520,7 @@ $extraScripts = [
                       </strong>
                     </span>
                     <div class="stats-card__item-btn-group">
-                      <a href="<?= url('wyniki/' . $exam['id']) ?>" class="btn btn--secondary btn--sm btn--compact">zobacz</a>
+                      <a href="<?= url('wyniki/' . $exam['id']) ?>?source=stats&category=<?= $selectedCategoryId ?>" class="btn btn--secondary btn--sm btn--compact">zobacz</a>
                     </div>
                   </li>
                   <?php
@@ -539,6 +546,7 @@ $extraScripts = [
   </main>
 
   <?php include 'partials/footer.php'; ?>
+  <script type="module" src="<?= url('js/features/statistics/DefaultStatsExamPreference.js') ?>"></script>
   <script type="module" src="<?= url('js/components/EfficiencyChart.js') ?>"></script>
   <script type="module" src="<?= url('js/features/statistics/StatisticsTutorial.js') ?>"></script>
 </body>

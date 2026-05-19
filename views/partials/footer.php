@@ -59,6 +59,7 @@
         <li class="footer__item"><a href="<?= url('rejestracja') ?>" class="footer__link">Rejestracja</a></li>
         <li class="footer__item"><a href="<?= url('ustawienia') ?>" class="footer__link">Zarządzaj kontem</a></li>
         <li class="footer__item"><a href="<?= url('search') ?>" class="footer__link">Baza pytań</a></li>
+        <li class="footer__item"><a href="<?= url('polityka-prywatnosci') ?>" class="footer__link">Polityka prywatności</a></li>
       </ul>
     </div>
 
