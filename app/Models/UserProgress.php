@@ -110,6 +110,22 @@ class UserProgress
   }
 
   /**
+   * Sprawdza, czy użytkownik udzielił już odpowiedzi na dane pytanie.
+   *
+   * @param int $userId
+   * @param int $questionId
+   * @return bool
+   */
+  public function hasAnsweredQuestion(int $userId, int $questionId): bool
+  {
+    $sql = "SELECT 1 FROM user_progress
+            WHERE user_id = ? AND question_id = ? AND attempts_count > 0
+            LIMIT 1";
+
+    return (bool) $this->db->fetch($sql, [$userId, $questionId]);
+  }
+
+  /**
    * Trwale usuwa całą historię postępu użytkownika dla wybranej kwalifikacji.
    * 
    * @param int $userId

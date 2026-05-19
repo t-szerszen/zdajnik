@@ -98,6 +98,7 @@ class ApiController extends BaseController
     // Detekcja stanu zapisu dla zalogowanych
     if ($this->isUserLoggedIn) {
       $question['is_saved'] = $this->savedQuestionModel->isSaved($this->currentUser->getId(), $question['question_id']);
+      $question['was_answered'] = $this->userProgressModel->hasAnsweredQuestion($this->currentUser->getId(), (int) $question['question_id']);
     }
 
     $responseData = [
