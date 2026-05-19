@@ -1,104 +1,165 @@
-// Ogólna klasa dla tytułów sekcji
+// Landing page canvas and shared section rhythm.
 .section-title {
   text-align: center;
-  font-size: 2.25rem;
-  margin-bottom: 3rem;
-  font-weight: 800;
+  font-size: clamp(1.75rem, 2.6vw, 2.85rem);
+  margin: 0 auto 1rem;
+  font-weight: 850;
   color: var(--text);
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
+  line-height: 1.06;
+  max-width: 820px;
 }
 
 .section-subtitle {
   text-align: center;
-  font-size: 1.1rem;
+  font-size: clamp(0.98rem, 1vw, 1.12rem);
   color: var(--muted-text);
-  max-width: 600px;
-  margin: 0 auto 3.5rem auto; // Dolny margines zastępuje ten z tytułu
-  line-height: 1.6;
+  max-width: 680px;
+  margin: 0 auto 3rem;
+  line-height: 1.65;
 }
 
-@keyframes floating-glows {
-  0% {
-    background-position: 0% 0%, 100% 100%, 50% 0%, center center, center center;
-  }
-
-  33% {
-    background-position: 50% 100%, 0% 0%, 100% 100%, center center, center center;
-  }
-
-  66% {
-    background-position: 100% 0%, 50% 100%, 0% 0%, center center, center center;
-  }
-
-  100% {
-    background-position: 0% 0%, 100% 100%, 50% 0%, center center, center center;
-  }
-}
-
-// Style, które będą aktywne tylko na stronie głównej
 body.home-page-background {
-  // --- STYLE TŁA ---
-  --grid-color: rgba(15, 23, 42, 0.035);
-  --glow-primary: rgba(59, 130, 246, 0.15);
-  --glow-secondary: rgba(139, 92, 246, 0.15);
-  --glow-tertiary: rgba(14, 165, 233, 0.1);
+  --landing-max: 1240px;
+  --landing-radius: 22px;
+  --landing-radius-sm: 16px;
+  --landing-card-bg: rgba(255, 255, 255, 0.72);
+  --landing-card-bg-strong: rgba(255, 255, 255, 0.9);
+  --landing-card-border: rgba(59, 130, 246, 0.14);
+  --landing-card-shadow: 0 22px 70px rgba(15, 23, 42, 0.09);
+  --landing-soft-shadow: 0 16px 42px rgba(15, 23, 42, 0.07);
+  --landing-panel-line: rgba(15, 23, 42, 0.07);
+  --landing-grid-color: rgba(15, 23, 42, 0.045);
+  --landing-section-wash: rgba(59, 130, 246, 0.045);
+  --landing-section-wash-2: rgba(124, 58, 237, 0.04);
+  --spotlight-x: 50%;
+  --spotlight-y: 16%;
 
-  background-color: #f8fafc;
+  background-color: #f7f9fd;
   background-image:
-    radial-gradient(circle at 15% 20%, var(--glow-primary), transparent 50%),
-    radial-gradient(circle at 85% 60%, var(--glow-secondary), transparent 50%),
-    radial-gradient(circle at 50% 90%, var(--glow-tertiary), transparent 50%),
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-
-  background-size: 130% 130vh, 130% 130vh, 130% 130vh, 40px 40px, 40px 40px;
-  background-position: 0% 0%, 100% 100%, 50% 0%, center center, center center;
+    linear-gradient(115deg, rgba(59, 130, 246, 0.12), transparent 34%, rgba(124, 58, 237, 0.11) 72%, transparent 100%),
+    linear-gradient(var(--landing-grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--landing-grid-color) 1px, transparent 1px);
+  background-size: 100% 100%, 44px 44px, 44px 44px;
+  background-position: center top, center top, center top;
   background-attachment: fixed;
-  animation: floating-glows 5s ease-in-out infinite;
+  overflow-x: clip;
 }
 
-// Obsługa ciemnego motywu dla tła strony głównej
 @at-root html.dark body.home-page-background {
-  --grid-color: rgba(255, 255, 255, 0.03);
-  --glow-primary: rgba(59, 130, 246, 0.10);
-  --glow-secondary: rgba(139, 92, 246, 0.10);
-  --glow-tertiary: rgba(14, 165, 233, 0.06);
+  --landing-card-bg: rgba(20, 24, 35, 0.72);
+  --landing-card-bg-strong: rgba(16, 20, 31, 0.88);
+  --landing-card-border: rgba(147, 197, 253, 0.13);
+  --landing-card-shadow: 0 26px 78px rgba(0, 0, 0, 0.34);
+  --landing-soft-shadow: 0 16px 44px rgba(0, 0, 0, 0.24);
+  --landing-panel-line: rgba(255, 255, 255, 0.08);
+  --landing-grid-color: rgba(255, 255, 255, 0.045);
+  --landing-section-wash: rgba(59, 130, 246, 0.06);
+  --landing-section-wash-2: rgba(124, 58, 237, 0.055);
 
-  background-color: var(--bg);
+  background-color: #080b13;
+  background-image:
+    linear-gradient(115deg, rgba(59, 130, 246, 0.11), transparent 32%, rgba(124, 58, 237, 0.09) 72%, transparent 100%),
+    linear-gradient(var(--landing-grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--landing-grid-color) 1px, transparent 1px);
 }
 
-// Zmniejszone odstępy między sekcjami
-.home-page section {
-  padding: 4rem 1.5rem;
-}
-
-
-
-.exams-section {
+.home-page {
   position: relative;
-  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.07) 0%, transparent 70%);
-  padding: 6rem 1.5rem !important; // Więcej miejsca
+  isolation: isolate;
+  overflow: clip;
 
   &::before {
     content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at var(--spotlight-x) var(--spotlight-y), rgba(59, 130, 246, 0.16), transparent 30%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 24%, rgba(59, 130, 246, 0.04) 58%, transparent 100%);
+  }
+
+  &::after {
+    content: '';
     position: absolute;
-    top: 0;
-    left: 15%;
-    right: 15%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--subtle-border), transparent);
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, transparent 0, rgba(var(--accent-rgb), 0.035) 31%, transparent 50%, rgba(124, 58, 237, 0.035) 76%, transparent 100%);
+  }
+
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 5.8rem 1.5rem;
+    overflow: clip;
+
+    @media (max-width: 768px) {
+      padding: 4.25rem 1rem;
+    }
+
+    @media (max-width: 430px) {
+      padding: 3.5rem 0.9rem;
+    }
+  }
+
+  a,
+  button {
+    scroll-margin-top: 7rem;
   }
 }
 
-.features-section,
-.exam-info-section {
-  background: linear-gradient(180deg, transparent 0%, rgba(59, 130, 246, 0.05) 50%, transparent 100%);
-  position: relative;
+html.dark .home-page::before {
+  background:
+    radial-gradient(circle at var(--spotlight-x) var(--spotlight-y), rgba(59, 130, 246, 0.15), transparent 31%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.015), transparent 24%, rgba(59, 130, 246, 0.035) 58%, transparent 100%);
 }
 
 .features-section,
+.search-feature-section,
 .exams-section,
 .exam-info-section,
 .topics-section {
-  padding: 4rem 1.5rem;
+  &::before {
+    content: '';
+    position: absolute;
+    left: 1.5rem;
+    right: 1.5rem;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--landing-panel-line), transparent);
+    pointer-events: none;
+  }
+}
+
+.features-section {
+  padding-top: 4.8rem;
+}
+
+.search-feature-section {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+.exams-section {
+  padding-top: 5.6rem;
+  padding-bottom: 5.6rem;
+}
+
+.exam-info-section {
+  padding-top: 5.2rem;
+}
+
+.topics-section {
+  padding-bottom: 6.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page::before {
+    background:
+      radial-gradient(circle at 50% 16%, rgba(59, 130, 246, 0.12), transparent 30%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.15), transparent 30%, rgba(59, 130, 246, 0.035) 62%, transparent 100%);
+  }
 }

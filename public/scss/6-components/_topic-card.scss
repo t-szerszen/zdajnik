@@ -1,41 +1,63 @@
 @use '../2-tools/mixins' as *;
 
 .topics-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1.25rem;
-  max-width: 900px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  max-width: none;
   margin: 0 auto;
+
+  @include media-down(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include media-down(sm) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .topic-card {
-  @include glass-card(0.75rem 1.5rem, 50px);
-  display: inline-block;
+  @include glass-card(0.9rem 1rem, 14px);
+  display: flex;
+  align-items: center;
+  min-height: 3.1rem;
   text-decoration: none;
-  color: var(--muted-text);
+  color: var(--text);
   font-weight: 600;
   font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.58);
+  border-color: rgba(var(--accent-rgb), 0.11);
+  box-shadow: none;
 
   &:hover {
     @include text-gradient;
+    border-color: rgba(var(--accent-rgb), 0.28);
   }
 
   &--disabled {
     cursor: default;
-    filter: grayscale(1);
-    opacity: 0.6;
+    filter: saturate(0.55);
+    opacity: 0.62;
     transition: none !important; // Zapobiega miganiu
 
     &:hover {
       transform: none !important;
       box-shadow: none !important;
-      border-color: var(--card-border) !important;
+      border-color: rgba(var(--accent-rgb), 0.11) !important;
       color: var(--muted-text) !important;
       background-clip: initial !important;
       -webkit-background-clip: initial !important;
-      background: transparent !important;
-      filter: grayscale(1) !important;
+      background: rgba(255, 255, 255, 0.5) !important;
+      filter: saturate(0.55) !important;
+    }
+  }
+
+  html.dark & {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+
+    &--disabled:hover {
+      background: rgba(255, 255, 255, 0.04) !important;
     }
   }
 }
@@ -47,20 +69,20 @@
   font-size: 0.65rem;
   font-weight: 900;
   text-transform: uppercase;
-  background-color: #fbbf24 !important; // Wyraźna żółta kapsułka
-  color: #000 !important; // Czarny tekst dla kontrastu
+  background: rgba(var(--accent-rgb), 0.12) !important;
+  color: var(--accent) !important;
   padding: 0.25rem 0.75rem;
   border-radius: 50px;
-  margin-left: 0.75rem;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  letter-spacing: 0.5px;
+  margin-left: 0.5rem;
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  box-shadow: none;
+  letter-spacing: 0.05em;
   white-space: nowrap;
 
   html.dark & {
-    background-color: #fbbf24 !important;
-    color: #000 !important;
-    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--accent-rgb), 0.14) !important;
+    color: #93c5fd !important;
+    border-color: rgba(147, 197, 253, 0.18);
   }
 
   // Modifikator: badge w nowej linii (zastępuje margin-left:0; margin-top:0.5rem; display:inline-block)

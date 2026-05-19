@@ -2,60 +2,66 @@
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); // Wymuszony układ 3 kolumn na desktopie (Zadanie 3)
-  align-items: flex-start; // POWRÓT: Tylko jedna karta się rozwija!
-  gap: 2rem;
-  max-width: 1200px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 1.35rem;
+  max-width: 1240px;
   margin: 0 auto;
 
   @include media-down(1400px) {
-    grid-template-columns: repeat(2, 1fr); // 2 Kolumny dla Ipad Pro i małych laptopów
-    align-items: stretch; // Równa wysokość dla symetrii
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem;
   }
 
   @include media-down(sm) {
     grid-template-columns: 1fr;
     gap: 1.25rem;
-    align-items: stretch;
+    align-items: start;
   }
 }
 
 .feature-card {
-  @include glass-card(2rem 1.75rem, 20px);
+  @include glass-card(1.65rem, 20px);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--landing-card-bg);
+  border-color: var(--landing-card-border);
+  box-shadow: var(--landing-soft-shadow);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 52%),
+      radial-gradient(circle at 18% 0%, rgba(var(--accent-rgb), 0.08), transparent 42%);
+    pointer-events: none;
+    z-index: -1;
+  }
 
   @include media-down(sm) {
-    padding: 1.25rem 1rem; // Zredukowany padding (Zadanie 2)
+    padding: 1.2rem;
+    border-radius: 16px;
   }
 
   &__header {
     display: flex;
-    align-items: center; // Wyrównanie ikony i tekstu do środka pionowo
-    gap: 1.25rem;
-    margin-bottom: 1.5rem;
-    min-height: 4rem; // ZAPEWNIA RÓWNE LINIE NAGŁÓWKA NAWET PRZY ALIGN-ITEMS: FLEX-START
+    align-items: flex-start;
+    gap: 1.05rem;
+    margin-bottom: 1.15rem;
 
-    @include media-down(1400px) {
-      align-items: flex-start; // Powrót do góry na tabletach/mobile
-    }
-
-    @include media-down(xs) {
+    @include media-down(sm) {
       gap: 0.75rem;
     }
   }
 
   &__title-group {
     display: flex;
-    flex-direction: row; // DESKTOP: Badge w jednej linii z tytułem
-    align-items: center;
-    gap: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
     flex: 1;
-
-    @include media-down(1400px) {
-      flex-direction: column; // TABLET/MOBILE: Badge pod tytułem dla braku zatorów
-      align-items: flex-start;
-      gap: 0.35rem;
-    }
 
     .soon-badge {
       margin-left: 0 !important;
@@ -63,46 +69,71 @@
   }
 
   &__icon {
-    font-size: 2rem;
+    width: 3.15rem;
+    height: 3.15rem;
+    border-radius: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    font-size: 1.9rem;
+    color: var(--accent);
+    border: 1px solid rgba(var(--accent-rgb), 0.14);
+    background: rgba(var(--accent-rgb), 0.075);
 
     @include media-down(sm) {
-      font-size: 1.5rem; // Zredukowany rozmiar ikony (Zadanie 2)
+      width: 2.8rem;
+      height: 2.8rem;
+      border-radius: 0.9rem;
+      font-size: 1.55rem;
     }
 
-    // Kolor gradientowy dla ikony
-    @include text-gradient;
-
+    line-height: 1;
     flex-shrink: 0;
     transition: transform 0.3s ease,
     filter 0.3s ease;
+
+    &::before {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
   }
 
   // Ikona "świeci" i lekko się obraca przy najechaniu na kartę
   // Poprawka: Nie animuj ikony, gdy karta jest "Disabled" (brak szczegółów do pokazania)
-  &:not(:has(.soon-badge)):hover &__icon {
-    transform: scale(1.1) rotate(5deg);
+  &:hover &__icon,
+  &.is-active &__icon {
+    transform: scale(1.05) rotate(3deg);
     filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
   }
 
   &__title {
-    font-size: 1.35rem;
+    font-size: 1.16rem;
     margin: 0;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    font-weight: 800;
+    letter-spacing: 0;
     color: var(--text);
+    line-height: 1.2;
     transition: color 0.3s ease;
   }
 
   // Efekt gradientu na tytule po najechaniu na kartę
-  &:hover &__title {
+  &:hover &__title,
+  &.is-active &__title {
     @include text-gradient;
   }
 
   &__text {
     color: var(--muted-text);
-    line-height: 1.6;
+    line-height: 1.58;
     margin: 0;
-    font-size: 1rem;
+    font-size: 0.98rem;
   }
 
   // Kontener na rozwijany opis
@@ -110,7 +141,10 @@
     max-height: 0;
     opacity: 0;
     overflow: hidden;
-    transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    transition: max-height 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.28s ease,
+      margin-top 0.28s ease,
+      padding-left 0.28s ease;
     color: var(--text);
     line-height: 1.6;
     font-size: 0.95rem;
@@ -141,6 +175,17 @@
     margin-top: 1.25rem;
     padding-left: 1rem;
     border-left: 3px solid var(--accent);
+  }
+
+  html.dark & {
+    background: var(--landing-card-bg);
+    box-shadow: var(--landing-soft-shadow);
+
+    &::before {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 52%),
+        radial-gradient(circle at 18% 0%, rgba(var(--accent-rgb), 0.12), transparent 42%);
+    }
   }
 
   &__list {

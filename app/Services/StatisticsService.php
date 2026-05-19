@@ -642,9 +642,10 @@ class StatisticsService
   public function getSavedQuestions(int $userId, int $examTypeId, ?int $limit = 5): array
   {
     $limitSql = ($limit !== null) ? " LIMIT " . (int) $limit : "";
-    $sql = "SELECT q.id, qv.question_text 
+    $sql = "SELECT q.id, qv.question_text, t.name as topic_name
             FROM saved_questions sq
             JOIN questions q ON sq.question_id = q.id
+            LEFT JOIN topics t ON q.topic_id = t.id
             JOIN question_versions qv ON q.id = qv.question_id
             WHERE sq.user_id = ? AND q.exam_type_id = ?
             AND q.is_active = 1 AND qv.is_active = 1

@@ -173,15 +173,17 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
                       <span class="badge badge--danger stats-card__score-badge">
                         <?= $item['success_rate'] ?>%
                       </span>
-                      <span class="stats-card__question-text">
+                      <div class="stats-card__question-summary">
                         <?php if (!empty($item['topic_name'])): ?>
-                          <span class="stats-card__topic-badge">
+                          <span class="stats-card__question-category" title="<?= htmlspecialchars($item['topic_name']) ?>">
                             <?= htmlspecialchars($item['topic_name']) ?>
                           </span>
                           <?php
                         endif; ?>
-                        <?= htmlspecialchars($item['question_text']) ?>
-                      </span>
+                        <span class="stats-card__question-text" title="<?= htmlspecialchars($item['question_text']) ?>">
+                          <?= htmlspecialchars($item['question_text']) ?>
+                        </span>
+                      </div>
                     </div>
                     <div class="stats-card__item-actions">
                       <a href="<?= url('test-pytanie/' . $item['question_id']) ?>?source=history&type=<?= $type ?>&category=<?= $selectedCategoryId ?>"
@@ -192,15 +194,17 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
                   <?php
                 elseif ($type === 'errors' || $type === 'saved'): ?>
                   <div class="stats-card__list-item stats-card__list-item--history">
-                    <span class="stats-card__question-text stats-card__question-text--strong">
+                    <div class="stats-card__question-summary">
                       <?php if (!empty($item['topic_name'])): ?>
-                        <span class="stats-card__topic-badge">
+                        <span class="stats-card__question-category" title="<?= htmlspecialchars($item['topic_name']) ?>">
                           <?= htmlspecialchars($item['topic_name']) ?>
                         </span>
                         <?php
                       endif; ?>
-                      <?= htmlspecialchars($item['question_text']) ?>
-                    </span>
+                      <span class="stats-card__question-text stats-card__question-text--strong" title="<?= htmlspecialchars($item['question_text']) ?>">
+                        <?= htmlspecialchars($item['question_text']) ?>
+                      </span>
+                    </div>
                     <div class="stats-card__item-actions">
                       <a href="<?= url('test-pytanie/' . $item['id']) ?>?source=history&type=<?= $type ?>&category=<?= $selectedCategoryId ?>"
                         class="btn btn--primary btn--sm">zobacz</a>

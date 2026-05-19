@@ -1,42 +1,44 @@
 @use '../2-tools/mixins' as *;
 
 .search-feature-section {
-  padding: 4rem 1.5rem 8rem;
   max-width: 1240px;
   margin: 0 auto;
 }
 
 .search-feature-card {
-  background: var(--field-bg);
-  border: 1px solid var(--border);
-  border-radius: 32px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(239, 246, 255, 0.72));
+  border: 1px solid var(--landing-card-border);
+  border-radius: var(--landing-radius);
   display: flex;
   align-items: center;
-  gap: 5rem;
-  padding: 5rem;
-  box-shadow: var(--glass-shadow);
+  gap: 3.25rem;
+  padding: clamp(2rem, 4.2vw, 3.75rem);
+  box-shadow: var(--landing-card-shadow);
   overflow: hidden;
   position: relative;
+  isolation: isolate;
 
   &::before {
     content: '';
     position: absolute;
-    top: -100px;
-    right: -100px;
-    width: 350px;
-    height: 350px;
-    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.2) 0%, transparent 70%);
-    opacity: 0.5;
-    filter: blur(50px);
+    inset: 0;
+    background:
+      radial-gradient(circle at 78% 18%, rgba(96, 165, 250, 0.16), transparent 34%),
+      linear-gradient(135deg, rgba(124, 58, 237, 0.1), transparent 45%);
     pointer-events: none;
+    z-index: -1;
   }
 
   @include media-down(lg) {
     flex-direction: column;
-    padding: 3.5rem 1.5rem; // Zredukowany padding
-    gap: 3rem;
+    padding: 3rem 1.5rem;
+    gap: 2.25rem;
     text-align: center;
-    border-radius: 2.5rem;
+    border-radius: 18px;
+  }
+
+  @include media-down(sm) {
+    padding: 2rem 1rem;
   }
 
   &__content {
@@ -49,8 +51,8 @@
     margin: 0 0 0.9rem;
     padding: 0.35rem 0.75rem;
     border-radius: 999px;
-    border: 1px solid rgba(var(--accent-rgb), 0.3);
-    background: rgba(var(--accent-rgb), 0.12);
+    border: 1px solid rgba(var(--accent-rgb), 0.22);
+    background: rgba(var(--accent-rgb), 0.09);
     color: var(--accent);
     font-size: 0.76rem;
     font-weight: 700;
@@ -59,21 +61,22 @@
   }
 
   &__title {
-    font-size: 2.5rem; // Nieco mniejszy na tabletach dla balansu
+    font-size: 2.35rem;
     font-weight: 800;
     margin-bottom: 1.25rem;
     line-height: 1.1;
-    letter-spacing: -0.5px;
+    letter-spacing: 0;
+    color: var(--text);
 
     @include media-down(md) {
-      font-size: 1.85rem; // Zredukowany dla mobila
+      font-size: 1.85rem;
     }
   }
 
   &__text {
     font-size: 1.05rem;
     color: var(--muted-text);
-    margin-bottom: 2rem;
+    margin-bottom: 1.6rem;
     line-height: 1.55;
     max-width: 520px;
 
@@ -94,13 +97,13 @@
 }
 
 .search-preview-mockup {
-  background: #0f172a;
+  background: rgba(255, 255, 255, 0.86);
   width: 100%;
   max-width: 380px;
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 26px 56px rgba(15, 23, 42, 0.16);
+  border: 1px solid rgba(var(--accent-rgb), 0.14);
   transform: rotateY(-15deg) rotateX(10deg);
   transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
@@ -159,7 +162,7 @@
     font-family: 'Outfit', sans-serif;
     letter-spacing: 1px;
     font-size: 1.1rem;
-    border: 1px solid rgba(var(--accent-rgb), 0.3);
+    border: 1px solid rgba(var(--accent-rgb), 0.22);
     position: relative;
     box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.1);
 
@@ -173,18 +176,18 @@
   }
 
   &__item {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(124, 58, 237, 0.05));
     padding: 1.5rem;
     border-radius: 12px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(var(--accent-rgb), 0.12);
   }
 
   &__line {
     height: 8px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(15, 23, 42, 0.13);
     border-radius: 4px;
 
     &--short {
@@ -192,6 +195,55 @@
       background: var(--accent);
       opacity: 0.4;
     }
+  }
+}
+
+html:not(.dark) .search-preview-mockup__bar {
+  background: rgba(248, 250, 252, 0.9);
+}
+
+html.dark .search-feature-card {
+  background: linear-gradient(145deg, rgba(12, 20, 38, 0.95), rgba(26, 17, 46, 0.86));
+  border-color: rgba(var(--accent-rgb), 0.22);
+  box-shadow: 0 24px 58px rgba(0, 0, 0, 0.28);
+
+  &::before {
+    background:
+      radial-gradient(circle at 78% 18%, rgba(96, 165, 250, 0.22), transparent 34%),
+      linear-gradient(135deg, rgba(124, 58, 237, 0.16), transparent 45%);
+  }
+
+  .search-feature-card__eyebrow {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.08);
+    color: #bfdbfe;
+  }
+
+  .search-feature-card__title {
+    color: white;
+  }
+
+  .search-feature-card__text {
+    color: rgba(255, 255, 255, 0.72);
+  }
+}
+
+html.dark .search-preview-mockup {
+  background: #0f172a;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.36);
+  border-color: rgba(255, 255, 255, 0.08);
+
+  &__bar {
+    background: #1e293b;
+  }
+
+  &__item {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    border-color: rgba(255, 255, 255, 0.05);
+  }
+
+  &__line {
+    background: rgba(255, 255, 255, 0.08);
   }
 }
 
