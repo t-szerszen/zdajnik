@@ -8,6 +8,7 @@ use App\Models\UserProgress;
 use App\Models\Attempt;
 use App\Models\SavedQuestion;
 use App\Models\UserModel;
+use App\Services\AnalyticsService;
 
 /**
  * Kontroler API (ApiController).
@@ -47,6 +48,9 @@ class ApiController extends BaseController
   /** @var UserModel Model do aktualizacji danych użytkownika */
   private UserModel $userModel;
 
+  /** @var AnalyticsService Serwis analityki produktu */
+  private AnalyticsService $analyticsService;
+
   /**
    * Projektuje i inicjalizuje mosty do warstwy danych.
    */
@@ -59,6 +63,7 @@ class ApiController extends BaseController
     $this->attemptModel = new Attempt();
     $this->savedQuestionModel = new SavedQuestion();
     $this->userModel = new UserModel();
+    $this->analyticsService = new AnalyticsService();
   }
 
   // --- ENDPOINTY POBIERANIA PYTAŃ (READ) ---
@@ -81,6 +86,7 @@ class ApiController extends BaseController
     }
 
     $question = $result['questions'][0] ?? null;
+    $examTypeId = $this->questionModel->getExamTypeIdByCode($examCode);
 
     // Obsługa scenariusza, w którym brak pytań spełniających filtry (np. wszystko odkryte)
     if (!$question) {
@@ -99,6 +105,20 @@ class ApiController extends BaseController
     if ($this->isUserLoggedIn) {
       $question['is_saved'] = $this->savedQuestionModel->isSaved($this->currentUser->getId(), $question['question_id']);
       $question['was_answered'] = $this->userProgressModel->hasAnsweredQuestion($this->currentUser->getId(), (int) $question['question_id']);
+    }
+
+    try {
+      $this->analyticsService->trackSingleQuestionStarted(
+        $this->isUserLoggedIn ? $this->currentUser->getId() : null,
+        $examTypeId ? (int) $examTypeId : null,
+        isset($question['question_id']) ? (int) $question['question_id'] : null,
+        [
+          'exam_code' => $examCode,
+          'source' => 'single_question_module',
+        ]
+      );
+    } catch (\Throwable $e) {
+      // Analityka nie może blokować pobierania pytania.
     }
 
     $responseData = [
@@ -126,6 +146,7 @@ class ApiController extends BaseController
     // Walidacja limitu (bezpieczne granice 10-40)
     $limit = isset($_GET['question_count']) ? (int) $_GET['question_count'] : 20;
     $limit = max(10, min(40, $limit));
+    $examTypeId = $this->questionModel->getExamTypeIdByCode($examCode);
 
     $result = $this->fetchFilteredQuestions($examCode, $limit);
 
@@ -134,6 +155,18 @@ class ApiController extends BaseController
     }
 
     $questions = $result['questions'];
+
+    try {
+      if ($examTypeId) {
+        $this->analyticsService->trackTestStarted($this->isUserLoggedIn ? $this->currentUser->getId() : null, (int) $examTypeId, [
+          'exam_code' => $examCode,
+          'test_type' => 'personalized',
+          'question_count' => count($questions),
+        ]);
+      }
+    } catch (\Throwable $e) {
+      // Analityka nie może blokować pobierania testu.
+    }
 
     if (count($questions) < $limit) {
       $this->sendJsonResponse([
@@ -174,6 +207,16 @@ class ApiController extends BaseController
     $allTopicIds = $this->questionModel->getTopicIdsByExamType($examTypeId);
     $questions = $this->questionModel->getQuestions($allTopicIds, 40, $examTypeId);
 
+    try {
+      $this->analyticsService->trackTestStarted($this->isUserLoggedIn ? $this->currentUser->getId() : null, $examTypeId, [
+        'exam_code' => $examCode,
+        'test_type' => 'full_exam',
+        'question_count' => count($questions),
+      ]);
+    } catch (\Throwable $e) {
+      // Analityka nie może blokować pobierania testu.
+    }
+
     $questionsData = [];
     $savedIds = $this->isUserLoggedIn ? $this->savedQuestionModel->getUserSavedIds($this->currentUser->getId()) : [];
 
@@ -211,6 +254,26 @@ class ApiController extends BaseController
     }
 
     $isCorrect = $userAnswerId === (int) $correctAnswer['id'];
+
+    try {
+      $questionId = $this->questionModel->getQuestionIdByVersionId($qvId);
+      if ($questionId) {
+        $question = $this->questionModel->getQuestionById((int) $questionId);
+        $examId = (int) ($question['exam_type_id'] ?? 0);
+        $this->analyticsService->trackSingleQuestionAnswered(
+          $this->isUserLoggedIn ? $this->currentUser->getId() : null,
+          $examId > 0 ? $examId : null,
+          (int) $questionId,
+          $isCorrect,
+          [
+            'answer_id' => $userAnswerId,
+            'source' => 'single_question_module',
+          ]
+        );
+      }
+    } catch (\Throwable $e) {
+      // Analityka nie może blokować sprawdzenia odpowiedzi.
+    }
 
     // Utrwalenie progresu dla zalogowanych (Micro-save)
     if ($this->isUserLoggedIn) {
@@ -303,6 +366,26 @@ class ApiController extends BaseController
     if ($attemptId) {
       // KROK 3: Masowa aktualizacja statystyk pytań
       $this->userProgressModel->updateBatchProgress($userId, $answersDetails);
+
+      try {
+        $score = $attemptData['total_questions'] > 0
+          ? round(($attemptData['correct_count'] * 100) / $attemptData['total_questions'], 1)
+          : 0;
+
+        $this->analyticsService->trackTestCompleted($userId, $examTypeId, (int) $attemptId, [
+          'score' => $score,
+          'correct_answers' => (int) $attemptData['correct_count'],
+          'wrong_answers' => max(0, (int) $attemptData['total_questions'] - (int) $attemptData['correct_count']),
+          'total_questions' => (int) $attemptData['total_questions'],
+          'duration_seconds' => (int) $attemptData['duration_seconds'],
+          'test_type' => $attemptData['test_type'],
+        ]);
+
+        $this->analyticsService->trackQuestionAnsweredBatch($userId, $examTypeId, (int) $attemptId, $answersDetails);
+      } catch (\Throwable $e) {
+        // Analityka nie może blokować zapisu próby.
+      }
+
       $this->sendJsonResponse(['success' => true, 'attempt_id' => $attemptId]);
     } else {
       $this->sendJsonResponse(['error' => 'Błąd krytyczny podczas zapisu próby.'], 500);

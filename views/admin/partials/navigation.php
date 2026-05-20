@@ -33,9 +33,9 @@ $activeSection = $activeSection ?? 'dashboard';
       <i class="fas fa-circle-question"></i>
       <span>Pytania</span>
     </a>
-    <a href="<?= url('admin/statystyki') ?>" class="admin-sidebar__link <?= $activeSection === 'activity' ? 'is-active' : '' ?>">
+    <a href="<?= url('admin/analytics') ?>" class="admin-sidebar__link <?= $activeSection === 'analytics' ? 'is-active' : '' ?>">
       <i class="fas fa-chart-line"></i>
-      <span>Statystyki</span>
+      <span>Analityka</span>
     </a>
     <a href="<?= url('admin/audyt') ?>" class="admin-sidebar__link <?= $activeSection === 'audit' ? 'is-active' : '' ?>">
       <i class="fas fa-clipboard-list"></i>

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\UserModel;
 use App\Models\User;
+use App\Services\AnalyticsService;
 
 /**
  * Podstawowy Kontroler Aplikacji (BaseController).
@@ -27,6 +28,9 @@ class BaseController
 
   /** @var User|null Obiekt-encja zalogowanego użytkownika lub null dla gości */
   protected ?User $currentUser = null;
+
+  /** @var AnalyticsService|null Serwis do śledzenia aktywności produktu */
+  private ?AnalyticsService $analyticsService = null;
 
   /**
    * Konstruktor bazowy - uruchamiany przy każdym żądaniu do aplikacji.
@@ -66,6 +70,9 @@ class BaseController
 
     // KROK 3: Dołączenie fizycznego pliku szablonu
     include __DIR__ . "/../../views/{$viewName}.php";
+
+    // KROK 4: Opcjonalny zapis page view po poprawnym wyrenderowaniu widoku
+    $this->trackPageView($viewName);
   }
 
   /**
@@ -122,5 +129,49 @@ class BaseController
 
     $this->currentUser = $freshUser;
     $_SESSION['user'] = $freshUser;
+  }
+
+  /**
+   * Rejestruje page view dla publicznych widoków.
+   */
+  private function trackPageView(string $viewName): void
+  {
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
+      return;
+    }
+
+    if (!$this->shouldTrackPageView($viewName)) {
+      return;
+    }
+
+    try {
+      $this->analyticsService ??= new AnalyticsService();
+
+      $metadata = [
+        'view' => $viewName,
+        'path' => (string) ($_GET['url'] ?? ''),
+      ];
+
+      $userId = $this->currentUser?->getId();
+      $this->analyticsService->trackEvent('page_view', $userId, $metadata);
+    } catch (\Throwable $e) {
+      // Analitka nie może blokować renderowania strony.
+    }
+  }
+
+  /**
+   * Sprawdza, czy widok powinien być liczony jako publiczny page view.
+   */
+  private function shouldTrackPageView(string $viewName): bool
+  {
+    if (str_starts_with($viewName, 'admin/')) {
+      return false;
+    }
+
+    if (str_starts_with($viewName, 'errors/')) {
+      return false;
+    }
+
+    return true;
   }
 }

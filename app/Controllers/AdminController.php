@@ -8,6 +8,7 @@ use App\Services\AdminQuestionService;
 use App\Services\AdminUserService;
 use App\Services\AdminDashboardService;
 use App\Services\AdminAuditService;
+use App\Services\AnalyticsService;
 use App\Services\CsrfService;
 
 /**
@@ -28,6 +29,7 @@ class AdminController extends BaseController
   private AdminQuestionService $questionService;
   private AdminUserService $userService;
   private AdminAuditService $auditService;
+  private AnalyticsService $analyticsService;
   private CsrfService $csrfService;
 
   /**
@@ -43,6 +45,7 @@ class AdminController extends BaseController
     $this->questionService = new AdminQuestionService();
     $this->userService = new AdminUserService();
     $this->auditService = new AdminAuditService();
+    $this->analyticsService = new AnalyticsService();
     $this->csrfService = new CsrfService();
   }
 
@@ -781,11 +784,46 @@ class AdminController extends BaseController
    */
   public function activity(): void
   {
-    $this->renderView('admin/activity', [
-      'pageTitle' => 'Statystyki i aktywność | Admin Panel | Examly',
-      'pageDescription' => 'Statystyki i aktywność panelu CMS Examly.',
-      'overview' => $this->adminService->getOverview(),
-      'recentActivity' => $this->adminService->getRecentActivity(12),
+    $this->analytics();
+  }
+
+  /**
+   * Wyświetla dashboard analityki produktowej.
+   */
+  public function analytics(): void
+  {
+    $filters = $this->extractAnalyticsFilters();
+    $dashboardData = $this->analyticsService->getDashboardData($filters);
+
+    $this->renderView('admin/analytics', [
+      'pageTitle' => 'Analityka | Admin Panel | Examly',
+      'pageDescription' => 'Panel analityczny produktu Examly dla administratorów.',
+      'analytics' => $dashboardData,
+      'filters' => $filters,
+      'availableRanges' => [
+        '7d' => 'Ostatnie 7 dni',
+        '30d' => 'Ostatnie 30 dni',
+        '90d' => 'Ostatnie 90 dni',
+      ],
+      'csrfToken' => $this->csrfService->token(),
+    ]);
+  }
+
+  /**
+   * Endpoint JSON dla wykresów i KPI analityki.
+   */
+  public function analyticsData(): void
+  {
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Metoda niedozwolona.'], 405);
+    }
+
+    $filters = $this->extractAnalyticsFilters();
+    $dashboardData = $this->analyticsService->getDashboardData($filters);
+
+    $this->sendJsonResponse([
+      'success' => true,
+      'data' => $dashboardData,
     ]);
   }
 
@@ -1025,5 +1063,32 @@ class AdminController extends BaseController
       'correct_answer_index' => $correctIndex,
       'answers' => $answers,
     ];
+  }
+
+  /**
+   * Pobiera filtry zakresu dla analityki.
+   *
+   * @return array<string, string>
+   */
+  private function extractAnalyticsFilters(): array
+  {
+    return [
+      'range' => trim((string) ($_GET['range'] ?? '30d')),
+      'from' => trim((string) ($_GET['from'] ?? '')),
+      'to' => trim((string) ($_GET['to'] ?? '')),
+    ];
+  }
+
+  /**
+   * Wysyła odpowiedź JSON.
+   *
+   * @param array<string, mixed> $data
+   */
+  private function sendJsonResponse(array $data, int $statusCode = 200): void
+  {
+    header('Content-Type: application/json; charset=utf-8');
+    http_response_code($statusCode);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit();
   }
 }

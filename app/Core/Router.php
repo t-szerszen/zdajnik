@@ -174,7 +174,7 @@ class Router
    * Kompletna mapa drogowa aplikacji Examly.
    * 
    * Służy do konfiguracji wszystkich punktów wejścia (endpointów) systemu.
-   * Grupuje trasy funkcjonalnie (Auth, Statystyki, Nauka, API).
+   * Grupuje trasy funkcjonalnie (Auth, Analityka, Nauka, API).
    * 
    * @return void
    */
@@ -220,7 +220,9 @@ class Router
     $this->post('admin/pytania/{questionId}/edytuj', 'AdminController@updateQuestion');
     $this->post('admin/pytania/{questionId}/dezaktywuj', 'AdminController@deactivateQuestion');
     $this->get('admin/pytania/{questionId}', 'AdminController@showQuestion');
-    $this->get('admin/statystyki', 'AdminController@activity');
+    $this->get('admin/analytics', 'AdminController@analytics');
+    $this->get('admin/analytics/data', 'AdminController@analyticsData');
+    $this->get('admin/statystyki', 'AdminController@analytics');
     $this->get('admin/audyt', 'AdminController@auditLogs');
     $this->post('admin/uzytkownicy/{userId}/rola', 'AdminController@updateUserRole');
     $this->get('historia', 'HistoryController@showHistory');

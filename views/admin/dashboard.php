@@ -68,13 +68,13 @@ $hasActivityData = $hasActivityData ?? false;
               </div>
             </a>
 
-            <a href="<?= url('admin/statystyki') ?>" class="stats-card admin-tile">
+            <a href="<?= url('admin/analytics') ?>" class="stats-card admin-tile">
               <div class="admin-tile__icon"><i class="fas fa-chart-line"></i></div>
               <div class="admin-tile__content">
-                <span class="admin-tile__label">Aktywność</span>
+                <span class="admin-tile__label">Analityka</span>
                 <strong class="admin-tile__value"><?= (int) ($overview['attempts'] ?? 0) ?></strong>
                 <span class="admin-tile__meta">
-                  <?= $hasActivityData ? 'Dane aktywności są dostępne' : 'Brak danych aktywności' ?>
+                  <?= $hasActivityData ? 'Dane analityczne są dostępne' : 'Brak danych analitycznych' ?>
                 </span>
               </div>
             </a>
