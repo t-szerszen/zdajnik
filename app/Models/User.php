@@ -113,10 +113,14 @@ class User
     return $this->email;
   }
 
-  /** @return string */
-  public function getRole(): string
+  /**
+   * Sprawdza, czy użytkownik ma rolę administratora.
+   *
+   * @return bool
+   */
+  public function isAdmin(): bool
   {
-    return $this->role;
+    return $this->role === 'admin';
   }
 
   /** @return bool */

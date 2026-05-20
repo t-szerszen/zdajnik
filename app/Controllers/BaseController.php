@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\UserModel;
 use App\Models\User;
 
 /**
@@ -96,5 +97,30 @@ class BaseController
       header('Location: ' . url('logowanie'));
       exit();
     }
+  }
+
+  /**
+   * Strażnik Administracyjny: wymusza dostęp wyłącznie dla kont admin.
+   *
+   * Najpierw wymaga logowania, a następnie sprawdza rolę.
+   * Brak uprawnień kończy się odpowiedzią 403.
+   *
+   * @return void
+   */
+  protected function requireAdmin(): void
+  {
+    $this->requireAuth();
+
+    $freshUser = (new UserModel())->getUserById($this->currentUser->getId());
+
+    if ($freshUser === null || $freshUser->isAdmin() === false) {
+      http_response_code(403);
+      $errorController = new ErrorController();
+      $errorController->showError(403);
+      exit();
+    }
+
+    $this->currentUser = $freshUser;
+    $_SESSION['user'] = $freshUser;
   }
 }

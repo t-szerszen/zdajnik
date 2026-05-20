@@ -203,6 +203,26 @@ class Router
 
     // --- ANALITYKA I PROFIL UŻYTKOWNIKA ---
     $this->get('statystyki', 'DashboardController@showDashboard');
+    $this->get('admin', 'AdminController@index');
+    $this->get('admin/uzytkownicy', 'AdminController@users');
+    $this->get('admin/uzytkownicy/{userId}', 'AdminController@showUser');
+    $this->get('admin/egzaminy', 'AdminController@exams');
+    $this->get('admin/egzaminy/dodaj', 'AdminController@showCreateExamForm');
+    $this->post('admin/egzaminy/dodaj', 'AdminController@storeExam');
+    $this->get('admin/egzaminy/{examId}/edytuj', 'AdminController@showEditExamForm');
+    $this->post('admin/egzaminy/{examId}/edytuj', 'AdminController@updateExam');
+    $this->post('admin/egzaminy/{examId}/dezaktywuj', 'AdminController@deactivateExam');
+    $this->get('admin/egzaminy/{examId}', 'AdminController@showExam');
+    $this->get('admin/pytania', 'AdminController@questions');
+    $this->get('admin/pytania/dodaj', 'AdminController@showCreateQuestionForm');
+    $this->post('admin/pytania/dodaj', 'AdminController@storeQuestion');
+    $this->get('admin/pytania/{questionId}/edytuj', 'AdminController@showEditQuestionForm');
+    $this->post('admin/pytania/{questionId}/edytuj', 'AdminController@updateQuestion');
+    $this->post('admin/pytania/{questionId}/dezaktywuj', 'AdminController@deactivateQuestion');
+    $this->get('admin/pytania/{questionId}', 'AdminController@showQuestion');
+    $this->get('admin/statystyki', 'AdminController@activity');
+    $this->get('admin/audyt', 'AdminController@auditLogs');
+    $this->post('admin/uzytkownicy/{userId}/rola', 'AdminController@updateUserRole');
     $this->get('historia', 'HistoryController@showHistory');
 
     // Zarządzanie ustawieniami i danymi osobowymi

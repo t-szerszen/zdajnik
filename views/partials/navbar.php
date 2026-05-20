@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file navbar.php
  * @description
@@ -15,7 +16,6 @@
  */
 
 use App\Models\User;
-
 ?>
 
 <!-- 
@@ -141,7 +141,7 @@ use App\Models\User;
             </a>
           </div>
         </li>
-        <?php
+      <?php
       else: ?>
         <li class="main-nav__item dropdown main-nav__item--user">
           <a href="<?= url('statystyki') ?>" class="main-nav__link main-nav__link--user" aria-label="Profil użytkownika">
@@ -168,6 +168,13 @@ use App\Models\User;
                 <i class="dropdown__icon fas fa-cog"></i> Ustawienia
               </a>
             </li>
+            <?php if ($currentUser && $currentUser->isAdmin()): ?>
+              <li class="dropdown__item">
+                <a href="<?= url('admin') ?>" class="dropdown__link">
+                  <i class="dropdown__icon fas fa-shield-halved"></i> Admin Panel
+                </a>
+              </li>
+            <?php endif; ?>
             <li class="dropdown__item dropdown__item--logout">
               <a href="<?= url('wyloguj') ?>" class="dropdown__link">
                 <i class="dropdown__icon fas fa-sign-out-alt"></i> Wyloguj się
@@ -175,7 +182,7 @@ use App\Models\User;
             </li>
           </ul>
         </li>
-        <?php
+      <?php
       endif; ?>
     </ul>
 
