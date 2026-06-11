@@ -250,6 +250,12 @@
     padding-top: 2rem;
     border-top: 1px solid var(--subtle-border);
 
+    &--plain {
+      border-top: 0;
+      padding-top: 0;
+      text-align: left;
+    }
+
     p {
       margin: 0.5rem 0;
       color: var(--muted-text);

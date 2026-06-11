@@ -31,7 +31,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Ustawienia</span> Konta</h1>
-      <p class="page-header__text">Zarządzaj swoim profilem i dbaj o bezpieczeństwo swoich danych w Examly.</p>
+      <p class="page-header__text">Zmień dane profilu, hasło lub ustawienia konta.</p>
     </div>
   </header>
 
@@ -257,7 +257,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                 <i class="fas fa-key"></i>
                 <span>Zmiana hasła</span>
               </h3>
-              <p class="settings-card__description">Zadbaj o bezpieczeństwo swojego konta regularnie zmieniając hasło.</p>
+              <p class="settings-card__description">Ustaw nowe hasło do konta.</p>
             </div>
             <i class="fas fa-chevron-down settings-card__icon"></i>
           </div>
@@ -303,7 +303,9 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
               <button type="submit" class="btn btn--primary">
                 <i class="fas fa-check-circle"></i> Zmień hasło
               </button>
-              <p><a href="<?= url('reset-hasla') ?>" class="form-card__forgot-password">Nie pamiętasz hasła?</a></p>
+              <div class="form-card__footer form-card__footer--plain">
+                <p><a href="<?= url('reset-hasla') ?>" class="form-card__forgot-password">Nie pamiętasz hasła?</a></p>
+              </div>
             </form>
           </div>
         </div>

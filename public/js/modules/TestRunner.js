@@ -310,6 +310,15 @@ export class TestRunner {
       this.testView.parentElement.classList.add('hidden');
     }
 
+    // Własny zestaw jest renderowany w osobnym kontenerze z minimalną
+    // wysokością ekranu. Po zakończeniu ukrywamy go, żeby nie zostawiał
+    // pustej przestrzeni przed podsumowaniem.
+    const dynamicQuizContainer = this.testView.closest('#quiz-container');
+    if (dynamicQuizContainer) {
+      dynamicQuizContainer.classList.remove('test-container--active');
+      dynamicQuizContainer.classList.add('hidden');
+    }
+
     // Dodaj klasę do body dla stylów tła
     document.body.classList.add('review-page');
 
@@ -333,40 +342,40 @@ export class TestRunner {
     const dateString = now.toLocaleDateString('pl-PL');
     const timeString = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
 
-    scoreSummaryContainer.innerHTML = `
-      <div class="review-page__score-display">
-        <div class="score-circle" style="--score: ${scoreForAnimation}">
-          <div class="score-circle__percent">${scoreToDisplay}%</div>
-        </div>
-        <p class="label-text">Twój wynik</p>
-      </div>
+	    scoreSummaryContainer.innerHTML = `
+	      <div class="review-page__score-display">
+	        <div class="score-circle" style="--score: ${scoreForAnimation}">
+	          <div class="score-circle__percent">${scoreToDisplay}%</div>
+	        </div>
+	        <p class="label-text">Twój wynik</p>
+	      </div>
 
-      <div class="review-page__stats-grid">
-        <div class="review-page__stat-box">
-          <span class="stat-label">Wynik punktowy</span>
-          <span class="stat-value text-gradient">
-            <i class="fas fa-bullseye" style="font-size: 0.8em; margin-right: 0.25rem;"></i>
-            ${correctCount} / ${totalQuestions}
-          </span>
-        </div>
-        <div class="review-page__stat-box">
-          <span class="stat-label">Czas pracy</span>
-          <span class="stat-value">
-            <i class="fas fa-clock" style="font-size: 0.8em; margin-right: 0.25rem;"></i>
-            ${durationString}
-          </span>
-        </div>
-        <div class="review-page__stat-box">
-             <span class="stat-label">Data podejścia</span>
-             <span class="stat-value" style="font-size: 1.1rem; line-height: 1.2;">
-               <i class="fas fa-calendar-alt" style="font-size: 0.8em; margin-right: 0.25rem; color: var(--accent);"></i>
-               ${dateString}
-               <small style="display: block; opacity: 0.6; font-size: 0.8rem; margin-top: 2px;">
-                 Godzina ${timeString}
-               </small>
-             </span>
-        </div>
-      </div>`;
+	      <div class="review-page__stats-grid">
+	        <div class="review-page__stat-box">
+	          <span class="stat-label">Poprawne odpowiedzi</span>
+	          <span class="stat-value text-gradient">
+	            <i class="fas fa-bullseye" style="font-size: 0.8em; margin-right: 0.25rem;"></i>
+	            ${correctCount} / ${totalQuestions}
+	          </span>
+	        </div>
+	        <div class="review-page__stat-box">
+	          <span class="stat-label">Czas rozwiązywania</span>
+	          <span class="stat-value">
+	            <i class="fas fa-clock" style="font-size: 0.8em; margin-right: 0.25rem;"></i>
+	            ${durationString}
+	          </span>
+	        </div>
+	        <div class="review-page__stat-box">
+	             <span class="stat-label">Data i godzina</span>
+	             <span class="stat-value" style="font-size: 1.1rem; line-height: 1.2;">
+	               <i class="fas fa-calendar-alt" style="font-size: 0.8em; margin-right: 0.25rem; color: var(--accent);"></i>
+	               ${dateString}
+	               <small style="display: block; opacity: 0.6; font-size: 0.8rem; margin-top: 2px;">
+	                 Godzina: ${timeString}
+	               </small>
+	             </span>
+	        </div>
+	      </div>`;
 
     // Sekcja detali pytań (szczegóły są w htmlu statycznie, ale content dynamicznie)
     this.resultsDetailsContainer.innerHTML = '';
@@ -389,7 +398,7 @@ export class TestRunner {
       } else if (isUserCorrectHeader) {
         badgeHTML = '<span class="status-badge status-badge--success"><i class="fas fa-check"></i> Poprawne</span>';
       } else {
-        badgeHTML = '<span class="status-badge status-badge--error"><i class="fas fa-times"></i> Błąd</span>';
+        badgeHTML = '<span class="status-badge status-badge--error"><i class="fas fa-times"></i> Niepoprawne</span>';
       }
 
       let answersHTML = '';
@@ -432,21 +441,21 @@ export class TestRunner {
                 <span class="quiz-card__id">ID: ${question_id}</span>
               </div>
               <div class="quiz-card__header-actions">
-               ${window.examlyAppState.isUserLoggedIn ? `
-                 <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz pytanie">
-                   <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
-                 </button>
-               ` : ''}
-               ${badgeHTML}
-             </div>
-         </div>
-        <div class="quiz-card__content">
-          <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
-          ${image_name ? `<div class="quiz-card__image-container"><img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_name)}" class="quiz-card__image"></div>` : ''}
-        </div>
-        <div class="quiz-card__answers" data-answered="true">${answersHTML}</div>
-        <div class="quiz-card__actions"></div>
-      `;
+	               ${window.examlyAppState.isUserLoggedIn ? `
+	                 <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz do powtórki">
+	                   <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
+	                 </button>
+	               ` : ''}
+	               ${badgeHTML}
+	             </div>
+	         </div>
+	        <div class="quiz-card__content">
+	          <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
+	          ${image_name ? `<div class="quiz-card__image-container"><img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_name)}" alt="Ilustracja do pytania" class="quiz-card__image"></div>` : ''}
+	        </div>
+	        <div class="quiz-card__answers" data-answered="true">${answersHTML}</div>
+	        <div class="quiz-card__actions"></div>
+	      `;
 
       if (explanation && explanation.trim()) {
         this.renderExplanationResult(card, explanation);
