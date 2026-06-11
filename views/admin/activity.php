@@ -4,8 +4,8 @@
  * @description Widok aktywności CMS.
  */
 
-$pageTitle = $pageTitle ?? 'Statystyki i aktywność | Admin Panel | Examly';
-$pageDescription = $pageDescription ?? 'Statystyki i aktywność panelu CMS Examly.';
+$pageTitle = $pageTitle ?? 'Aktywność | Panel administracyjny | Examly';
+$pageDescription = $pageDescription ?? 'Analityka i ostatnia aktywność w aplikacji Examly.';
 $overview = $overview ?? [];
 $recentActivity = $recentActivity ?? [];
 ?>
@@ -19,8 +19,8 @@ $recentActivity = $recentActivity ?? [];
   <main class="main-content-wrapper admin-panel">
     <header class="page-header">
       <div class="page-header__content">
-        <h1 class="page-header__title"><span class="text-gradient">Statystyki</span> i aktywność</h1>
-        <p class="page-header__text">Zestawienie podstawowych metryk panelu i ostatnich zakończonych prób.</p>
+        <h1 class="page-header__title"><span class="text-gradient">Aktywność</span> aplikacji</h1>
+        <p class="page-header__text">Szybki podgląd metryk oraz ostatnich ukończonych prób użytkowników.</p>
       </div>
     </header>
 
@@ -70,7 +70,7 @@ $recentActivity = $recentActivity ?? [];
               </div>
               <div class="admin-list">
                 <?php if (empty($recentActivity)): ?>
-                  <div class="admin-empty">Brak danych aktywności.</div>
+                  <div class="admin-empty">Nie ma jeszcze aktywności do pokazania. Pojawi się po pierwszych ukończonych próbach.</div>
                 <?php else: ?>
                   <?php foreach ($recentActivity as $activity): ?>
                     <div class="admin-list__row">

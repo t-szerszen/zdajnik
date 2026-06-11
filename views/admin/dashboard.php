@@ -9,7 +9,7 @@
  * @author Tobiasz Szerszeń
  */
 
-$pageTitle = $pageTitle ?? 'Admin Panel | Examly';
+$pageTitle = $pageTitle ?? 'Panel administracyjny | Examly';
 $pageDescription = $pageDescription ?? 'Panel administracyjny Examly.';
 $overview = $overview ?? [];
 $recentUsers = $recentUsers ?? [];
@@ -26,10 +26,10 @@ $hasActivityData = $hasActivityData ?? false;
     <header class="page-header" id="top">
       <div class="page-header__content">
         <h1 class="page-header__title">
-          <span class="text-gradient">Admin Panel</span>
+          <span class="text-gradient">Panel administracyjny</span>
         </h1>
         <p class="page-header__text">
-          Bezpieczny punkt wejścia do modułów zarządzania treścią i strukturą aplikacji Examly.
+          Zarządzaj treścią i sprawdzaj aktywność w Examly. Użytkownicy, egzaminy, pytania i podstawowe metryki są w jednym miejscu.
         </p>
       </div>
     </header>
@@ -74,7 +74,7 @@ $hasActivityData = $hasActivityData ?? false;
                 <span class="admin-tile__label">Aktywność</span>
                 <strong class="admin-tile__value"><?= (int) ($overview['attempts'] ?? 0) ?></strong>
                 <span class="admin-tile__meta">
-                  <?= $hasActivityData ? 'Dane aktywności są dostępne' : 'Brak danych aktywności' ?>
+                  <?= $hasActivityData ? 'Są dane do analizy' : 'Brak danych z prób użytkowników' ?>
                 </span>
               </div>
             </a>
@@ -94,13 +94,13 @@ $hasActivityData = $hasActivityData ?? false;
               <div class="stats-card__header">
                 <div class="stats-card__title">
                   <i class="fas fa-shield-halved" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
-                  <span>Dashboard CMS</span>
+                  <span>Szybki start</span>
                 </div>
               </div>
 
               <div class="stats-card__content">
                 <p class="admin-lead">
-                  Jesteś zalogowany jako administrator. Ten panel stanowi punkt wejścia do zarządzania treścią i strukturą aplikacji.
+                  Jesteś zalogowany jako administrator. Wybierz sekcję z lewej strony, żeby przejść do konkretnego obszaru.
                 </p>
               </div>
             </div>
@@ -116,7 +116,7 @@ $hasActivityData = $hasActivityData ?? false;
               <div class="admin-list">
                 <?php if (empty($recentUsers)): ?>
                   <div class="admin-empty">
-                    Brak danych do wyświetlenia.
+                    Nie ma jeszcze użytkowników do pokazania. Po pierwszych rejestracjach pojawią się tutaj najnowsze konta.
                   </div>
                 <?php else: ?>
                   <?php foreach ($recentUsers as $user): ?>

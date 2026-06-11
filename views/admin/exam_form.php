@@ -4,7 +4,7 @@
  * @description Formularz tworzenia i edycji egzaminu.
  */
 
-$pageTitle = $pageTitle ?? 'Egzamin | Admin Panel | Examly';
+$pageTitle = $pageTitle ?? 'Egzamin | Panel administracyjny | Examly';
 $pageDescription = $pageDescription ?? 'Formularz zarządzania egzaminem w panelu CMS Examly.';
 $mode = $mode ?? 'create';
 $exam = $exam ?? [];

@@ -4,7 +4,7 @@
  * @description Formularz tworzenia i edycji pytania.
  */
 
-$pageTitle = $pageTitle ?? 'Pytanie | Admin Panel | Examly';
+$pageTitle = $pageTitle ?? 'Pytanie | Panel administracyjny | Examly';
 $pageDescription = $pageDescription ?? 'Formularz zarządzania pytaniem w panelu CMS Examly.';
 $mode = $mode ?? 'create';
 $question = $question ?? [];

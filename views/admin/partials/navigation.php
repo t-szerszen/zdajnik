@@ -12,11 +12,11 @@ $activeSection = $activeSection ?? 'dashboard';
 
 <aside class="admin-sidebar">
   <div class="admin-sidebar__brand">
-    <span class="admin-sidebar__eyebrow">Admin</span>
-    <h2 class="admin-sidebar__title">Admin Panel</h2>
+    <span class="admin-sidebar__eyebrow">Administracja</span>
+    <h2 class="admin-sidebar__title">Panel administracyjny</h2>
   </div>
 
-  <nav class="admin-sidebar__nav" aria-label="Nawigacja panelu CMS">
+  <nav class="admin-sidebar__nav" aria-label="Nawigacja panelu administracyjnego">
     <a href="<?= url('admin') ?>" class="admin-sidebar__link <?= $activeSection === 'dashboard' ? 'is-active' : '' ?>">
       <i class="fas fa-gauge-high"></i>
       <span>Pulpit</span>
@@ -35,7 +35,7 @@ $activeSection = $activeSection ?? 'dashboard';
     </a>
     <a href="<?= url('admin/statystyki') ?>" class="admin-sidebar__link <?= $activeSection === 'activity' ? 'is-active' : '' ?>">
       <i class="fas fa-chart-line"></i>
-      <span>Statystyki</span>
+      <span>Aktywność</span>
     </a>
     <a href="<?= url('admin/audyt') ?>" class="admin-sidebar__link <?= $activeSection === 'audit' ? 'is-active' : '' ?>">
       <i class="fas fa-clipboard-list"></i>
@@ -46,7 +46,7 @@ $activeSection = $activeSection ?? 'dashboard';
   <div class="admin-sidebar__footer">
     <a href="<?= url('/') ?>" class="admin-sidebar__back-link">
       <i class="fas fa-arrow-left"></i>
-      <span>Powrót do aplikacji</span>
+      <span>Wróć do aplikacji</span>
     </a>
   </div>
 </aside>

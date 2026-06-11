@@ -5,7 +5,7 @@
  * Widok listy użytkowników w panelu CMS.
  */
 
-$pageTitle = $pageTitle ?? 'Użytkownicy | Admin Panel | Examly';
+$pageTitle = $pageTitle ?? 'Użytkownicy | Panel administracyjny | Examly';
 $pageDescription = $pageDescription ?? 'Lista użytkowników w panelu CMS Examly.';
 $users = $users ?? [];
 $filters = $filters ?? [];
@@ -55,7 +55,7 @@ $sortLink = static function (string $column) use ($filters, $sort, $dir): string
   <main class="main-content-wrapper admin-panel">
     <header class="page-header">
       <div class="page-header__content">
-        <h1 class="page-header__title"><span class="text-gradient">Użytkownicy</span> CMS</h1>
+        <h1 class="page-header__title"><span class="text-gradient">Użytkownicy</span></h1>
         <p class="page-header__text">Wyszukuj, filtruj i zarządzaj kontami użytkowników w jednym miejscu.</p>
       </div>
     </header>

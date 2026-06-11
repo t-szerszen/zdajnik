@@ -5,8 +5,8 @@
  * Lista logów audytowych administracji.
  */
 
-$pageTitle = $pageTitle ?? 'Audyt administracji | Admin Panel | Examly';
-$pageDescription = $pageDescription ?? 'Lista ostatnich akcji administracyjnych w panelu CMS Examly.';
+$pageTitle = $pageTitle ?? 'Audyt administracji | Panel administracyjny | Examly';
+$pageDescription = $pageDescription ?? 'Lista ostatnich akcji administracyjnych w panelu administracyjnym Examly.';
 $filters = $filters ?? [];
 $logs = $logs ?? [];
 $pagination = $pagination ?? ['page' => 1, 'totalPages' => 1];

@@ -4,7 +4,7 @@
  * @description Lista pytań w panelu CMS.
  */
 
-$pageTitle = $pageTitle ?? 'Pytania | Admin Panel | Examly';
+$pageTitle = $pageTitle ?? 'Pytania | Panel administracyjny | Examly';
 $pageDescription = $pageDescription ?? 'Zarządzanie pytaniami w panelu CMS Examly.';
 $questions = $questions ?? [];
 $filters = $filters ?? [];
@@ -55,7 +55,7 @@ $sortLink = static function (string $column) use ($filters, $sort, $dir): string
   <main class="main-content-wrapper admin-panel">
     <header class="page-header">
       <div class="page-header__content">
-        <h1 class="page-header__title"><span class="text-gradient">Pytania</span> CMS</h1>
+        <h1 class="page-header__title"><span class="text-gradient">Pytania</span></h1>
         <p class="page-header__text">Zarządzaj pytaniami, wersjami treści, odpowiedziami i obrazkami.</p>
       </div>
     </header>

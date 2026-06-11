@@ -5,7 +5,7 @@
  * Lista egzaminów w panelu CMS.
  */
 
-$pageTitle = $pageTitle ?? 'Egzaminy | Admin Panel | Examly';
+$pageTitle = $pageTitle ?? 'Egzaminy | Panel administracyjny | Examly';
 $pageDescription = $pageDescription ?? 'Zarządzanie egzaminami w panelu CMS Examly.';
 $exams = $exams ?? [];
 $filters = $filters ?? [];
@@ -53,7 +53,7 @@ $sortLink = static function (string $column) use ($filters, $sort, $dir): string
   <main class="main-content-wrapper admin-panel">
     <header class="page-header">
       <div class="page-header__content">
-        <h1 class="page-header__title"><span class="text-gradient">Egzaminy</span> CMS</h1>
+        <h1 class="page-header__title"><span class="text-gradient">Egzaminy</span></h1>
         <p class="page-header__text">Dodawaj, edytuj i dezaktywuj egzaminy oraz podglądaj liczbę przypisanych pytań.</p>
       </div>
     </header>

@@ -54,8 +54,8 @@ class AdminController extends BaseController
   public function index(): void
   {
     $this->renderView('admin/dashboard', [
-      'pageTitle' => 'Admin Panel | Examly',
-      'pageDescription' => 'Panel administracyjny Examly do zarządzania treścią i strukturą serwisu.',
+      'pageTitle' => 'Panel administracyjny | Examly',
+      'pageDescription' => 'Panel administracyjny Examly do zarządzania treścią i strukturą aplikacji.',
       'overview' => $this->adminService->getOverview(),
       'recentUsers' => $this->adminService->getRecentUsers(6),
       'hasActivityData' => $this->adminService->hasActivityData(),
@@ -79,8 +79,8 @@ class AdminController extends BaseController
     $result = $this->userService->searchUsers($filters, $page, $perPage, $sort, $dir);
 
     $this->renderView('admin/users', [
-      'pageTitle' => 'Użytkownicy | Admin Panel | Examly',
-      'pageDescription' => 'Lista użytkowników w panelu CMS Examly.',
+      'pageTitle' => 'Użytkownicy | Panel administracyjny | Examly',
+      'pageDescription' => 'Lista użytkowników w panelu administracyjnym Examly.',
       'overview' => $this->adminService->getOverview(),
       'users' => $result['items'],
       'filters' => $filters,
@@ -106,8 +106,8 @@ class AdminController extends BaseController
     }
 
     $this->renderView('admin/user_detail', [
-      'pageTitle' => 'Użytkownik #' . $userId . ' | Admin Panel | Examly',
-      'pageDescription' => 'Szczegóły użytkownika w panelu CMS Examly.',
+      'pageTitle' => 'Użytkownik #' . $userId . ' | Panel administracyjny | Examly',
+      'pageDescription' => 'Szczegóły użytkownika w panelu administracyjnym Examly.',
       'user' => $user,
       'userStats' => $this->userService->getUserStats($userId),
       'attempts' => $this->userService->getUserAttempts($userId, 100),
@@ -231,7 +231,7 @@ class AdminController extends BaseController
     $result = $this->examService->searchExams($filters, $page, $perPage, $sort, $dir);
 
     $this->renderView('admin/exams', [
-      'pageTitle' => 'Egzaminy | Admin Panel | Examly',
+      'pageTitle' => 'Egzaminy | Panel administracyjny | Examly',
       'pageDescription' => 'Zarządzanie egzaminami w panelu CMS Examly.',
       'overview' => $this->adminService->getOverview(),
       'exams' => $result['items'],
@@ -346,7 +346,7 @@ class AdminController extends BaseController
     }
 
     $this->renderView('admin/exam_detail', [
-      'pageTitle' => 'Egzamin ' . ($exam['code'] ?? ('#' . $examId)) . ' | Admin Panel | Examly',
+      'pageTitle' => 'Egzamin ' . ($exam['code'] ?? ('#' . $examId)) . ' | Panel administracyjny | Examly',
       'pageDescription' => 'Szczegóły egzaminu w panelu CMS Examly.',
       'exam' => $exam,
       'questions' => $this->examService->getExamQuestions($examId, 200),
@@ -592,7 +592,7 @@ class AdminController extends BaseController
     $result = $this->questionService->searchQuestions($filters, $page, $perPage, $sort, $dir);
 
     $this->renderView('admin/questions', [
-      'pageTitle' => 'Pytania | Admin Panel | Examly',
+      'pageTitle' => 'Pytania | Panel administracyjny | Examly',
       'pageDescription' => 'Zarządzanie pytaniami z wersjonowaniem w panelu CMS Examly.',
       'overview' => $this->adminService->getOverview(),
       'questions' => $result['items'],
@@ -664,7 +664,7 @@ class AdminController extends BaseController
     }
 
     $this->renderView('admin/question_detail', [
-      'pageTitle' => 'Pytanie #' . $questionId . ' | Admin Panel | Examly',
+      'pageTitle' => 'Pytanie #' . $questionId . ' | Panel administracyjny | Examly',
       'pageDescription' => 'Szczegóły pytania w panelu CMS Examly.',
       'question' => $question,
       'csrfToken' => $this->csrfService->token(),
@@ -782,8 +782,8 @@ class AdminController extends BaseController
   public function activity(): void
   {
     $this->renderView('admin/activity', [
-      'pageTitle' => 'Statystyki i aktywność | Admin Panel | Examly',
-      'pageDescription' => 'Statystyki i aktywność panelu CMS Examly.',
+      'pageTitle' => 'Aktywność | Panel administracyjny | Examly',
+      'pageDescription' => 'Analityka i ostatnia aktywność w aplikacji Examly.',
       'overview' => $this->adminService->getOverview(),
       'recentActivity' => $this->adminService->getRecentActivity(12),
     ]);
@@ -806,8 +806,8 @@ class AdminController extends BaseController
     $result = $this->auditService->searchLogs($filters, $page, $perPage);
 
     $this->renderView('admin/audit_logs', [
-      'pageTitle' => 'Audyt administracji | Admin Panel | Examly',
-      'pageDescription' => 'Lista ostatnich akcji administracyjnych w panelu CMS Examly.',
+      'pageTitle' => 'Audyt administracji | Panel administracyjny | Examly',
+      'pageDescription' => 'Lista ostatnich akcji administracyjnych w panelu administracyjnym Examly.',
       'filters' => $filters,
       'logs' => $result['items'],
       'pagination' => $result,
@@ -846,8 +846,8 @@ class AdminController extends BaseController
     $title = $isEdit ? 'Edycja egzaminu' : 'Dodawanie egzaminu';
 
     $this->renderView('admin/exam_form', [
-      'pageTitle' => $title . ' | Admin Panel | Examly',
-      'pageDescription' => 'Formularz zarządzania egzaminem w panelu CMS Examly.',
+      'pageTitle' => $title . ' | Panel administracyjny | Examly',
+      'pageDescription' => 'Formularz zarządzania egzaminem w panelu administracyjnym Examly.',
       'mode' => $mode,
       'examId' => $examId,
       'exam' => $exam,
@@ -921,8 +921,8 @@ class AdminController extends BaseController
     $question['answers'] = $this->normalizeAnswersForForm($question['answers'] ?? []);
 
     $this->renderView('admin/question_form', [
-      'pageTitle' => ($mode === 'edit' ? 'Edycja pytania' : 'Dodawanie pytania') . ' | Admin Panel | Examly',
-      'pageDescription' => 'Formularz zarządzania pytaniem w panelu CMS Examly.',
+      'pageTitle' => ($mode === 'edit' ? 'Edycja pytania' : 'Dodawanie pytania') . ' | Panel administracyjny | Examly',
+      'pageDescription' => 'Formularz zarządzania pytaniem w panelu administracyjnym Examly.',
       'mode' => $mode,
       'questionId' => $questionId,
       'question' => $question,

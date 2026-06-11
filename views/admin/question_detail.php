@@ -4,7 +4,7 @@
  * @description Szczegóły pytania z wersjonowaniem.
  */
 
-$pageTitle = $pageTitle ?? 'Pytanie | Admin Panel | Examly';
+$pageTitle = $pageTitle ?? 'Pytanie | Panel administracyjny | Examly';
 $pageDescription = $pageDescription ?? 'Szczegóły pytania w panelu CMS Examly.';
 $question = $question ?? [];
 $questionId = (int) ($question['id'] ?? 0);

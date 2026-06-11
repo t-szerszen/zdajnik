@@ -4,7 +4,7 @@
  * @description Widok zastępczy dla modułów CMS przygotowanych na kolejne etapy.
  */
 
-$pageTitle = $pageTitle ?? 'Admin Panel | Examly';
+$pageTitle = $pageTitle ?? 'Panel administracyjny | Examly';
 $pageDescription = $pageDescription ?? 'Sekcja panelu CMS.';
 $title = $title ?? 'Sekcja';
 $description = $description ?? 'Sekcja przygotowana pod kolejne etapy.';
