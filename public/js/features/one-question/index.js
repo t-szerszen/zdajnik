@@ -117,7 +117,7 @@ class Quiz {
     const premiumOption = this.topicForm.querySelector('input[name="premium_option"]:checked')?.value || null;
 
     if (selectedSubjects.length === 0) {
-      Toast.show('Wybierz przynajmniej jedną kategorię.', 'info');
+      Toast.show('Zaznacz co najmniej jeden temat.', 'info');
       return;
     }
 
@@ -130,7 +130,7 @@ class Quiz {
         const data = result.data;
         if (data.status === 'no_questions_left') {
           Toast.show(data.message, 'info');
-          this.quizContainer.innerHTML = '<p class="quiz-placeholder">Wybierz inne kryteria.</p>';
+          this.quizContainer.innerHTML = '<p class="quiz-placeholder">To już wszystkie pytania w tej puli. Zmień temat lub sposób doboru pytań.</p>';
         } else {
           // KROK KLUCZOWY: Zapisujemy question_version_id do stanu klasy
           this.currentExplanation = data.question.explanation;
@@ -150,7 +150,7 @@ class Quiz {
         }
       }
     } catch (error) {
-      Toast.show('Wystąpił błąd sieci.', 'error');
+      Toast.show('Nie udało się pobrać pytania. Sprawdź połączenie i spróbuj ponownie.', 'error');
     } finally {
       clearTimeout(this.loaderTimer);
     }
@@ -196,7 +196,7 @@ class Quiz {
     const versionId = this.currentQuestionVersionId; // Używamy zapisanego ID wersji
 
     if (!versionId) {
-      Toast.show('Błąd synchronizacji danych pytania.', 'error');
+      Toast.show('Nie udało się przygotować pytania. Odśwież stronę i spróbuj ponownie.', 'error');
       return;
     }
 
@@ -209,7 +209,7 @@ class Quiz {
       this.advanceProgressAfterAnswer();
       ui.renderActionButtons(this.currentExplanation, this.startNewQuestion.bind(this));
     } else {
-      Toast.show(result.error || 'Wystąpił błąd.', 'error');
+      Toast.show(result.error || 'Nie udało się sprawdzić odpowiedzi. Spróbuj ponownie.', 'error');
       delete answersContainer.dataset.answered;
     }
   }

@@ -80,30 +80,30 @@ class DynamicDataService
     $metadata = [
       'INF.03' => [
         'formatted_name' => 'EE.09 / INF.03',
-        'title_one_question' => 'INF.03 - Jedno pytanie - Inteligentna Powtórka Online | Examly',
-        'desc_one_question' => 'Nie masz czasu na cały test? Wylosuj jedno pytanie z bazy egzaminacyjnej INF.03 i sprawdź swoją wiedzę w mniej niż minutę.',
-        'title_test' => 'INF.03 - Egzamin próbny - Test Online 40 Pytań | Examly',
-        'desc_test' => 'Sprawdź swoją wiedzę przed egzaminem zawodowym INF.03. Rozwiąż pełny test próbny online.',
-        'title_personalized' => 'INF.03 - Stwórz swój własny test - Spersonalizowana Nauka | Examly',
-        'desc_personalized' => 'Dopasuj naukę do swoich potrzeb. Stwórz spersonalizowany test z kwalifikacji INF.03.'
+        'title_one_question' => 'Jedno pytanie z INF.03 | Examly',
+        'desc_one_question' => 'Wybierz temat i rozwiąż jedno pytanie z INF.03. Od razu sprawdź odpowiedź i wyjaśnienie.',
+        'title_test' => 'Próba egzaminacyjna INF.03 - 40 pytań | Examly',
+        'desc_test' => 'Rozwiąż 40 pytań z INF.03 na czas, sprawdź wynik i zobacz, co warto powtórzyć.',
+        'title_personalized' => 'Własny zestaw pytań INF.03 | Examly',
+        'desc_personalized' => 'Wybierz tematy, liczbę pytań i sposób ich doboru. Ułóż własny zestaw z INF.03.'
       ],
       'INF.02' => [
         'formatted_name' => 'EE.08 / INF.02',
-        'title_one_question' => 'INF.02 - Jedno pytanie - Szybka powtórka | Examly',
-        'desc_one_question' => 'Szybka powtórka z INF.02. Jedno pytanie losowe.',
-        'title_test' => 'INF.02 - Egzamin próbny - Test Online | Examly',
-        'desc_test' => 'Pełny egzamin próbny INF.02.',
-        'title_personalized' => 'INF.02 - Test Spersonalizowany | Examly',
-        'desc_personalized' => 'Skonfiguruj swój test z INF.02.'
+        'title_one_question' => 'Jedno pytanie z INF.02 | Examly',
+        'desc_one_question' => 'Wybierz temat i rozwiąż jedno pytanie z INF.02.',
+        'title_test' => 'Próba egzaminacyjna INF.02 | Examly',
+        'desc_test' => 'Rozwiąż pełną próbę egzaminacyjną z INF.02 i sprawdź wynik.',
+        'title_personalized' => 'Własny zestaw pytań INF.02 | Examly',
+        'desc_personalized' => 'Wybierz tematy i ułóż własny zestaw pytań z INF.02.'
       ],
       'INF.04' => [
         'formatted_name' => 'E.14 / INF.04',
-        'title_one_question' => 'INF.04 - Jedno pytanie - Trening | Examly',
-        'desc_one_question' => 'Poćwicz z INF.04. Jedno pytanie losowe.',
-        'title_test' => 'INF.04 - Egzamin próbny - Test Online | Examly',
-        'desc_test' => 'Pełny egzamin próbny INF.04.',
-        'title_personalized' => 'INF.04 - Test Spersonalizowany | Examly',
-        'desc_personalized' => 'Skonfiguruj swój test z INF.04.'
+        'title_one_question' => 'Jedno pytanie z INF.04 | Examly',
+        'desc_one_question' => 'Wybierz temat i rozwiąż jedno pytanie z INF.04. Od razu sprawdź odpowiedź i wyjaśnienie.',
+        'title_test' => 'Próba egzaminacyjna INF.04 - 40 pytań | Examly',
+        'desc_test' => 'Rozwiąż 40 pytań z INF.04 na czas, sprawdź wynik i zobacz, co warto powtórzyć.',
+        'title_personalized' => 'Własny zestaw pytań INF.04 | Examly',
+        'desc_personalized' => 'Wybierz tematy, liczbę pytań i sposób ich doboru. Ułóż własny zestaw z INF.04.'
       ]
     ];
 
@@ -111,10 +111,10 @@ class DynamicDataService
       'formatted_name' => $code,
       'title_one_question' => "$code - Jedno pytanie | Examly",
       'desc_one_question' => "Losowe pytanie z kwalifikacji $code.",
-      'title_test' => "$code - Egzamin Próbny | Examly",
-      'desc_test' => "Pełny test próbny z $code.",
-      'title_personalized' => "$code - Test Spersonalizowany | Examly",
-      'desc_personalized' => "Stwórz własny test z $code."
+      'title_test' => "Próba egzaminacyjna $code | Examly",
+      'desc_test' => "Rozwiąż pełną próbę egzaminacyjną z $code.",
+      'title_personalized' => "Własny zestaw pytań $code | Examly",
+      'desc_personalized' => "Wybierz zakres i ułóż własny zestaw pytań z $code."
     ];
 
     // KROK 3: Połączenie surowych danych SQL z metadanymi aplikacyjnymi

@@ -18,7 +18,7 @@
 $noIndex = true;
 $noFollow = true;
 $pageTitle = 'Załóż Darmowe Konto i Śledź Postępy | Examly';
-$pageDescription = 'Dołącz do Examly i przygotuj się do egzaminu zawodowego. Załóż darmowe konto, aby śledzić postępy i korzystać z inteligentnych trybów nauki.';
+$pageDescription = 'Załóż darmowe konto w Examly, zapisuj wyniki, wracaj do błędów i układaj własne zestawy pytań.';
 $canonicalUrl = 'https://www.examly.pl/rejestracja';
 
 /**
@@ -68,8 +68,8 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
         <div class="form-card__icon-circle">
           <i class="fas fa-user-plus"></i>
         </div>
-        <h1 class="form-card__title">Stwórz nowe konto</h1>
-        <p class="form-card__subtitle">Dołącz do nas i zacznij przygotowania do egzaminu!</p>
+        <h1 class="form-card__title">Załóż konto</h1>
+        <p class="form-card__subtitle">Załóż konto, żeby zapisywać postępy, wracać do błędów i budować statystyki nauki.</p>
       </div>
 
       <!-- 
@@ -125,7 +125,7 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
             placeholder="Stwórz solidne hasło" required>
           <i class="fas fa-eye password-toggle-icon"></i>
         </div>
-        <p class="form-card__input-hint">Minimum 8 znaków, wielka i mała litera, cyfra.</p>
+        <p class="form-card__input-hint">Minimum 8 znaków. Dodaj wielką i małą literę, cyfrę oraz znak specjalny (np. !@#).</p>
       </div>
 
       <!-- Grupa: Pole "Potwierdź hasło" -->

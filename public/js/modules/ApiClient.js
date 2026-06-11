@@ -70,7 +70,7 @@ class ApiClient {
       // Krok 3: Sprawdź status odpowiedzi HTTP.
       if (!response.ok) {
         // Jeśli serwer odpowiedział błędem (np. 404, 500), zwróć ustandaryzowany obiekt błędu.
-        const errorMessage = data.message || `Błąd serwera: ${response.status}`;
+        const errorMessage = data.message || 'Nie udało się pobrać danych. Spróbuj ponownie za chwilę.';
         return { success: false, error: errorMessage, status: data.status };
       }
 
@@ -80,7 +80,7 @@ class ApiClient {
       // Krok 5: Jeśli wystąpił błąd sieciowy (np. brak internetu), zaloguj go
       // i zwróć generyczny, przyjazny dla użytkownika komunikat.
       console.error(`Błąd sieci dla endpointu ${endpoint}:`, error);
-      return { success: false, error: 'Błąd połączenia. Sprawdź swoje połączenie z internetem.' };
+      return { success: false, error: 'Nie udało się połączyć z serwerem. Sprawdź internet i spróbuj ponownie.' };
     }
   }
 

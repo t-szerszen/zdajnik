@@ -85,7 +85,7 @@ class UIHandler {
     if (window.examlyAppState.isUserLoggedIn) {
       const heartType = question.is_saved ? 'fas' : 'far';
       saveBtnHTML = `
-        <button class="quiz-card__save-btn" data-question-id="${question.question_id}" title="Zapisz pytanie" aria-label="${question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-pressed="${question.is_saved ? 'true' : 'false'}">
+        <button class="quiz-card__save-btn" data-question-id="${question.question_id}" title="${question.is_saved ? 'Usuń z zapisanych' : 'Zapisz do powtórki'}" aria-label="${question.is_saved ? 'Usuń z zapisanych' : 'Zapisz do powtórki'}" aria-pressed="${question.is_saved ? 'true' : 'false'}">
           <i class="${heartType} fa-heart"></i>
         </button>
       `;
@@ -174,7 +174,7 @@ class UIHandler {
     const nextBtn = document.createElement('button');
     nextBtn.type = 'button';
     nextBtn.className = 'btn btn--primary';
-    nextBtn.textContent = 'Następne pytanie';
+    nextBtn.textContent = 'Pokaż kolejne pytanie';
     nextBtn.addEventListener('click', nextCallback);
     btnContainer.appendChild(nextBtn);
   }
@@ -189,7 +189,7 @@ class UIHandler {
     // Po prostu zastępujemy zawartość kontenera szablonem HTML loadera.
     container.innerHTML = `
       <div id="loading-screen" class="test-loading">
-        <h2>Trwa przygotowywanie Twojego pytania...</h2>
+        <h2>Przygotowujemy kolejne pytanie...</h2>
         <div class="spinner"></div>
       </div>`;
   }

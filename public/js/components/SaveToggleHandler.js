@@ -28,16 +28,16 @@ class SaveToggleHandler {
         const icon = btn.querySelector('i');
         if (result.data.is_saved) {
           icon.classList.replace('far', 'fas');
-          Toast.show('Pytanie zostało zapisane.', 'success');
+          Toast.show('Zapisano pytanie. Znajdziesz je w sekcji „Zapisane” w Twoich postępach.', 'success');
         } else {
           icon.classList.replace('fas', 'far');
-          Toast.show('Pytanie usunięte z zapisanych.', 'info');
+          Toast.show('Usunięto pytanie z zapisanych.', 'info');
         }
       } else {
-        Toast.show(result.error || 'Błąd podczas zapisywania pytania.', 'error');
+        Toast.show(result.error || 'Nie udało się zapisać pytania. Spróbuj ponownie za chwilę.', 'error');
       }
     } catch (error) {
-      Toast.show('Błąd połączenia.', 'error');
+      Toast.show('Nie ma połączenia z internetem. Sprawdź sieć i spróbuj ponownie.', 'error');
     } finally {
       btn.disabled = false;
       btn.style.opacity = '1';

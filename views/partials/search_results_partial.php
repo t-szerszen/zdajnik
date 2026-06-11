@@ -21,7 +21,7 @@ $filters = $filters ?? [];
 
 <?php if (!empty($results)): ?>
   <div class="search-results">
-    <h2 class="search-results__count">Znaleziono: <?= $totalCount ?? count($results) ?> pytań</h2>
+    <h2 class="search-results__count">Wyniki: <?= $totalCount ?? count($results) ?></h2>
     <div class="search-results__grid">
       <?php foreach ($results as $q): ?>
         <article class="search-result-card">
@@ -52,7 +52,7 @@ $filters = $filters ?? [];
             $reviewLink = url('test-pytanie/' . $q['question_id']) . '?' . http_build_query($reviewParams);
             ?>
             <a href="<?= $reviewLink ?>" class="btn btn--secondary btn--sm">
-              <span>Pokaż</span> <i class="fas fa-arrow-right"></i>
+              <span>Pokaż pytanie</span> <i class="fas fa-arrow-right"></i>
             </a>
           </div>
         </article>
@@ -131,13 +131,12 @@ $filters = $filters ?? [];
 <?php elseif (!empty($filters['exam_id']) || !empty($filters['topic_id']) || !empty($filters['query'])): ?>
   <div class="stats-card__empty">
     <div class="stats-card__empty-icon">🔍</div>
-    <p>Nie znaleźliśmy pytań spełniających Twoje kryteria.</p>
-    <p class="stats-card__empty-hint">Spróbuj wpisać inną frazę lub zmienić filtry.
-    </p>
+    <p>Nie ma pytań pasujących do tych filtrów.</p>
+    <p class="stats-card__empty-hint">Zmień egzamin lub temat, albo wpisz inną frazę.</p>
   </div>
 <?php else: ?>
   <div class="stats-card__empty">
     <div class="stats-card__empty-icon">✨</div>
-    <p>Wybierz kryteria i rozpocznij przeszukiwanie bazy.</p>
+    <p>Ustaw filtry albo wpisz frazę, a pokażemy pasujące pytania.</p>
   </div>
 <?php endif; ?>

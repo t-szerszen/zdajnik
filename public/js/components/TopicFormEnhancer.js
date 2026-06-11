@@ -205,9 +205,11 @@ class TopicFormEnhancer {
 
       if (label) {
         if (this.isUserLoggedIn) {
-          label.title = isEnabled ? 'Wybierz, aby filtrować pytania' : 'Najpierw wybierz kategorię tematyczną.';
+          label.title = isEnabled
+            ? 'Zaznacz, aby dobrać pytania do celu nauki.'
+            : 'Najpierw zaznacz co najmniej jeden temat. Wtedy odblokujemy te filtry.';
         } else {
-          label.title = 'Ta opcja jest dostępna tylko dla zalogowanych użytkowników.';
+          label.title = 'Zaloguj się, żeby korzystać z tych filtrów.';
         }
         label.style.cursor = isEnabled ? 'pointer' : 'not-allowed';
         label.style.opacity = isEnabled ? '1' : '0.6';

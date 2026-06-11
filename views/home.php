@@ -15,8 +15,8 @@
 /**
  * Konfiguracja komponentu head
  */
-$pageTitle = 'INF.02 INF.03 - Testy Online i kursy | Examly';
-$pageDescription = 'Zwiększ swoje szanse na zdanie egzaminu INF.03 i INF.02. Rozwiązuj testy online z tysięcy pytań, śledź postępy i ucz się mądrzej z Examly. Zacznij dziś!';
+$pageTitle = 'Pytania i testy do egzaminów zawodowych | Examly';
+$pageDescription = 'Rozwiązuj pytania z arkuszy, układaj własne zestawy i sprawdzaj postępy przed egzaminem zawodowym.';
 $canonicalUrl = 'https://www.examly.pl/';
 
 // Dodajemy uporządkowane dane dla SEO (FAQ i Funkcje platformy)
@@ -67,11 +67,11 @@ $extraSchemas = [
     "applicationCategory" => "EducationApplication",
     "featureList" => [
       "Symulacja egzaminu INF.02, INF.03, INF.04",
-      "Inteligentny system statystyk i śledzenia postępów",
+      "Statystyki i śledzenie postępów",
       "Wyszukiwarka pytań egzaminacyjnych po ID i treści",
       "Tryb nauki 'Jedno Pytanie' z wyjaśnieniami",
-      "Personalizowane testy na podstawie błędów",
-      "Kursy wideo dla technika informatyka (wkrótce!)"
+      "Własne zestawy pytań na podstawie wybranych tematów i wyników",
+      "Kursy wideo dla technika informatyka"
     ],
     "offers" => [
       "@type" => "Offer",
@@ -83,7 +83,7 @@ $extraSchemas = [
     "@context" => "https://schema.org",
     "@type" => "Course",
     "name" => "Kurs przygotowawczy INF.03 - Wkrótce!",
-    "description" => "Nadchodzący kompleksowy kurs wideo oraz pełna baza pytań egzaminacyjnych dla kwalifikacji INF.03 (Tworzenie stron i baz danych).",
+    "description" => "Planowany kurs wideo do kwalifikacji INF.03 obejmujący tworzenie stron internetowych i pracę z bazami danych.",
     "provider" => [
       "@type" => "Organization",
       "name" => "Examly",
@@ -147,47 +147,47 @@ $extraSchemas = [
       =====================================================================
     -->
     <section class="hero-section">
-      <div class="hero-section__grid">
-        <div class="hero-section__content">
-          <p class="hero-section__lockup">
-            <span class="hero-section__lockup-badge">Examly</span>
-            <span class="hero-section__lockup-text">Egzamin pod kontrolą</span>
-          </p>
-          <h1 class="hero-section__title">
-            Zdaj egzamin zawodowy
-            <span class="hero-section__title-accent" data-hero-rotating-word>spokojnie</span>
-          </h1>
-          <p class="hero-section__subtitle">Trenuj na inteligentnej platformie z realnymi pytaniami, szybkim feedbackiem i
-            statystyką, która pokazuje gdzie podbijesz wynik najszybciej.</p>
-          <div class="hero-section__cta-group">
-            <a href="<?= url('#egzaminy') ?>" class="btn btn--primary btn--large hero-section__cta-primary">Rozpocznij egzamin próbny</a>
-            <a href="<?= url('#topics-section') ?>" class="btn btn--secondary btn--large hero-section__cta-secondary">Zobacz jak działa</a>
-            <?php if (!$isUserLoggedIn): ?>
-              <a href="<?= url('rejestracja') ?>" class="btn btn--secondary btn--large">
-                <i class="fas fa-user-plus"></i> Załóż darmowe konto
-              </a>
-            <?php endif; ?>
+	      <div class="hero-section__grid">
+	        <div class="hero-section__content">
+	          <p class="hero-section__lockup">
+	            <span class="hero-section__lockup-badge">Examly</span>
+	            <span class="hero-section__lockup-text">Egzamin pod kontrolą</span>
+	          </p>
+	          <h1 class="hero-section__title">
+	            Przygotuj się do egzaminu zawodowego
+	            <span class="hero-section__title-accent" data-hero-rotating-word>spokojnie</span>
+	          </h1>
+	          <p class="hero-section__subtitle">Rozwiązuj pytania z arkuszy, sprawdzaj wyjaśnienia i wracaj do tematów,
+	            w których najczęściej popełniasz błędy.</p>
+	          <div class="hero-section__cta-group">
+	            <a href="<?= url('#egzaminy') ?>" class="btn btn--primary btn--large hero-section__cta-primary">Zrób próbę egzaminacyjną</a>
+	            <a href="<?= url('#topics-section') ?>" class="btn btn--secondary btn--large hero-section__cta-secondary">Zobacz, jak to działa</a>
+	            <?php if (!$isUserLoggedIn): ?>
+	              <a href="<?= url('rejestracja') ?>" class="btn btn--secondary btn--large">
+	                <i class="fas fa-user-plus"></i> Załóż darmowe konto
+	              </a>
+	            <?php endif; ?>
           </div>
           <div class="hero-section__metrics" aria-label="Najważniejsze metryki platformy">
-            <div class="hero-metric"><span>+18%</span> średni wzrost skuteczności</div>
-            <div class="hero-metric"><span>22 min</span> dziennie do stabilnego progresu</div>
-            <div class="hero-metric"><span>INF.04</span> najczęściej trenowana kwalifikacja</div>
+            <div class="hero-metric"><span>40 pytań</span> w pełnej próbie</div>
+            <div class="hero-metric"><span>1 pytanie</span> na szybką powtórkę</div>
+            <div class="hero-metric"><span>5 filtrów</span> do wyboru pytań</div>
           </div>
-        </div>
-        <aside class="hero-console" aria-label="Podgląd działania platformy">
-          <div class="hero-console__header">
-            <span class="hero-console__dot"></span>
-            <span class="hero-console__dot"></span>
-            <span class="hero-console__dot"></span>
-            <strong>Mission Control</strong>
-          </div>
-          <div class="hero-console__body">
-            <p class="hero-console__label">Aktywna sesja</p>
-            <p class="hero-console__value">INF.04 / Inteligentna nauka</p>
+	        </div>
+	        <aside class="hero-console" aria-label="Podgląd działania platformy">
+	          <div class="hero-console__header">
+	            <span class="hero-console__dot"></span>
+	            <span class="hero-console__dot"></span>
+	            <span class="hero-console__dot"></span>
+	            <strong>Centrum nauki</strong>
+	          </div>
+	          <div class="hero-console__body">
+	            <p class="hero-console__label">Aktywna sesja</p>
+	            <p class="hero-console__value">INF.04 / Własny zestaw</p>
             <div class="hero-console__chart">
               <div class="hero-console__chart-head">
-                <span>Twój progress</span>
-                <strong>+12%</strong>
+                <span>Poprawne odpowiedzi</span>
+                <strong>72%</strong>
               </div>
               <svg viewBox="0 0 320 90" class="hero-console__chart-svg" aria-hidden="true">
                 <polyline class="hero-console__chart-line-bg" points="0,70 45,64 88,52 130,58 172,36 215,42 258,20 320,26"></polyline>
@@ -198,9 +198,9 @@ $extraSchemas = [
               <div class="hero-console__progress-fill"></div>
             </div>
             <ul class="hero-console__events">
-              <li><i class="fas fa-check-circle"></i> Ostatnie błędy: przeanalizowane</li>
-              <li><i class="fas fa-bolt"></i> Słabe punkty: 3 pytania do powtórki</li>
-              <li><i class="fas fa-heart"></i> Zapisane: gotowe do sprintu 10 min</li>
+              <li><i class="fas fa-check-circle"></i> Ostatnie błędy: 3 pytania</li>
+              <li><i class="fas fa-bolt"></i> Najtrudniejsze: gotowe do powtórki</li>
+              <li><i class="fas fa-heart"></i> Zapisane: 10 pytań</li>
             </ul>
           </div>
         </aside>
@@ -216,42 +216,39 @@ $extraSchemas = [
       =====================================================================
     -->
     <section class="features-section">
-      <h2 class="section-title">Wszystko, czego potrzebujesz w jednym miejscu</h2>
+      <h2 class="section-title">Wybierz sposób nauki</h2>
       <div class="features-grid">
         <!-- Przykładowa karta funkcji -->
         <div class="feature-card">
           <div class="feature-card__header">
             <i class="feature-card__icon fas fa-database"></i>
-            <h3 class="feature-card__title">Ogromna Baza Pytań</h3>
+            <h3 class="feature-card__title">Pytania z arkuszy</h3>
           </div>
-          <p class="feature-card__text">Korzystaj z tysięcy pytań z oficjalnych arkuszy egzaminacyjnych z poprzednich
-            lat.</p>
+          <p class="feature-card__text">Ćwicz na pytaniach z arkuszy egzaminacyjnych z poprzednich lat.</p>
           <div class="feature-card__details">
-            <p>Nasza baza jest stale aktualizowana, co gwarantuje Ci dostęp do najbardziej kompletnego zbioru materiałów
-              przygotowawczych.</p>
+            <p>Wyszukuj pytania po treści lub ID i przechodź od razu do odpowiedzi oraz wyjaśnienia.</p>
           </div>
         </div>
         <div class="feature-card">
           <div class="feature-card__header">
             <i class="feature-card__icon fas fa-lightbulb"></i>
-            <h3 class="feature-card__title">Inteligentna Nauka <span class="sparkling">✨</span></h3>
+            <h3 class="feature-card__title">Własne zestawy</h3>
           </div>
           <p class="feature-card__text">
-            Nasz system śledzi Twoje postępy i oferuje inteligentne funkcje doboru pytań.
+            Wybierz tematy, liczbę pytań i sposób ich doboru.
           </p>
           <div class="feature-card__details">
             <p>
-              Ucz się mądrzej z naszymi inteligentnymi funkcjami:
+              Dopasuj zestaw do tego, co chcesz przećwiczyć:
             </p>
             <ul class="feature-card__list">
               <li>
-                <strong>Pięć filtrów nauki:</strong>
-                Aplikacja oferuje wyjątkowe tryby nauki maksymalizujące efekty Twojej pracy.
+                <strong>Pięć filtrów:</strong>
+                nowe pytania, najtrudniejsze, dawno niewidziane, ostatnie błędy i zapisane.
               </li>
               <li>
-                <strong>Gotowe wyjaśnienia:</strong>
-                Każde pytanie zawiera szczegółowe wyjaśnienie,
-                dzięki czemu nie tracisz cennego czasu na szukanie odpowiedzi.
+                <strong>Wyjaśnienia:</strong>
+                po odpowiedzi możesz od razu sprawdzić, dlaczego dana opcja jest poprawna.
               </li>
             </ul>
           </div>
@@ -259,13 +256,12 @@ $extraSchemas = [
         <div class="feature-card">
           <div class="feature-card__header">
             <i class="feature-card__icon fas fa-chart-line"></i>
-            <h3 class="feature-card__title">Szczegółowe Statystyki</h3>
+            <h3 class="feature-card__title">Czytelne postępy</h3>
           </div>
           <p class="feature-card__text">Analizuj swoje wyniki i śledź postępy, by wiedzieć, na czym się skupić.</p>
           <div class="feature-card__details">
             <p>
-              Analizuj swoją skuteczność w każdym dziale dzięki czytelnym wykresom i tabelom. Obserwuj,
-              jak rośnie Twoja gotowość do egzaminu – wszystkie te funkcje są dostępne już w darmowym koncie!
+              Zobacz wyniki z kolejnych prób, ostatnie błędy, zapisane pytania i tematy, do których warto wrócić.
             </p>
           </div>
         </div>
@@ -295,26 +291,25 @@ $extraSchemas = [
             </div>
           </div>
           <p class="feature-card__text">
-            Skorzystaj z naszych kompleksowych kursów wideo, które przeprowadzą Cię przez każdy temat.
+            Materiały wideo do najważniejszych tematów z kwalifikacji.
           </p>
           <div class="feature-card__details">
             <p>
-              Najtrudniejsze zagadnienia wytłumaczone w prosty i zrozumiały sposób, krok po kroku.
+              Krótkie lekcje z przykładami i zadaniami do samodzielnego wykonania.
             </p>
           </div>
         </div>
         <div class="feature-card">
           <div class="feature-card__header">
             <i class="feature-card__icon fas fa-feather-alt"></i>
-            <h3 class="feature-card__title">Przyjazny Interfejs</h3>
+            <h3 class="feature-card__title">Prosty interfejs</h3>
           </div>
           <p class="feature-card__text">
-            Ucz się bez przeszkód dzięki prostemu i intuicyjnemu interfejsowi na każdym urządzeniu.
+            Korzystaj z Examly na telefonie i komputerze bez szukania funkcji po menu.
           </p>
           <div class="feature-card__details">
             <p>
-              Zaprojektowaliśmy Examly tak, aby nic nie odciągało Twojej uwagi od tego,
-              co najważniejsze – efektywnej nauki.
+              Pytanie, odpowiedzi i wyjaśnienie są zawsze na pierwszym planie.
             </p>
           </div>
         </div>
@@ -324,11 +319,10 @@ $extraSchemas = [
     <section class="search-feature-section">
       <div class="search-feature-card">
         <div class="search-feature-card__content">
-          <p class="search-feature-card__eyebrow">Flow Search</p>
-          <h2 class="search-feature-card__title">Zapomniałeś pytania? <span class="text-gradient">Znajdź je w 3 sekundy.</span></h2>
+          <p class="search-feature-card__eyebrow">Wyszukiwarka pytań</p>
+          <h2 class="search-feature-card__title">Szukasz konkretnego pytania? <span class="text-gradient">Wpisz treść albo ID.</span></h2>
           <p class="search-feature-card__text">
-            Nasza wyszukiwarka pozwala na błyskawiczne znalezienie pytania po treści lub jego unikalnym numerze ID.
-            Dzięki temu szybko sprawdzisz poprawne odpowiedzi i obszerne wyjaśnienia.
+            Zawęź wyniki do egzaminu i tematu, a potem otwórz odpowiedzi i wyjaśnienie.
           </p>
           <div class="search-feature-card__cta">
             <a href="<?= url('search') ?>" class="btn btn--primary btn--large">
@@ -362,11 +356,11 @@ $extraSchemas = [
            Używa wizualnych kart do reprezentowania każdej kwalifikacji.
            Identyfikator `id="exams-section"` służy jako kotwica dla linków.
       =====================================================================
-    -->
-    <section class="exams-section" id="egzaminy">
-      <h2 class="section-title">Rozwiąż test z swojej kwalifikacji już teraz</h2>
-      <p class="section-subtitle">Wybierz swoją specjalizację i sprawdź się w symulacji prawdziwego egzaminu
-        państwowego.</p>
+	    -->
+	    <section class="exams-section" id="egzaminy">
+	      <h2 class="section-title">Zrób próbę egzaminacyjną ze swojej kwalifikacji</h2>
+	      <p class="section-subtitle">Wybierz kwalifikację. Zrobisz próbę na losowych pytaniach i od razu zobaczysz wynik
+	        oraz pytania do powtórki.</p>
       <div class="exams-grid">
         <a href="#" class="exam-card exam-card--disabled" onclick="return false;">
           <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop"
@@ -508,13 +502,13 @@ $extraSchemas = [
                   <a href="#" class="topic-card topic-card--disabled">Sprzęt komputerowy</a>
                   <a href="#" class="topic-card topic-card--disabled">Systemy operacyjne</a>
                   <a href="#" class="topic-card topic-card--disabled">Sieci komputerowe</a>
-                <?php elseif ($examCode === 'INF.03'): ?>
-                  <a href="#" class="topic-card topic-card--disabled">Tworzenie stron internetowych</a>
-                  <a href="#" class="topic-card topic-card--disabled">Bazy danych</a>
-                  <a href="#" class="topic-card topic-card--disabled">Aplikacje internetowe</a>
-                <?php else: ?>
-                  <p>Brak działów.</p>
-                <?php endif; ?>
+	                <?php elseif ($examCode === 'INF.03'): ?>
+	                  <a href="#" class="topic-card topic-card--disabled">Tworzenie stron internetowych</a>
+	                  <a href="#" class="topic-card topic-card--disabled">Bazy danych</a>
+	                  <a href="#" class="topic-card topic-card--disabled">Aplikacje internetowe</a>
+	                <?php else: ?>
+	                  <p>Ta kwalifikacja nie ma jeszcze dodanych działów.</p>
+	                <?php endif; ?>
               <?php else: ?>
                 <?php foreach ($categories as $category): ?>
                   <a href="<?= url("jedno-pytanie/{$examCode}?subject[]=" . $category['id']) ?>" class="topic-card">

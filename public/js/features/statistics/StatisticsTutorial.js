@@ -21,42 +21,42 @@ class StatisticsTutorial {
       {
         selector: '#stats-category-selector',
         title: 'Wybór egzaminu',
-        description: 'Wybierz kwalifikację. Metryki i wykresy pokażą wyniki tylko dla tego egzaminu.'
+        description: 'Wybierz kwalifikację, do której się przygotowujesz. Wszystkie liczby i wykresy będą dotyczyć tylko tego egzaminu.'
       },
       {
         selector: '#stats-mastery-card',
-        title: 'Twoje opanowanie materiału',
-        description: 'Sprawdź, ile materiału masz już opanowane i które tematy wymagają powtórki.'
+        title: 'Opanowanie materiału',
+        description: 'Poznane oznacza pytania, które już widziałeś. Opanowane to te, na które odpowiadasz poprawnie w co najmniej 60% prób.'
       },
       {
         selector: '#stats-trend-card',
-        title: 'Trend skuteczności',
-        description: 'Zobacz, czy Twoja skuteczność rośnie w kolejnych sesjach nauki.'
+        title: 'Skuteczność w czasie',
+        description: 'Wykres pokazuje wyniki z kolejnych sesji. Jeśli nie rosną, wróć do pytań do powtórki.'
       },
       {
         selector: '#stats-key-metrics-card',
-        title: 'Kluczowe wyniki',
-        description: 'Tu znajdziesz najlepszy wynik, średni czas, liczbę testów i ostatni rezultat.'
+        title: 'Najważniejsze liczby',
+        description: 'Tu zobaczysz najlepszy wynik, średni czas i liczbę ukończonych prób.'
       },
       {
         selector: '#criticalMistakes',
-        title: 'Krytyczne błędy',
-        description: 'To pytania, które najczęściej obniżają wynik. Zacznij powtórkę właśnie od nich.'
+        title: 'Pytania do powtórki',
+        description: 'To pytania, przy których najczęściej popełniasz błędy.'
       },
       {
         selector: '#lastMistakes',
         title: 'Ostatnie błędy',
-        description: 'Wróć do świeżych pomyłek, zanim utrwalą się złe odpowiedzi.'
+        description: 'Tu znajdziesz pytania z ostatnich błędnych odpowiedzi.'
       },
       {
         selector: '#savedQuestions',
         title: 'Zapisane pytania',
-        description: 'To Twoja lista ważnych pytań. Używaj jej do szybkiej powtórki.'
+        description: 'To Twoja lista pytań, do których chcesz wrócić. Zapisuj je podczas nauki, a potem rób krótkie powtórki.'
       },
       {
         selector: '#examsHistory',
-        title: 'Historia egzaminów',
-        description: 'Porównuj wyniki testów i sprawdzaj, czy robisz stabilny postęp.'
+        title: 'Ostatnie próby',
+        description: 'Porównaj wyniki i otwórz szczegóły każdej zakończonej próby.'
       }
     ];
 
@@ -83,8 +83,8 @@ class StatisticsTutorial {
       <h2 class="stats-tutorial__title" id="stats-tutorial-title"></h2>
       <p class="stats-tutorial__description" id="stats-tutorial-description"></p>
       <div class="stats-tutorial__actions">
-        <button type="button" class="btn btn--secondary btn--sm" data-tutorial-prev>Wstecz</button>
-        <button type="button" class="btn btn--primary btn--sm" data-tutorial-next>Dalej</button>
+        <button type="button" class="btn btn--secondary btn--sm" data-tutorial-prev>Wróć</button>
+        <button type="button" class="btn btn--primary btn--sm" data-tutorial-next>Następny krok</button>
       </div>
     `;
 
@@ -190,7 +190,7 @@ class StatisticsTutorial {
     this.elements.title.textContent = step.title;
     this.elements.description.textContent = step.description;
     this.elements.prevBtn.disabled = this.currentStep === 0;
-    this.elements.nextBtn.textContent = this.currentStep === this.steps.length - 1 ? 'Zakończ' : 'Dalej';
+    this.elements.nextBtn.textContent = this.currentStep === this.steps.length - 1 ? 'Zamknij' : 'Następny krok';
 
     this.positionSpotlight(target);
   }

@@ -57,7 +57,7 @@ class Test {
   async init() {
     // Krok 1: Walidacja - sprawdź, czy kod egzaminu jest dostępny.
     if (!this.examCode) {
-      this.loadingScreen.innerHTML = '<h2>Błąd krytyczny: Brak kodu egzaminu!</h2>';
+      this.loadingScreen.innerHTML = '<h2>Nie udało się uruchomić próby egzaminacyjnej</h2><p>Odśwież stronę albo wróć do wyboru egzaminu i spróbuj ponownie.</p>';
       return;
     }
 
@@ -86,7 +86,7 @@ class Test {
     } else {
       // Scenariusz B: Błąd - wyświetl komunikat o błędzie w miejscu loadera.
       const errorMessage = response.error || 'Nie udało się załadować pytań.';
-      this.loadingScreen.innerHTML = `<h2>Wystąpił błąd</h2><p>${errorMessage}</p>`;
+      this.loadingScreen.innerHTML = `<h2>Nie udało się przygotować próby egzaminacyjnej</h2><p>${errorMessage}</p><p>Odśwież stronę i spróbuj ponownie za chwilę.</p>`;
     }
   }
 }

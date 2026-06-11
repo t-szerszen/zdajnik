@@ -63,15 +63,14 @@ $extraScripts = [
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">
           <?= htmlspecialchars($exam['formatted_name']) ?>
-        </span> - Pełny Egzamin Próbny</h1>
+        </span> - Pełna próba egzaminacyjna</h1>
       <p class="page-header__text">
-        Podejdź do pełnego egzaminu próbnego. Zmierz się z symulacją zawierającą 40 losowo dobranych pytań. Weryfikuj
-        swoją wiedzę w warunkach zbliżonych do rzeczywistych i precyzyjnie identyfikuj obszary do poprawy.
+        Sprawdź się jak na egzaminie. Dostaniesz 40 losowo dobranych pytań i czas jak w prawdziwym teście. Po zakończeniu
+        pokażemy wynik, błędy i co warto powtórzyć.
       </p>
-      <p class="page-header__text">
-        <strong class="text-gradient">Pro Tip:</strong> Po teście skup się na analizie błędnych odpowiedzi.
-        Zrozumienie, dlaczego popełniłeś błąd, jest kluczem do sukcesu na prawdziwym egzaminie.
-      </p>
+	      <p class="page-header__text">
+	        Po zakończeniu przejrzyj błędne odpowiedzi i ich wyjaśnienia. Sam wynik nie pokaże Ci, co poprawić.
+	      </p>
     </div>
   </header>
 
@@ -97,17 +96,17 @@ $extraScripts = [
     <section id="test-container" class="test-container" data-exam-code="<?= htmlspecialchars($examCode) ?>">
 
       <!-- Stan 1: Ekran ładowania -->
-      <div id="loading-screen" class="test-loading">
-        <div class="spinner"></div>
-        <h2>Trwa przygotowywanie testu...</h2>
-        <p>Proszę czekać, losujemy pytania z całej puli specjalnie dla Ciebie.</p>
-      </div>
+	      <div id="loading-screen" class="test-loading">
+	        <div class="spinner"></div>
+	        <h2>Przygotowujemy próbę egzaminacyjną...</h2>
+	        <p>Losujemy pytania z całej puli. Za chwilę możesz zaczynać.</p>
+	      </div>
 
       <!-- Stan 2: Widok aktywnego testu (początkowo ukryty) -->
       <section id="test-view" class="hidden">
         <div class="test-header">
           <div class="test-header__content-left">
-            <h2 class="test-header__title">Egzamin <span class="text-gradient">
+            <h2 class="test-header__title">Próba egzaminacyjna <span class="text-gradient">
                 <?= htmlspecialchars($examCode) ?>
               </span></h2>
             <div id="test-progress-text" class="test-header__progress-info">
@@ -123,7 +122,7 @@ $extraScripts = [
             <!-- Minutnik, zarządzany przez JS -->
             <div id="timer" class="timer">60:00</div>
             <!-- Przycisk pauzy -->
-            <button id="pause-test-btn" class="test-header__pause-btn" title="Zapauzuj egzamin">
+            <button id="pause-test-btn" class="test-header__pause-btn" title="Wstrzymaj" aria-label="Wstrzymaj">
               <i class="fas fa-pause"></i>
             </button>
           </div>
@@ -133,7 +132,7 @@ $extraScripts = [
         <div id="questions-wrapper" class="questions-wrapper"></div>
 
         <div class="test-footer">
-          <button id="finish-test-btn" class="btn btn--primary">Zakończ i sprawdź test</button>
+          <button id="finish-test-btn" class="btn btn--primary">Zakończ i zobacz wynik</button>
         </div>
       </section>
 
@@ -141,16 +140,16 @@ $extraScripts = [
   </div>
 
   <!-- Stan 2.5: Nakładka PAUZY -->
-  <div id="pause-overlay" class="test-pause-overlay hidden">
-    <div class="test-pause-overlay__content">
+	  <div id="pause-overlay" class="test-pause-overlay hidden">
+	    <div class="test-pause-overlay__content">
       <div class="test-pause-overlay__icon">
         <i class="fas fa-mug-hot"></i>
       </div>
-      <h2>Test Zapauzowany</h2>
-      <p>Czas został zatrzymany. Możesz spokojnie zająć się innymi sprawami i wrócić do testu, gdy będziesz gotowy.</p>
-      <button id="resume-test-btn" class="btn btn--primary btn--large">Wznów egzamin</button>
-    </div>
-  </div>
+	      <h2>Pauza</h2>
+	      <p>Czas jest zatrzymany. Wrócisz dokładnie do tego miejsca.</p>
+	      <button id="resume-test-btn" class="btn btn--primary btn--large">Wznów</button>
+	    </div>
+	  </div>
 
   <!-- Stan 3: Ekran wyników (początkowo ukryty, poza głównym kontenerem) -->
   <section id="results-screen" class="hidden">

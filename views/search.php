@@ -32,13 +32,13 @@ $results = $results ?? [];
   <?php include 'partials/navbar.php'; ?>
 
   <main class="main-content-wrapper">
-  <header class="page-header">
-    <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient">Wyszukiwarka</span> Pytań</h1>
-      <p class="page-header__text">Szybko zlokalizuj interesujące Cię zagadnienia. Filtruj bazę tysięcy pytań po treści
-        lub unikalnym numerze ID, aby błyskawicznie sprawdzić poprawne rozwiązania i przypisane wyjaśnienia.</p>
-    </div>
-  </header>
+	  <header class="page-header">
+	    <div class="page-header__content">
+	      <h1 class="page-header__title"><span class="text-gradient">Znajdź pytanie</span> po treści lub ID</h1>
+	      <p class="page-header__text">Wpisz fragment treści albo numer pytania. Możesz też zawęzić wyniki do egzaminu i tematu,
+	        żeby szybciej trafić w to, czego szukasz.</p>
+	    </div>
+	  </header>
 
   <section class="search-page">
     <div class="search-page__container">
@@ -64,7 +64,7 @@ $results = $results ?? [];
 
             <!-- Kategoria (Temat) -->
             <div class="search-form__field">
-              <label for="topic_id" class="search-form__label">Temat (Kategoria)</label>
+	              <label for="topic_id" class="search-form__label">Temat</label>
               <select name="topic_id" id="topic_id" class="search-form__select" <?= empty($categories) ? 'disabled' : '' ?>>
                 <option value="">Wszystkie tematy</option>
                 <?php foreach ($categories as $cat): ?>
@@ -77,7 +77,7 @@ $results = $results ?? [];
 
             <!-- Treść / ID -->
             <div class="search-form__field search-form__field--full">
-              <label for="query" class="search-form__label">ID pytania lub treść (min. 3 znaki)</label>
+	              <label for="query" class="search-form__label">Treść pytania lub ID (min. 3 znaki)</label>
               <div class="search-form__input-wrapper">
                 <i class="fas fa-search search-form__input-icon"></i>
                 <input type="text" name="query" id="query" class="search-form__input"

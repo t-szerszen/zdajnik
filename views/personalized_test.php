@@ -60,20 +60,18 @@ $extraScripts = [
 
   <main class="main-content-wrapper">
   <!-- Nagłówek wprowadzający w kontekst strony -->
-  <header class="page-header">
-    <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span>
-        - Spersonalizowany test</h1>
-      <p class="page-header__text">
-        Wygeneruj test dopasowany do Twoich aktualnych potrzeb. Skonfiguruj zakres tematyczny, określ liczbę pytań i
-        systematycznie eliminuj swoje luki w wiedzy.
-      </p>
-      <p class="page-header__text">
-        <strong class="text-gradient">Pro Tip:</strong> Rozwiąż kilka testów próbnych, aby algorytm mógł skutecznie
-        kalibrować poziom na podstawie Twoich słabych stron.
-      </p>
-    </div>
-  </header>
+	  <header class="page-header">
+	    <div class="page-header__content">
+	      <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span>
+	        - Własny zestaw pytań</h1>
+	      <p class="page-header__text">
+	        Wybierz tematy, liczbę pytań i sposób ich doboru. Ułożymy zestaw pod to, co chcesz teraz przećwiczyć.
+	      </p>
+		      <p class="page-header__text">
+		        Po kilku rozwiązanych zestawach odblokujesz filtry oparte na swoich wynikach.
+		      </p>
+	    </div>
+	  </header>
 
   <!-- Główny kontener strony, przekazujący kod egzaminu do JS -->
   <div class="container" id="personalized-test-page" data-exam-code="<?= htmlspecialchars($examCode) ?>">
@@ -91,15 +89,15 @@ $extraScripts = [
       <form id="topic-form">
 
         <!-- Krok 1: Wybór tematów -->
-        <fieldset class="config-step" data-step="1">
-          <legend class="config-step__title">
-            <span class="config-step__number">1</span>
-            Wybierz tematy, z których chcesz się uczyć
+	        <fieldset class="config-step" data-step="1">
+	          <legend class="config-step__title">
+	            <span class="config-step__number">1</span>
+	            Z jakich tematów mają być pytania?
           </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label">
               <input type="checkbox" value="<?= htmlspecialchars($examCode) ?>" id="select-all-codes">
-              <span>Cały materiał <?= htmlspecialchars($exam['formatted_name']) ?></span>
+              <span>Cały zakres <?= htmlspecialchars($exam['formatted_name']) ?></span>
             </label>
             <!-- Topics are now fetched dynamically in controller if needed, but here we can iterate -->
             <!-- Note: The Controller didn't pass categories here yet unlike one_question. We should fix that or assume hardcoded list for now as per minimal change request, 
@@ -123,72 +121,72 @@ $extraScripts = [
                   <span><?= htmlspecialchars($category['name']) ?></span>
                 </label>
               <?php endforeach; ?>
-            <?php else: ?>
-              <!-- Fallback if no categories passed (legacy behavior but cleaner) -->
-              <p>Brak kategorii do wyświetlenia dla tego egzaminu.</p>
-            <?php endif; ?>
+	            <?php else: ?>
+	              <!-- Fallback if no categories passed (legacy behavior but cleaner) -->
+	              <p>Nie możemy teraz wczytać listy tematów. Odśwież stronę albo spróbuj ponownie za chwilę.</p>
+	            <?php endif; ?>
           </div>
-          <div class="config-step__actions">
-            <button type="button" class="btn btn--primary" data-action="next">Dalej</button>
-          </div>
-        </fieldset>
+	          <div class="config-step__actions">
+	            <button type="button" class="btn btn--primary" data-action="next">Następny krok</button>
+	          </div>
+	        </fieldset>
 
         <!-- Krok 2: Wybór liczby pytań -->
-        <fieldset class="config-step hidden" data-step="2">
+	        <fieldset class="config-step hidden" data-step="2">
           <legend class="config-step__title">
             <span class="config-step__number">2</span>
-            Określ liczbę pytań
+            Ile pytań?
           </legend>
           <div class="slider-container">
             <label for="question-count" class="slider-container__label">
-              Wybierz liczbę pytań: <output id="question-count-value">25</output>
+              Liczba pytań: <output id="question-count-value">25</output>
             </label>
             <input type="range" id="question-count" name="question_count" min="10" max="40" value="25"
               class="slider-container__input">
           </div>
-          <div class="config-step__actions">
-            <button type="button" class="btn btn--secondary" data-action="prev">Wróć</button>
-            <button type="button" class="btn btn--primary" data-action="next">Dalej</button>
-          </div>
-        </fieldset>
+	          <div class="config-step__actions">
+	            <button type="button" class="btn btn--secondary" data-action="prev">Wróć</button>
+	            <button type="button" class="btn btn--primary" data-action="next">Następny krok</button>
+	          </div>
+	        </fieldset>
 
         <!-- Krok 3: Opcje inteligentnej nauki -->
-        <fieldset class="config-step hidden" data-step="3" data-premium-filters-root>
+	        <fieldset class="config-step hidden" data-step="3" data-premium-filters-root>
           <legend class="config-step__title">
             <span class="config-step__number">3</span>
-            Chcesz uczyć się inteligentnie? (Opcjonalnie)
+            Jak dobrać pytania? (opcjonalnie)
             <button type="button" class="topic-selector__help-btn hidden" data-premium-tutorial-trigger
               aria-label="Pokaż poradnik filtrów" title="Pokaż poradnik filtrów">
               <i class="fas fa-question" aria-hidden="true"></i>
             </button>
           </legend>
           <div class="topic-selector__options">
-            <label class="topic-selector__label premium-option">
-              <input type="checkbox" name="premium_option" value="toDiscover" class="premium-checkbox">
-              <span>Nieodkryte pytania</span>
-            </label>
-            <label class="topic-selector__label premium-option">
-              <input type="checkbox" name="premium_option" value="toImprove" class="premium-checkbox">
-              <span>Pytania, które gorzej Ci idą</span>
-            </label>
-            <label class="topic-selector__label premium-option">
-              <input type="checkbox" name="premium_option" value="toRemind" class="premium-checkbox">
-              <span>Pytania najdawniej powtórzone</span>
-            </label>
-            <label class="topic-selector__label premium-option">
-              <input type="checkbox" name="premium_option" value="lastMistakes" class="premium-checkbox">
-              <span>Ostatnio błędne</span>
-            </label>
+	            <label class="topic-selector__label premium-option">
+	              <input type="checkbox" name="premium_option" value="toDiscover" class="premium-checkbox">
+	              <span>Nowe pytania</span>
+	            </label>
+	            <label class="topic-selector__label premium-option">
+	              <input type="checkbox" name="premium_option" value="toImprove" class="premium-checkbox">
+	              <span>Najtrudniejsze</span>
+	            </label>
+	            <label class="topic-selector__label premium-option">
+	              <input type="checkbox" name="premium_option" value="toRemind" class="premium-checkbox">
+	              <span>Dawno niewidziane</span>
+	            </label>
+	            <label class="topic-selector__label premium-option">
+	              <input type="checkbox" name="premium_option" value="lastMistakes" class="premium-checkbox">
+	              <span>Ostatnie błędy</span>
+	            </label>
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="saved" class="premium-checkbox">
               <span>Zapisane</span>
             </label>
           </div>
-          <div class="config-step__actions">
-            <button type="button" class="btn btn--secondary" data-action="prev">Wróć</button>
-            <button type="submit" class="btn btn--primary btn">Rozpocznij Test!</button>
-          </div>
-        </fieldset>
+		          <div class="config-step__actions">
+		            <button type="button" class="btn btn--secondary" data-action="prev">Wróć</button>
+		            <button type="submit" class="btn btn--primary btn">Ułóż zestaw</button>
+		          </div>
+		        </fieldset>
       </form>
     </div>
 

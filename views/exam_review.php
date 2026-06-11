@@ -30,9 +30,8 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
   <main class="main-content-wrapper">
   <header class="page-header" id="top">
     <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient">Podgląd</span> egzaminu</h1>
-      <p class="page-header__text">Kompleksowa analiza rozwiązanego testu. Przeanalizuj swoje odpowiedzi, zapoznaj się z
-        opracowaniami w ramach wiedzy eksperckiej i skutecznie eliminuj powtarzające się błędy.</p>
+      <h1 class="page-header__title"><span class="text-gradient">Wynik</span> próby</h1>
+      <p class="page-header__text">Sprawdź odpowiedzi, przeczytaj wyjaśnienia i zapisz pytania, do których chcesz wrócić.</p>
     </div>
   </header>
 

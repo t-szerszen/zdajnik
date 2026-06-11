@@ -191,8 +191,8 @@ export default class SearchHandler {
     this.resultsContainer.innerHTML = `
             <div class="stats-card__empty" role="alert">
                 <div class="stats-card__empty-icon">⚠️</div>
-                <p>Wystąpił błąd podczas wyszukiwania.</p>
-                <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.6;">Spróbuj odświeżyć stronę lub spróbować ponownie za chwilę.</p>
+                <p>Nie udało się wyszukać pytań.</p>
+                <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.6;">Odśwież stronę albo spróbuj ponownie za chwilę.</p>
             </div>
         `;
   }

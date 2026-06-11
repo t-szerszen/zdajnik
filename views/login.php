@@ -92,8 +92,8 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
         <div class="form-card__icon-circle">
           <i class="fas fa-user-lock"></i>
         </div>
-        <h1 class="form-card__title">Witaj ponownie!</h1>
-        <p class="form-card__subtitle">Zaloguj się, aby kontynuować naukę.</p>
+        <h1 class="form-card__title">Zaloguj się</h1>
+        <p class="form-card__subtitle">Wróć do swoich wyników, zapisanych pytań i postępów.</p>
       </div>
 
       <!-- 

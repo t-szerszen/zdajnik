@@ -77,8 +77,8 @@ class LoginController extends BaseController
     // KROK 3: Obsługa błędów i specyficznych stanów (np. brak weryfikacji)
     $errors = $result['errors'] ?? [];
     if (isset($result['error_type']) && $result['error_type'] === 'not_verified') {
-      $resendLink = '<a href="' . url('autoryzacja-email?send=true') . '">Kliknij tutaj, aby wysłać link weryfikacyjny ponownie.</a>';
-      $errors[] = 'Twoje konto nie zostało jeszcze zweryfikowane. ' . $resendLink;
+      $resendLink = '<a href="' . url('autoryzacja-email?send=true') . '">Wyślij link weryfikacyjny ponownie</a>';
+      $errors[] = 'Twoje konto nie jest jeszcze aktywne. ' . $resendLink . '.';
     }
 
     // KROK 4: Powrót do widoku z błędami

@@ -46,8 +46,8 @@
         <h5 class="footer__logo">EXAMLY</h5>
       </div>
       <p class="footer__description">
-        Kształtujemy przyszłość edukacji zawodowej. Nowoczesna platforma, która zmienia sposób, w jaki przygotowujesz
-        się do egzaminów. Bezpieczeństwo, Szybkość, Zdany Egzamin.
+        Pytania z arkuszy, własne zestawy i czytelne postępy. Wszystko, czego potrzebujesz do nauki przed egzaminem
+        zawodowym.
       </p>
     </div>
 
@@ -65,14 +65,14 @@
 
     <!-- Sekcja 3: Nauka -->
     <div class="footer__section">
-      <h5 class="footer__heading">Edukacja</h5>
+      <h5 class="footer__heading">Nauka</h5>
       <ul class="footer__list">
         <li class="footer__item"><a href="<?= url('jedno-pytanie/INF.04') ?>" class="footer__link">Jedno pytanie</a>
         </li>
         <li class="footer__item"><a href="<?= url('personalizowany-test/INF.04') ?>"
-            class="footer__link">Personalizowany test</a></li>
-        <li class="footer__item"><a href="<?= url('test/INF.04') ?>" class="footer__link">Test</a></li>
-        <li class="footer__item"><a href="<?= url('statystyki') ?>" class="footer__link">Statystyki</a></li>
+            class="footer__link">Własny zestaw</a></li>
+        <li class="footer__item"><a href="<?= url('test/INF.04') ?>" class="footer__link">Próba egzaminacyjna</a></li>
+        <li class="footer__item"><a href="<?= url('statystyki') ?>" class="footer__link">Twoje postępy</a></li>
       </ul>
     </div>
 
@@ -95,7 +95,7 @@
             <i class="fas fa-map-marker-alt"></i>
           </div>
           <div class="footer__contact-text">
-            <span class="footer__contact-label">Nasza Lokalizacja</span>
+            <span class="footer__contact-label">Lokalizacja</span>
             <span class="footer__contact-link">Leszno, Polska</span>
           </div>
         </div>

@@ -69,17 +69,15 @@ $extraScripts = [
   -->
   <header class="page-header">
     <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient">
-          <?= htmlspecialchars($exam['formatted_name']) ?>
-        </span> - Jedno pytanie</h1>
-      <p class="page-header__text">
-        Brak czasu na pełny test? Wykorzystaj wolną chwilę na rozwiązanie pojedynczego pytania. Wybierz dział, rozwiąż
-        pytanie z oficjalnych arkuszy w kilka minut i małymi krokami buduj swoją gotowość do egzaminu.
-      </p>
-      <p class="page-header__text">
-        <strong class="text-gradient">Pro Tip:</strong> Zapisuj na boku każde nowe hasło lub trudniejsze zagadnienie.
-        Regularne, krótkie sesje potrafią zdziałać cuda!
-      </p>
+	      <h1 class="page-header__title"><span class="text-gradient">
+	          <?= htmlspecialchars($exam['formatted_name']) ?>
+	        </span> - Jedno pytanie</h1>
+	      <p class="page-header__text">
+	        Wybierz temat i rozwiąż jedno pytanie. Po odpowiedzi od razu zobaczysz poprawną opcję i wyjaśnienie.
+	      </p>
+	      <p class="page-header__text">
+	        Masz więcej czasu? Klikaj dalej i przerób całą wybraną pulę.
+	      </p>
     </div>
   </header>
 
@@ -101,7 +99,7 @@ $extraScripts = [
         <!-- Grupa: Główne kategorie tematyczne -->
         <fieldset class="topic-selector__fieldset">
           <legend class="topic-selector__sub-legend">
-            <i class="fas fa-layer-group section-icon"></i> Główne kategorie
+            <i class="fas fa-layer-group section-icon"></i> Zakres pytań
           </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label">
@@ -127,21 +125,21 @@ $extraScripts = [
               data-premium-tutorial-trigger aria-label="Pokaż poradnik filtrów" title="Pokaż poradnik filtrów">
               <i class="fas fa-question" aria-hidden="true"></i>
             </button>
-            <i class="fas fa-brain section-icon"></i> Inteligentna nauka
+            <i class="fas fa-filter section-icon"></i> Dobór pytań
           </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="toDiscover" class="premium-checkbox">
-              <span>Nieodkryte</span>
+              <span>Nowe pytania</span>
             </label>
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="toImprove" class="premium-checkbox"
                 <?= (isset($_GET['premium']) && $_GET['premium'] === 'toImprove') ? 'checked' : '' ?>>
-              <span>Słabe punkty</span>
+              <span>Najtrudniejsze</span>
             </label>
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="toRemind" class="premium-checkbox">
-              <span>Powtórki</span>
+              <span>Dawno niewidziane</span>
             </label>
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="lastMistakes" class="premium-checkbox"
@@ -157,7 +155,7 @@ $extraScripts = [
         </fieldset>
 
         <button type="submit" class="btn btn--primary btn--full-width btn--large">
-          <span>Rozpocznij naukę</span>
+          <span>Pokaż pytanie</span>
           <i class="fas fa-play"></i>
         </button>
       </form>
@@ -182,8 +180,8 @@ $extraScripts = [
         zarządzana przez skrypt /public/js/features/one-question/index.js
       -->
       <div id="quiz-container" class="quiz-container--spaced">
-        <p class="quiz-placeholder">Wybierz przynajmniej jeden temat, aby rozpocząć naukę.</p>
-      </div>
+	        <p class="quiz-placeholder">Wybierz co najmniej jeden temat, a potem kliknij „Pokaż pytanie”.</p>
+	      </div>
     </section>
   </div>
   </main>

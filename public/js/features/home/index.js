@@ -1,4 +1,4 @@
-const rotatingWords = ['spokojnie', 'skutecznie', 'metodycznie'];
+const rotatingWords = ['spokojnie', 'konkretnie', 'bez chaosu'];
 
 function initRotatingWord() {
   const el = document.querySelector('[data-hero-rotating-word]');

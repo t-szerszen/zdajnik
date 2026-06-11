@@ -48,7 +48,7 @@
                  Powinien być zwięzły (ok. 155 znaków) i zachęcający.
   -->
   <meta name="description"
-    content="<?= htmlspecialchars($pageDescription ?? 'Examly to platforma edukacyjna z testami i materiałami do egzaminów zawodowych. Przygotuj się skutecznie do egzaminu INF.03.') ?>">
+    content="<?= htmlspecialchars($pageDescription ?? 'Pytania z arkuszy, własne zestawy i statystyki do nauki przed egzaminem zawodowym.') ?>">
 
   <!-- 
     @property canonical
@@ -90,7 +90,7 @@
   <!-- Protokół Open Graph (Facebook, LinkedIn, Pinterest, etc.) -->
   <meta property="og:title" content="<?= htmlspecialchars($pageTitle ?? 'Examly - Egzaminy Zawodowe INF.03') ?>">
   <meta property="og:description"
-    content="<?= htmlspecialchars($pageDescription ?? 'Zdobądź wiedzę i pewność przed egzaminem zawodowym.') ?>">
+    content="<?= htmlspecialchars($pageDescription ?? 'Ćwicz na pytaniach z arkuszy i sprawdzaj swoje postępy.') ?>">
   <meta property="og:type" content="website">
   <meta property="og:url" content="<?= htmlspecialchars($canonicalUrl ?? url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
   <meta property="og:image" content="<?= url('images/company/examly-og-1200x630.png') ?>">

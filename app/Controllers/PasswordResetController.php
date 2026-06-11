@@ -96,9 +96,9 @@ class PasswordResetController extends BaseController
         // KROK 4: Składanie i wysyłka wiadomości e-mail
         $resetLink = url("nowe-haslo?token=$token");
         $body = "<p>Witaj,</p>" .
-          "<p>Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta. Kliknij poniższy link, aby ustawić nowe hasło:</p>" .
+          "<p>Otrzymaliśmy prośbę o zmianę hasła do Twojego konta. Skorzystaj z poniższego linku, aby ustawić nowe hasło:</p>" .
           "<p><a href='$resetLink'>$resetLink</a></p>" .
-          "<p>Na następnej stronie zostaniesz poproszony o podanie 6-cyfrowego kodu bezpieczeństwa, który jest widoczny na stronie resetowania hasła.</p>" .
+          "<p>Na stronie resetu poprosimy Cię o 6-cyfrowy kod bezpieczeństwa. Kod zobaczysz po wysłaniu prośby o reset (na stronie, na której wpisałeś e-mail).</p>" .
           "<p>Jeśli to nie Ty prosiłeś o zmianę, zignoruj tę wiadomość.</p>";
 
         if ($this->mailer->send($user->getEmail(), 'Reset hasła w serwisie Examly', $body)) {
@@ -113,7 +113,7 @@ class PasswordResetController extends BaseController
     // KROK 5: Wyświetlenie neutralnego komunikatu (zapobieganie User Enumeration)
     $_SESSION['flash_message'] = [
       'type' => 'info',
-      'text' => "Jeśli konto o podanym adresie e-mail ($email) istnieje, wysłaliśmy na nie instrukcję resetowania hasła."
+      'text' => "Jeśli konto dla adresu e-mail ($email) istnieje, wysłaliśmy instrukcję zmiany hasła. Sprawdź skrzynkę i folder SPAM."
     ];
 
     header('Location: ' . url('reset-hasla'));
@@ -158,7 +158,7 @@ class PasswordResetController extends BaseController
     $tokenRecord = $this->tokenService->getTokenRecord($token);
 
     if (!$tokenRecord) {
-      $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Sesja wygasła.'];
+      $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Sesja resetowania wygasła. Poproś o nowy link do zmiany hasła.'];
       header('Location: ' . url('logowanie'));
       exit();
     }
@@ -181,7 +181,7 @@ class PasswordResetController extends BaseController
     $this->userModel->updatePassword($tokenRecord['user_id'], $_POST['new_password']);
     $this->tokenService->deleteTokensForUserByType($tokenRecord['user_id'], 'password_reset');
 
-    $_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Hasło zostało zresetowane!'];
+    $_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Hasło zostało zmienione. Możesz się teraz zalogować.'];
     header('Location: ' . url('logowanie'));
     exit();
   }

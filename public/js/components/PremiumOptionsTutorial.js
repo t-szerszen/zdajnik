@@ -20,11 +20,11 @@ class PremiumOptionsTutorial {
 
   buildSteps() {
     const descriptions = {
-      toDiscover: 'Wybiera pytania, których jeszcze nie rozwiązywałeś. Użyj, gdy chcesz poszerzyć zakres nauki.',
-      toImprove: 'Pokazuje pytania z niższą skutecznością. Użyj, gdy chcesz poprawić słabe punkty.',
-      toRemind: 'Dobiera pytania dawno niepowtarzane. Użyj, żeby odświeżyć materiał przed testem.',
-      lastMistakes: 'Wraca do ostatnich błędów. Użyj, żeby szybko poprawić świeże pomyłki.',
-      saved: 'Pokazuje zapisane pytania. Użyj do pracy z własną listą trudnych zagadnień.'
+      toDiscover: 'Pytania, na które jeszcze nie odpowiadałeś.',
+      toImprove: 'Pytania, przy których najczęściej wybierasz złą odpowiedź.',
+      toRemind: 'Pytania, których dawno nie widziałeś.',
+      lastMistakes: 'Pytania z Twoich ostatnich błędnych odpowiedzi.',
+      saved: 'Pytania zapisane przez Ciebie do późniejszej powtórki.'
     };
 
     const orderedValues = ['toDiscover', 'toImprove', 'toRemind', 'lastMistakes', 'saved'];
@@ -40,7 +40,7 @@ class PremiumOptionsTutorial {
       steps.push({
         target: label,
         title,
-        description: descriptions[value] || 'Filtr pomaga dobrać pytania do konkretnego celu nauki.'
+        description: descriptions[value] || 'Ten filtr zmienia sposób doboru pytań.'
       });
     });
 
@@ -66,8 +66,8 @@ class PremiumOptionsTutorial {
       <h3 class="premium-tutorial__title" data-premium-title></h3>
       <p class="premium-tutorial__description" data-premium-description></p>
       <div class="premium-tutorial__actions">
-        <button type="button" class="btn btn--secondary btn--sm" data-premium-prev>Wstecz</button>
-        <button type="button" class="btn btn--primary btn--sm" data-premium-next>Dalej</button>
+        <button type="button" class="btn btn--secondary btn--sm" data-premium-prev>Wróć</button>
+        <button type="button" class="btn btn--primary btn--sm" data-premium-next>Następny krok</button>
       </div>
     `;
 
@@ -182,7 +182,7 @@ class PremiumOptionsTutorial {
     this.elements.title.textContent = step.title;
     this.elements.description.textContent = step.description;
     this.elements.prevBtn.disabled = this.currentStep === 0;
-    this.elements.nextBtn.textContent = this.currentStep === this.steps.length - 1 ? 'Zakończ' : 'Dalej';
+    this.elements.nextBtn.textContent = this.currentStep === this.steps.length - 1 ? 'Zamknij' : 'Następny krok';
 
     const rect = step.target.getBoundingClientRect();
     const padding = 8;

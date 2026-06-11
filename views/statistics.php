@@ -16,8 +16,8 @@
 /**
  * Konfiguracja komponentu head
  */
-$pageTitle = 'Statystyki Twojej Nauki | Examly';
-$pageDescription = 'Śledź swoje postępy, analizuj wyniki i obserwuj swoją drogę do sukcesu w Examly.';
+$pageTitle = 'Twoje postępy | Examly';
+$pageDescription = 'Śledź postępy w nauce, analizuj wyniki i wracaj do tematów, które wymagają powtórki.';
 
 // Dane przekazane z kontrolera
 $categories = $categories ?? [];
@@ -55,13 +55,13 @@ $extraScripts = [
   <?php include 'partials/navbar.php'; ?>
 
   <main class="main-content-wrapper">
-  <header class="page-header">
-    <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient">Statystyki</span> Nauki</h1>
-      <p class="page-header__text">Zaawansowana analityka Twojej ścieżki edukacyjnej. Monitoruj tempo przyswajania
-        wiedzy, identyfikuj obszary wymagające uwagi i konsekwentnie zmierzaj po wymarzony wynik.</p>
-    </div>
-  </header>
+	  <header class="page-header">
+	    <div class="page-header__content">
+	      <h1 class="page-header__title"><span class="text-gradient">Twoje postępy</span> w nauce</h1>
+	      <p class="page-header__text">Sprawdź wyniki z kolejnych prób, wróć do błędów i zobacz, które tematy wymagają
+	        jeszcze powtórki.</p>
+	    </div>
+	  </header>
 
   <section class="stats-page" data-stats-tutorial-root>
     <div class="stats-page__container">
@@ -73,9 +73,9 @@ $extraScripts = [
         <div class="stats-page__category-selector" id="stats-category-selector">
           <form action="" method="GET">
             <label for="category-select" class="visually-hidden">Wybór kategorii</label>
-            <select id="category-select" name="category" onchange="this.form.submit()" class="stats-page__select"
-              aria-label="Wybierz kategorię egzaminu, aby zobaczyć statystyki">
-              <option value="">wybór egzaminu</option>
+	            <select id="category-select" name="category" onchange="this.form.submit()" class="stats-page__select"
+	              aria-label="Wybierz kategorię egzaminu, aby zobaczyć statystyki">
+	              <option value="">Wybierz egzamin</option>
               <?php foreach ($categories as $cat): ?>
                 <option value="<?= $cat['id'] ?>" <?= $hasSelectedCategory && (int) $selectedCategoryId === (int) $cat['id'] ? 'selected' : '' ?>>
                   <?= htmlspecialchars($cat['code']) ?>
@@ -84,20 +84,20 @@ $extraScripts = [
               endforeach; ?>
             </select>
           </form>
-          <div class="stats-page__default-exam hidden" data-default-stats-exam>
+	          <div class="stats-page__default-exam hidden" data-default-stats-exam>
             <label class="stats-page__default-exam-label">
               <input type="checkbox" data-default-stats-exam-checkbox>
               <span>Ustaw ten egzamin jako domyślny dla statystyk</span>
             </label>
-            <p class="stats-page__default-exam-helper">Przy kolejnym wejściu od razu pokażemy statystyki tego egzaminu.</p>
-          </div>
+	            <p class="stats-page__default-exam-helper">Przy kolejnym wejściu od razu pokażemy postępy dla tego egzaminu.</p>
+	          </div>
         </div>
 
         <?php if ($hasSelectedCategory): ?>
         <!-- Mastery Pie Chart -->
         <div class="stats-card stats-card--mastery" id="stats-mastery-card">
           <div class="stats-card__header-minimal">
-            <h3 class="stats-card__title">Twoje Opanowanie</h3>
+            <h3 class="stats-card__title">Opanowanie materiału</h3>
           </div>
 
           <div class="stats-card__pie-wrapper">
@@ -108,7 +108,7 @@ $extraScripts = [
                   <span class="stats-card__pie-percentage">
                     <?= $masteryStats['percent'] ?>%
                   </span>
-                  <span class="stats-card__pie-label">Ukończono</span>
+                  <span class="stats-card__pie-label">Opanowane</span>
                 </div>
               </div>
             </div>
@@ -136,11 +136,14 @@ $extraScripts = [
             </strong> /
             <?= $masteryStats['total'] ?> pytań
           </p>
-          <p class="stats-card__mastery-activity stats-card__mastery-activity--sm">
-            Poznano:
-            <?= ($masteryStats['attempted'] ?? 0) ?> /
-            <?= $masteryStats['total'] ?> pytań
-          </p>
+		          <p class="stats-card__mastery-activity stats-card__mastery-activity--sm">
+		            Poznane:
+		            <?= ($masteryStats['attempted'] ?? 0) ?> /
+		            <?= $masteryStats['total'] ?> pytań
+		          </p>
+	          <p class="stats-card__mastery-activity stats-card__mastery-activity--sm">
+	            Poznane = pytanie już widziane. Opanowane = co najmniej 60% poprawnych odpowiedzi.
+	          </p>
 
           <!-- Topic Breakdown -->
           <div class="stats-card__topics">
@@ -148,12 +151,12 @@ $extraScripts = [
               <h4 class="stats-card__subtitle">Postęp tematyczny</h4>
             </div>
 
-            <?php if (empty($topicStats)): ?>
-              <div class="stats-card__empty stats-card__empty--compact">
-                <p>Rozpocznij naukę, aby zobaczyć postęp.</p>
-                <a href="<?= url('jedno-pytanie/' . $selectedCategoryCode) ?>" class="btn btn--primary btn--sm"
-                  >Wybierz temat</a>
-              </div>
+	            <?php if (empty($topicStats)): ?>
+	              <div class="stats-card__empty stats-card__empty--compact">
+	                <p>Rozwiąż kilka pytań, a pokażemy postęp w tematach.</p>
+	                <a href="<?= url('jedno-pytanie/' . $selectedCategoryCode) ?>" class="btn btn--primary btn--sm"
+	                  >Wybierz temat</a>
+	              </div>
               <?php
             else: ?>
               <?php foreach ($topicStats as $topic): ?>
@@ -163,15 +166,15 @@ $extraScripts = [
                       <?= mb_strimwidth(htmlspecialchars($topic['name']), 0, 30, '...') ?>
                     </span>
                     <div class="stats-card__topic-counts">
-                      <span class="topic-count">Opanowane:
-                        <?= $topic['mastered'] ?> /
-                        <?= $topic['total'] ?>
-                      </span>
-                      <span class="stats-card__topic-attempted">Poznano:
-                        <?= $topic['attempted'] ?> /
-                        <?= $topic['total'] ?>
-                      </span>
-                    </div>
+	                      <span class="topic-count">Opanowane:
+	                        <?= $topic['mastered'] ?> /
+	                        <?= $topic['total'] ?>
+	                      </span>
+	                      <span class="stats-card__topic-attempted">Poznane:
+	                        <?= $topic['attempted'] ?> /
+	                        <?= $topic['total'] ?>
+	                      </span>
+	                    </div>
                   </div>
                   <div class="stats-card__progress-bar">
                     <div class="stats-card__progress-fill" style="width: <?= $topic['progress'] ?>%;"></div>
@@ -187,34 +190,32 @@ $extraScripts = [
 
       </aside>
 
-      <?php if (!$hasSelectedCategory): ?>
-        <section class="stats-page__content">
-          <div class="stats-card">
-            <div class="stats-card__empty">
-              <div class="stats-card__empty-icon">📊</div>
-              <p>Wybierz egzamin, aby zobaczyć statystyki.</p>
-            </div>
-          </div>
-        </section>
+	      <?php if (!$hasSelectedCategory): ?>
+	        <section class="stats-page__content">
+	          <div class="stats-card">
+	            <div class="stats-card__empty">
+	              <div class="stats-card__empty-icon">📊</div>
+	              <p>Wybierz egzamin, a pokażemy Twoje postępy, skuteczność i pytania do powtórki.</p>
+	            </div>
+	          </div>
+	        </section>
       <?php else: ?>
       <!-- MAIN CONTENT GRID -->
       <section class="stats-page__content">
 
         <!-- Efficiency Trend Chart -->
-        <div class="stats-card stats-card--trend" id="stats-trend-card">
-          <h2 class="stats-card__title">Trend Skuteczności (Średnia Krocząca)</h2>
-          <div class="stats-card__chart">
-            <?php if (empty($efficiencyTrend)): ?>
-              <div class="stats-card__empty">
-                <div class="stats-card__empty-icon">📈</div>
-                <p>Twój wykres skuteczności jest jeszcze pusty.</p>
-                <p class="stats-card__empty-hint">Rozwiąż pierwszy
-                  egzamin, abyśmy mogli wygenerować Twój trend!</p>
-                <a href="<?= url('test/' . $selectedCategoryCode) ?>" class="btn btn--primary"
-                  >Rozpocznij test</a>
-              </div>
-              <?php
-            else: ?>
+	        <div class="stats-card stats-card--trend" id="stats-trend-card">
+	          <h2 class="stats-card__title">Skuteczność w czasie</h2>
+	          <div class="stats-card__chart">
+	            <?php if (empty($efficiencyTrend)): ?>
+	              <div class="stats-card__empty">
+	                <div class="stats-card__empty-icon">📈</div>
+	                <p>Tu pokażemy, jak zmienia się Twoja skuteczność z kolejnych sesji.</p>
+	                <p class="stats-card__empty-hint">Zrób pierwszą próbę egzaminacyjną, a wykres zacznie się wypełniać.</p>
+	                <a href="<?= url('test/' . $selectedCategoryCode) ?>" class="btn btn--primary">Zrób próbę egzaminacyjną</a>
+	              </div>
+	              <?php
+	            else: ?>
 
               <div class="stats-card__chart-container">
                 <canvas id="efficiencyTrendChart"
@@ -230,40 +231,40 @@ $extraScripts = [
         <div class="stats-page__cards-grid">
 
           <!-- Main Stats Card -->
-          <div class="stats-card stats-card--main" id="stats-key-metrics-card">
-            <div class="stats-card__header">
-              <h3 class="stats-card__title stats-card__title--no-margin"><i class="fas fa-trophy"></i> Kluczowe Wyniki</h3>
-            </div>
+	          <div class="stats-card stats-card--main" id="stats-key-metrics-card">
+	            <div class="stats-card__header">
+	              <h3 class="stats-card__title stats-card__title--no-margin"><i class="fas fa-trophy"></i> Najważniejsze liczby</h3>
+	            </div>
 
             <div class="stats-card__grid-items">
-              <div class="metric-box">
-                <span class="metric-box__label">Najlepszy Wynik</span>
-                <span class="metric-box__value text-gradient">
-                  <?= $records['best_score'] ?>%
-                </span>
-                <i class="fas fa-star metric-box__icon"></i>
-              </div>
-              <div class="metric-box">
-                <span class="metric-box__label">Średni Czas</span>
-                <span class="metric-box__value">
-                  <?= $records['avg_duration'] ?>s
-                </span>
-                <i class="fas fa-bolt metric-box__icon"></i>
-              </div>
-              <div class="metric-box">
-                <span class="metric-box__label">Rozwiązane Testy</span>
-                <span class="metric-box__value">
-                  <?= $records['total_exams'] ?>
-                </span>
-                <i class="fas fa-file-alt metric-box__icon"></i>
-              </div>
-              <div class="metric-box">
-                <span class="metric-box__label">Ostatni Wynik</span>
-                <span class="metric-box__value">
-                  <?= $records['last_exam'] ?>
-                </span>
-                <i class="fas fa-history metric-box__icon"></i>
-              </div>
+	              <div class="metric-box">
+	                <span class="metric-box__label">Najlepszy wynik</span>
+	                <span class="metric-box__value text-gradient">
+	                  <?= $records['best_score'] ?>%
+	                </span>
+	                <i class="fas fa-star metric-box__icon"></i>
+	              </div>
+	              <div class="metric-box">
+	                <span class="metric-box__label">Średni czas</span>
+	                <span class="metric-box__value">
+	                  <?= $records['avg_duration'] ?>s
+	                </span>
+	                <i class="fas fa-bolt metric-box__icon"></i>
+	              </div>
+	              <div class="metric-box">
+	                <span class="metric-box__label">Ukończone próby</span>
+	                <span class="metric-box__value">
+	                  <?= $records['total_exams'] ?>
+	                </span>
+	                <i class="fas fa-file-alt metric-box__icon"></i>
+	              </div>
+	              <div class="metric-box">
+	                <span class="metric-box__label">Ostatnia próba</span>
+	                <span class="metric-box__value">
+	                  <?= $records['last_exam'] ?>
+	                </span>
+	                <i class="fas fa-history metric-box__icon"></i>
+	              </div>
             </div>
 
             <div class="stats-card__activity-footer">
@@ -274,10 +275,17 @@ $extraScripts = [
 
             <!-- Predicted Score -->
             <?php
-            $minExams = $predictedScore['min_exams_required'] ?? 5;
-            $examsAnalyzed = $predictedScore['exams_analyzed'] ?? 0;
-            $isPredictedUnlocked = $examsAnalyzed >= $minExams;
-            ?>
+	            $minExams = $predictedScore['min_exams_required'] ?? 5;
+	            $examsAnalyzed = $predictedScore['exams_analyzed'] ?? 0;
+	            $isPredictedUnlocked = $examsAnalyzed >= $minExams;
+	            $confidenceRaw = (string) ($predictedScore['confidence_level'] ?? 'none');
+	            $confidenceLabel = match ($confidenceRaw) {
+	              'high' => 'wysoka pewność',
+	              'medium' => 'średnia pewność',
+	              'low' => 'niska pewność',
+	              default => 'mało danych',
+	            };
+	            ?>
 
             <div class="stats-card__predicted <?= !$isPredictedUnlocked ? 'stats-card__predicted--locked' : '' ?>">
 
@@ -285,24 +293,24 @@ $extraScripts = [
                 <span class="stats-card__icon">📊</span>
                 <div>
                   <p class="stats-card__predicted-label">Przewidywany wynik egzaminu:</p>
-                  <p class="stats-card__predicted-score">
-                    <?= $predictedScore['predicted_score'] ?>%
-                    <span
-                      class="stats-card__confidence stats-card__confidence--<?= $predictedScore['confidence_level'] ?>">
-                      (
-                      <?= $predictedScore['confidence_level'] ?>)
-                    </span>
-                  </p>
+	                  <p class="stats-card__predicted-score">
+	                    <?= $predictedScore['predicted_score'] ?>%
+	                    <span
+	                      class="stats-card__confidence stats-card__confidence--<?= $predictedScore['confidence_level'] ?>">
+	                      (
+	                      <?= htmlspecialchars($confidenceLabel) ?>)
+	                    </span>
+	                  </p>
                 </div>
                 <?php
               else: ?>
                 <div class="stats-card__lock-row">
                   <div class="stats-card__lock-icon">🔒</div>
                   <div class="stats-card__lock-body">
-                    <p class="stats-card__lock-text">
-                      Przewidywany wynik dostępny po
-                      <?= $minExams ?> pełnych egzaminach
-                    </p>
+	                    <p class="stats-card__lock-text">
+	                      Przewidywany wynik dostępny po
+	                      <?= $minExams ?> pełnych próbach egzaminacyjnych
+	                    </p>
                     <?php
                     $lockedPercent = min(100, round(($examsAnalyzed / $minExams) * 100));
                     ?>
@@ -323,10 +331,10 @@ $extraScripts = [
           </div>
 
           <!-- Critical Errors Card (with lock overlay) -->
-          <div class="stats-card stats-card--critical <?= !$criticalErrors['is_unlocked'] ? 'stats-card--locked' : '' ?>"
+	          <div class="stats-card stats-card--critical <?= !$criticalErrors['is_unlocked'] ? 'stats-card--locked' : '' ?>"
             id="criticalMistakes">
-            <div class="stats-card__header">
-              <h3 class="stats-card__title stats-card__title--no-margin">🔥 Krytyczne Błędy</h3>
+	            <div class="stats-card__header">
+	              <h3 class="stats-card__title stats-card__title--no-margin">🔥 Pytania do powtórki</h3>
               <?php if ($criticalErrors['is_unlocked'] && ($criticalErrors['total_critical'] ?? 0) > 0): ?>
                 <a href="<?= url('historia?type=critical&category=' . $selectedCategoryId) ?>"
                   class="btn btn--secondary btn--sm">
@@ -364,7 +372,7 @@ $extraScripts = [
                         Zacznij rozwiązywać testy, abyśmy mogli wyłapać Twoje najczęstsze błędy.
                         <?php
                       else: ?>
-                        Twoja skuteczność jest na najwyższym poziomie! Nie wykryto krytycznych błędów.
+                        Nie znaleźliśmy pytań, przy których regularnie popełniasz błędy.
                         <?php
                       endif; ?>
                     </p>
@@ -396,10 +404,10 @@ $extraScripts = [
                         <?= mb_strimwidth(htmlspecialchars($critical['question_text']), 0, 120, "...") ?>
                       </span>
                       <div class="stats-card__item-btn-group">
-                        <a href="<?= url('test-pytanie/' . $critical['question_id']) ?>?source=stats&category=<?= $selectedCategoryId ?>&anchor=criticalMistakes" class="btn btn--secondary btn--sm btn--compact"
-                          title="Zobacz">zobacz</a>
-                      </div>
-                    </li>
+	                      <a href="<?= url('test-pytanie/' . $critical['question_id']) ?>?source=stats&category=<?= $selectedCategoryId ?>&anchor=criticalMistakes" class="btn btn--secondary btn--sm btn--compact"
+	                          title="Pokaż">Pokaż</a>
+	                      </div>
+	                    </li>
                     <?php
                   endforeach; ?>
                   <?php
@@ -413,15 +421,15 @@ $extraScripts = [
 
 
           <!-- Recent Errors Card -->
-          <div class="stats-card stats-card--errors" id="lastMistakes">
+	          <div class="stats-card stats-card--errors" id="lastMistakes">
             <div class="stats-card__header">
-              <h3 class="stats-card__title stats-card__title--no-margin">Ostatnie błędy</h3>
-              <?php if (($errorHistory['total'] ?? 0) > 0): ?>
-                <a href="<?= url('historia?type=errors&category=' . $selectedCategoryId) ?>"
-                  class="btn btn--secondary btn--sm">
-                  zobacz wszystkie (
-                  <?= $errorHistory['total'] ?? 0 ?>) <i class="stats-card__see-all-icon fas fa-chevron-right"></i>
-                </a>
+	              <h3 class="stats-card__title stats-card__title--no-margin">Ostatnie błędy</h3>
+	              <?php if (($errorHistory['total'] ?? 0) > 0): ?>
+	                <a href="<?= url('historia?type=errors&category=' . $selectedCategoryId) ?>"
+	                  class="btn btn--secondary btn--sm">
+	                  Pokaż wszystkie (
+	                  <?= $errorHistory['total'] ?? 0 ?>) <i class="stats-card__see-all-icon fas fa-chevron-right"></i>
+	                </a>
                 <?php
               endif; ?>
 
@@ -429,10 +437,10 @@ $extraScripts = [
             <ul class="stats-card__list">
               <?php if (empty($errorHistory['items'])): ?>
                 <?php if ($records['total_exams'] == 0): ?>
-                  <li class="stats-card__empty">Twoja historia błędów jest pusta – to świetny moment na pierwszy test!</li>
+	                  <li class="stats-card__empty">Nie masz jeszcze historii błędów. Zrób pierwszą próbę, a pokażemy pytania do powtórki.</li>
                   <?php
                 else: ?>
-                  <li class="stats-card__empty">Nie masz żadnych błędów do przejrzenia. Tak trzymaj!</li>
+	                  <li class="stats-card__empty">Nie ma błędów do przejrzenia w tym egzaminie.</li>
                   <?php
                 endif; ?>
                 <?php
@@ -443,9 +451,9 @@ $extraScripts = [
                       <?= mb_strimwidth(htmlspecialchars($error['question_text']), 0, 120, "...") ?>
                     </span>
                     <div class="stats-card__item-btn-group">
-                      <a href="<?= url('test-pytanie/' . $error['id']) ?>?source=stats&category=<?= $selectedCategoryId ?>&anchor=lastMistakes" class="btn btn--secondary btn--sm btn--compact">zobacz</a>
-                    </div>
-                  </li>
+	                      <a href="<?= url('test-pytanie/' . $error['id']) ?>?source=stats&category=<?= $selectedCategoryId ?>&anchor=lastMistakes" class="btn btn--secondary btn--sm btn--compact">Pokaż</a>
+	                    </div>
+	                  </li>
                   <?php
                 endforeach; ?>
                 <?php
@@ -456,33 +464,32 @@ $extraScripts = [
           </div>
 
           <!-- Saved Questions Card -->
-          <div class="stats-card stats-card--saved" id="savedQuestions">
+	          <div class="stats-card stats-card--saved" id="savedQuestions">
             <div class="stats-card__header">
               <h3 class="stats-card__title stats-card__title--no-margin"><i class="stats-card__heart-icon fas fa-heart"></i> Zapisane</h3>
-              <?php if (($savedQuestions['total'] ?? 0) > 0): ?>
-                <a href="<?= url('historia?type=saved&category=' . $selectedCategoryId) ?>"
-                  class="btn btn--secondary btn--sm">
-                  zobacz wszystkie (
-                  <?= $savedQuestions['total'] ?? 0 ?>) <i class="stats-card__see-all-icon fas fa-chevron-right"></i>
-                </a>
+	              <?php if (($savedQuestions['total'] ?? 0) > 0): ?>
+	                <a href="<?= url('historia?type=saved&category=' . $selectedCategoryId) ?>"
+	                  class="btn btn--secondary btn--sm">
+	                  Pokaż wszystkie (
+	                  <?= $savedQuestions['total'] ?? 0 ?>) <i class="stats-card__see-all-icon fas fa-chevron-right"></i>
+	                </a>
                 <?php
               endif; ?>
             </div>
             <ul class="stats-card__list">
               <?php if (empty($savedQuestions['items'])): ?>
-                <li class="stats-card__empty">Nie masz jeszcze żadnych zapisanych pytań. Kliknij serduszko przy trudnym
-                  pytaniu, aby je tu dodać!</li>
-                <?php
-              else: ?>
+	                <li class="stats-card__empty">Nie masz jeszcze zapisanych pytań. Kliknij ikonę serca przy pytaniu, do którego chcesz wrócić.</li>
+	                <?php
+	              else: ?>
                 <?php foreach ($savedQuestions['items'] as $saved): ?>
                   <li class="stats-card__list-item">
                     <span class="stats-card__question-text" title="<?= htmlspecialchars($saved['question_text']) ?>">
                       <?= mb_strimwidth(htmlspecialchars($saved['question_text']), 0, 120, "...") ?>
                     </span>
                     <div class="stats-card__item-btn-group">
-                      <a href="<?= url('test-pytanie/' . $saved['id']) ?>?source=stats&category=<?= $selectedCategoryId ?>&anchor=savedQuestions" class="btn btn--secondary btn--sm btn--compact">zobacz</a>
-                    </div>
-                  </li>
+	                      <a href="<?= url('test-pytanie/' . $saved['id']) ?>?source=stats&category=<?= $selectedCategoryId ?>&anchor=savedQuestions" class="btn btn--secondary btn--sm btn--compact">Pokaż</a>
+	                    </div>
+	                  </li>
                   <?php
                 endforeach; ?>
                 <?php
@@ -491,24 +498,24 @@ $extraScripts = [
           </div>
 
           <!-- Exam History Card -->
-          <div class="stats-card stats-card--history" id="examsHistory">
+	          <div class="stats-card stats-card--history" id="examsHistory">
             <div class="stats-card__header">
-              <h3 class="stats-card__title stats-card__title--no-margin">Ostatnie Egzaminy</h3>
-              <?php if (($recentExams['total'] ?? 0) > 0): ?>
-                <a href="<?= url('historia?type=exams&category=' . $selectedCategoryId) ?>"
-                  class="btn btn--secondary btn--sm">
-                  zobacz wszystkie (
-                  <?= $recentExams['total'] ?? 0 ?>) <i class="stats-card__see-all-icon fas fa-chevron-right"></i>
-                </a>
+	              <h3 class="stats-card__title stats-card__title--no-margin">Ostatnie próby egzaminacyjne</h3>
+	              <?php if (($recentExams['total'] ?? 0) > 0): ?>
+	                <a href="<?= url('historia?type=exams&category=' . $selectedCategoryId) ?>"
+	                  class="btn btn--secondary btn--sm">
+	                  Pokaż wszystkie (
+	                  <?= $recentExams['total'] ?? 0 ?>) <i class="stats-card__see-all-icon fas fa-chevron-right"></i>
+	                </a>
                 <?php
               endif; ?>
             </div>
             <ul class="stats-card__list">
               <?php if (empty($recentExams['items'])): ?>
-                <li class="stats-card__empty">Nie masz jeszcze żadnych zapisanych egzaminów. Czas to zmienić!</li>
-                <li class="stats-card__action">
-                  <a href="<?= url('test/' . $selectedCategoryCode) ?>" class="btn btn--primary">Podejdź do arkusza</a>
-                </li>
+	                <li class="stats-card__empty">Nie masz jeszcze żadnych wyników w tym egzaminie. Zrób próbę, a zapiszemy wynik i pokażemy analizę.</li>
+	                <li class="stats-card__action">
+	                  <a href="<?= url('test/' . $selectedCategoryCode) ?>" class="btn btn--primary">Zrób próbę egzaminacyjną</a>
+	                </li>
                 <?php
               else: ?>
                 <?php foreach ($recentExams['items'] as $exam): ?>
@@ -520,9 +527,9 @@ $extraScripts = [
                       </strong>
                     </span>
                     <div class="stats-card__item-btn-group">
-                      <a href="<?= url('wyniki/' . $exam['id']) ?>?source=stats&category=<?= $selectedCategoryId ?>" class="btn btn--secondary btn--sm btn--compact">zobacz</a>
-                    </div>
-                  </li>
+		                      <a href="<?= url('wyniki/' . $exam['id']) ?>?source=stats&category=<?= $selectedCategoryId ?>" class="btn btn--secondary btn--sm btn--compact">Otwórz</a>
+		                    </div>
+		                  </li>
                   <?php
                 endforeach; ?>
                 <?php
@@ -533,11 +540,11 @@ $extraScripts = [
 
         </div>
 
-        <div class="stats-page__tutorial-restart">
-          <button type="button" class="btn btn--secondary" data-restart-stats-tutorial>
-            <i class="fas fa-route"></i> Uruchom samouczek statystyk ponownie
-          </button>
-        </div>
+	        <div class="stats-page__tutorial-restart">
+	          <button type="button" class="btn btn--secondary" data-restart-stats-tutorial>
+	            <i class="fas fa-route"></i> Uruchom samouczek postępów ponownie
+	          </button>
+	        </div>
 
       </section>
       <?php endif; ?>

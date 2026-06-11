@@ -76,21 +76,21 @@ class HistoryController extends BaseController
     // KROK 4: Pobieranie danych w zależności od wybranego profilu historii
     switch ($type) {
       case 'critical':
-        $viewData['title'] = ' Krytycznych błędów';
+        $viewData['title'] = 'Pytania do powtórki';
         $viewData['backTo'] = 'criticalMistakes';
         $result = $this->statsService->getCriticalErrors($userId, $selectedExamTypeId, null);
         $viewData['items'] = $result['items'];
         break;
 
       case 'errors':
-        $viewData['title'] = ' Błędów';
+        $viewData['title'] = 'Ostatnie błędy';
         $viewData['backTo'] = 'lastMistakes';
         $result = $this->statsService->getErrorHistory($userId, $selectedExamTypeId, null);
         $viewData['items'] = $result['items'];
         break;
 
       case 'saved':
-        $viewData['title'] = ' Zapisanych Pytań';
+        $viewData['title'] = 'Zapisane pytania';
         $viewData['backTo'] = 'savedQuestions';
         $result = $this->statsService->getSavedQuestions($userId, $selectedExamTypeId, null);
         $viewData['items'] = $result['items'];
@@ -98,7 +98,7 @@ class HistoryController extends BaseController
 
       case 'exams':
       default:
-        $viewData['title'] = ' Egzaminów';
+        $viewData['title'] = 'Zakończone próby';
         $viewData['backTo'] = 'examsHistory';
         $result = $this->statsService->getRecentExams($userId, $selectedExamTypeId, null);
         $viewData['items'] = $result['items'];

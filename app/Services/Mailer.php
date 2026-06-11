@@ -55,7 +55,7 @@ class Mailer
     $this->mailer->Port = 587;
 
     // KROK 4: Domyślne ustawienia nadawcy i formatowania
-    $this->mailer->setFrom($_ENV['SMTP_USER'], 'Examly - Inteligentna Nauka');
+    $this->mailer->setFrom($_ENV['SMTP_USER'], 'Examly');
     $this->mailer->isHTML(true);
     $this->mailer->CharSet = 'UTF-8';
   }

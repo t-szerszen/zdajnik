@@ -14,7 +14,7 @@
 /**
  * Widok pełnej historii (egzaminy, błędy, krytyczne)
  */
-$pageTitle = ($title ?? 'Historia') . ' | Examly';
+$pageTitle = ($title ?? 'Historia nauki') . ' - ' . ($selectedCategoryCode ?? '') . ' | Examly';
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -24,18 +24,16 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
   <?php include 'partials/navbar.php'; ?>
 
   <main class="main-content-wrapper">
-  <header class="page-header" id="top">
-    <div class="page-header__content">
-      <h1 class="page-header__title">
-        <span class="text-gradient">
-          <?= htmlspecialchars($selectedCategoryCode) ?>
-        </span> - Historia
-        <?= htmlspecialchars($title) ?>
-      </h1>
-      <p class="page-header__text">Pełna historia Twojej aktywności edukacyjnej. Analizuj dotychczasowe wyniki, wyciągaj
-        wnioski z poprzednich podejść i mierz swoje postępy w czasie.</p>
-    </div>
-  </header>
+	  <header class="page-header" id="top">
+	    <div class="page-header__content">
+	      <h1 class="page-header__title">
+	        <span class="text-gradient">
+	          <?= htmlspecialchars($selectedCategoryCode) ?>
+	        </span> - <?= htmlspecialchars($title) ?>
+	      </h1>
+      <p class="page-header__text">Otwórz wcześniejsze wyniki lub wróć do pytań, które chcesz przećwiczyć ponownie.</p>
+	    </div>
+	  </header>
 
   <section class="stats-page">
     <div class="stats-page__container stats-page__container--single-col">
@@ -43,7 +41,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
       <div class="stats-page__back-nav">
         <a href="<?= (string) url('statystyki') ?>?category=<?= (string) $selectedCategoryId ?>#<?= (string) ($backTo ?? '') ?>"
           class="stats-page__back-link">
-          <i class="fas fa-arrow-left"></i> Wróć do Statystyk
+          <i class="fas fa-arrow-left"></i> Wróć do postępów
         </a>
       </div>
 
@@ -63,20 +61,17 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
               <i class="fas fa-history" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
               <?php
             endif; ?>
-            <span>Historia
-              <?= htmlspecialchars(($title ?? '')) ?>
-            </span>
+	          <span><?= htmlspecialchars(($title ?? 'Historia nauki')) ?></span>
           </div>
 
           <?php if (!empty($items) && in_array($type, ['errors', 'critical', 'saved'])): ?>
             <?php
             $premiumParam = ($type === 'critical') ? 'toImprove' : (($type === 'saved') ? 'saved' : 'lastMistakes');
             ?>
-            <a href="<?= url('jedno-pytanie/' . $selectedCategoryCode . '?premium=' . $premiumParam . '&selectAll=true#select-all-codes') ?>"
-              class="btn btn--primary btn--sm">
-              <i class="fas fa-play"></i> Ćwicz wszystkie (
-              <?= count($items) ?>)
-            </a>
+	            <a href="<?= url('jedno-pytanie/' . $selectedCategoryCode . '?premium=' . $premiumParam . '&selectAll=true#select-all-codes') ?>"
+	              class="btn btn--primary btn--sm">
+	              <i class="fas fa-play"></i> Rozwiąż wszystkie (<?= count($items) ?>)
+	            </a>
             <?php
           endif; ?>
         </div>
@@ -98,29 +93,29 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
               </div>
               <h3 class="stats-card__empty-title">
                 <?php if ($type === 'exams'): ?>
-                  Twoja historia jest pusta
+                  Nie masz jeszcze historii w tym egzaminie
                   <?php
                 elseif ($type === 'saved'): ?>
-                  Twoja lista zapisanych pytań jest pusta
+                  Nie masz jeszcze zapisanych pytań
                   <?php
                 else: ?>
-                  Brak błędów do przejrzenia
+                  Nie ma błędów do przejrzenia
                   <?php
                 endif; ?>
               </h3>
               <p class="stats-card__empty-message">
                 <?php if ($type === 'exams'): ?>
-                  Czas zmierzyć się z pierwszym arkuszem i sprawdzić swoje umiejętności!
+                  Zrób pierwszą próbę egzaminacyjną, a tutaj zapiszemy wyniki i daty podejść.
                   <?php
                 elseif ($type === 'saved'): ?>
-                  Dodawaj trudne pytania do zapisanych, aby móc do nich wrócić w dowolnym momencie.
+                  Zapisuj pytania do powtórki, a potem wracaj do nich w krótkich sesjach.
                   <?php
                 else: ?>
-                  Świetna robota! Wygląda na to, że radzisz sobie doskonale w tej kategorii.
+                  Na razie nie ma tu błędów do pokazania. Jeśli coś się pojawi, zobaczysz to w tej sekcji.
                   <?php
                 endif; ?>
               </p>
-              <a href="<?= url('/') ?>" class="btn btn--primary">Rozpocznij Naukę</a>
+	              <a href="<?= url('/') ?>" class="btn btn--primary">Wróć do nauki</a>
             </div>
             <?php
           else: ?>
@@ -187,7 +182,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
                     </div>
                     <div class="stats-card__item-actions">
                       <a href="<?= url('test-pytanie/' . $item['question_id']) ?>?source=history&type=<?= $type ?>&category=<?= $selectedCategoryId ?>"
-                        class="btn btn--secondary btn--sm">zobacz</a>
+                        class="btn btn--secondary btn--sm">Otwórz</a>
                     </div>
                   </div>
 
@@ -207,7 +202,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
                     </div>
                     <div class="stats-card__item-actions">
                       <a href="<?= url('test-pytanie/' . $item['id']) ?>?source=history&type=<?= $type ?>&category=<?= $selectedCategoryId ?>"
-                        class="btn btn--primary btn--sm">zobacz</a>
+                        class="btn btn--primary btn--sm">Otwórz</a>
                     </div>
                   </div>
                   <?php

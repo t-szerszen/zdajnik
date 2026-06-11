@@ -87,7 +87,7 @@ class ApiController extends BaseController
       $this->sendJsonResponse([
         'success' => true,
         'status' => 'no_questions_left',
-        'message' => 'Gratulacje! Przerobiłeś już wszystkie dostępne pytania w tej sekcji.',
+        'message' => 'To wszystko w tym zakresie. Zmień temat albo ustaw inne filtry, żeby ćwiczyć dalej.',
       ]);
       return;
     }
@@ -139,7 +139,7 @@ class ApiController extends BaseController
       $this->sendJsonResponse([
         'success' => true,
         'status' => 'no_questions_left',
-        'message' => 'Baza posiada zbyt mało pytań spełniających Twoje kryteria filtrowania.',
+        'message' => 'W tej konfiguracji jest za mało pytań. Zmień tematy lub wyłącz filtry i spróbuj ponownie.',
       ]);
       return;
     }
@@ -166,7 +166,7 @@ class ApiController extends BaseController
     $examTypeId = $this->questionModel->getExamTypeIdByCode($examCode);
 
     if (!$examTypeId) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy kod egzaminu.'], 404);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nie znaleźliśmy tego egzaminu. Wybierz go ponownie i spróbuj jeszcze raz.'], 404);
       return;
     }
 
@@ -199,14 +199,14 @@ class ApiController extends BaseController
     $userAnswerId = (int) ($_POST['answer_id'] ?? 0);
 
     if (!$qvId || !$userAnswerId) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Brak wymaganych parametrów (version_id/answer_id).'], 400);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Brakuje danych odpowiedzi. Odśwież stronę i spróbuj ponownie.'], 400);
       return;
     }
 
     // Pobranie wzorcowej poprawnej odpowiedzi dla danej wersji
     $correctAnswer = $this->answerModel->getCorrectAnswerForVersion($qvId);
     if (!$correctAnswer) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Błąd wersji pytania.'], 404);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nie udało się sprawdzić tego pytania. Odśwież stronę i spróbuj ponownie.'], 404);
       return;
     }
 
@@ -236,13 +236,13 @@ class ApiController extends BaseController
     $this->ensurePostRequest();
 
     if (!$this->isUserLoggedIn) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Funkcja dostępna tylko dla zalogowanych.'], 403);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Zaloguj się, aby zapisywać postęp i statystyki.'], 403);
       return;
     }
 
     $progressData = json_decode(file_get_contents('php://input'), true);
     if (!is_array($progressData)) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy format danych JSON.'], 400);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nie udało się odczytać danych. Spróbuj ponownie.'], 400);
       return;
     }
 
@@ -254,7 +254,7 @@ class ApiController extends BaseController
       }
     }
 
-    $this->sendJsonResponse(['success' => true, 'message' => 'Postęp zaktualizowany pomyślnie.']);
+    $this->sendJsonResponse(['success' => true, 'message' => 'Postęp zapisany. Statystyki zostały zaktualizowane.']);
   }
 
   /**
@@ -271,7 +271,7 @@ class ApiController extends BaseController
     $this->ensurePostRequest();
 
     if (!$this->isUserLoggedIn) {
-      $this->sendJsonResponse(['error' => 'Wymagane uwierzytelnienie'], 403);
+      $this->sendJsonResponse(['error' => 'Zaloguj się, aby zapisać wynik próby.'], 403);
       return;
     }
 
@@ -281,7 +281,7 @@ class ApiController extends BaseController
 
     $examTypeId = $this->questionModel->getExamTypeIdByCode($input['examCode'] ?? 'INF.03');
     if (!$examTypeId) {
-      $this->sendJsonResponse(['error' => 'Nieprawidłowy typ egzaminu'], 400);
+      $this->sendJsonResponse(['error' => 'Nie znaleźliśmy tego egzaminu. Spróbuj ponownie.'], 400);
       return;
     }
 
@@ -305,7 +305,7 @@ class ApiController extends BaseController
       $this->userProgressModel->updateBatchProgress($userId, $answersDetails);
       $this->sendJsonResponse(['success' => true, 'attempt_id' => $attemptId]);
     } else {
-      $this->sendJsonResponse(['error' => 'Błąd krytyczny podczas zapisu próby.'], 500);
+      $this->sendJsonResponse(['error' => 'Nie udało się zapisać wyniku. Spróbuj ponownie za chwilę.'], 500);
     }
   }
 
@@ -324,7 +324,7 @@ class ApiController extends BaseController
     $questionId = (int) ($_POST['question_id'] ?? 0);
 
     if (!$questionId) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Brak identyfikatora pytania.'], 400);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nie udało się odczytać pytania. Odśwież stronę i spróbuj ponownie.'], 400);
       return;
     }
 
@@ -338,7 +338,7 @@ class ApiController extends BaseController
         'message' => $isSaved ? 'Dodano do zapisanych.' : 'Usunięto z zapisanych.'
       ]);
     } else {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Błąd po stronie serwera.'], 500);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nie udało się zapisać tej zmiany. Spróbuj ponownie za chwilę.'], 500);
     }
   }
 
@@ -350,13 +350,13 @@ class ApiController extends BaseController
     $this->ensurePostRequest();
 
     if (!$this->isUserLoggedIn) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Wymagane uwierzytelnienie.'], 403);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Zaloguj się, aby zmienić awatar.'], 403);
       return;
     }
 
     $input = json_decode(file_get_contents('php://input'), true);
     if (!isset($input['type']) || !isset($input['avatar'])) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Brak wymaganych parametrów.'], 400);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Brakuje danych awatara. Odśwież stronę i spróbuj ponownie.'], 400);
       return;
     }
 
@@ -466,7 +466,7 @@ class ApiController extends BaseController
 
     // KROK: Weryfikacja uprawnień do filtrów zaawansowanych
     if ($specialFilter && !$this->isUserLoggedIn) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Filtry zaawansowane wymagają konta użytkownika.'], 403);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Zaloguj się, aby dobierać pytania na podstawie swoich wyników.'], 403);
       return ['success' => false, 'questions' => []];
     }
 
@@ -480,7 +480,7 @@ class ApiController extends BaseController
           $this->sendJsonResponse([
             'success' => false,
             'status' => 'gatekeeper',
-            'message' => 'Musisz odpowiedzieć na co najmniej 100 pytań, abyśmy mogli przeanalizować Twoje słabe strony.'
+            'message' => 'Ten filtr działa po rozwiązaniu co najmniej 100 pytań z tego egzaminu. Potrzebujemy wcześniejszych odpowiedzi, żeby poprawnie dobrać pytania.'
           ], 403);
           return ['success' => false, 'questions' => []];
         }

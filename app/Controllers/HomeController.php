@@ -45,7 +45,7 @@ class HomeController extends BaseController
     // KROK: Wyświetlenie widoku startowego z dynamiczną listą egzaminów
     $this->renderView('home', [
       'examsCategories' => $examsCategories,
-      'pageTitle' => 'Examly - Inteligentna Nauka do Egzaminów Zawodowych'
+      'pageTitle' => 'Examly - pytania i testy do egzaminów zawodowych'
     ]);
   }
 

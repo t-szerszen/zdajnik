@@ -303,8 +303,8 @@ class StatisticsService
       $exam['score'] = $this->formatScore((float) $exam['score_raw']);
 
       if ($exam['test_type'] === 'full_exam') {
-        $exam['display_name'] = "Pełny test";
-        $exam['badge_text'] = "Pełny test";
+        $exam['display_name'] = "Próba egzaminacyjna";
+        $exam['badge_text'] = "Próba egzaminacyjna";
       } else {
         // Pobierz tematy dla personalizowanego testu
         $topicsSql = "SELECT t.name FROM topics t 
@@ -315,11 +315,11 @@ class StatisticsService
 
         // Sprawdź czy test obejmuje wszystkie tematy kategorii
         if (count($topicNames) >= $totalTopicsInExam && $totalTopicsInExam > 0) {
-          $exam['display_name'] = "Personalizowany test (" . $exam['exam_code'] . ")";
+          $exam['display_name'] = "Własny zestaw (" . $exam['exam_code'] . ")";
         } else {
-          $exam['display_name'] = "Test z " . implode(', ', $topicNames);
+          $exam['display_name'] = "Zestaw: " . implode(', ', $topicNames);
         }
-        $exam['badge_text'] = "Personalizowany test";
+        $exam['badge_text'] = "Własny zestaw";
       }
     }
 

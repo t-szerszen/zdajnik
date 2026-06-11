@@ -47,7 +47,7 @@ use App\Models\User;
       </div>
     </div>
     <div id="nav-timer" class="nav-test-timer">00:00</div>
-    <button id="nav-pause-btn" class="nav-test-pause-btn" title="Zapauzuj egzamin" aria-label="Zapauzuj egzamin">
+    <button id="nav-pause-btn" class="nav-test-pause-btn" title="Wstrzymaj" aria-label="Wstrzymaj">
       <i class="fas fa-pause"></i>
     </button>
   </div>
@@ -102,17 +102,17 @@ use App\Models\User;
         <ul class="dropdown__menu">
           <li class="dropdown__item">
             <a href="<?= url('jedno-pytanie/INF.04') ?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-question-circle"></i> Jedno Pytanie
+              <i class="dropdown__icon fas fa-question-circle"></i> Jedno pytanie
             </a>
           </li>
           <li class="dropdown__item">
             <a href="<?= url('personalizowany-test/INF.04') ?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-sliders-h"></i> Spersonalizowany Test
+              <i class="dropdown__icon fas fa-sliders-h"></i> Własny zestaw
             </a>
           </li>
           <li class="dropdown__item">
             <a href="<?= url('test/INF.04') ?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
+              <i class="dropdown__icon fas fa-file-alt"></i> Próba egzaminacyjna
             </a>
           </li>
         </ul>
@@ -160,7 +160,7 @@ use App\Models\User;
           <ul class="dropdown__menu dropdown__menu--right">
             <li class="dropdown__item">
               <a href="<?= url('statystyki') ?>" class="dropdown__link">
-                <i class="dropdown__icon fas fa-chart-bar"></i> Statystyki
+                <i class="dropdown__icon fas fa-chart-bar"></i> Twoje postępy
               </a>
             </li>
             <li class="dropdown__item">
@@ -168,13 +168,13 @@ use App\Models\User;
                 <i class="dropdown__icon fas fa-cog"></i> Ustawienia
               </a>
             </li>
-            <?php if ($currentUser && $currentUser->isAdmin()): ?>
-              <li class="dropdown__item">
-                <a href="<?= url('admin') ?>" class="dropdown__link">
-                  <i class="dropdown__icon fas fa-shield-halved"></i> Admin Panel
-                </a>
-              </li>
-            <?php endif; ?>
+	            <?php if ($currentUser && $currentUser->isAdmin()): ?>
+	              <li class="dropdown__item">
+	                <a href="<?= url('admin') ?>" class="dropdown__link">
+	                  <i class="dropdown__icon fas fa-shield-halved"></i> Panel administracyjny
+	                </a>
+	              </li>
+	            <?php endif; ?>
             <li class="dropdown__item dropdown__item--logout">
               <a href="<?= url('wyloguj') ?>" class="dropdown__link">
                 <i class="dropdown__icon fas fa-sign-out-alt"></i> Wyloguj się

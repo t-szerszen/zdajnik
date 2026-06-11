@@ -38,7 +38,7 @@ class ErrorController extends BaseController
       header('Content-Type: application/json; charset=utf-8');
       echo json_encode([
         'success' => false,
-        'message' => $customMessage ?? ($code === 404 ? 'Endpoint not found' : 'Internal Server Error')
+        'message' => $customMessage ?? ($code === 404 ? 'Nie znaleźliśmy tego adresu API.' : 'Wystąpił błąd po stronie serwera.')
       ]);
       exit;
     }
