@@ -60,8 +60,11 @@ class AdminController extends BaseController
       'pageTitle' => 'Admin Panel | Examly',
       'pageDescription' => 'Panel administracyjny Examly do zarządzania treścią i strukturą serwisu.',
       'overview' => $this->adminService->getOverview(),
-      'recentUsers' => $this->adminService->getRecentUsers(6),
+      'attention' => $this->adminService->getAttentionItems(6),
+      'recentAuditActions' => $this->adminService->getRecentAuditActions(8),
+      'recentUserActivity' => $this->userService->getRecentUserActivity(8),
       'hasActivityData' => $this->adminService->hasActivityData(),
+      'auditActions' => $this->getAuditActions(),
     ]);
   }
 
@@ -70,10 +73,20 @@ class AdminController extends BaseController
    */
   public function users(): void
   {
+    $verified = trim((string) ($_GET['verified'] ?? ''));
+    if ($verified === '1') {
+      $verified = 'verified';
+    } elseif ($verified === '0') {
+      $verified = 'unverified';
+    }
+
     $filters = [
       'query' => trim((string) ($_GET['q'] ?? '')),
       'role' => trim((string) ($_GET['role'] ?? '')),
       'status' => trim((string) ($_GET['status'] ?? '')),
+      'verified' => $verified,
+      'auth_provider' => trim((string) ($_GET['auth_provider'] ?? '')),
+      'activity' => trim((string) ($_GET['activity'] ?? '')),
     ];
     $sort = (string) ($_GET['sort'] ?? 'id');
     $dir = (string) ($_GET['dir'] ?? 'desc');
@@ -90,6 +103,7 @@ class AdminController extends BaseController
       'sort' => $sort,
       'dir' => $dir,
       'pagination' => $result,
+      'summary' => $this->userService->getUserManagementSummary(),
       'csrfToken' => $this->csrfService->token(),
     ]);
   }
@@ -159,7 +173,12 @@ class AdminController extends BaseController
     }
 
     $currentAdminId = $this->currentUser->getId();
-    if ($userId === $currentAdminId && $newRole === 'user' && $this->userService->countActiveAdmins() <= 1) {
+    if (
+      ($user['role'] ?? 'user') === 'admin'
+      && (int) ($user['is_active'] ?? 0) === 1
+      && $newRole === 'user'
+      && $this->userService->countActiveAdmins() <= 1
+    ) {
       $_SESSION['flash_message'] = [
         'type' => 'error',
         'text' => 'Nie możesz odebrać roli jedynemu administratorowi.'
@@ -177,17 +196,27 @@ class AdminController extends BaseController
       exit();
     }
 
-    if ($this->userService->updateUserRole($userId, $newRole)) {
-      $this->auditService->logRoleChange(
-        $currentAdminId,
-        $userId,
-        [
-          'role' => $user['role'] ?? 'user',
-        ],
-        [
-          'role' => $newRole,
-        ]
-      );
+    if (!$this->db->beginTransaction()) {
+      $this->setFlash('error', 'Nie udało się rozpocząć transakcji.');
+      $this->redirectAfterUserAction($userId);
+    }
+
+    try {
+      if (
+        !$this->userService->updateUserRole($userId, $newRole)
+        || !$this->auditService->logRoleChange(
+          $currentAdminId,
+          $userId,
+          ['role' => $user['role'] ?? 'user'],
+          ['role' => $newRole]
+        )
+      ) {
+        $this->db->rollBack();
+        $this->setFlash('error', 'Nie udało się zapisać zmiany roli.');
+        $this->redirectAfterUserAction($userId);
+      }
+
+      $this->db->commit();
 
       $redirectUrl = url('admin/uzytkownicy/' . $userId);
 
@@ -202,20 +231,33 @@ class AdminController extends BaseController
         }
       }
 
-      $_SESSION['flash_message'] = [
-        'type' => 'success',
-        'text' => 'Rola użytkownika została zaktualizowana.'
-      ];
+      $this->setFlash('success', 'Rola użytkownika została zaktualizowana.');
+      if (($_POST['return_to'] ?? '') === 'list' && $userId !== $currentAdminId) {
+        $redirectUrl = url('admin/uzytkownicy');
+      }
       header('Location: ' . $redirectUrl);
       exit();
-    } else {
-      $_SESSION['flash_message'] = [
-        'type' => 'error',
-        'text' => 'Nie udało się zapisać zmian.'
-      ];
-      header('Location: ' . url('admin/uzytkownicy/' . $userId));
-      exit();
+    } catch (\Throwable $e) {
+      $this->db->rollBack();
+      error_log('[AdminController] updateUserRole: ' . $e->getMessage());
+      $this->setFlash('error', 'Wystąpił nieoczekiwany błąd podczas zmiany roli.');
+      $this->redirectAfterUserAction($userId);
     }
+  }
+
+  public function verifyUser(int $userId): void
+  {
+    $this->changeUserState($userId, 'verify');
+  }
+
+  public function deactivateUser(int $userId): void
+  {
+    $this->changeUserState($userId, 'deactivate');
+  }
+
+  public function reactivateUser(int $userId): void
+  {
+    $this->changeUserState($userId, 'reactivate');
   }
 
   /**
@@ -353,6 +395,7 @@ class AdminController extends BaseController
       'pageDescription' => 'Szczegóły egzaminu w panelu CMS Examly.',
       'exam' => $exam,
       'questions' => $this->examService->getExamQuestions($examId, 200),
+      'topics' => $this->examService->getExamTopics($examId),
       'csrfToken' => $this->csrfService->token(),
     ]);
   }
@@ -465,6 +508,21 @@ class AdminController extends BaseController
         return;
       }
 
+      if (
+        $normalizedCurrent['is_active'] !== $normalizedNew['is_active']
+        && !$this->auditService->logExamStatusChanged(
+          $this->currentUser->getId(),
+          $examId,
+          $normalizedNew['is_active'] === 1,
+          ['is_active' => $normalizedCurrent['is_active']],
+          ['is_active' => $normalizedNew['is_active']]
+        )
+      ) {
+        $this->db->rollBack();
+        $this->renderExamForm('edit', $data, ['general' => 'Nie udało się zapisać audytu zmiany statusu.'], $examId);
+        return;
+      }
+
       $this->db->commit();
       $_SESSION['flash_message'] = [
         'type' => 'success',
@@ -484,98 +542,12 @@ class AdminController extends BaseController
    */
   public function deactivateExam(int $examId): void
   {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-      header('Location: ' . url('admin/egzaminy/' . $examId));
-      exit();
-    }
+    $this->changeExamStatus($examId, false);
+  }
 
-    if (!$this->csrfService->validate($_POST['csrf_token'] ?? null)) {
-      $_SESSION['flash_message'] = [
-        'type' => 'error',
-        'text' => 'Nieprawidłowy token bezpieczeństwa.',
-      ];
-      header('Location: ' . url('admin/egzaminy/' . $examId));
-      exit();
-    }
-
-    $exam = $this->examService->getExamById($examId);
-    if (!$exam) {
-      $_SESSION['flash_message'] = [
-        'type' => 'error',
-        'text' => 'Egzamin nie istnieje.',
-      ];
-      header('Location: ' . url('admin/egzaminy'));
-      exit();
-    }
-
-    if ((int) ($exam['is_active'] ?? 1) === 0) {
-      $_SESSION['flash_message'] = [
-        'type' => 'info',
-        'text' => 'Egzamin jest już nieaktywny.',
-      ];
-      header('Location: ' . url('admin/egzaminy/' . $examId));
-      exit();
-    }
-
-    if (!$this->db->beginTransaction()) {
-      $_SESSION['flash_message'] = [
-        'type' => 'error',
-        'text' => 'Nie udało się rozpocząć transakcji.',
-      ];
-      header('Location: ' . url('admin/egzaminy/' . $examId));
-      exit();
-    }
-
-    try {
-      $oldValue = [
-        'is_active' => (int) ($exam['is_active'] ?? 1),
-      ];
-      $newValue = [
-        'is_active' => 0,
-      ];
-
-      if (!$this->examService->deactivateExam($examId)) {
-        $this->db->rollBack();
-        $_SESSION['flash_message'] = [
-          'type' => 'error',
-          'text' => 'Nie udało się dezaktywować egzaminu.',
-        ];
-        header('Location: ' . url('admin/egzaminy/' . $examId));
-        exit();
-      }
-
-      if (!$this->auditService->logExamUpdated(
-        $this->currentUser->getId(),
-        $examId,
-        $oldValue,
-        $newValue
-      )) {
-        $this->db->rollBack();
-        $_SESSION['flash_message'] = [
-          'type' => 'error',
-          'text' => 'Nie udało się zapisać wpisu audytowego.',
-        ];
-        header('Location: ' . url('admin/egzaminy/' . $examId));
-        exit();
-      }
-
-      $this->db->commit();
-      $_SESSION['flash_message'] = [
-        'type' => 'success',
-        'text' => 'Egzamin został zdezaktywowany.',
-      ];
-      header('Location: ' . url('admin/egzaminy/' . $examId));
-      exit();
-    } catch (\Throwable $e) {
-      $this->db->rollBack();
-      error_log('[AdminController] deactivateExam: ' . $e->getMessage());
-      $_SESSION['flash_message'] = [
-        'type' => 'error',
-        'text' => 'Wystąpił nieoczekiwany błąd podczas dezaktywacji.',
-      ];
-      header('Location: ' . url('admin/egzaminy/' . $examId));
-      exit();
-    }
+  public function activateExam(int $examId): void
+  {
+    $this->changeExamStatus($examId, true);
   }
 
   /**
@@ -586,6 +558,7 @@ class AdminController extends BaseController
     $filters = [
       'query' => trim((string) ($_GET['q'] ?? '')),
       'exam_id' => trim((string) ($_GET['exam_id'] ?? '')),
+      'topic_id' => trim((string) ($_GET['topic_id'] ?? '')),
       'status' => trim((string) ($_GET['status'] ?? '')),
     ];
     $sort = (string) ($_GET['sort'] ?? 'id');
@@ -604,6 +577,10 @@ class AdminController extends BaseController
       'dir' => $dir,
       'pagination' => $result,
       'exams' => $this->questionService->getExams(),
+      'topics' => $this->questionService->getTopicsForFilter(
+        ctype_digit((string) $filters['exam_id']) ? (int) $filters['exam_id'] : null
+      ),
+      'csrfToken' => $this->csrfService->token(),
     ]);
   }
 
@@ -612,9 +589,11 @@ class AdminController extends BaseController
    */
   public function showCreateQuestionForm(): void
   {
+    $examId = max(0, (int) ($_GET['exam_id'] ?? 0));
+    $topicId = max(0, (int) ($_GET['topic_id'] ?? 0));
     $this->renderQuestionForm('create', [
-      'exam_type_id' => 0,
-      'topic_id' => 0,
+      'exam_type_id' => $examId,
+      'topic_id' => $topicId,
       'question_text' => '',
       'explanation' => '',
       'is_active' => 1,
@@ -779,6 +758,31 @@ class AdminController extends BaseController
     exit();
   }
 
+  public function activateQuestion(int $questionId): void
+  {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      header('Location: ' . url('admin/pytania/' . $questionId));
+      exit();
+    }
+
+    if (!$this->csrfService->validate($_POST['csrf_token'] ?? null)) {
+      $this->setFlash('error', 'Nieprawidłowy token bezpieczeństwa.');
+      header('Location: ' . url('admin/pytania/' . $questionId));
+      exit();
+    }
+
+    $result = $this->questionService->activateQuestion($questionId, $this->currentUser->getId());
+    if (!($result['success'] ?? false)) {
+      $this->setFlash('error', (string) ($result['errors']['general'] ?? 'Nie udało się aktywować pytania.'));
+      header('Location: ' . url('admin/pytania/' . $questionId));
+      exit();
+    }
+
+    $this->setFlash('success', 'Pytanie zostało aktywowane.');
+    header('Location: ' . url('admin/pytania/' . $questionId));
+    exit();
+  }
+
   /**
    * Widok aktywności i statystyk panelu.
    */
@@ -794,17 +798,15 @@ class AdminController extends BaseController
   {
     $filters = $this->extractAnalyticsFilters();
     $dashboardData = $this->analyticsService->getDashboardData($filters);
+    $filterOptions = $this->analyticsService->getFilterOptions();
 
     $this->renderView('admin/analytics', [
       'pageTitle' => 'Analityka | Admin Panel | Examly',
       'pageDescription' => 'Panel analityczny produktu Examly dla administratorów.',
       'analytics' => $dashboardData,
       'filters' => $filters,
-      'availableRanges' => [
-        '7d' => 'Ostatnie 7 dni',
-        '30d' => 'Ostatnie 30 dni',
-        '90d' => 'Ostatnie 90 dni',
-      ],
+      'filterOptions' => $filterOptions,
+      'availableRanges' => $filterOptions['ranges'],
       'csrfToken' => $this->csrfService->token(),
     ]);
   }
@@ -828,6 +830,57 @@ class AdminController extends BaseController
   }
 
   /**
+   * Eksportuje wybrany zestaw danych analitycznych do CSV.
+   */
+  public function analyticsExport(): void
+  {
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Metoda niedozwolona.'], 405);
+    }
+
+    $dataset = strtolower(trim((string) ($_GET['dataset'] ?? 'users')));
+    $allowedDatasets = [
+      'users',
+      'exams',
+      'questions',
+      'events',
+      'retention',
+      // Legacy aliases used by the current analytics view.
+      'overview',
+      'learning',
+      'hardest_questions',
+      'weakest_topics',
+      'cohorts',
+    ];
+    if (!in_array($dataset, $allowedDatasets, true)) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy zestaw danych.'], 400);
+    }
+
+    $export = $this->analyticsService->getExportData($dataset, $this->extractAnalyticsFilters());
+
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . basename((string) $export['filename']) . '"');
+    header('X-Content-Type-Options: nosniff');
+
+    $output = fopen('php://output', 'wb');
+    if ($output === false) {
+      http_response_code(500);
+      exit();
+    }
+
+    fwrite($output, "\xEF\xBB\xBF");
+    fputcsv($output, $export['headers'], ';', '"', '\\');
+    foreach ($export['rows'] as $row) {
+      fputcsv($output, array_map(
+        fn(mixed $value): string => $this->sanitizeCsvCell($value),
+        $row
+      ), ';', '"', '\\');
+    }
+    fclose($output);
+    exit();
+  }
+
+  /**
    * Lista logów audytowych administracji.
    */
   public function auditLogs(): void
@@ -835,6 +888,8 @@ class AdminController extends BaseController
     $filters = [
       'admin_user_id' => trim((string) ($_GET['admin_user_id'] ?? '')),
       'action' => trim((string) ($_GET['action'] ?? '')),
+      'target_type' => trim((string) ($_GET['target_type'] ?? '')),
+      'target_id' => trim((string) ($_GET['target_id'] ?? '')),
       'date_from' => trim((string) ($_GET['date_from'] ?? '')),
       'date_to' => trim((string) ($_GET['date_to'] ?? '')),
     ];
@@ -851,6 +906,11 @@ class AdminController extends BaseController
       'pagination' => $result,
       'actions' => $this->getAuditActions(),
       'admins' => $result['admins'],
+      'targetTypes' => [
+        'user' => 'Użytkownik',
+        'exam' => 'Egzamin',
+        'question' => 'Pytanie',
+      ],
     ]);
   }
 
@@ -864,11 +924,193 @@ class AdminController extends BaseController
     return [
       'change_user_role' => 'Zmiana roli użytkownika',
       'change_user_status' => 'Zmiana statusu użytkownika',
+      'verify_user' => 'Weryfikacja użytkownika',
+      'deactivate_user' => 'Dezaktywacja użytkownika',
+      'reactivate_user' => 'Reaktywacja użytkownika',
       'create_exam' => 'Utworzenie egzaminu',
       'update_exam' => 'Edycja egzaminu',
+      'activate_exam' => 'Aktywacja egzaminu',
+      'deactivate_exam' => 'Dezaktywacja egzaminu',
       'create_question' => 'Utworzenie pytania',
       'update_question' => 'Edycja pytania',
-      'deactivate_question' => 'Usunięcie/dezaktywacja pytania',
+      'activate_question' => 'Aktywacja pytania',
+      'deactivate_question' => 'Dezaktywacja pytania',
+    ];
+  }
+
+  private function changeUserState(int $userId, string $action): void
+  {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      $this->redirectAfterUserAction($userId);
+    }
+
+    if (!$this->csrfService->validate($_POST['csrf_token'] ?? null)) {
+      $this->setFlash('error', 'Nieprawidłowy token bezpieczeństwa.');
+      $this->redirectAfterUserAction($userId);
+    }
+
+    $user = $this->userService->getUserById($userId);
+    if (!$user || !empty($user['deleted_at'])) {
+      $this->setFlash('error', 'Użytkownik nie istnieje lub konto zostało usunięte.');
+      header('Location: ' . url('admin/uzytkownicy'));
+      exit();
+    }
+
+    $currentAdminId = $this->currentUser->getId();
+    if ($action === 'deactivate' && $userId === $currentAdminId) {
+      $this->setFlash('error', 'Nie możesz zdezaktywować własnego konta.');
+      $this->redirectAfterUserAction($userId);
+    }
+
+    if (
+      $action === 'deactivate'
+      && ($user['role'] ?? 'user') === 'admin'
+      && (int) ($user['is_active'] ?? 0) === 1
+      && $this->userService->countActiveAdmins() <= 1
+    ) {
+      $this->setFlash('error', 'Nie możesz zdezaktywować ostatniego aktywnego administratora.');
+      $this->redirectAfterUserAction($userId);
+    }
+
+    $alreadyApplied = ($action === 'verify' && (int) ($user['is_verified'] ?? 0) === 1)
+      || ($action === 'deactivate' && (int) ($user['is_active'] ?? 1) === 0)
+      || ($action === 'reactivate' && (int) ($user['is_active'] ?? 0) === 1);
+    if ($alreadyApplied) {
+      $this->setFlash('info', 'Wybrany status jest już ustawiony.');
+      $this->redirectAfterUserAction($userId);
+    }
+
+    if (!$this->db->beginTransaction()) {
+      $this->setFlash('error', 'Nie udało się rozpocząć transakcji.');
+      $this->redirectAfterUserAction($userId);
+    }
+
+    try {
+      if ($action === 'verify') {
+        $changed = $this->userService->verifyUser($userId);
+        $audited = $this->auditService->logUserVerified(
+          $currentAdminId,
+          $userId,
+          ['is_verified' => (int) ($user['is_verified'] ?? 0)],
+          ['is_verified' => 1]
+        );
+        $message = 'Konto użytkownika zostało zweryfikowane.';
+      } elseif ($action === 'deactivate') {
+        $changed = $this->userService->deactivateUser($userId);
+        $audited = $this->auditService->logUserDeactivated(
+          $currentAdminId,
+          $userId,
+          ['is_active' => (int) ($user['is_active'] ?? 1)],
+          ['is_active' => 0]
+        );
+        $message = 'Konto użytkownika zostało zdezaktywowane.';
+      } else {
+        $changed = $this->userService->reactivateUser($userId);
+        $audited = $this->auditService->logUserReactivated(
+          $currentAdminId,
+          $userId,
+          ['is_active' => (int) ($user['is_active'] ?? 0)],
+          ['is_active' => 1]
+        );
+        $message = 'Konto użytkownika zostało reaktywowane.';
+      }
+
+      if (!$changed || !$audited) {
+        $this->db->rollBack();
+        $this->setFlash('error', 'Nie udało się zapisać zmiany statusu.');
+        $this->redirectAfterUserAction($userId);
+      }
+
+      $this->db->commit();
+      $this->setFlash('success', $message);
+      $this->redirectAfterUserAction($userId);
+    } catch (\Throwable $e) {
+      $this->db->rollBack();
+      error_log('[AdminController] changeUserState: ' . $e->getMessage());
+      $this->setFlash('error', 'Wystąpił nieoczekiwany błąd podczas zmiany statusu.');
+      $this->redirectAfterUserAction($userId);
+    }
+  }
+
+  private function changeExamStatus(int $examId, bool $isActive): void
+  {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      header('Location: ' . url('admin/egzaminy/' . $examId));
+      exit();
+    }
+
+    if (!$this->csrfService->validate($_POST['csrf_token'] ?? null)) {
+      $this->setFlash('error', 'Nieprawidłowy token bezpieczeństwa.');
+      header('Location: ' . url('admin/egzaminy/' . $examId));
+      exit();
+    }
+
+    $exam = $this->examService->getExamById($examId);
+    if (!$exam) {
+      $this->setFlash('error', 'Egzamin nie istnieje.');
+      header('Location: ' . url('admin/egzaminy'));
+      exit();
+    }
+
+    $oldStatus = (int) ($exam['is_active'] ?? 0);
+    $newStatus = $isActive ? 1 : 0;
+    if ($oldStatus === $newStatus) {
+      $this->setFlash('info', $isActive ? 'Egzamin jest już aktywny.' : 'Egzamin jest już nieaktywny.');
+      header('Location: ' . url('admin/egzaminy/' . $examId));
+      exit();
+    }
+
+    if (!$this->db->beginTransaction()) {
+      $this->setFlash('error', 'Nie udało się rozpocząć transakcji.');
+      header('Location: ' . url('admin/egzaminy/' . $examId));
+      exit();
+    }
+
+    try {
+      $changed = $isActive
+        ? $this->examService->activateExam($examId)
+        : $this->examService->deactivateExam($examId);
+      $audited = $this->auditService->logExamStatusChanged(
+        $this->currentUser->getId(),
+        $examId,
+        $isActive,
+        ['is_active' => $oldStatus],
+        ['is_active' => $newStatus]
+      );
+
+      if (!$changed || !$audited) {
+        $this->db->rollBack();
+        $this->setFlash('error', 'Nie udało się zmienić statusu egzaminu.');
+        header('Location: ' . url('admin/egzaminy/' . $examId));
+        exit();
+      }
+
+      $this->db->commit();
+      $this->setFlash('success', $isActive ? 'Egzamin został aktywowany.' : 'Egzamin został zdezaktywowany.');
+    } catch (\Throwable $e) {
+      $this->db->rollBack();
+      error_log('[AdminController] changeExamStatus: ' . $e->getMessage());
+      $this->setFlash('error', 'Wystąpił nieoczekiwany błąd podczas zmiany statusu.');
+    }
+
+    header('Location: ' . url('admin/egzaminy/' . $examId));
+    exit();
+  }
+
+  private function redirectAfterUserAction(int $userId): never
+  {
+    $target = ($_POST['return_to'] ?? '') === 'list'
+      ? url('admin/uzytkownicy')
+      : url('admin/uzytkownicy/' . $userId);
+    header('Location: ' . $target);
+    exit();
+  }
+
+  private function setFlash(string $type, string $text): void
+  {
+    $_SESSION['flash_message'] = [
+      'type' => $type,
+      'text' => $text,
     ];
   }
 
@@ -1068,15 +1310,45 @@ class AdminController extends BaseController
   /**
    * Pobiera filtry zakresu dla analityki.
    *
-   * @return array<string, string>
+   * @return array<string, int|string>
    */
   private function extractAnalyticsFilters(): array
   {
+    $legacyStatus = trim((string) ($_GET['user_status'] ?? ''));
+    $role = trim((string) ($_GET['role'] ?? ''));
+    $isVerified = trim((string) ($_GET['is_verified'] ?? ''));
+
+    if ($role === '' && in_array($legacyStatus, ['admin', 'user'], true)) {
+      $role = $legacyStatus;
+    }
+    if ($isVerified === '' && in_array($legacyStatus, ['verified', 'unverified'], true)) {
+      $isVerified = $legacyStatus === 'verified' ? '1' : '0';
+    }
+
     return [
       'range' => trim((string) ($_GET['range'] ?? '30d')),
       'from' => trim((string) ($_GET['from'] ?? '')),
       'to' => trim((string) ($_GET['to'] ?? '')),
+      'exam_type_id' => trim((string) ($_GET['exam_type_id'] ?? '')),
+      'test_type' => trim((string) ($_GET['test_type'] ?? '')),
+      'auth_provider' => trim((string) ($_GET['auth_provider'] ?? '')),
+      'role' => $role,
+      'is_verified' => $isVerified,
+      'event_type' => trim((string) ($_GET['event_type'] ?? '')),
+      'search' => trim((string) ($_GET['search'] ?? '')),
+      'page' => max(1, (int) ($_GET['page'] ?? 1)),
+      'per_page' => min(100, max(10, (int) ($_GET['per_page'] ?? 25))),
+      'user_status' => $legacyStatus,
     ];
+  }
+
+  /**
+   * Neutralizuje formuły arkusza kalkulacyjnego w danych eksportowanych do CSV.
+   */
+  private function sanitizeCsvCell(mixed $value): string
+  {
+    $cell = is_scalar($value) || $value === null ? (string) $value : '';
+    return preg_match('/^[=+\-@]/u', $cell) === 1 ? "'" . $cell : $cell;
   }
 
   /**

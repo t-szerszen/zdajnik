@@ -211,6 +211,7 @@ class Router
     $this->post('admin/egzaminy/dodaj', 'AdminController@storeExam');
     $this->get('admin/egzaminy/{examId}/edytuj', 'AdminController@showEditExamForm');
     $this->post('admin/egzaminy/{examId}/edytuj', 'AdminController@updateExam');
+    $this->post('admin/egzaminy/{examId}/aktywuj', 'AdminController@activateExam');
     $this->post('admin/egzaminy/{examId}/dezaktywuj', 'AdminController@deactivateExam');
     $this->get('admin/egzaminy/{examId}', 'AdminController@showExam');
     $this->get('admin/pytania', 'AdminController@questions');
@@ -218,13 +219,18 @@ class Router
     $this->post('admin/pytania/dodaj', 'AdminController@storeQuestion');
     $this->get('admin/pytania/{questionId}/edytuj', 'AdminController@showEditQuestionForm');
     $this->post('admin/pytania/{questionId}/edytuj', 'AdminController@updateQuestion');
+    $this->post('admin/pytania/{questionId}/aktywuj', 'AdminController@activateQuestion');
     $this->post('admin/pytania/{questionId}/dezaktywuj', 'AdminController@deactivateQuestion');
     $this->get('admin/pytania/{questionId}', 'AdminController@showQuestion');
     $this->get('admin/analytics', 'AdminController@analytics');
     $this->get('admin/analytics/data', 'AdminController@analyticsData');
+    $this->get('admin/analytics/export', 'AdminController@analyticsExport');
     $this->get('admin/statystyki', 'AdminController@analytics');
     $this->get('admin/audyt', 'AdminController@auditLogs');
     $this->post('admin/uzytkownicy/{userId}/rola', 'AdminController@updateUserRole');
+    $this->post('admin/uzytkownicy/{userId}/zweryfikuj', 'AdminController@verifyUser');
+    $this->post('admin/uzytkownicy/{userId}/dezaktywuj', 'AdminController@deactivateUser');
+    $this->post('admin/uzytkownicy/{userId}/reaktywuj', 'AdminController@reactivateUser');
     $this->get('historia', 'HistoryController@showHistory');
 
     // Zarządzanie ustawieniami i danymi osobowymi
@@ -255,6 +261,7 @@ class Router
     $this->post('api/save-progress-bulk', 'ApiController@saveProgressBulk');
     $this->post('api/toggle-saved', 'ApiController@toggleSavedQuestion');
     $this->post('api/user/avatar', 'ApiController@updateAvatar');
+    $this->post('api/analytics/event', 'ApiController@trackAnalyticsEventFromClient');
 
     // --- WYSZUKIWARKA I FILTRACJA ---
     $this->get('search', 'SearchController@showSearch');

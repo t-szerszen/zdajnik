@@ -54,13 +54,15 @@ class AdminExamService
               et.created_at,
               et.updated_at,
               COALESCE(question_stats.questions_count, 0) as questions_count,
-              COALESCE(question_stats.active_questions_count, 0) as active_questions_count
+              COALESCE(question_stats.active_questions_count, 0) as active_questions_count,
+              COALESCE(question_stats.inactive_questions_count, 0) as inactive_questions_count
             FROM exam_types et
             LEFT JOIN (
               SELECT
                 exam_type_id,
                 COUNT(*) as questions_count,
-                SUM(CASE WHEN is_active = 1 AND deleted_at IS NULL THEN 1 ELSE 0 END) as active_questions_count
+                SUM(CASE WHEN is_active = 1 AND deleted_at IS NULL THEN 1 ELSE 0 END) as active_questions_count,
+                SUM(CASE WHEN is_active = 0 AND deleted_at IS NULL THEN 1 ELSE 0 END) as inactive_questions_count
               FROM questions
               WHERE deleted_at IS NULL
               GROUP BY exam_type_id
@@ -100,13 +102,15 @@ class AdminExamService
               et.created_at,
               et.updated_at,
               COALESCE(question_stats.questions_count, 0) as questions_count,
-              COALESCE(question_stats.active_questions_count, 0) as active_questions_count
+              COALESCE(question_stats.active_questions_count, 0) as active_questions_count,
+              COALESCE(question_stats.inactive_questions_count, 0) as inactive_questions_count
             FROM exam_types et
             LEFT JOIN (
               SELECT
                 exam_type_id,
                 COUNT(*) as questions_count,
-                SUM(CASE WHEN is_active = 1 AND deleted_at IS NULL THEN 1 ELSE 0 END) as active_questions_count
+                SUM(CASE WHEN is_active = 1 AND deleted_at IS NULL THEN 1 ELSE 0 END) as active_questions_count,
+                SUM(CASE WHEN is_active = 0 AND deleted_at IS NULL THEN 1 ELSE 0 END) as inactive_questions_count
               FROM questions
               WHERE deleted_at IS NULL
               GROUP BY exam_type_id
@@ -150,7 +154,7 @@ class AdminExamService
               GROUP BY question_id
             ) version_stats ON version_stats.question_id = q.id
             WHERE q.exam_type_id = ? AND q.deleted_at IS NULL
-            ORDER BY q.created_at DESC, q.id DESC
+            ORDER BY q.updated_at DESC, q.id DESC
             LIMIT " . max(1, $limit);
 
     return $this->db->fetchAll($sql, [$examId]);
@@ -213,6 +217,37 @@ class AdminExamService
             WHERE id = ? AND deleted_at IS NULL";
 
     return $this->db->execute($sql, [$examId]);
+  }
+
+  public function activateExam(int $examId): bool
+  {
+    $sql = "UPDATE exam_types
+            SET is_active = 1, updated_at = NOW()
+            WHERE id = ? AND deleted_at IS NULL";
+
+    return $this->db->execute($sql, [$examId]);
+  }
+
+  /**
+   * @return array<int, array<string, mixed>>
+   */
+  public function getExamTopics(int $examId): array
+  {
+    return $this->db->fetchAll(
+      "SELECT
+         t.id,
+         t.name,
+         t.description,
+         t.is_active,
+         COUNT(q.id) as questions_count,
+         SUM(CASE WHEN q.is_active = 1 THEN 1 ELSE 0 END) as active_questions_count
+       FROM topics t
+       LEFT JOIN questions q ON q.topic_id = t.id AND q.deleted_at IS NULL
+       WHERE t.exam_type_id = ? AND t.deleted_at IS NULL
+       GROUP BY t.id, t.name, t.description, t.is_active
+       ORDER BY t.name ASC",
+      [$examId]
+    );
   }
 
   /**

@@ -69,7 +69,7 @@ class AdminAuditService
               u.last_name,
               u.email
             FROM admin_audit_logs l
-            JOIN users u ON l.admin_user_id = u.id
+            LEFT JOIN users u ON l.admin_user_id = u.id
             WHERE 1=1 $whereSql
             ORDER BY l.created_at DESC, l.id DESC
             LIMIT " . (int) $perPage . " OFFSET " . (int) $offset;
@@ -78,7 +78,7 @@ class AdminAuditService
 
     $countSql = "SELECT COUNT(*) as total
                  FROM admin_audit_logs l
-                 JOIN users u ON l.admin_user_id = u.id
+                 LEFT JOIN users u ON l.admin_user_id = u.id
                  WHERE 1=1 $whereSql";
     $countResult = $this->db->fetch($countSql, $params);
     $total = (int) ($countResult['total'] ?? 0);
@@ -109,6 +109,21 @@ class AdminAuditService
     return $this->logAction($adminUserId, 'change_user_status', 'user', $targetUserId, $oldValue, $newValue);
   }
 
+  public function logUserVerified(int $adminUserId, int $targetUserId, array $oldValue, array $newValue): bool
+  {
+    return $this->logAction($adminUserId, 'verify_user', 'user', $targetUserId, $oldValue, $newValue);
+  }
+
+  public function logUserDeactivated(int $adminUserId, int $targetUserId, array $oldValue, array $newValue): bool
+  {
+    return $this->logAction($adminUserId, 'deactivate_user', 'user', $targetUserId, $oldValue, $newValue);
+  }
+
+  public function logUserReactivated(int $adminUserId, int $targetUserId, array $oldValue, array $newValue): bool
+  {
+    return $this->logAction($adminUserId, 'reactivate_user', 'user', $targetUserId, $oldValue, $newValue);
+  }
+
   public function logExamCreated(int $adminUserId, int $targetId, array|string|int|float|bool|null $newValue = null): bool
   {
     return $this->logAction($adminUserId, 'create_exam', 'exam', $targetId, null, $newValue);
@@ -117,6 +132,18 @@ class AdminAuditService
   public function logExamUpdated(int $adminUserId, int $targetId, array|string|int|float|bool|null $oldValue = null, array|string|int|float|bool|null $newValue = null): bool
   {
     return $this->logAction($adminUserId, 'update_exam', 'exam', $targetId, $oldValue, $newValue);
+  }
+
+  public function logExamStatusChanged(int $adminUserId, int $targetId, bool $isActive, array $oldValue, array $newValue): bool
+  {
+    return $this->logAction(
+      $adminUserId,
+      $isActive ? 'activate_exam' : 'deactivate_exam',
+      'exam',
+      $targetId,
+      $oldValue,
+      $newValue
+    );
   }
 
   public function logQuestionCreated(int $adminUserId, int $targetId, array|string|int|float|bool|null $newValue = null): bool
@@ -132,6 +159,11 @@ class AdminAuditService
   public function logQuestionDeactivated(int $adminUserId, int $targetId, array|string|int|float|bool|null $oldValue = null, array|string|int|float|bool|null $newValue = null): bool
   {
     return $this->logAction($adminUserId, 'deactivate_question', 'question', $targetId, $oldValue, $newValue);
+  }
+
+  public function logQuestionActivated(int $adminUserId, int $targetId, array|string|int|float|bool|null $oldValue = null, array|string|int|float|bool|null $newValue = null): bool
+  {
+    return $this->logAction($adminUserId, 'activate_question', 'question', $targetId, $oldValue, $newValue);
   }
 
   /**
@@ -168,6 +200,16 @@ class AdminAuditService
     if (!empty($filters['action'])) {
       $where .= ' AND l.action = ?';
       $params[] = (string) $filters['action'];
+    }
+
+    if (!empty($filters['target_type'])) {
+      $where .= ' AND l.target_type = ?';
+      $params[] = (string) $filters['target_type'];
+    }
+
+    if (!empty($filters['target_id']) && ctype_digit((string) $filters['target_id'])) {
+      $where .= ' AND l.target_id = ?';
+      $params[] = (int) $filters['target_id'];
     }
 
     if (!empty($filters['date_from'])) {

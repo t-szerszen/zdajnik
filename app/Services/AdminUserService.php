@@ -34,50 +34,32 @@ class AdminUserService
   public function searchUsers(array $filters, int $page, int $perPage, string $sortBy, string $sortDir): array
   {
     $allowedSort = [
-      'id' => 'u.id',
-      'email' => 'u.email',
-      'created_at' => 'u.created_at',
+      'id' => 'managed_users.id',
+      'email' => 'managed_users.email',
+      'created_at' => 'managed_users.created_at',
+      'last_activity' => 'managed_users.last_activity',
     ];
 
-    $sortColumn = $allowedSort[$sortBy] ?? 'u.id';
+    $sortColumn = $allowedSort[$sortBy] ?? 'managed_users.id';
     $sortDir = strtoupper($sortDir) === 'ASC' ? 'ASC' : 'DESC';
+    $page = max(1, $page);
+    $perPage = max(1, $perPage);
     $offset = max(0, ($page - 1) * $perPage);
 
     [$whereSql, $params] = $this->buildFilterSql($filters);
 
-    $sql = "SELECT
-              u.id,
-              u.first_name,
-              u.last_name,
-              u.email,
-              u.role,
-              u.is_active,
-              u.is_verified,
-              u.auth_provider,
-              u.created_at,
-              u.updated_at,
-              COALESCE(last_attempt.completed_at, u.updated_at, u.created_at) as last_activity,
-              COALESCE(test_stats.completed_tests, 0) as solved_tests
-            FROM users u
-            LEFT JOIN (
-              SELECT user_id, MAX(completed_at) as completed_at
-              FROM attempts
-              WHERE user_id IS NOT NULL AND completed_at IS NOT NULL
-              GROUP BY user_id
-            ) last_attempt ON last_attempt.user_id = u.id
-            LEFT JOIN (
-              SELECT user_id, COUNT(*) as completed_tests
-              FROM attempts
-              WHERE user_id IS NOT NULL AND completed_at IS NOT NULL
-              GROUP BY user_id
-            ) test_stats ON test_stats.user_id = u.id
-            WHERE u.deleted_at IS NULL $whereSql
-            ORDER BY $sortColumn $sortDir, u.id DESC
+    $baseSql = $this->getManagedUsersBaseSql();
+    $sql = "SELECT *
+            FROM ($baseSql) managed_users
+            WHERE 1=1 $whereSql
+            ORDER BY $sortColumn $sortDir, managed_users.id DESC
             LIMIT " . (int) $perPage . " OFFSET " . (int) $offset;
 
     $items = $this->db->fetchAll($sql, $params);
 
-    $countSql = "SELECT COUNT(*) as total FROM users u WHERE u.deleted_at IS NULL $whereSql";
+    $countSql = "SELECT COUNT(*) as total
+                 FROM ($baseSql) managed_users
+                 WHERE 1=1 $whereSql";
     $countResult = $this->db->fetch($countSql, $params);
     $total = (int) ($countResult['total'] ?? 0);
 
@@ -95,9 +77,35 @@ class AdminUserService
    */
   public function getUserById(int $userId): array|false
   {
-    $sql = "SELECT *
-            FROM users
-            WHERE id = ?
+    $sql = "SELECT
+              u.*,
+              event_stats.last_login,
+              GREATEST(
+                COALESCE(event_stats.last_activity, '1000-01-01 00:00:00'),
+                COALESCE(attempt_stats.last_attempt, '1000-01-01 00:00:00'),
+                u.created_at
+              ) as last_activity,
+              COALESCE(attempt_stats.completed_tests, 0) as solved_tests
+            FROM users u
+            LEFT JOIN (
+              SELECT
+                user_id,
+                MAX(event_date) as last_activity,
+                MAX(CASE WHEN event_type = 'login' THEN event_date END) as last_login
+              FROM analytics_events
+              WHERE user_id IS NOT NULL
+              GROUP BY user_id
+            ) event_stats ON event_stats.user_id = u.id
+            LEFT JOIN (
+              SELECT
+                user_id,
+                MAX(COALESCE(completed_at, started_at)) as last_attempt,
+                SUM(CASE WHEN completed_at IS NOT NULL THEN 1 ELSE 0 END) as completed_tests
+              FROM attempts
+              WHERE user_id IS NOT NULL
+              GROUP BY user_id
+            ) attempt_stats ON attempt_stats.user_id = u.id
+            WHERE u.id = ?
             LIMIT 1";
     return $this->db->fetch($sql, [$userId]);
   }
@@ -199,8 +207,69 @@ class AdminUserService
    */
   public function updateUserRole(int $userId, string $role): bool
   {
-    $sql = "UPDATE users SET role = ? WHERE id = ? AND deleted_at IS NULL";
+    $sql = "UPDATE users SET role = ?, updated_at = NOW() WHERE id = ? AND deleted_at IS NULL";
     return $this->db->execute($sql, [$role, $userId]);
+  }
+
+  public function verifyUser(int $userId): bool
+  {
+    return $this->db->execute(
+      "UPDATE users SET is_verified = 1, updated_at = NOW() WHERE id = ? AND deleted_at IS NULL",
+      [$userId]
+    );
+  }
+
+  public function deactivateUser(int $userId): bool
+  {
+    return $this->db->execute(
+      "UPDATE users SET is_active = 0, updated_at = NOW() WHERE id = ? AND deleted_at IS NULL",
+      [$userId]
+    );
+  }
+
+  public function reactivateUser(int $userId): bool
+  {
+    return $this->db->execute(
+      "UPDATE users SET is_active = 1, updated_at = NOW() WHERE id = ? AND deleted_at IS NULL",
+      [$userId]
+    );
+  }
+
+  /**
+   * @return array<string, int>
+   */
+  public function getUserManagementSummary(): array
+  {
+    $result = $this->db->fetch(
+      "SELECT
+        SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_users,
+        SUM(CASE WHEN is_active = 0 THEN 1 ELSE 0 END) as inactive_users,
+        SUM(CASE WHEN is_verified = 0 THEN 1 ELSE 0 END) as unverified_users,
+        SUM(CASE WHEN role = 'admin' AND is_active = 1 THEN 1 ELSE 0 END) as active_admins
+       FROM users
+       WHERE deleted_at IS NULL"
+    ) ?: [];
+
+    return [
+      'active_users' => (int) ($result['active_users'] ?? 0),
+      'inactive_users' => (int) ($result['inactive_users'] ?? 0),
+      'unverified_users' => (int) ($result['unverified_users'] ?? 0),
+      'active_admins' => (int) ($result['active_admins'] ?? 0),
+    ];
+  }
+
+  /**
+   * @return array<int, array<string, mixed>>
+   */
+  public function getRecentUserActivity(int $limit = 8): array
+  {
+    $baseSql = $this->getManagedUsersBaseSql();
+    return $this->db->fetchAll(
+      "SELECT *
+       FROM ($baseSql) managed_users
+       ORDER BY last_activity DESC, id DESC
+       LIMIT " . max(1, $limit)
+    );
   }
 
   /**
@@ -208,7 +277,9 @@ class AdminUserService
    */
   public function countActiveAdmins(): int
   {
-    $sql = "SELECT COUNT(*) as total FROM users WHERE deleted_at IS NULL AND role = 'admin'";
+    $sql = "SELECT COUNT(*) as total
+            FROM users
+            WHERE deleted_at IS NULL AND is_active = 1 AND role = 'admin'";
     $result = $this->db->fetch($sql);
     return (int) ($result['total'] ?? 0);
   }
@@ -218,7 +289,9 @@ class AdminUserService
    */
   public function countOtherActiveAdmins(int $userId): int
   {
-    $sql = "SELECT COUNT(*) as total FROM users WHERE deleted_at IS NULL AND role = 'admin' AND id <> ?";
+    $sql = "SELECT COUNT(*) as total
+            FROM users
+            WHERE deleted_at IS NULL AND is_active = 1 AND role = 'admin' AND id <> ?";
     $result = $this->db->fetch($sql, [$userId]);
     return (int) ($result['total'] ?? 0);
   }
@@ -237,32 +310,96 @@ class AdminUserService
     if (!empty($filters['query'])) {
       $query = trim((string) $filters['query']);
       if (ctype_digit($query)) {
-        $whereParts[] = 'u.id = ?';
+        $whereParts[] = '(managed_users.id = ? OR managed_users.email LIKE ? OR managed_users.first_name LIKE ? OR managed_users.last_name LIKE ?)';
         $params[] = (int) $query;
+        $like = '%' . $query . '%';
+        array_push($params, $like, $like, $like);
       } else {
-        $whereParts[] = '(u.email LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ?)';
+        $whereParts[] = '(managed_users.email LIKE ? OR managed_users.first_name LIKE ? OR managed_users.last_name LIKE ?)';
         $like = '%' . $query . '%';
         array_push($params, $like, $like, $like);
       }
     }
 
     if (!empty($filters['role']) && in_array($filters['role'], ['user', 'admin'], true)) {
-      $whereParts[] = 'u.role = ?';
+      $whereParts[] = 'managed_users.role = ?';
       $params[] = $filters['role'];
     }
 
     if (!empty($filters['status']) && in_array($filters['status'], ['active', 'inactive'], true)) {
       if ($filters['status'] === 'active') {
-        $whereParts[] = 'u.is_active = 1 AND u.deleted_at IS NULL';
+        $whereParts[] = 'managed_users.is_active = 1';
       } else {
-        $whereParts[] = '(u.is_active = 0 OR u.deleted_at IS NOT NULL)';
+        $whereParts[] = 'managed_users.is_active = 0';
       }
-    } else {
-      $whereParts[] = 'u.deleted_at IS NULL';
+    }
+
+    if (!empty($filters['verified']) && in_array($filters['verified'], ['verified', 'unverified'], true)) {
+      $whereParts[] = 'managed_users.is_verified = ?';
+      $params[] = $filters['verified'] === 'verified' ? 1 : 0;
+    }
+
+    if (!empty($filters['auth_provider']) && in_array($filters['auth_provider'], ['local', 'google'], true)) {
+      $whereParts[] = 'managed_users.auth_provider = ?';
+      $params[] = $filters['auth_provider'];
+    }
+
+    if (!empty($filters['activity'])) {
+      if ($filters['activity'] === 'active_recently') {
+        $whereParts[] = 'managed_users.last_activity >= DATE_SUB(NOW(), INTERVAL 7 DAY)';
+      } elseif ($filters['activity'] === 'inactive_7d') {
+        $whereParts[] = 'managed_users.last_activity < DATE_SUB(NOW(), INTERVAL 7 DAY)';
+      } elseif ($filters['activity'] === 'inactive_30d') {
+        $whereParts[] = 'managed_users.last_activity < DATE_SUB(NOW(), INTERVAL 30 DAY)';
+      } elseif ($filters['activity'] === 'no_attempts') {
+        $whereParts[] = 'managed_users.solved_tests = 0';
+      }
     }
 
     $where = empty($whereParts) ? '' : ' AND ' . implode(' AND ', $whereParts);
 
     return [$where, $params];
+  }
+
+  private function getManagedUsersBaseSql(): string
+  {
+    return "SELECT
+              u.id,
+              u.first_name,
+              u.last_name,
+              u.email,
+              u.role,
+              u.is_active,
+              u.is_verified,
+              u.auth_provider,
+              u.created_at,
+              u.updated_at,
+              event_stats.last_login,
+              GREATEST(
+                COALESCE(event_stats.last_activity, '1000-01-01 00:00:00'),
+                COALESCE(attempt_stats.last_attempt, '1000-01-01 00:00:00'),
+                u.created_at
+              ) as last_activity,
+              COALESCE(attempt_stats.completed_tests, 0) as solved_tests
+            FROM users u
+            LEFT JOIN (
+              SELECT
+                user_id,
+                MAX(event_date) as last_activity,
+                MAX(CASE WHEN event_type = 'login' THEN event_date END) as last_login
+              FROM analytics_events
+              WHERE user_id IS NOT NULL
+              GROUP BY user_id
+            ) event_stats ON event_stats.user_id = u.id
+            LEFT JOIN (
+              SELECT
+                user_id,
+                MAX(COALESCE(completed_at, started_at)) as last_attempt,
+                SUM(CASE WHEN completed_at IS NOT NULL THEN 1 ELSE 0 END) as completed_tests
+              FROM attempts
+              WHERE user_id IS NOT NULL
+              GROUP BY user_id
+            ) attempt_stats ON attempt_stats.user_id = u.id
+            WHERE u.deleted_at IS NULL";
   }
 }
