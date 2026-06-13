@@ -1,46 +1,38 @@
 <?php
 /**
  * @file analytics.php
- * @description Dashboard analityki produktowej dla administratorów.
+ * @description Roboczy dashboard analityki produktowej dla administratorów.
  */
 
-$pageTitle = $pageTitle ?? 'Analityka | Admin Panel | Examly';
-$pageDescription = $pageDescription ?? 'Panel analityczny produktu Examly dla administratorów.';
+$pageTitle = $pageTitle ?? 'Analityka | Panel administracyjny | Examly';
+$pageDescription = $pageDescription ?? 'Dane produktowe, edukacyjne i operacyjne Examly.';
 $analytics = $analytics ?? [];
-$filters = $filters ?? ['range' => '30d', 'from' => '', 'to' => ''];
-$availableRanges = $availableRanges ?? [
-  '7d' => 'Ostatnie 7 dni',
-  '30d' => 'Ostatnie 30 dni',
-  '90d' => 'Ostatnie 90 dni',
+$filters = $filters ?? [];
+$filterOptions = $filterOptions ?? [];
+$availableRanges = $availableRanges ?? ($filterOptions['ranges'] ?? []);
+$range = $analytics['range'] ?? ['value' => '30d', 'label' => 'Ostatnie 30 dni', 'from' => '', 'to' => ''];
+
+$h = static fn(mixed $value): string => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+$selected = static fn(mixed $actual, mixed $expected): string => (string) $actual === (string) $expected ? ' selected' : '';
+
+$tabs = [
+  'overview' => ['label' => 'Overview', 'icon' => 'fa-chart-line'],
+  'acquisition' => ['label' => 'Acquisition', 'icon' => 'fa-user-plus'],
+  'engagement' => ['label' => 'Engagement', 'icon' => 'fa-users'],
+  'learning' => ['label' => 'Learning', 'icon' => 'fa-graduation-cap'],
+  'content' => ['label' => 'Content', 'icon' => 'fa-list-check'],
+  'retention' => ['label' => 'Retention', 'icon' => 'fa-rotate'],
+  'users' => ['label' => 'Users', 'icon' => 'fa-address-card'],
 ];
 
-$range = $analytics['range'] ?? [
-  'value' => '30d',
-  'label' => 'Ostatnie 30 dni',
-  'from' => '',
-  'to' => '',
+$exports = [
+  'users' => 'Użytkownicy',
+  'exams' => 'Egzaminy',
+  'questions' => 'Pytania',
+  'events' => 'Eventy',
+  'retention' => 'Retencja',
 ];
 
-$summary = $analytics['summary'] ?? [];
-$daily = $analytics['daily'] ?? ['labels' => []];
-$examActivity = $analytics['examActivity'] ?? [];
-$singleQuestionActivity = $analytics['singleQuestionActivity'] ?? [];
-$hardestQuestions = $analytics['hardestQuestions'] ?? [];
-$recentActivity = $analytics['recentActivity'] ?? ['logins' => [], 'registrations' => [], 'testsCompleted' => []];
-$initialData = [
-  'range' => $range,
-  'summary' => $summary,
-  'daily' => $daily,
-  'examActivity' => $examActivity,
-  'singleQuestionActivity' => $singleQuestionActivity,
-  'hardestQuestions' => $hardestQuestions,
-  'recentActivity' => $recentActivity,
-];
-
-$extraScripts = array_values(array_unique(array_merge($extraScripts ?? [], [
-  'https://cdn.jsdelivr.net/npm/chart.js',
-  url('js/components/AdminAnalytics.js'),
-])));
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -53,7 +45,7 @@ $extraScripts = array_values(array_unique(array_merge($extraScripts ?? [], [
     <header class="page-header">
       <div class="page-header__content">
         <h1 class="page-header__title"><span class="text-gradient">Analityka</span> produktu</h1>
-        <p class="page-header__text">Widok metryk produktowych, aktywności dziennej i zachowania użytkowników.</p>
+        <p class="page-header__text">Dane o pozyskaniu, aktywności, nauce i jakości treści.</p>
       </div>
     </header>
 
@@ -61,389 +53,282 @@ $extraScripts = array_values(array_unique(array_merge($extraScripts ?? [], [
       <div class="stats-page__container admin-shell">
         <?php $activeSection = 'analytics'; include __DIR__ . '/partials/navigation.php'; ?>
 
-        <div class="admin-content admin-analytics" data-analytics-root data-endpoint="<?= url('admin/analytics/data') ?>">
+        <div
+          class="admin-content admin-analytics"
+          data-analytics-root
+          data-endpoint="<?= $h(url('admin/analytics/data')) ?>"
+          data-export-endpoint="<?= $h(url('admin/analytics/export')) ?>"
+          aria-busy="false"
+        >
           <script type="application/json" id="analytics-initial-data">
-            <?= json_encode($initialData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>
+            <?= json_encode($analytics, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>
           </script>
 
-          <div class="stats-card admin-analytics__filters">
-            <div class="stats-card__header">
-              <div class="stats-card__title">
-                <i class="fas fa-sliders" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
-                <span>Zakres czasu</span>
+          <section class="stats-card admin-analytics__filters" aria-label="Filtry analityki">
+            <div class="admin-analytics__filter-heading">
+              <div>
+                <strong>Filtry</strong>
+                <span data-range-label><?= $h($range['label'] ?? '') ?></span>
+              </div>
+              <div class="admin-analytics__request-status hidden" data-loading-status role="status">
+                <span class="admin-analytics__spinner" aria-hidden="true"></span>
+                Aktualizuję dane
               </div>
             </div>
 
-            <form class="admin-analytics__range-form" method="GET" action="<?= url('admin/analytics') ?>" data-analytics-form>
-              <div class="admin-analytics__range-buttons">
+            <form method="GET" action="<?= $h(url('admin/analytics')) ?>" data-analytics-form>
+              <input type="hidden" name="range" value="<?= $h($range['value'] ?? '30d') ?>" data-range-input>
+              <input type="hidden" name="page" value="<?= max(1, (int) ($filters['page'] ?? 1)) ?>" data-page-input>
+              <input type="hidden" name="per_page" value="<?= (int) ($filters['per_page'] ?? 25) ?>">
+
+              <div class="admin-analytics__range-buttons" aria-label="Szybki zakres dat">
                 <?php foreach ($availableRanges as $key => $label): ?>
-                  <button type="button"
-                    class="btn btn--secondary btn--sm admin-analytics__range-btn <?= ($range['value'] ?? '30d') === $key ? 'is-active' : '' ?>"
-                    data-range-value="<?= htmlspecialchars($key) ?>">
-                    <?= htmlspecialchars($label) ?>
+                  <button
+                    type="button"
+                    class="admin-analytics__range-btn <?= ($range['value'] ?? '30d') === $key ? 'is-active' : '' ?>"
+                    data-range-value="<?= $h($key) ?>"
+                  >
+                    <?= $h($label) ?>
                   </button>
                 <?php endforeach; ?>
               </div>
 
-              <input type="hidden" name="range" value="<?= htmlspecialchars((string) ($range['value'] ?? '30d')) ?>" data-range-input>
-
-              <div class="admin-filters__grid admin-analytics__custom-grid">
+              <div class="admin-analytics__filter-grid">
                 <label class="admin-field">
                   <span>Od</span>
-                  <input type="date" name="from" value="<?= htmlspecialchars((string) ($range['from'] ?? '')) ?>" data-from-input>
+                  <input type="date" name="from" value="<?= $h($range['from'] ?? '') ?>" data-from-input>
                 </label>
-
                 <label class="admin-field">
                   <span>Do</span>
-                  <input type="date" name="to" value="<?= htmlspecialchars((string) ($range['to'] ?? '')) ?>" data-to-input>
+                  <input type="date" name="to" value="<?= $h($range['to'] ?? '') ?>" data-to-input>
                 </label>
-
-                <div class="admin-field admin-field--ghost">
-                  <span>Aktualny zakres</span>
-                  <strong data-range-label><?= htmlspecialchars((string) ($range['label'] ?? 'Ostatnie 30 dni')) ?></strong>
+                <label class="admin-field">
+                  <span>Egzamin</span>
+                  <select name="exam_type_id">
+                    <option value="">Wszystkie</option>
+                    <?php foreach ($filterOptions['examTypes'] ?? [] as $exam): ?>
+                      <option value="<?= (int) $exam['id'] ?>"<?= $selected($filters['exam_type_id'] ?? '', $exam['id']) ?>>
+                        <?= $h($exam['code'] . ' - ' . $exam['name']) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </label>
+                <label class="admin-field">
+                  <span>Typ testu</span>
+                  <select name="test_type">
+                    <?php foreach ($filterOptions['testTypes'] ?? [] as $value => $label): ?>
+                      <?php $optionValue = $value === 'all' ? '' : $value; ?>
+                      <option value="<?= $h($optionValue) ?>"<?= $selected($filters['test_type'] ?? '', $optionValue) ?>>
+                        <?= $h($label) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </label>
+                <label class="admin-field">
+                  <span>Provider</span>
+                  <select name="auth_provider">
+                    <?php foreach ($filterOptions['authProviders'] ?? [] as $value => $label): ?>
+                      <?php $optionValue = $value === 'all' ? '' : $value; ?>
+                      <option value="<?= $h($optionValue) ?>"<?= $selected($filters['auth_provider'] ?? '', $optionValue) ?>>
+                        <?= $h($label) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </label>
+                <label class="admin-field">
+                  <span>Status użytkownika</span>
+                  <select name="user_status">
+                    <?php foreach ($filterOptions['userStatuses'] ?? [] as $value => $label): ?>
+                      <?php $optionValue = $value === 'all' ? '' : $value; ?>
+                      <option value="<?= $h($optionValue) ?>"<?= $selected($filters['user_status'] ?? '', $optionValue) ?>>
+                        <?= $h($label) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </label>
+                <label class="admin-field">
+                  <span>Event</span>
+                  <select name="event_type">
+                    <option value="">Wszystkie</option>
+                    <?php foreach ($filterOptions['eventTypes'] ?? [] as $value => $label): ?>
+                      <option value="<?= $h($value) ?>"<?= $selected($filters['event_type'] ?? '', $value) ?>>
+                        <?= $h($label) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </label>
+                <label class="admin-field admin-field--search">
+                  <span>Użytkownik</span>
+                  <input
+                    type="search"
+                    name="search"
+                    value="<?= $h($filters['search'] ?? '') ?>"
+                    placeholder="E-mail, imię lub nazwisko"
+                    autocomplete="off"
+                    data-search-input
+                  >
+                </label>
+                <div class="admin-analytics__filter-actions">
+                  <button type="submit" class="btn btn--primary" data-filter-submit>Zastosuj</button>
+                  <button type="button" class="btn btn--secondary" data-filter-reset>Wyczyść</button>
                 </div>
-              </div>
-
-              <div class="admin-filters__actions">
-                <button type="submit" class="btn btn--primary">Odśwież</button>
-                <a href="<?= url('admin/analytics') ?>" class="btn btn--secondary">Reset</a>
               </div>
             </form>
-          </div>
+          </section>
 
-          <div class="admin-grid admin-analytics__kpi-grid">
-            <div class="stats-card admin-tile admin-analytics__kpi" data-kpi="totalUsers">
-              <div class="admin-tile__icon"><i class="fas fa-users"></i></div>
-              <div class="admin-tile__content">
-                <span class="admin-tile__label">Użytkownicy</span>
-                <strong class="admin-tile__value"><?= (int) ($summary['totalUsers'] ?? 0) ?></strong>
-                <span class="admin-tile__meta">Wszyscy aktywni i nieusunięci</span>
-              </div>
-            </div>
+          <div class="admin-analytics__toolbar">
+            <nav class="admin-analytics__tabs" aria-label="Sekcje analityki" role="tablist">
+              <?php foreach ($tabs as $key => $tab): ?>
+                <button
+                  type="button"
+                  class="admin-analytics__tab <?= $key === 'overview' ? 'is-active' : '' ?>"
+                  data-analytics-tab="<?= $h($key) ?>"
+                  id="analytics-tab-<?= $h($key) ?>"
+                  aria-controls="analytics-section-<?= $h($key) ?>"
+                  aria-selected="<?= $key === 'overview' ? 'true' : 'false' ?>"
+                  role="tab"
+                >
+                  <i class="fas <?= $h($tab['icon']) ?>" aria-hidden="true"></i>
+                  <span><?= $h($tab['label']) ?></span>
+                </button>
+              <?php endforeach; ?>
+            </nav>
 
-            <div class="stats-card admin-tile admin-analytics__kpi" data-kpi="newRegistrationsToday">
-              <div class="admin-tile__icon"><i class="fas fa-user-plus"></i></div>
-              <div class="admin-tile__content">
-                <span class="admin-tile__label">Rejestracje dziś</span>
-                <strong class="admin-tile__value"><?= (int) ($summary['newRegistrationsToday'] ?? 0) ?></strong>
-                <span class="admin-tile__meta">Nowe konta utworzone dzisiaj</span>
-              </div>
-            </div>
-
-            <div class="stats-card admin-tile admin-analytics__kpi" data-kpi="loginsToday">
-              <div class="admin-tile__icon"><i class="fas fa-right-to-bracket"></i></div>
-              <div class="admin-tile__content">
-                <span class="admin-tile__label">Logowania dziś</span>
-                <strong class="admin-tile__value"><?= (int) ($summary['loginsToday'] ?? 0) ?></strong>
-                <span class="admin-tile__meta">Udane sesje autoryzacji</span>
-              </div>
-            </div>
-
-            <div class="stats-card admin-tile admin-analytics__kpi" data-kpi="pageViewsToday">
-              <div class="admin-tile__icon"><i class="fas fa-eye"></i></div>
-              <div class="admin-tile__content">
-                <span class="admin-tile__label">Odwiedziny dziś</span>
-                <strong class="admin-tile__value"><?= (int) ($summary['pageViewsToday'] ?? 0) ?></strong>
-                <span class="admin-tile__meta">Publiczne odsłony aplikacji</span>
-              </div>
-            </div>
-
-            <div class="stats-card admin-tile admin-analytics__kpi" data-kpi="testsStartedToday">
-              <div class="admin-tile__icon"><i class="fas fa-play"></i></div>
-              <div class="admin-tile__content">
-                <span class="admin-tile__label">Testy rozpoczęte</span>
-                <strong class="admin-tile__value"><?= (int) ($summary['testsStartedToday'] ?? 0) ?></strong>
-                <span class="admin-tile__meta">Starty dzisiaj</span>
-              </div>
-            </div>
-
-            <div class="stats-card admin-tile admin-analytics__kpi" data-kpi="testsCompletedToday">
-              <div class="admin-tile__icon"><i class="fas fa-flag-checkered"></i></div>
-              <div class="admin-tile__content">
-                <span class="admin-tile__label">Testy ukończone</span>
-                <strong class="admin-tile__value"><?= (int) ($summary['testsCompletedToday'] ?? 0) ?></strong>
-                <span class="admin-tile__meta">Zapisane wyniki dzisiaj</span>
-              </div>
-            </div>
-
-            <div class="stats-card admin-tile admin-analytics__kpi" data-kpi="averageScore">
-              <div class="admin-tile__icon"><i class="fas fa-bullseye"></i></div>
-              <div class="admin-tile__content">
-                <span class="admin-tile__label">Średni wynik</span>
-                <strong class="admin-tile__value"><?= number_format((float) ($summary['averageScore'] ?? 0), 1, ',', ' ') ?>%</strong>
-                <span class="admin-tile__meta">Wynik w wybranym zakresie</span>
-              </div>
-            </div>
-
-            <div class="stats-card admin-tile admin-analytics__kpi" data-kpi="questionsAnsweredToday">
-              <div class="admin-tile__icon"><i class="fas fa-circle-check"></i></div>
-              <div class="admin-tile__content">
-                <span class="admin-tile__label">Rozwiązane pytania</span>
-                <strong class="admin-tile__value"><?= (int) ($summary['questionsAnsweredToday'] ?? 0) ?></strong>
-                <span class="admin-tile__meta">Zdarzenia odpowiedzi dziś</span>
-              </div>
-            </div>
-
-            <div class="stats-card admin-tile admin-analytics__kpi" data-kpi="singleQuestionStartedToday">
-              <div class="admin-tile__icon"><i class="fas fa-bolt"></i></div>
-              <div class="admin-tile__content">
-                <span class="admin-tile__label">Jedno pytanie dziś</span>
-                <strong class="admin-tile__value"><?= (int) ($summary['singleQuestionStartedToday'] ?? 0) ?></strong>
-                <span class="admin-tile__meta">Uruchomienia modułu dzisiaj</span>
-              </div>
-            </div>
-
-            <div class="stats-card admin-tile admin-analytics__kpi" data-kpi="singleQuestionStartedInRange">
-              <div class="admin-tile__icon"><i class="fas fa-layer-group"></i></div>
-              <div class="admin-tile__content">
-                <span class="admin-tile__label">Jedno pytanie w zakresie</span>
-                <strong class="admin-tile__value"><?= (int) ($summary['singleQuestionStartedInRange'] ?? 0) ?></strong>
-                <span class="admin-tile__meta">Uruchomienia w aktywnym zakresie</span>
-              </div>
-            </div>
-
-            <div class="stats-card admin-tile admin-analytics__kpi" data-kpi="singleQuestionAnsweredToday">
-              <div class="admin-tile__icon"><i class="fas fa-reply"></i></div>
-              <div class="admin-tile__content">
-                <span class="admin-tile__label">Odpowiedzi dziś</span>
-                <strong class="admin-tile__value"><?= (int) ($summary['singleQuestionAnsweredToday'] ?? 0) ?></strong>
-                <span class="admin-tile__meta">Odpowiedzi w module dzisiaj</span>
-              </div>
-            </div>
-
-            <div class="stats-card admin-tile admin-analytics__kpi" data-kpi="singleQuestionAccuracy">
-              <div class="admin-tile__icon"><i class="fas fa-crosshairs"></i></div>
-              <div class="admin-tile__content">
-                <span class="admin-tile__label">Skuteczność modułu</span>
-                <strong class="admin-tile__value"><?= number_format((float) ($summary['singleQuestionAccuracy'] ?? 0), 1, ',', ' ') ?>%</strong>
-                <span class="admin-tile__meta">Poprawne odpowiedzi w zakresie</span>
-              </div>
+            <div class="admin-analytics__exports" aria-label="Eksport CSV">
+              <?php foreach ($exports as $dataset => $label): ?>
+                <a class="btn btn--secondary btn--sm" href="#" data-export-dataset="<?= $h($dataset) ?>">
+                  <i class="fas fa-download" aria-hidden="true"></i>
+                  <?= $h($label) ?>
+                </a>
+              <?php endforeach; ?>
             </div>
           </div>
 
-          <div class="stats-card admin-analytics__chart-card">
-            <div class="stats-card__header">
-              <div class="stats-card__title">
-                <i class="fas fa-chart-column" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
-                <span>Analityka dzienna</span>
+          <div class="admin-analytics__error hidden" data-analytics-error role="alert"></div>
+
+          <section
+            class="admin-analytics__section is-active"
+            data-analytics-section="overview"
+            id="analytics-section-overview"
+            aria-labelledby="analytics-tab-overview"
+            role="tabpanel"
+          >
+            <header class="admin-analytics__section-heading">
+              <div><span>Overview</span><h2>Najważniejsze wskaźniki</h2></div>
+              <p>Porównanie z poprzednim okresem o tej samej długości.</p>
+            </header>
+            <div class="admin-analytics__metric-grid" data-overview-kpis></div>
+            <div class="admin-analytics__panel">
+              <div class="admin-analytics__panel-heading">
+                <h3>Trend dzienny</h3>
+                <span>Odsłony, rejestracje i testy</span>
+              </div>
+              <div class="admin-analytics__chart-wrap">
+                <div class="admin-empty hidden" data-chart-empty>Brak danych dla wybranego zakresu.</div>
+                <canvas id="admin-analytics-chart" data-chart-canvas></canvas>
               </div>
             </div>
+          </section>
 
-            <div class="admin-analytics__chart-wrap">
-              <div class="admin-analytics__empty hidden" data-chart-empty>
-                <div class="admin-empty">Brak danych dla wybranego zakresu.</div>
-              </div>
-              <canvas id="admin-analytics-chart" data-chart-canvas></canvas>
+          <section class="admin-analytics__section" data-analytics-section="acquisition" id="analytics-section-acquisition" aria-labelledby="analytics-tab-acquisition" role="tabpanel" hidden>
+            <header class="admin-analytics__section-heading">
+              <div><span>Acquisition</span><h2>Pozyskanie i konwersja</h2></div>
+              <p>Od wejścia na stronę do ukończenia testu.</p>
+            </header>
+            <div class="admin-analytics__metric-grid" data-acquisition-kpis></div>
+            <div class="admin-analytics__panel">
+              <div class="admin-analytics__panel-heading"><h3>Lejek konwersji</h3><span>Unikalni użytkownicy lub sesje</span></div>
+              <div data-conversion-funnel></div>
             </div>
-          </div>
-
-          <div class="admin-analytics__grid-two">
-            <div class="stats-card">
-              <div class="stats-card__header">
-                <div class="stats-card__title">
-                  <i class="fas fa-file-lines" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
-                  <span>Aktywność egzaminów</span>
-                </div>
-              </div>
-
-              <div class="admin-table admin-table--wide admin-analytics__table">
-                <div class="admin-table__head admin-analytics__table-head">
-                  <span>Egzamin</span>
-                  <span>Rozpoczęte</span>
-                  <span>Ukończone</span>
-                  <span>Średni wynik</span>
-                  <span>Użytkownicy</span>
-                </div>
-
-                <div data-exam-activity>
-                  <?php if (empty($examActivity)): ?>
-                    <div class="admin-empty">Brak aktywności egzaminów dla wybranego zakresu.</div>
-                  <?php else: ?>
-                    <?php foreach ($examActivity as $row): ?>
-                      <div class="admin-table__row admin-analytics__table-row">
-                        <div>
-                          <strong><?= htmlspecialchars((string) ($row['code'] ?? '')) ?></strong>
-                          <div class="admin-table__muted"><?= htmlspecialchars((string) ($row['name'] ?? '')) ?></div>
-                        </div>
-                        <span><?= (int) ($row['started_tests'] ?? 0) ?></span>
-                        <span><?= (int) ($row['completed_tests'] ?? 0) ?></span>
-                        <span><?= number_format((float) ($row['avg_score'] ?? 0), 1, ',', ' ') ?>%</span>
-                        <span><?= (int) ($row['unique_users'] ?? 0) ?></span>
-                      </div>
-                    <?php endforeach; ?>
-                  <?php endif; ?>
-                </div>
-              </div>
+            <div class="admin-analytics__split">
+              <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Provider</h3></div><div data-auth-providers></div></div>
+              <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Źródła ruchu</h3></div><div data-traffic-sources></div></div>
             </div>
+            <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Ścieżki wejścia</h3></div><div data-entry-paths></div></div>
+            <div class="admin-analytics__panel">
+              <div class="admin-analytics__panel-heading"><h3>Wyszukiwania</h3><span>Frazy są zapisywane tylko po normalizacji i odrzuceniu wzorców PII</span></div>
+              <div class="admin-analytics__metric-grid admin-analytics__metric-grid--compact" data-search-kpis></div>
+              <div data-search-queries></div>
+            </div>
+          </section>
 
-            <div class="stats-card">
-              <div class="stats-card__header">
-                <div class="stats-card__title">
-                  <i class="fas fa-lightbulb" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
-                  <span>Aktywność modułu jednego pytania</span>
-                </div>
+          <section class="admin-analytics__section" data-analytics-section="engagement" id="analytics-section-engagement" aria-labelledby="analytics-tab-engagement" role="tabpanel" hidden>
+            <header class="admin-analytics__section-heading">
+              <div><span>Engagement</span><h2>Aktywność produktu</h2></div>
+              <p>DAU, WAU, MAU, sesje, odsłony i zdarzenia.</p>
+            </header>
+            <div class="admin-analytics__metric-grid" data-engagement-kpis></div>
+            <div class="admin-analytics__split">
+              <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Najczęstsze ścieżki</h3></div><div data-top-paths></div></div>
+              <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Typy zdarzeń</h3></div><div data-event-types></div></div>
+            </div>
+          </section>
+
+          <section class="admin-analytics__section" data-analytics-section="learning" id="analytics-section-learning" aria-labelledby="analytics-tab-learning" role="tabpanel" hidden>
+            <header class="admin-analytics__section-heading">
+              <div><span>Learning</span><h2>Skuteczność nauki</h2></div>
+              <p>Rozpoczęcia, ukończenia, wyniki i czas pracy.</p>
+            </header>
+            <div class="admin-analytics__metric-grid" data-learning-kpis></div>
+            <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Typ testu</h3></div><div data-learning-types></div></div>
+            <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Porzucone testy</h3><span>Jawne wyjścia oraz starty bez wyniku po oknie 2-6 godzin</span></div><div data-abandoned-tests></div></div>
+            <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Egzaminy</h3></div><div data-learning-exams></div></div>
+          </section>
+
+          <section class="admin-analytics__section" data-analytics-section="content" id="analytics-section-content" aria-labelledby="analytics-tab-content" role="tabpanel" hidden>
+            <header class="admin-analytics__section-heading">
+              <div><span>Content</span><h2>Jakość pytań i tematów</h2></div>
+              <p>Trudność, skuteczność i miejsca utraty odpowiedzi.</p>
+            </header>
+            <div class="admin-analytics__panel">
+              <div class="admin-analytics__panel-heading"><h3>Jakość pytań</h3><span>Posortowane od najwyższego udziału błędów</span></div>
+              <div data-content-quality></div>
+              <div class="admin-pagination admin-analytics__pagination" data-content-pagination></div>
+            </div>
+            <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Skuteczność tematów</h3></div><div data-topic-activity></div></div>
+            <div class="admin-analytics__split">
+              <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Najczęściej zapisywane</h3></div><div data-saved-questions></div></div>
+              <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Najczęściej pomijane</h3></div><div data-dropoff-questions></div></div>
+            </div>
+            <div class="admin-analytics__split">
+              <div class="admin-analytics__panel">
+                <div class="admin-analytics__panel-heading"><h3>Zapisy per egzamin i temat</h3></div>
+                <div data-saved-question-activity></div>
               </div>
-
-              <div class="admin-table admin-table--wide admin-analytics__table">
-                <div class="admin-table__head admin-analytics__table-head admin-analytics__table-head--single-question">
-                  <span>Egzamin</span>
-                  <span>Uruchomienia</span>
-                  <span>Odpowiedzi</span>
-                  <span>Użytkownicy</span>
-                  <span>Skuteczność</span>
-                  <span>Najczęstsze pytanie</span>
-                </div>
-
-                <div data-single-question-activity>
-                  <?php if (empty($singleQuestionActivity)): ?>
-                    <div class="admin-empty">Brak aktywności modułu jednego pytania dla wybranego zakresu.</div>
-                  <?php else: ?>
-                    <?php foreach ($singleQuestionActivity as $row): ?>
-                      <div class="admin-table__row admin-analytics__table-row admin-analytics__table-row--single-question">
-                        <div>
-                          <strong><?= htmlspecialchars((string) ($row['code'] ?: 'Brak przypisanego egzaminu')) ?></strong>
-                          <div class="admin-table__muted"><?= htmlspecialchars((string) ($row['name'] ?? 'Brak przypisanego egzaminu')) ?></div>
-                        </div>
-                        <span><?= (int) ($row['started_count'] ?? 0) ?></span>
-                        <span><?= (int) ($row['answered_count'] ?? 0) ?></span>
-                        <span><?= (int) ($row['unique_users'] ?? 0) ?></span>
-                        <span><?= number_format((float) ($row['accuracy'] ?? 0), 1, ',', ' ') ?>%</span>
-                        <span><?= htmlspecialchars(mb_strimwidth((string) ($row['top_question_text'] ?? 'Brak danych'), 0, 80, '...')) ?></span>
-                      </div>
-                    <?php endforeach; ?>
-                  <?php endif; ?>
-                </div>
+              <div class="admin-analytics__panel">
+                <div class="admin-analytics__panel-heading"><h3>Oglądanie wyjaśnień</h3><span>Porównanie ze stanem poprawności odpowiedzi</span></div>
+                <div class="admin-analytics__metric-grid admin-analytics__metric-grid--compact" data-explanation-kpis></div>
               </div>
             </div>
+          </section>
 
-            <div class="stats-card">
-              <div class="stats-card__header">
-                <div class="stats-card__title">
-                  <i class="fas fa-triangle-exclamation" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
-                  <span>Najtrudniejsze pytania</span>
-                </div>
-              </div>
+          <section class="admin-analytics__section" data-analytics-section="retention" id="analytics-section-retention" aria-labelledby="analytics-tab-retention" role="tabpanel" hidden>
+            <header class="admin-analytics__section-heading">
+              <div><span>Retention</span><h2>Powroty i kohorty</h2></div>
+              <p>Retencja D1, D7 i D30 oraz konta bez aktywności.</p>
+            </header>
+            <div class="admin-analytics__metric-grid" data-retention-kpis></div>
+            <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Kohorty rejestracji</h3></div><div data-retention-cohorts></div></div>
+            <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Nieaktywni użytkownicy</h3></div><div data-inactive-users></div></div>
+          </section>
 
-              <div class="admin-table admin-table--wide admin-analytics__table">
-                <div class="admin-table__head admin-analytics__table-head admin-analytics__table-head--hardest">
-                  <span>Pytanie</span>
-                  <span>Egzamin</span>
-                  <span>Odpowiedzi</span>
-                  <span>Błędne</span>
-                  <span>Wynik błędów</span>
-                </div>
-
-                <div data-hardest-questions>
-                  <?php if (empty($hardestQuestions)): ?>
-                    <div class="admin-empty">Brak danych dla wybranego zakresu.</div>
-                  <?php else: ?>
-                    <?php foreach ($hardestQuestions as $row): ?>
-                      <div class="admin-table__row admin-analytics__table-row admin-analytics__table-row--hardest">
-                        <div>
-                          <strong><?= htmlspecialchars(mb_strimwidth((string) ($row['question_text'] ?? ''), 0, 120, '...')) ?></strong>
-                        </div>
-                        <span><?= htmlspecialchars((string) ($row['exam_code'] ?? '')) ?></span>
-                        <span><?= (int) ($row['total_answers'] ?? 0) ?></span>
-                        <span><?= (int) ($row['wrong_answers'] ?? 0) ?></span>
-                        <span><?= number_format((float) ($row['wrong_percent'] ?? 0), 1, ',', ' ') ?>%</span>
-                      </div>
-                    <?php endforeach; ?>
-                  <?php endif; ?>
-                </div>
-              </div>
+          <section class="admin-analytics__section" data-analytics-section="users" id="analytics-section-users" aria-labelledby="analytics-tab-users" role="tabpanel" hidden>
+            <header class="admin-analytics__section-heading">
+              <div><span>Users</span><h2>Aktywność użytkowników</h2></div>
+              <p>Logowania, testy, średni wynik i status konta.</p>
+            </header>
+            <div class="admin-analytics__panel">
+              <div data-users-table></div>
+              <div class="admin-pagination admin-analytics__pagination" data-users-pagination></div>
             </div>
-          </div>
-
-          <div class="admin-analytics__grid-three">
-            <div class="stats-card">
-              <div class="stats-card__header">
-                <div class="stats-card__title">
-                  <i class="fas fa-right-to-bracket" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
-                  <span>Ostatnie logowania</span>
-                </div>
-              </div>
-              <div class="admin-list" data-recent-logins>
-                <?php if (empty($recentActivity['logins'] ?? [])): ?>
-                  <div class="admin-empty">Brak danych.</div>
-                <?php else: ?>
-                  <?php foreach ($recentActivity['logins'] as $item): ?>
-                    <div class="admin-list__row">
-                      <div class="admin-list__primary">
-                        <strong><?= htmlspecialchars((string) ($item['display_name'] ?? trim((string) ($item['first_name'] ?? '') . ' ' . (string) ($item['last_name'] ?? '')) ?: 'Użytkownik nieznany')) ?></strong>
-                        <span><?= htmlspecialchars((string) ($item['email'] ?? '')) ?></span>
-                      </div>
-                      <div class="admin-list__secondary">
-                        <span class="badge badge--secondary"><?= htmlspecialchars((string) ($item['ip_address'] ?? 'Brak IP')) ?></span>
-                        <span class="badge badge--secondary"><?= htmlspecialchars((string) ($item['browser_label'] ?? 'Brak danych')) ?></span>
-                        <span class="badge badge--secondary">login</span>
-                        <span class="badge badge--accent"><?= !empty($item['event_date']) ? htmlspecialchars(date('d.m.Y H:i', strtotime((string) $item['event_date']))) : 'Brak' ?></span>
-                      </div>
-                    </div>
-                  <?php endforeach; ?>
-                <?php endif; ?>
-              </div>
-            </div>
-
-            <div class="stats-card">
-              <div class="stats-card__header">
-                <div class="stats-card__title">
-                  <i class="fas fa-user-plus" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
-                  <span>Ostatnie rejestracje</span>
-                </div>
-              </div>
-              <div class="admin-list" data-recent-registrations>
-                <?php if (empty($recentActivity['registrations'] ?? [])): ?>
-                  <div class="admin-empty">Brak danych.</div>
-                <?php else: ?>
-                  <?php foreach ($recentActivity['registrations'] as $item): ?>
-                    <div class="admin-list__row">
-                      <div class="admin-list__primary">
-                        <strong><?= htmlspecialchars(trim((string) ($item['first_name'] ?? '') . ' ' . (string) ($item['last_name'] ?? ''))) ?></strong>
-                        <span><?= htmlspecialchars((string) ($item['email'] ?? '')) ?></span>
-                      </div>
-                      <div class="admin-list__secondary">
-                        <span class="badge badge--secondary"><?= htmlspecialchars((string) ($item['auth_provider'] ?? 'local')) ?></span>
-                        <span class="badge badge--accent"><?= !empty($item['created_at']) ? htmlspecialchars(date('d.m.Y H:i', strtotime((string) $item['created_at']))) : 'Brak' ?></span>
-                      </div>
-                    </div>
-                  <?php endforeach; ?>
-                <?php endif; ?>
-              </div>
-            </div>
-
-            <div class="stats-card">
-              <div class="stats-card__header">
-                <div class="stats-card__title">
-                  <i class="fas fa-flag-checkered" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
-                  <span>Ostatnio ukończone testy</span>
-                </div>
-              </div>
-              <div class="admin-list" data-recent-tests>
-                <?php if (empty($recentActivity['testsCompleted'] ?? [])): ?>
-                  <div class="admin-empty">Brak danych.</div>
-                <?php else: ?>
-                  <?php foreach ($recentActivity['testsCompleted'] as $item): ?>
-                    <div class="admin-list__row">
-                      <div class="admin-list__primary">
-                        <strong><?= htmlspecialchars(trim((string) ($item['first_name'] ?? '') . ' ' . (string) ($item['last_name'] ?? ''))) ?></strong>
-                        <span><?= htmlspecialchars((string) ($item['exam_code'] ?? '')) ?> - <?= htmlspecialchars((string) ($item['exam_name'] ?? '')) ?></span>
-                      </div>
-                      <div class="admin-list__secondary">
-                        <span class="badge badge--secondary"><?= (int) ($item['correct_count'] ?? 0) ?>/<?= (int) ($item['total_questions'] ?? 0) ?></span>
-                        <span class="badge badge--accent"><?= !empty($item['completed_at']) ? htmlspecialchars(date('d.m.Y H:i', strtotime((string) $item['completed_at']))) : 'Brak' ?></span>
-                      </div>
-                    </div>
-                  <?php endforeach; ?>
-                <?php endif; ?>
-              </div>
-            </div>
-          </div>
+          </section>
         </div>
       </div>
     </section>
   </main>
 
   <?php include __DIR__ . '/../partials/footer.php'; ?>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="<?= $h(url('js/components/AdminAnalytics.js')) ?>"></script>
 </body>
-
 </html>

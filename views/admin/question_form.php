@@ -65,10 +65,10 @@ foreach ($answers as $idx => $answer) {
           <div class="stats-card">
             <div class="stats-card__header">
               <div class="stats-card__title">
-                <i class="fas fa-circle-question" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
+                <i class="fas fa-circle-question"></i>
                 <span><?= htmlspecialchars($title) ?></span>
               </div>
-              <div class="stats-card__header-actions" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+              <div class="admin-actions">
                 <?php if ($isEdit && $questionId > 0): ?>
                   <a href="<?= url('admin/pytania/' . $questionId) ?>" class="btn btn--secondary btn--sm">Szczegóły</a>
                 <?php endif; ?>
@@ -150,12 +150,10 @@ foreach ($answers as $idx => $answer) {
                 </label>
               </div>
 
-              <div class="stats-card" style="margin-top: 0;">
-                <div class="stats-card__header">
-                  <div class="stats-card__title">
-                    <i class="fas fa-list-ol" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
-                    <span>Odpowiedzi</span>
-                  </div>
+              <section class="admin-form-section">
+                <div class="admin-form-section__header">
+                  <i class="fas fa-list-ol"></i>
+                  <strong>Odpowiedzi</strong>
                 </div>
 
                 <div class="admin-answer-editors">
@@ -176,7 +174,7 @@ foreach ($answers as $idx => $answer) {
                 <p class="admin-note">
                   Wymagane są co najmniej 2 odpowiedzi i dokładnie 1 poprawna. Wersja pytania zostanie zapisana jako nowy rekord w historii.
                 </p>
-              </div>
+              </section>
 
               <div class="admin-filters__actions">
                 <button type="submit" class="btn btn--primary">Zapisz pytanie</button>

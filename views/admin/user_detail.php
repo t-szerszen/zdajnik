@@ -12,6 +12,9 @@ $userStats = $userStats ?? [];
 $attempts = $attempts ?? [];
 $answerPreview = $answerPreview ?? [];
 $userId = (int) ($user['id'] ?? 0);
+$isActive = (int) ($user['is_active'] ?? 0) === 1 && empty($user['deleted_at']);
+$isVerified = (int) ($user['is_verified'] ?? 0) === 1;
+$date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotime($value)) : 'Brak';
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -37,12 +40,7 @@ $userId = (int) ($user['id'] ?? 0);
         <?php $activeSection = 'users'; include __DIR__ . '/partials/navigation.php'; ?>
 
         <div class="admin-content">
-          <?php if (isset($_SESSION['flash_message'])): ?>
-            <div class="alert alert--<?= htmlspecialchars($_SESSION['flash_message']['type']) ?>">
-              <?= htmlspecialchars((string) ($_SESSION['flash_message']['text'] ?? '')) ?>
-            </div>
-            <?php unset($_SESSION['flash_message']); ?>
-          <?php endif; ?>
+          <?php include __DIR__ . '/partials/flash.php'; ?>
 
           <div class="admin-grid admin-grid--compact">
             <div class="stats-card admin-tile admin-tile--static">
@@ -50,7 +48,7 @@ $userId = (int) ($user['id'] ?? 0);
               <div class="admin-tile__content">
                 <span class="admin-tile__label">Konto</span>
                 <strong class="admin-tile__value"><?= htmlspecialchars(trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')) ?: 'Brak nazwy') ?></strong>
-                <span class="admin-tile__meta"><?= htmlspecialchars($user['email'] ?? '') ?></span>
+                <span class="admin-tile__meta admin-break-anywhere"><?= htmlspecialchars($user['email'] ?? '') ?></span>
               </div>
             </div>
 
@@ -60,9 +58,7 @@ $userId = (int) ($user['id'] ?? 0);
                 <span class="admin-tile__label">Rola</span>
                 <strong class="admin-tile__value"><?= htmlspecialchars($user['role'] ?? 'user') ?></strong>
                 <span class="admin-tile__meta">Provider: <?= htmlspecialchars($user['auth_provider'] ?? 'local') ?></span>
-                <span class="admin-tile__meta">
-                  Status: <?= ((int) ($user['is_active'] ?? 1) === 1 && empty($user['deleted_at'])) ? 'Aktywny' : 'Nieaktywny' ?>
-                </span>
+                <span class="admin-tile__meta">Status: <?= $isActive ? 'Aktywny' : 'Nieaktywny' ?></span>
               </div>
             </div>
 
@@ -88,37 +84,67 @@ $userId = (int) ($user['id'] ?? 0);
           </div>
 
           <div class="admin-section">
-            <div class="stats-card">
+            <section class="stats-card">
               <div class="stats-card__header">
                 <div class="stats-card__title">
-                  <i class="fas fa-cogs" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
-                  <span>Akcje administracyjne</span>
+                  <i class="fas fa-user-gear"></i>
+                  <span>Zarządzanie kontem</span>
+                </div>
+                <a class="btn btn--secondary btn--sm" href="<?= url('admin/audyt?target_type=user&target_id=' . $userId) ?>">Audyt konta</a>
+              </div>
+
+              <div class="admin-account-summary">
+                <div><span>Status konta</span><strong class="admin-status admin-status--<?= $isActive ? 'success' : 'danger' ?>"><?= $isActive ? 'Aktywne' : 'Nieaktywne' ?></strong></div>
+                <div><span>Weryfikacja</span><strong class="admin-status admin-status--<?= $isVerified ? 'success' : 'warning' ?>"><?= $isVerified ? 'Zweryfikowane' : 'Niezweryfikowane' ?></strong></div>
+                <div><span>Provider</span><strong class="admin-status admin-status--neutral"><?= htmlspecialchars((string) ($user['auth_provider'] ?? 'local')) ?></strong></div>
+                <div><span>Ostatni login</span><strong><?= $date($user['last_login'] ?? null) ?></strong></div>
+                <div><span>Ostatnia aktywność</span><strong><?= $date($user['last_activity'] ?? null) ?></strong></div>
+                <div><span>Rejestracja</span><strong><?= $date($user['created_at'] ?? null) ?></strong></div>
+              </div>
+
+              <div class="admin-management-actions">
+                <form method="POST" action="<?= url('admin/uzytkownicy/' . $userId . '/rola') ?>" class="admin-role-form">
+                  <?= csrf_field() ?>
+                  <label class="admin-field">
+                    <span>Rola</span>
+                    <select name="role">
+                      <option value="user" <?= (($user['role'] ?? 'user') === 'user') ? 'selected' : '' ?>>Użytkownik</option>
+                      <option value="admin" <?= (($user['role'] ?? 'user') === 'admin') ? 'selected' : '' ?>>Admin</option>
+                    </select>
+                  </label>
+                  <button type="submit" class="btn btn--primary">Zmień rolę</button>
+                </form>
+
+                <div class="admin-actions">
+                  <?php if (!$isVerified): ?>
+                    <form method="POST" action="<?= url('admin/uzytkownicy/' . $userId . '/zweryfikuj') ?>">
+                      <?= csrf_field() ?>
+                      <button class="btn btn--secondary" type="submit">Zweryfikuj konto</button>
+                    </form>
+                  <?php endif; ?>
+                  <?php if ($isActive): ?>
+                    <form method="POST" action="<?= url('admin/uzytkownicy/' . $userId . '/dezaktywuj') ?>">
+                      <?= csrf_field() ?>
+                      <button class="btn btn--danger" type="submit" onclick="return confirm('Na pewno zdezaktywować to konto?')">Dezaktywuj konto</button>
+                    </form>
+                  <?php elseif (empty($user['deleted_at'])): ?>
+                    <form method="POST" action="<?= url('admin/uzytkownicy/' . $userId . '/reaktywuj') ?>">
+                      <?= csrf_field() ?>
+                      <button class="btn btn--primary" type="submit">Reaktywuj konto</button>
+                    </form>
+                  <?php endif; ?>
                 </div>
               </div>
 
-              <form method="POST" action="<?= url('admin/uzytkownicy/' . $userId . '/rola') ?>" class="admin-role-form">
-                <?= csrf_field() ?>
-                <label class="admin-field">
-                  <span>Zmień rolę</span>
-                  <select name="role">
-                    <option value="user" <?= (($user['role'] ?? 'user') === 'user') ? 'selected' : '' ?>>user</option>
-                    <option value="admin" <?= (($user['role'] ?? 'user') === 'admin') ? 'selected' : '' ?>>admin</option>
-                  </select>
-                </label>
-                <button type="submit" class="btn btn--primary">Zapisz zmiany</button>
-              </form>
-
-              <div class="admin-note">
-                Twarde usuwanie kont nie jest dostępne. Projekt wykorzystuje soft delete i anonimizację.
-              </div>
-            </div>
+              <p class="admin-note">Panel nie udostępnia twardego usuwania kont.</p>
+            </section>
           </div>
 
           <div class="admin-section admin-section--two-col">
             <div class="stats-card">
               <div class="stats-card__header">
                 <div class="stats-card__title">
-                  <i class="fas fa-list-check" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
+                  <i class="fas fa-list-check"></i>
                   <span>Historia testów</span>
                 </div>
               </div>
@@ -152,7 +178,7 @@ $userId = (int) ($user['id'] ?? 0);
             <div class="stats-card">
               <div class="stats-card__header">
                 <div class="stats-card__title">
-                  <i class="fas fa-fire" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
+                  <i class="fas fa-fire"></i>
                   <span>Najczęstsze błędy</span>
                 </div>
               </div>
@@ -180,7 +206,7 @@ $userId = (int) ($user['id'] ?? 0);
           <div class="stats-card">
             <div class="stats-card__header">
               <div class="stats-card__title">
-                <i class="fas fa-pen-to-square" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
+                <i class="fas fa-pen-to-square"></i>
                 <span>Podgląd odpowiedzi</span>
               </div>
             </div>

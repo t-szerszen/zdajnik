@@ -47,7 +47,7 @@ $title = $isEdit ? 'Edycja egzaminu' : 'Dodawanie egzaminu';
           <div class="stats-card">
             <div class="stats-card__header">
               <div class="stats-card__title">
-                <i class="fas fa-file-circle-plus" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
+                <i class="fas fa-file-circle-plus"></i>
                 <span><?= htmlspecialchars($title) ?></span>
               </div>
               <div class="stats-card__header-actions">
@@ -70,9 +70,9 @@ $title = $isEdit ? 'Edycja egzaminu' : 'Dodawanie egzaminu';
                   <input type="text" name="name" maxlength="200" value="<?= htmlspecialchars((string) ($exam['name'] ?? '')) ?>" placeholder="Tworzenie i administrowanie stronami">
                 </label>
 
-                <label class="admin-field" style="grid-column: 1 / -1;">
+                <label class="admin-field admin-field--full">
                   <span>Opis</span>
-                  <textarea name="description" rows="6" style="width:100%;padding:0.95rem 1rem;border-radius:0.9rem;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;resize:vertical;"><?= htmlspecialchars((string) ($exam['description'] ?? '')) ?></textarea>
+                  <textarea name="description" rows="6"><?= htmlspecialchars((string) ($exam['description'] ?? '')) ?></textarea>
                 </label>
 
                 <label class="admin-field">
@@ -95,7 +95,7 @@ $title = $isEdit ? 'Edycja egzaminu' : 'Dodawanie egzaminu';
             <div class="stats-card">
               <div class="stats-card__header">
                 <div class="stats-card__title">
-                  <i class="fas fa-link" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
+                  <i class="fas fa-link"></i>
                   <span>Relacja egzaminu</span>
                 </div>
               </div>

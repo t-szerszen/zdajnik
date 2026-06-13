@@ -17,6 +17,8 @@ foreach ($answers as $answer) {
     $correctAnswersCount++;
   }
 }
+$isActive = (int) ($question['is_active'] ?? 0) === 1;
+$hasQualityWarning = count($answers) < 2 || $correctAnswersCount === 0;
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -42,12 +44,7 @@ foreach ($answers as $answer) {
         <?php $activeSection = 'questions'; include __DIR__ . '/partials/navigation.php'; ?>
 
         <div class="admin-content">
-          <?php if (isset($_SESSION['flash_message'])): ?>
-            <div class="alert alert--<?= htmlspecialchars($_SESSION['flash_message']['type']) ?>">
-              <?= htmlspecialchars((string) ($_SESSION['flash_message']['text'] ?? '')) ?>
-            </div>
-            <?php unset($_SESSION['flash_message']); ?>
-          <?php endif; ?>
+          <?php include __DIR__ . '/partials/flash.php'; ?>
 
           <div class="admin-grid admin-grid--compact">
             <div class="stats-card admin-tile admin-tile--static">
@@ -63,7 +60,7 @@ foreach ($answers as $answer) {
               <div class="admin-tile__icon"><i class="fas fa-toggle-on"></i></div>
               <div class="admin-tile__content">
                 <span class="admin-tile__label">Status</span>
-                <strong class="admin-tile__value"><?= ((int) ($question['is_active'] ?? 1) === 1) ? 'Aktywne' : 'Nieaktywne' ?></strong>
+                <strong class="admin-tile__value"><?= $isActive ? 'Aktywne' : 'Nieaktywne' ?></strong>
                 <span class="admin-tile__meta">Wersji: <?= count($versions) ?></span>
               </div>
             </div>
@@ -87,18 +84,31 @@ foreach ($answers as $answer) {
             </div>
           </div>
 
+          <?php if ($hasQualityWarning): ?>
+            <div class="alert alert--error">
+              Rekord wymaga uwagi:
+              <?= count($answers) < 2 ? 'pytanie ma mniej niż 2 odpowiedzi.' : '' ?>
+              <?= $correctAnswersCount === 0 ? 'Brakuje poprawnej odpowiedzi.' : '' ?>
+            </div>
+          <?php endif; ?>
+
           <div class="stats-card">
             <div class="stats-card__header">
               <div class="stats-card__title">
-                <i class="fas fa-align-left" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
+                <i class="fas fa-align-left"></i>
                 <span>Aktualna treść pytania</span>
               </div>
-              <div class="stats-card__header-actions" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+              <div class="admin-actions">
                 <a href="<?= url('admin/pytania/' . $questionId . '/edytuj') ?>" class="btn btn--secondary btn--sm">Edytuj</a>
-                <?php if ((int) ($question['is_active'] ?? 1) === 1): ?>
-                  <form method="POST" action="<?= url('admin/pytania/' . $questionId . '/dezaktywuj') ?>" style="display:inline;">
+                <?php if ($isActive): ?>
+                  <form method="POST" action="<?= url('admin/pytania/' . $questionId . '/dezaktywuj') ?>">
                     <?= csrf_field() ?>
                     <button type="submit" class="btn btn--danger btn--sm" onclick="return confirm('Na pewno dezaktywować to pytanie?')">Dezaktywuj</button>
+                  </form>
+                <?php else: ?>
+                  <form method="POST" action="<?= url('admin/pytania/' . $questionId . '/aktywuj') ?>">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn--primary btn--sm">Aktywuj</button>
                   </form>
                 <?php endif; ?>
                 <a href="<?= url('admin/pytania') ?>" class="btn btn--secondary btn--sm">Wróć do listy</a>
@@ -135,7 +145,7 @@ foreach ($answers as $answer) {
           <div class="stats-card">
             <div class="stats-card__header">
               <div class="stats-card__title">
-                <i class="fas fa-rectangle-list" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
+                <i class="fas fa-rectangle-list"></i>
                 <span>Odpowiedzi aktualnej wersji</span>
               </div>
             </div>
@@ -165,7 +175,7 @@ foreach ($answers as $answer) {
           <div class="stats-card">
             <div class="stats-card__header">
               <div class="stats-card__title">
-                <i class="fas fa-history" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
+                <i class="fas fa-history"></i>
                 <span>Historia wersji</span>
               </div>
             </div>

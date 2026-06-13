@@ -5,32 +5,46 @@ class AdminAnalytics {
       return;
     }
 
-    this.endpoint = this.root.dataset.endpoint;
+    this.endpoint = this.root.dataset.endpoint || '';
+    this.exportEndpoint = this.root.dataset.exportEndpoint || '';
     this.form = this.root.querySelector('[data-analytics-form]');
     this.chartCanvas = this.root.querySelector('[data-chart-canvas]');
     this.chartEmpty = this.root.querySelector('[data-chart-empty]');
-    this.initialData = this.readInitialData();
+    this.errorBox = this.root.querySelector('[data-analytics-error]');
+    this.loadingStatus = this.root.querySelector('[data-loading-status]');
     this.chartInstance = null;
+    this.abortController = null;
+    this.searchTimer = null;
+    this.activeTab = this.getInitialTab();
+    this.data = this.readInitialData();
 
     this.bindEvents();
-    this.render(this.initialData);
+    this.render(this.data);
+  }
+
+  getInitialTab() {
+    const tab = window.location.hash.replace('#', '');
+    const available = [...this.root.querySelectorAll('[data-analytics-tab]')]
+      .some((button) => button.dataset.analyticsTab === tab);
+    return available ? tab : 'overview';
   }
 
   readInitialData() {
     const node = document.getElementById('analytics-initial-data');
-    if (!node) {
-      return null;
-    }
-
     try {
-      return JSON.parse(node.textContent || '{}');
+      return JSON.parse(node?.textContent || '{}');
     } catch (error) {
-      console.error('AdminAnalytics: nie udało się odczytać danych startowych', error);
-      return null;
+      console.error('AdminAnalytics: invalid initial payload', error);
+      return {};
     }
   }
 
   bindEvents() {
+    this.root.querySelectorAll('[data-analytics-tab]').forEach((button) => {
+      button.addEventListener('click', () => this.activateTab(button.dataset.analyticsTab || 'overview'));
+      button.addEventListener('keydown', (event) => this.handleTabKeyboard(event));
+    });
+
     if (!this.form) {
       return;
     }
@@ -38,460 +52,737 @@ class AdminAnalytics {
     const rangeInput = this.form.querySelector('[data-range-input]');
     const fromInput = this.form.querySelector('[data-from-input]');
     const toInput = this.form.querySelector('[data-to-input]');
-    const rangeButtons = this.form.querySelectorAll('[data-range-value]');
+    const searchInput = this.form.querySelector('[data-search-input]');
 
-    rangeButtons.forEach((button) => {
+    this.form.querySelectorAll('[data-range-value]').forEach((button) => {
       button.addEventListener('click', () => {
-        if (rangeInput) {
-          rangeInput.value = button.dataset.rangeValue || '30d';
-        }
-
-        if (fromInput) {
-          fromInput.value = '';
-        }
-        if (toInput) {
-          toInput.value = '';
-        }
-
-        rangeButtons.forEach((item) => item.classList.remove('is-active'));
-        button.classList.add('is-active');
+        if (rangeInput) rangeInput.value = button.dataset.rangeValue || '30d';
+        if (fromInput) fromInput.value = '';
+        if (toInput) toInput.value = '';
+        this.resetPage();
         this.submitForm();
       });
     });
 
-    if (fromInput) {
-      fromInput.addEventListener('change', () => {
-        if (rangeInput) {
-          rangeInput.value = 'custom';
-        }
+    this.form.querySelectorAll('select').forEach((select) => {
+      select.addEventListener('change', () => {
+        this.resetPage();
+        this.submitForm();
       });
-    }
+    });
 
-    if (toInput) {
-      toInput.addEventListener('change', () => {
-        if (rangeInput) {
-          rangeInput.value = 'custom';
+    [fromInput, toInput].filter(Boolean).forEach((input) => {
+      input.addEventListener('change', () => {
+        if (fromInput?.value && toInput?.value) {
+          if (rangeInput) rangeInput.value = 'custom';
+          this.resetPage();
+          this.submitForm();
+        } else if (!fromInput?.value && !toInput?.value) {
+          if (rangeInput) rangeInput.value = '30d';
+          this.resetPage();
+          this.submitForm();
         }
       });
-    }
+    });
+
+    searchInput?.addEventListener('input', () => {
+      window.clearTimeout(this.searchTimer);
+      this.searchTimer = window.setTimeout(() => {
+        this.resetPage();
+        this.submitForm();
+      }, 450);
+    });
 
     this.form.addEventListener('submit', (event) => {
       event.preventDefault();
+      this.resetPage();
       this.submitForm();
+    });
+
+    this.root.querySelector('[data-filter-reset]')?.addEventListener('click', () => {
+      this.resetFilters();
+      this.submitForm();
+    });
+
+    this.root.addEventListener('click', (event) => {
+      const paginationButton = event.target.closest('[data-analytics-page]');
+      if (!paginationButton || paginationButton.disabled) {
+        return;
+      }
+
+      const targetTab = paginationButton.dataset.paginationTab;
+      if (targetTab) {
+        this.activeTab = targetTab;
+      }
+      const pageInput = this.form?.querySelector('[data-page-input]');
+      if (pageInput) {
+        pageInput.value = paginationButton.dataset.analyticsPage || '1';
+        this.submitForm();
+      }
     });
   }
 
-  async submitForm() {
-    if (!this.form) {
+  handleTabKeyboard(event) {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
       return;
     }
 
-    const params = new URLSearchParams(new FormData(this.form));
-    const query = params.toString();
-    const endpoint = this.endpoint + (query ? `?${query}` : '');
+    event.preventDefault();
+    const tabs = [...this.root.querySelectorAll('[data-analytics-tab]')];
+    const currentIndex = tabs.indexOf(event.currentTarget);
+    let nextIndex = currentIndex;
 
+    if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = tabs.length - 1;
+
+    tabs[nextIndex]?.focus();
+    tabs[nextIndex]?.click();
+  }
+
+  activateTab(tab, updateHistory = true) {
+    this.activeTab = tab;
+    this.root.querySelectorAll('[data-analytics-tab]').forEach((button) => {
+      const active = button.dataset.analyticsTab === tab;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-selected', active ? 'true' : 'false');
+      button.tabIndex = active ? 0 : -1;
+    });
+    this.root.querySelectorAll('[data-analytics-section]').forEach((section) => {
+      const active = section.dataset.analyticsSection === tab;
+      section.classList.toggle('is-active', active);
+      section.hidden = !active;
+    });
+
+    if (updateHistory) {
+      this.replaceHistory();
+    }
+  }
+
+  async submitForm() {
+    if (!this.form || !this.endpoint) {
+      return;
+    }
+
+    this.abortController?.abort();
+    const controller = new AbortController();
+    this.abortController = controller;
+    const params = new URLSearchParams(new FormData(this.form));
     this.setLoading(true);
+    this.hideError();
 
     try {
-      const response = await fetch(endpoint, {
-        headers: {
-          'Accept': 'application/json',
-        },
+      const response = await fetch(`${this.endpoint}?${params.toString()}`, {
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
       });
-
       const payload = await response.json();
       if (!response.ok || !payload.success) {
         throw new Error(payload.message || `Błąd serwera: ${response.status}`);
       }
 
-      this.render(payload.data);
-      window.history.replaceState({}, '', this.form.action + (query ? `?${query}` : ''));
+      this.data = payload.data || {};
+      this.render(this.data);
+      this.replaceHistory(params);
     } catch (error) {
-      console.error('AdminAnalytics: błąd pobierania danych', error);
-      this.renderError(error.message || 'Nie udało się pobrać danych analitycznych.');
+      if (error.name !== 'AbortError') {
+        console.error('AdminAnalytics: request failed', error);
+        this.showError(error.message || 'Nie udało się pobrać danych analitycznych.');
+      }
     } finally {
-      this.setLoading(false);
+      if (this.abortController === controller) {
+        this.setLoading(false);
+      }
     }
-  }
-
-  setLoading(isLoading) {
-    this.root.classList.toggle('is-loading', isLoading);
   }
 
   render(data) {
-    if (!data) {
+    if (!data || typeof data !== 'object') {
+      this.showError('Odpowiedź analityki ma nieprawidłowy format.');
       return;
     }
 
-    this.applyRangeState(data.range);
-    this.updateRangeLabel(data.range);
-    this.updateKpis(data.summary || {});
-    this.renderChart(data.daily || { labels: [] });
-    this.renderExamActivity(data.examActivity || []);
-    this.renderSingleQuestionActivity(data.singleQuestionActivity || []);
-    this.renderHardestQuestions(data.hardestQuestions || []);
-    this.renderRecentActivity(data.recentActivity || {});
+    this.applyRange(data.range || {});
+    this.renderOverview(data.comparison?.metrics || data.overview?.kpis || {}, data.daily || data.overview?.daily || {});
+    this.renderAcquisition(data.acquisition || {}, data.funnel || data.acquisition?.funnel || {});
+    this.renderEngagement(data.engagement || {}, data.activeUsers || {});
+    this.renderLearning(data.learning || {});
+    this.renderContent(data.contentQuality || {}, data.topicActivity || []);
+    this.renderRetention(data.retention || {});
+    this.renderUsers(data.userActivity || data.users || {});
+    this.renderExports(data.exportLinks || {});
+    this.activateTab(this.activeTab, false);
   }
 
-  renderError(message) {
-    if (this.chartEmpty) {
-      this.chartEmpty.classList.remove('hidden');
-      this.chartEmpty.innerHTML = `<div class="admin-empty">${this.escapeHTML(message)}</div>`;
+  renderOverview(kpis, daily) {
+    this.renderMetricCards('[data-overview-kpis]', [
+      this.metric('Nowi użytkownicy', kpis.newUsers, 'fa-user-plus'),
+      this.metric('Aktywni użytkownicy', kpis.activeUsers, 'fa-users'),
+      this.metric('Odsłony', kpis.pageViews, 'fa-eye'),
+      this.metric('Rozpoczęte testy', kpis.testsStarted, 'fa-play'),
+      this.metric('Ukończone testy', kpis.testsCompleted, 'fa-flag-checkered'),
+      this.metric('Completion rate', kpis.completionRate, 'fa-percent', 'percent'),
+      this.metric('Średni wynik', kpis.averageScore, 'fa-bullseye', 'percent'),
+    ], true);
+    this.renderChart(daily);
+  }
+
+  renderAcquisition(section, funnel) {
+    const searches = section.searches || this.data.searchActivity || {};
+    this.renderMetricCards('[data-acquisition-kpis]', [
+      this.simpleMetric('Rejestracje', section.summary?.registrations, 'fa-user-plus'),
+      this.simpleMetric('Logowania', section.summary?.logins, 'fa-right-to-bracket'),
+    ]);
+    this.renderFunnel(funnel.stages || []);
+    this.renderBreakdown('[data-auth-providers]', section.authProviders || [], 'Provider');
+    this.renderBreakdown('[data-traffic-sources]', section.sources || [], 'Źródło');
+    this.renderBreakdown('[data-entry-paths]', section.entryPaths || [], 'Ścieżka', true);
+    this.renderMetricCards('[data-search-kpis]', [
+      this.simpleMetric('Wyszukiwania', searches.summary?.searches, 'fa-magnifying-glass'),
+      this.simpleMetric('Użytkownicy', searches.summary?.uniqueUsers, 'fa-users'),
+      this.simpleMetric('Bezpieczne frazy', searches.summary?.searchesWithSafeTerm, 'fa-shield-halved'),
+      this.simpleMetric('Bez zapisanej frazy', searches.summary?.searchesWithoutStoredTerm, 'fa-eye-slash'),
+    ]);
+    this.renderTable('[data-search-queries]',
+      ['Zapytanie', 'Wyszukiwania', 'Użytkownicy'],
+      (searches.topQueries || []).map((row) => [
+        row.query || '',
+        this.number(row.searches),
+        this.number(row.unique_users),
+      ]),
+      true
+    );
+  }
+
+  renderEngagement(section, activeUsers) {
+    const summary = { ...activeUsers, ...(section.summary || {}) };
+    this.renderMetricCards('[data-engagement-kpis]', [
+      this.simpleMetric('DAU', summary.dau, 'fa-user-clock'),
+      this.simpleMetric('WAU', summary.wau, 'fa-calendar-week'),
+      this.simpleMetric('MAU', summary.mau, 'fa-calendar'),
+      this.simpleMetric('DAU / MAU', summary.dauMauStickiness, 'fa-chart-pie', 'percent'),
+      this.simpleMetric('Aktywni w zakresie', summary.activeUsersInRange, 'fa-users'),
+      this.simpleMetric('Sesje', summary.sessions, 'fa-window-restore'),
+      this.simpleMetric('Pokrycie sesji', summary.sessionCoveragePercent, 'fa-database', 'percent'),
+      this.simpleMetric('Odsłony', summary.pageViews, 'fa-eye'),
+    ]);
+    this.renderBreakdown('[data-top-paths]', section.topPaths || [], 'Ścieżka', true);
+    this.renderBreakdown('[data-event-types]', section.eventTypes || [], 'Event');
+  }
+
+  renderLearning(section) {
+    const summary = section.summary || {};
+    this.renderMetricCards('[data-learning-kpis]', [
+      this.simpleMetric('Rozpoczęte', summary.started, 'fa-play'),
+      this.simpleMetric('Ukończone', summary.completed, 'fa-flag-checkered'),
+      this.simpleMetric('Completion rate', summary.completionRate, 'fa-percent', 'percent'),
+      this.simpleMetric('Porzucone', summary.abandoned, 'fa-door-open'),
+      this.simpleMetric('Abandonment rate', summary.abandonmentRate, 'fa-arrow-trend-down', 'percent'),
+      this.simpleMetric('Średni wynik', summary.averageScore, 'fa-bullseye', 'percent'),
+      this.simpleMetric('Średni czas', summary.averageDurationSeconds, 'fa-clock', 'duration'),
+      this.simpleMetric('Unikalni uczący się', summary.uniqueLearners, 'fa-graduation-cap'),
+    ]);
+
+    this.renderTable('[data-learning-types]',
+      ['Typ', 'Starty', 'Ukończenia', 'Completion', 'Wynik', 'Czas'],
+      (section.byTestType || []).map((row) => [
+        this.testTypeLabel(row.test_type),
+        this.number(row.started),
+        this.number(row.completed),
+        this.percent(row.completion_rate),
+        this.percent(row.average_score),
+        this.duration(row.average_duration_seconds),
+      ])
+    );
+
+    this.renderTable('[data-learning-exams]',
+      ['Egzamin', 'Starty', 'Ukończenia', 'Użytkownicy', 'Wynik', 'Czas'],
+      (section.byExam || []).map((row) => [
+        `${row.code || ''} - ${row.name || ''}`,
+        this.number(row.started_tests),
+        this.number(row.completed_tests),
+        this.number(row.unique_users),
+        this.percent(row.avg_score),
+        this.duration(row.avg_duration_seconds),
+      ]),
+      true
+    );
+
+    this.renderTable('[data-abandoned-tests]',
+      ['Typ', 'Starty', 'Ukończone', 'Jawne wyjścia', 'Brak wyniku', 'Porzucone', 'Udział'],
+      (section.abandonedTests?.byTestType || []).map((row) => [
+        this.testTypeLabel(row.test_type),
+        this.number(row.started),
+        this.number(row.matched_completed),
+        this.number(row.explicit_exits),
+        this.number(row.inferred_abandoned),
+        this.number(row.abandoned),
+        this.percent(row.abandonment_rate),
+      ]),
+      true
+    );
+  }
+
+  renderContent(section, topics) {
+    this.renderTable('[data-content-quality]',
+      ['Pytanie', 'Egzamin', 'Temat', 'Odpowiedzi', 'Poprawne', 'Błędne', 'Pominięte', 'Skuteczność'],
+      (section.items || []).map((row) => [
+        this.truncate(row.question_text, 160),
+        row.exam_code || '',
+        row.topic_name || '',
+        this.number(row.total_answers),
+        this.number(row.correct_answers),
+        this.number(row.wrong_answers),
+        this.number(row.skipped_answers),
+        this.percent(row.accuracy),
+      ]),
+      true
+    );
+    this.renderPagination('[data-content-pagination]', section, 'content', 'pytań');
+
+    this.renderTable('[data-topic-activity]',
+      ['Temat', 'Egzamin', 'Odpowiedzi', 'Poprawne', 'Skuteczność'],
+      (topics || section.weakestTopics || []).map((row) => [
+        row.topic_name || '',
+        row.exam_code || '',
+        this.number(row.total_answers),
+        this.number(row.correct_answers),
+        this.percent(row.accuracy),
+      ])
+    );
+
+    this.renderTable('[data-saved-questions]',
+      ['Pytanie', 'Egzamin', 'Temat', 'Zapisy'],
+      (section.mostSavedQuestions || []).map((row) => [
+        this.truncate(row.question_text, 110),
+        row.exam_code || '',
+        row.topic_name || '',
+        this.number(row.saves),
+      ]),
+      true
+    );
+
+    this.renderTable('[data-dropoff-questions]',
+      ['Pytanie', 'Egzamin', 'Wyświetlenia', 'Pominięcia', 'Udział'],
+      (section.dropOffQuestions || []).map((row) => [
+        this.truncate(row.question_text, 110),
+        row.exam_code || '',
+        this.number(row.appearances),
+        this.number(row.skipped),
+        this.percent(row.drop_off_percent),
+      ]),
+      true
+    );
+
+    this.renderTable('[data-saved-question-activity]',
+      ['Egzamin', 'Temat', 'Dodane', 'Usunięte', 'Użytkownicy'],
+      (section.savedQuestionActivity?.byExamTopic || []).map((row) => [
+        row.exam_code || '',
+        row.topic_name || '',
+        this.number(row.added),
+        this.number(row.removed),
+        this.number(row.unique_users),
+      ]),
+      true
+    );
+
+    const explanations = section.explanationInsights || {};
+    this.renderMetricCards('[data-explanation-kpis]', [
+      this.simpleMetric('Wyświetlenia', explanations.views, 'fa-lightbulb'),
+      this.simpleMetric('Po błędnej odpowiedzi', explanations.afterIncorrect, 'fa-circle-xmark'),
+      this.simpleMetric('Po poprawnej odpowiedzi', explanations.afterCorrect, 'fa-circle-check'),
+      this.simpleMetric('Udział po błędzie', explanations.afterIncorrectRate, 'fa-percent', 'percent'),
+    ]);
+  }
+
+  renderRetention(section) {
+    const summary = section.summary || {};
+    this.renderMetricCards('[data-retention-kpis]', [
+      this.simpleMetric('Powrót D1', summary.d1Rate, 'fa-rotate', 'percent'),
+      this.simpleMetric('Powrót D7', summary.d7Rate, 'fa-calendar-week', 'percent'),
+      this.simpleMetric('Powrót D30', summary.d30Rate, 'fa-calendar', 'percent'),
+      this.simpleMetric('Brak aktywności 7 dni', summary.inactiveUsers7d, 'fa-user-clock'),
+      this.simpleMetric('Brak aktywności 14 dni', summary.inactiveUsers14d, 'fa-user-minus'),
+      this.simpleMetric('Nieaktywni 30 dni', summary.inactiveUsers30d, 'fa-user-slash'),
+    ]);
+
+    this.renderTable('[data-retention-cohorts]',
+      ['Kohorta', 'Użytkownicy', 'D1', 'D1 %', 'D7', 'D7 %', 'D30', 'D30 %'],
+      (section.cohorts || []).map((row) => [
+        row.cohort || '',
+        this.number(row.users),
+        this.number(row.d1_users),
+        this.percent(row.d1_rate),
+        this.number(row.d7_users),
+        this.percent(row.d7_rate),
+        this.number(row.d30_users),
+        this.percent(row.d30_rate),
+      ])
+    );
+
+    this.renderTable('[data-inactive-users]',
+      ['Użytkownik', 'E-mail', 'Provider', 'Rejestracja', 'Ostatni event', 'Ostatni test'],
+      (section.inactiveUsers || []).map((row) => [
+        this.fullName(row) || `#${row.id}`,
+        row.email || '',
+        row.auth_provider || '',
+        this.date(row.created_at),
+        this.date(row.last_event),
+        this.date(row.last_test),
+      ]),
+      true
+    );
+  }
+
+  renderUsers(section) {
+    this.renderTable('[data-users-table]',
+      ['Użytkownik', 'E-mail', 'Provider', 'Status', 'Rejestracja', 'Ostatni login', 'Ostatnia aktywność', 'Testy', 'Śr. wynik'],
+      (section.items || []).map((row) => [
+        `${this.fullName(row) || `#${row.id}`} (${row.role || 'user'})`,
+        row.email || '',
+        row.auth_provider || '',
+        `${row.account_status || ''} / ${Number(row.is_verified) === 1 ? 'verified' : 'unverified'}`,
+        this.date(row.created_at),
+        this.date(row.last_login),
+        this.date(row.last_activity),
+        this.number(row.tests_completed),
+        this.percent(row.average_score),
+      ]),
+      true
+    );
+    this.renderPagination('[data-users-pagination]', section, 'users', 'użytkowników');
+  }
+
+  renderFunnel(stages) {
+    const container = this.root.querySelector('[data-conversion-funnel]');
+    if (!container) {
+      return;
+    }
+    if (!stages.length) {
+      container.innerHTML = this.emptyState();
+      return;
     }
 
-    if (this.chartCanvas) {
-      this.chartCanvas.classList.add('hidden');
+    container.innerHTML = `<div class="admin-analytics__funnel">
+      ${stages.map((stage, index) => {
+        const width = Math.max(2, Math.min(100, Number(stage.conversionFromFirst) || 0));
+        return `<div class="admin-analytics__funnel-row">
+          <div class="admin-analytics__funnel-label">
+            <strong>${this.escapeHTML(this.eventLabel(stage.eventType))}</strong>
+            <span>${this.escapeHTML(this.number(stage.actors))} użytkowników / sesji</span>
+          </div>
+          <div class="admin-analytics__funnel-track" aria-hidden="true">
+            <span style="width:${width}%"></span>
+          </div>
+          <div class="admin-analytics__funnel-value">
+            ${index === 0 ? '100%' : this.escapeHTML(this.percent(stage.conversionFromPrevious))}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  renderExports(exportLinks) {
+    const formParams = this.form ? new URLSearchParams(new FormData(this.form)) : new URLSearchParams();
+    this.root.querySelectorAll('[data-export-dataset]').forEach((link) => {
+      const dataset = link.dataset.exportDataset || 'users';
+      if (exportLinks[dataset]) {
+        link.href = exportLinks[dataset];
+        return;
+      }
+      const params = new URLSearchParams(formParams);
+      params.set('dataset', dataset);
+      link.href = `${this.exportEndpoint}?${params.toString()}`;
+    });
+  }
+
+  renderMetricCards(selector, metrics, showComparison = false) {
+    const container = this.root.querySelector(selector);
+    if (!container) {
+      return;
     }
+
+    const available = metrics.filter(Boolean);
+    if (!available.length) {
+      container.innerHTML = this.emptyState();
+      return;
+    }
+
+    container.innerHTML = available.map((metric) => `
+      <article class="admin-analytics__metric">
+        <div class="admin-analytics__metric-top">
+          <span>${this.escapeHTML(metric.label)}</span>
+          <i class="fas ${this.escapeHTML(metric.icon)}" aria-hidden="true"></i>
+        </div>
+        <strong>${this.escapeHTML(this.metricValue(metric.value, metric.format))}</strong>
+        ${showComparison ? this.comparison(metric.data) : ''}
+      </article>
+    `).join('');
+  }
+
+  renderBreakdown(selector, rows, firstColumn, wide = false) {
+    this.renderTable(selector,
+      [firstColumn, 'Zdarzenia', 'Użytkownicy'],
+      rows.map((row) => [
+        wide ? this.truncate(row.label || 'Brak danych', 120) : (row.label || 'Brak danych'),
+        this.number(row.total),
+        this.number(row.unique_users),
+      ]),
+      wide
+    );
+  }
+
+  renderTable(selector, headers, rows, wide = false) {
+    const container = this.root.querySelector(selector);
+    if (!container) {
+      return;
+    }
+    if (!rows.length) {
+      container.innerHTML = this.emptyState();
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="admin-analytics__table-scroll">
+        <table class="admin-analytics__data-table${wide ? ' is-wide' : ''}">
+          <thead>
+            <tr>${headers.map((header) => `<th scope="col">${this.escapeHTML(header)}</th>`).join('')}</tr>
+          </thead>
+          <tbody>
+            ${rows.map((row) => `<tr>${row.map((cell, index) => `
+              <td data-label="${this.escapeHTML(headers[index] || '')}">${this.escapeHTML(cell ?? '')}</td>
+            `).join('')}</tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  renderPagination(selector, section, tab, noun) {
+    const container = this.root.querySelector(selector);
+    if (!container) {
+      return;
+    }
+
+    const page = Math.max(1, Number(section.page) || 1);
+    const totalPages = Math.max(1, Number(section.totalPages) || 1);
+    const total = Math.max(0, Number(section.total) || 0);
+    if (total === 0) {
+      container.innerHTML = '';
+      return;
+    }
+
+    container.innerHTML = `
+      <span class="admin-pagination__status">
+        ${this.escapeHTML(this.number(total))} ${this.escapeHTML(noun)}, strona ${page} z ${totalPages}
+      </span>
+      <div class="admin-analytics__pagination-actions">
+        <button type="button" class="btn btn--secondary btn--sm" data-analytics-page="${page - 1}" data-pagination-tab="${this.escapeHTML(tab)}" ${page <= 1 ? 'disabled' : ''}>
+          Poprzednia
+        </button>
+        <button type="button" class="btn btn--secondary btn--sm" data-analytics-page="${page + 1}" data-pagination-tab="${this.escapeHTML(tab)}" ${page >= totalPages ? 'disabled' : ''}>
+          Następna
+        </button>
+      </div>
+    `;
+  }
+
+  renderChart(daily) {
+    const labels = Array.isArray(daily.labels) ? daily.labels : [];
+    const datasets = [
+      ['Odsłony', daily.pageViews || [], '#3b82f6'],
+      ['Rejestracje', daily.registrations || [], '#f59e0b'],
+      ['Logowania', daily.logins || [], '#10b981'],
+      ['Starty testów', daily.testsStarted || [], '#8b5cf6'],
+      ['Ukończenia', daily.testsCompleted || [], '#ef4444'],
+    ];
+    const hasData = datasets.some(([, values]) => values.some((value) => Number(value) > 0));
 
     if (this.chartInstance) {
       this.chartInstance.destroy();
       this.chartInstance = null;
     }
-  }
-
-  updateRangeLabel(range) {
-    const label = this.root.querySelector('[data-range-label]');
-    if (label && range && range.label) {
-      label.textContent = range.label;
-    }
-  }
-
-  applyRangeState(range) {
-    if (!this.form || !range) {
+    this.chartCanvas?.classList.toggle('hidden', !hasData);
+    this.chartEmpty?.classList.toggle('hidden', hasData);
+    if (!hasData || !window.Chart || !this.chartCanvas) {
       return;
     }
 
-    const rangeInput = this.form.querySelector('[data-range-input]');
-    const fromInput = this.form.querySelector('[data-from-input]');
-    const toInput = this.form.querySelector('[data-to-input]');
-    const rangeButtons = this.form.querySelectorAll('[data-range-value]');
-
-    if (rangeInput) {
-      rangeInput.value = range.value || '30d';
-    }
-    if (fromInput && typeof range.from === 'string') {
-      fromInput.value = range.from;
-    }
-    if (toInput && typeof range.to === 'string') {
-      toInput.value = range.to;
-    }
-
-    rangeButtons.forEach((button) => {
-      button.classList.toggle('is-active', (button.dataset.rangeValue || '') === (range.value || ''));
-    });
-  }
-
-  updateKpis(summary) {
-    const mappings = {
-      totalUsers: summary.totalUsers ?? 0,
-      newRegistrationsToday: summary.newRegistrationsToday ?? 0,
-      loginsToday: summary.loginsToday ?? 0,
-      pageViewsToday: summary.pageViewsToday ?? 0,
-      testsStartedToday: summary.testsStartedToday ?? 0,
-      testsCompletedToday: summary.testsCompletedToday ?? 0,
-      averageScore: `${this.formatNumber(summary.averageScore ?? 0, 1)}%`,
-      questionsAnsweredToday: summary.questionsAnsweredToday ?? 0,
-      singleQuestionStartedToday: summary.singleQuestionStartedToday ?? 0,
-      singleQuestionStartedInRange: summary.singleQuestionStartedInRange ?? 0,
-      singleQuestionAnsweredToday: summary.singleQuestionAnsweredToday ?? 0,
-      singleQuestionAccuracy: `${this.formatNumber(summary.singleQuestionAccuracy ?? 0, 1)}%`,
-    };
-
-    Object.entries(mappings).forEach(([key, value]) => {
-      const card = this.root.querySelector(`[data-kpi="${key}"] .admin-tile__value`);
-      if (card) {
-        card.textContent = String(value);
-      }
-    });
-  }
-
-  renderChart(daily) {
-    const labels = (daily.labels || []).map((value) => {
-      const date = new Date(`${value}T00:00:00`);
-      if (Number.isNaN(date.getTime())) {
-        return value;
-      }
-
-      return new Intl.DateTimeFormat('pl-PL', {
-        day: '2-digit',
-        month: '2-digit',
-      }).format(date);
-    });
-    const datasets = [
-      { label: 'Odwiedziny', data: daily.pageViews || [], color: 'rgba(59, 130, 246, 0.85)' },
-      { label: 'Logowania', data: daily.logins || [], color: 'rgba(16, 185, 129, 0.85)' },
-      { label: 'Rejestracje', data: daily.registrations || [], color: 'rgba(245, 158, 11, 0.85)' },
-      { label: 'Rozpoczęte testy', data: daily.testsStarted || [], color: 'rgba(139, 92, 246, 0.85)' },
-      { label: 'Ukończone testy', data: daily.testsCompleted || [], color: 'rgba(239, 68, 68, 0.85)' },
-      { label: 'Start modułu jednego pytania', data: daily.singleQuestionStarted || [], color: 'rgba(236, 72, 153, 0.85)' },
-      { label: 'Odpowiedzi w module', data: daily.singleQuestionAnswered || [], color: 'rgba(14, 165, 233, 0.85)' },
-    ];
-
-    const hasData = datasets.some((dataset) => Array.isArray(dataset.data) && dataset.data.some((value) => Number(value) > 0));
-
-    if (!hasData) {
-      if (this.chartInstance) {
-        this.chartInstance.destroy();
-        this.chartInstance = null;
-      }
-
-      if (this.chartEmpty) {
-        this.chartEmpty.classList.remove('hidden');
-        this.chartEmpty.innerHTML = '<div class="admin-empty">Brak danych dla wybranego zakresu.</div>';
-      }
-
-      if (this.chartCanvas) {
-        this.chartCanvas.classList.add('hidden');
-      }
-      return;
-    }
-
-    if (this.chartCanvas) {
-      this.chartCanvas.classList.remove('hidden');
-    }
-    if (this.chartEmpty) {
-      this.chartEmpty.classList.add('hidden');
-    }
-
-    if (!window.Chart || !this.chartCanvas) {
-      return;
-    }
-
-    if (this.chartInstance) {
-      this.chartInstance.destroy();
-    }
-
-    const ctx = this.chartCanvas.getContext('2d');
-    this.chartInstance = new Chart(ctx, {
-      type: 'bar',
+    this.chartInstance = new window.Chart(this.chartCanvas.getContext('2d'), {
+      type: 'line',
       data: {
-        labels,
-        datasets: datasets.map((dataset) => ({
-          label: dataset.label,
-          data: dataset.data,
-          backgroundColor: dataset.color,
-          borderColor: dataset.color,
-          borderRadius: 8,
-          borderSkipped: false,
+        labels: labels.map((value) => this.shortDate(value, daily.granularity)),
+        datasets: datasets.map(([label, values, color]) => ({
+          label,
+          data: values,
+          borderColor: color,
+          backgroundColor: `${color}1a`,
+          borderWidth: 2,
+          fill: false,
+          tension: 0.25,
+          pointRadius: labels.length > 40 ? 0 : 2,
+          pointHoverRadius: 4,
         })),
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: {
-          mode: 'index',
-          intersect: false,
-        },
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: {
             position: 'bottom',
-            labels: {
-              usePointStyle: true,
-              boxWidth: 12,
-            },
-          },
-          tooltip: {
-            padding: 12,
-            callbacks: {
-              label: (context) => `${context.dataset.label}: ${context.parsed.y}`,
-            },
+            labels: { boxWidth: 12, usePointStyle: true },
           },
         },
         scales: {
           x: {
-            stacked: false,
-            grid: {
-              display: false,
-            },
-            ticks: {
-              maxRotation: 0,
-              autoSkip: true,
-            },
-            title: {
-              display: true,
-              text: 'Data',
-            },
+            grid: { display: false },
+            ticks: { autoSkip: true, maxTicksLimit: 12, maxRotation: 0 },
           },
-          y: {
-            beginAtZero: true,
-            ticks: {
-              precision: 0,
-            },
-            title: {
-              display: true,
-              text: 'Liczba zdarzeń',
-            },
-          },
+          y: { beginAtZero: true, ticks: { precision: 0 } },
         },
       },
     });
   }
 
-  renderExamActivity(rows) {
-    const container = this.root.querySelector('[data-exam-activity]');
-    if (!container) {
-      return;
-    }
+  applyRange(range) {
+    const label = this.root.querySelector('[data-range-label]');
+    if (label) label.textContent = range.label || '';
+    if (!this.form) return;
 
-    if (!rows.length) {
-      container.innerHTML = '<div class="admin-empty">Brak aktywności egzaminów dla wybranego zakresu.</div>';
-      return;
-    }
-
-    container.innerHTML = rows.map((row) => `
-      <div class="admin-table__row admin-analytics__table-row">
-        <div>
-          <strong>${this.escapeHTML(row.code || '')}</strong>
-          <div class="admin-table__muted">${this.escapeHTML(row.name || '')}</div>
-        </div>
-        <span>${this.formatNumber(row.started_tests || 0)}</span>
-        <span>${this.formatNumber(row.completed_tests || 0)}</span>
-        <span>${this.formatNumber(row.avg_score || 0, 1)}%</span>
-        <span>${this.formatNumber(row.unique_users || 0)}</span>
-      </div>
-    `).join('');
+    const rangeInput = this.form.querySelector('[data-range-input]');
+    const fromInput = this.form.querySelector('[data-from-input]');
+    const toInput = this.form.querySelector('[data-to-input]');
+    if (rangeInput) rangeInput.value = range.value || '30d';
+    if (fromInput) fromInput.value = range.from || '';
+    if (toInput) toInput.value = range.to || '';
+    this.form.querySelectorAll('[data-range-value]').forEach((button) => {
+      button.classList.toggle('is-active', button.dataset.rangeValue === range.value);
+    });
   }
 
-  renderSingleQuestionActivity(rows) {
-    const container = this.root.querySelector('[data-single-question-activity]');
-    if (!container) {
+  resetFilters() {
+    if (!this.form) {
       return;
     }
+    this.form.querySelectorAll('select, input').forEach((control) => {
+      if (control.name === 'per_page') return;
+      if (control.name === 'range') {
+        control.value = '30d';
+      } else if (control.name === 'page') {
+        control.value = '1';
+      } else {
+        control.value = '';
+      }
+    });
+  }
 
-    if (!rows.length) {
-      container.innerHTML = '<div class="admin-empty">Brak aktywności modułu jednego pytania dla wybranego zakresu.</div>';
+  resetPage() {
+    const pageInput = this.form?.querySelector('[data-page-input]');
+    if (pageInput) pageInput.value = '1';
+  }
+
+  replaceHistory(params = null) {
+    if (!this.form) {
       return;
     }
-
-    container.innerHTML = rows.map((row) => `
-      <div class="admin-table__row admin-analytics__table-row admin-analytics__table-row--single-question">
-        <div>
-          <strong>${this.escapeHTML(row.code || 'Brak przypisanego egzaminu')}</strong>
-          <div class="admin-table__muted">${this.escapeHTML(row.name || 'Brak przypisanego egzaminu')}</div>
-        </div>
-        <span>${this.formatNumber(row.started_count || 0)}</span>
-        <span>${this.formatNumber(row.answered_count || 0)}</span>
-        <span>${this.formatNumber(row.unique_users || 0)}</span>
-        <span>${this.formatNumber(row.accuracy || 0, 1)}%</span>
-        <span>${this.escapeHTML(this.truncate(row.top_question_text || 'Brak danych', 80))}</span>
-      </div>
-    `).join('');
+    const query = params || new URLSearchParams(new FormData(this.form));
+    const target = new URL(this.form.action, window.location.origin);
+    target.search = query.toString();
+    target.hash = this.activeTab;
+    window.history.replaceState({}, '', target);
   }
 
-  renderHardestQuestions(rows) {
-    const container = this.root.querySelector('[data-hardest-questions]');
-    if (!container) {
-      return;
-    }
-
-    if (!rows.length) {
-      container.innerHTML = '<div class="admin-empty">Brak danych dla wybranego zakresu.</div>';
-      return;
-    }
-
-    container.innerHTML = rows.map((row) => `
-      <div class="admin-table__row admin-analytics__table-row admin-analytics__table-row--hardest">
-        <div>
-          <strong>${this.escapeHTML(this.truncate(row.question_text || '', 120))}</strong>
-        </div>
-        <span>${this.escapeHTML(row.exam_code || '')}</span>
-        <span>${this.formatNumber(row.total_answers || 0)}</span>
-        <span>${this.formatNumber(row.wrong_answers || 0)}</span>
-        <span>${this.formatNumber(row.wrong_percent || 0, 1)}%</span>
-      </div>
-    `).join('');
+  metric(label, data, icon, format = 'number') {
+    return { label, value: data?.value ?? 0, data: data || {}, icon, format };
   }
 
-  renderRecentActivity(recentActivity) {
-    this.renderActivityList(
-      this.root.querySelector('[data-recent-logins]'),
-      recentActivity.logins || [],
-      (item) => `
-        <div class="admin-list__row">
-          <div class="admin-list__primary">
-            <strong>${this.escapeHTML(item.display_name || this.fullName(item) || 'Użytkownik nieznany')}</strong>
-            <span>${this.escapeHTML(item.email || '')}</span>
-          </div>
-          <div class="admin-list__secondary">
-            <span class="badge badge--secondary">${this.escapeHTML(item.ip_address || 'Brak IP')}</span>
-            <span class="badge badge--secondary">${this.escapeHTML(item.browser_label || 'Brak danych')}</span>
-            <span class="badge badge--secondary">login</span>
-            <span class="badge badge--accent">${this.formatDate(item.event_date)}</span>
-          </div>
-        </div>
-      `
-    );
-
-    this.renderActivityList(
-      this.root.querySelector('[data-recent-registrations]'),
-      recentActivity.registrations || [],
-      (item) => `
-        <div class="admin-list__row">
-          <div class="admin-list__primary">
-            <strong>${this.escapeHTML(this.fullName(item))}</strong>
-            <span>${this.escapeHTML(item.email || '')}</span>
-          </div>
-          <div class="admin-list__secondary">
-            <span class="badge badge--secondary">${this.escapeHTML(item.auth_provider || 'local')}</span>
-            <span class="badge badge--accent">${this.formatDate(item.created_at)}</span>
-          </div>
-        </div>
-      `
-    );
-
-    this.renderActivityList(
-      this.root.querySelector('[data-recent-tests]'),
-      recentActivity.testsCompleted || [],
-      (item) => `
-        <div class="admin-list__row">
-          <div class="admin-list__primary">
-            <strong>${this.escapeHTML(this.fullName(item))}</strong>
-            <span>${this.escapeHTML(item.exam_code || '')} - ${this.escapeHTML(item.exam_name || '')}</span>
-          </div>
-          <div class="admin-list__secondary">
-            <span class="badge badge--secondary">${this.formatNumber(item.correct_count || 0)}/${this.formatNumber(item.total_questions || 0)}</span>
-            <span class="badge badge--accent">${this.formatDate(item.completed_at)}</span>
-          </div>
-        </div>
-      `
-    );
+  simpleMetric(label, value, icon, format = 'number') {
+    return { label, value: value ?? 0, data: {}, icon, format };
   }
 
-  renderActivityList(container, rows, renderer) {
-    if (!container) {
-      return;
-    }
-
-    if (!rows.length) {
-      container.innerHTML = '<div class="admin-empty">Brak danych.</div>';
-      return;
-    }
-
-    container.innerHTML = rows.map(renderer).join('');
+  metricValue(value, format) {
+    if (format === 'percent') return this.percent(value);
+    if (format === 'duration') return this.duration(value);
+    return this.number(value);
   }
 
-  fullName(item) {
-    return [item.first_name, item.last_name].filter(Boolean).join(' ').trim();
+  comparison(data) {
+    if (data?.previous === null || data?.previous === undefined) {
+      return '<small class="admin-analytics__comparison is-neutral">Brak porównania</small>';
+    }
+    const change = data.changePercent;
+    if (change === null || change === undefined) {
+      return '<small class="admin-analytics__comparison is-positive">Nowa aktywność</small>';
+    }
+    const className = Number(change) > 0 ? 'is-positive' : (Number(change) < 0 ? 'is-negative' : 'is-neutral');
+    const prefix = Number(change) > 0 ? '+' : '';
+    return `<small class="admin-analytics__comparison ${className}">${this.escapeHTML(`${prefix}${this.number(change, 1)}% vs poprzedni okres`)}</small>`;
   }
 
-  truncate(value, limit) {
-    if (!value) {
-      return '';
-    }
-
-    return value.length > limit ? `${value.slice(0, limit)}...` : value;
+  eventLabel(value) {
+    const labels = {
+      page_view: 'Odsłona',
+      registration: 'Rejestracja',
+      login: 'Logowanie',
+      test_started: 'Start testu',
+      test_completed: 'Ukończenie testu',
+    };
+    return labels[value] || value || 'Zdarzenie';
   }
 
-  formatDate(value) {
-    if (!value) {
-      return 'Brak';
-    }
+  emptyState(message = 'Brak danych dla wybranego zakresu i filtrów.') {
+    return `<div class="admin-empty">${this.escapeHTML(message)}</div>`;
+  }
 
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return String(value);
-    }
+  setLoading(loading) {
+    this.root.classList.toggle('is-loading', loading);
+    this.root.setAttribute('aria-busy', loading ? 'true' : 'false');
+    this.loadingStatus?.classList.toggle('hidden', !loading);
+    this.form?.querySelector('[data-filter-submit]')?.toggleAttribute('disabled', loading);
+  }
 
+  showError(message) {
+    if (!this.errorBox) return;
+    this.errorBox.textContent = message;
+    this.errorBox.classList.remove('hidden');
+  }
+
+  hideError() {
+    this.errorBox?.classList.add('hidden');
+  }
+
+  fullName(row) {
+    return [row.first_name, row.last_name].filter(Boolean).join(' ').trim();
+  }
+
+  testTypeLabel(value) {
+    return value === 'full_exam' ? 'Pełny test' : (value === 'personalized' ? 'Test personalizowany' : value || '');
+  }
+
+  number(value, decimals = 0) {
+    return new Intl.NumberFormat('pl-PL', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    }).format(Number(value) || 0);
+  }
+
+  percent(value) {
+    return `${this.number(value, 1)}%`;
+  }
+
+  duration(value) {
+    const seconds = Math.max(0, Number(value) || 0);
+    const minutes = Math.floor(seconds / 60);
+    const remainder = Math.round(seconds % 60);
+    return minutes > 0 ? `${minutes} min ${remainder} s` : `${remainder} s`;
+  }
+
+  date(value) {
+    if (!value || value === '1970-01-01 00:00:00') return 'Brak';
+    const date = new Date(String(value).replace(' ', 'T'));
+    if (Number.isNaN(date.getTime())) return String(value);
     return new Intl.DateTimeFormat('pl-PL', {
       day: '2-digit',
       month: '2-digit',
@@ -501,12 +792,18 @@ class AdminAnalytics {
     }).format(date);
   }
 
-  formatNumber(value, decimals = 0) {
-    const num = Number(value) || 0;
-    return new Intl.NumberFormat('pl-PL', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    }).format(num);
+  shortDate(value, granularity) {
+    const date = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat('pl-PL', granularity === 'month'
+      ? { month: 'short', year: '2-digit' }
+      : { day: '2-digit', month: '2-digit' }
+    ).format(date);
+  }
+
+  truncate(value, limit) {
+    const text = String(value || '');
+    return text.length > limit ? `${text.slice(0, limit)}...` : text;
   }
 
   escapeHTML(value) {
@@ -519,4 +816,10 @@ class AdminAnalytics {
   }
 }
 
-new AdminAnalytics();
+const initAdminAnalytics = () => new AdminAnalytics();
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAdminAnalytics, { once: true });
+} else {
+  initAdminAnalytics();
+}
