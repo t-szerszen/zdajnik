@@ -82,6 +82,21 @@ class SearchController extends BaseController
     // KROK 4: Renderowanie wyniku (Wykrycie AJAX)
     $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
+    if ($page === 1 && (!empty($filters['exam_id']) || !empty($filters['topic_id']) || !empty($filters['query']))) {
+      try {
+        $this->getAnalyticsService()->trackSearchPerformed(
+          $this->currentUser?->getId(),
+          !empty($filters['exam_id']) ? (int) $filters['exam_id'] : null,
+          !empty($filters['topic_id']) ? (int) $filters['topic_id'] : null,
+          is_string($filters['query']) ? $filters['query'] : null,
+          $totalCount,
+          $isAjax ? 'search_ajax' : 'search_page'
+        );
+      } catch (\Throwable $e) {
+        // Wyszukiwanie nie może zależeć od dostępności analityki.
+      }
+    }
+
     if ($isAjax) {
       // Przygotowanie tylko fragmentu HTML dla żądania dynamicznego
       ob_start();

@@ -1,3 +1,5 @@
+import api from '../modules/ApiClient.js';
+
 class ExplanationToggler {
   /**
    * Inicjalizuje instancję i automatycznie nasłuchuje na gotowość DOM.
@@ -51,7 +53,29 @@ class ExplanationToggler {
       e.preventDefault();
       const isVisible = content.classList.toggle('quiz-card__explanation--visible');
       this.updateButtonState(button, isVisible);
+
+      if (isVisible && button.dataset.explanationTracked !== 'true') {
+        button.dataset.explanationTracked = 'true';
+        api.trackAnalyticsEvent('explanation_viewed', {
+          exam_id: this.toPositiveInt(button.dataset.examId),
+          question_id: this.toPositiveInt(button.dataset.questionId),
+          topic_id: this.toPositiveInt(button.dataset.topicId),
+          test_type: button.dataset.testType || null,
+          source: button.dataset.source || 'question_explanation',
+          result: button.dataset.isCorrect === 'true'
+            ? 'correct'
+            : (button.dataset.isCorrect === 'false' ? 'incorrect' : 'unknown'),
+          is_correct: button.dataset.isCorrect === 'true'
+            ? 1
+            : (button.dataset.isCorrect === 'false' ? 0 : null),
+        }).catch(() => {});
+      }
     });
+  }
+
+  toPositiveInt(value) {
+    const number = Number.parseInt(value, 10);
+    return Number.isInteger(number) && number > 0 ? number : null;
   }
 
   /**

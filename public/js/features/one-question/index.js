@@ -45,6 +45,9 @@ class Quiz {
     // Krok 3: Zainicjuj wewnętrzny stan.
     this.currentExplanation = null;
     this.currentQuestionVersionId = null; // DODANE
+    this.currentQuestionId = null;
+    this.currentTopicId = null;
+    this.currentExamId = null;
     this.currentQuestionWasAnswered = false;
     this.progressUpdatedForCurrentQuestion = false;
     this.currentProgress = { total: 0, answered: 0 };
@@ -109,6 +112,9 @@ class Quiz {
   async startNewQuestion() {
     this.currentExplanation = null;
     this.currentQuestionVersionId = null; // Resetujemy stan
+    this.currentQuestionId = null;
+    this.currentTopicId = null;
+    this.currentExamId = null;
     this.currentQuestionWasAnswered = false;
     this.progressUpdatedForCurrentQuestion = false;
 
@@ -117,6 +123,11 @@ class Quiz {
     const premiumOption = this.topicForm.querySelector('input[name="premium_option"]:checked')?.value || null;
 
     if (selectedSubjects.length === 0) {
+      api.trackAnalyticsEvent('validation_error', {
+        source: 'single_question_configurator',
+        result: 'missing_topics',
+        count: 0,
+      }).catch(() => {});
       Toast.show('Wybierz przynajmniej jedną kategorię.', 'info');
       return;
     }
@@ -135,6 +146,9 @@ class Quiz {
           // KROK KLUCZOWY: Zapisujemy question_version_id do stanu klasy
           this.currentExplanation = data.question.explanation;
           this.currentQuestionVersionId = data.question.question_version_id;
+          this.currentQuestionId = data.question.question_id;
+          this.currentTopicId = data.question.topic_id;
+          this.currentExamId = data.question.exam_type_id;
           this.currentQuestionWasAnswered = data.question.was_answered === true;
 
           ui.renderQuestion(this.quizContainer, data.question, data.answers);
@@ -207,7 +221,17 @@ class Quiz {
       const data = result.data;
       ui.showAnswerFeedback(data.is_correct, data.correct_answer_id, userAnswerId);
       this.advanceProgressAfterAnswer();
-      ui.renderActionButtons(this.currentExplanation, this.startNewQuestion.bind(this));
+      ui.renderActionButtons(
+        this.currentExplanation,
+        this.startNewQuestion.bind(this),
+        {
+          examId: this.currentExamId,
+          questionId: this.currentQuestionId,
+          topicId: this.currentTopicId,
+          source: 'single_question_module',
+          isCorrect: data.is_correct,
+        }
+      );
     } else {
       Toast.show(result.error || 'Wystąpił błąd.', 'error');
       delete answersContainer.dataset.answered;

@@ -76,6 +76,11 @@ class PasswordResetController extends BaseController
   {
     // KROK 1: Kontrola częstotliwości żądań (Rate Limiting)
     if (isset($_SESSION['password_reset_sent']) && time() - $_SESSION['password_reset_sent'] < 60) {
+      $this->getAnalyticsService()->trackValidationError(
+        null,
+        'password_reset_request',
+        'cooldown_active'
+      );
       $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Kolejny e-mail można wysłać dopiero po minucie.'];
       header('Location: ' . url('reset-hasla'));
       exit();
@@ -84,6 +89,7 @@ class PasswordResetController extends BaseController
     // KROK 2: Identyfikacja użytkownika
     $email = $_POST['email'] ?? null;
     $user = $this->userModel->getUserByEmail($email);
+    $this->getAnalyticsService()->trackPasswordResetRequested($user?->getId());
 
     if ($user) {
       // KROK 3: Generowanie danych bezpieczeństwa
@@ -132,6 +138,11 @@ class PasswordResetController extends BaseController
 
     // Walidacja poprawności i daty wygaśnięcia tokenu
     if (!$token || !$tokenRecord || strtotime($tokenRecord['expires_at']) < time()) {
+      $this->getAnalyticsService()->trackValidationError(
+        null,
+        'password_reset',
+        'invalid_or_expired_token'
+      );
       $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Link do resetowania hasła jest nieprawidłowy lub wygasł.'];
       header('Location: ' . url('logowanie'));
       exit();
@@ -158,6 +169,7 @@ class PasswordResetController extends BaseController
     $tokenRecord = $this->tokenService->getTokenRecord($token);
 
     if (!$tokenRecord) {
+      $this->getAnalyticsService()->trackValidationError(null, 'password_reset', 'expired_session');
       $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Sesja wygasła.'];
       header('Location: ' . url('logowanie'));
       exit();
@@ -172,6 +184,12 @@ class PasswordResetController extends BaseController
     $errors = array_merge($authErrors, $passwordErrors);
 
     if (!empty($errors)) {
+      $this->getAnalyticsService()->trackValidationError(
+        (int) $tokenRecord['user_id'],
+        'password_reset',
+        'invalid_form',
+        ['count' => count($errors)]
+      );
       $_SESSION['flash_message'] = ['type' => 'error', 'errors' => $errors];
       header('Location: ' . url("nowe-haslo?token=$token"));
       exit();
@@ -180,6 +198,10 @@ class PasswordResetController extends BaseController
     // KROK 4: Aktualizacja hasła i usunięcie zużytych tokenów
     $this->userModel->updatePassword($tokenRecord['user_id'], $_POST['new_password']);
     $this->tokenService->deleteTokensForUserByType($tokenRecord['user_id'], 'password_reset');
+    $this->getAnalyticsService()->trackSettingsUpdated(
+      (int) $tokenRecord['user_id'],
+      'password_reset_completed'
+    );
 
     $_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Hasło zostało zresetowane!'];
     header('Location: ' . url('logowanie'));

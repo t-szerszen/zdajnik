@@ -109,6 +109,11 @@ class SettingsController extends BaseController
 
     // KROK 1: Walidacja bezpieczeństwa i weryfikacja hasła
     if (!$isGoogleUser && !$this->userModel->checkPassword($this->currentUser->getId(), $password)) {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser->getId(),
+        'account_deletion',
+        'invalid_password'
+      );
       $this->redirectWithFlash('error', ['Podane hasło jest nieprawidłowe.'], 'delete');
     }
 
@@ -124,7 +129,16 @@ class SettingsController extends BaseController
         'type' => 'success',
         'text' => 'Na Twój adres e-mail wysłaliśmy link potwierdzający. Kliknij go, aby dokończyć usuwanie konta.'
       ];
+      $this->getAnalyticsService()->trackSettingsUpdated(
+        $this->currentUser->getId(),
+        'account_deletion_requested'
+      );
     } else {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser->getId(),
+        'account_deletion',
+        'token_generation_failed'
+      );
       $_SESSION['flash_message'] = [
         'type' => 'error',
         'text' => 'Wystąpił błąd podczas generowania tokena. Spróbuj ponownie.'
@@ -152,6 +166,11 @@ class SettingsController extends BaseController
     $tokenRecord = $this->tokenService->getTokenRecord($token);
 
     if (!$tokenRecord || $tokenRecord['type'] !== 'account_deletion') {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser?->getId(),
+        'account_deletion',
+        'invalid_or_expired_token'
+      );
       $this->redirectWithFlash('error', ['Link weryfikacyjny wygasł lub jest nieprawidłowy.'], 'profile');
     }
 
@@ -161,6 +180,7 @@ class SettingsController extends BaseController
     if ($this->userModel->requestDeletion($userId)) {
       // KROK 3: Usunięcie zużytego tokenu
       $this->tokenService->deleteTokensForUserByType($userId, 'account_deletion');
+      $this->getAnalyticsService()->trackAccountDeleted();
 
       // KROK 4: Wylogowanie użytkownika (zniszczenie sesji)
       $this->terminateSession();
@@ -201,11 +221,18 @@ class SettingsController extends BaseController
     }
 
     if (!empty($errors)) {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser->getId(),
+        'settings_name',
+        'invalid_form',
+        ['count' => count($errors)]
+      );
       $this->redirectWithFlash('error', $errors, 'profile');
     }
 
     // Wykonanie aktualizacji i odświeżenie danych w sesji
     if ($this->userModel->updateName($this->currentUser->getId(), $firstName, $lastName)) {
+      $this->getAnalyticsService()->trackSettingsUpdated($this->currentUser->getId(), 'name_updated');
       $this->refreshSessionUser();
       $this->redirectWithFlash('success', 'Twoje dane zostały zaktualizowane.', 'profile');
     }
@@ -221,6 +248,11 @@ class SettingsController extends BaseController
   private function processPasswordChange(): void
   {
     if ($this->currentUser->getAuthProvider() === 'google') {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser->getId(),
+        'settings_password',
+        'provider_has_no_password'
+      );
       $this->redirectWithFlash('error', ['Konto Google nie posiada hasła.'], 'password');
     }
 
@@ -230,6 +262,11 @@ class SettingsController extends BaseController
 
     // Weryfikacja obecnego hasła
     if (!$this->userModel->checkPassword($this->currentUser->getId(), $current)) {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser->getId(),
+        'settings_password',
+        'invalid_current_password'
+      );
       $this->redirectWithFlash('error', ['Obecne hasło jest nieprawidłowe.'], 'password');
     }
 
@@ -240,11 +277,18 @@ class SettingsController extends BaseController
     }
 
     if (!empty($errors)) {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser->getId(),
+        'settings_password',
+        'invalid_new_password',
+        ['count' => count($errors)]
+      );
       $this->redirectWithFlash('error', $errors, 'password');
     }
 
     // Zapis nowego hasła (zaszyfrowanego wewnątrz modelu)
     if ($this->userModel->updatePassword($this->currentUser->getId(), $new)) {
+      $this->getAnalyticsService()->trackSettingsUpdated($this->currentUser->getId(), 'password_updated');
       $this->redirectWithFlash('success', 'Hasło zostało zmienione.', 'password');
     }
   }
@@ -260,6 +304,11 @@ class SettingsController extends BaseController
   {
     // Ochrona przed nadmiarowym wysyłaniem e-maili (cooldown)
     if ($this->isEmailCooldownActive()) {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser->getId(),
+        'settings_email',
+        'cooldown_active'
+      );
       $this->redirectWithFlash('error', ['Odczekaj minutę przed kolejną próbą.'], 'email');
     }
 
@@ -270,6 +319,12 @@ class SettingsController extends BaseController
     $errors = $this->validator->validateEmailChange($newEmail, $password, $this->currentUser->getId());
 
     if (!empty($errors)) {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser->getId(),
+        'settings_email',
+        'invalid_form',
+        ['count' => count($errors)]
+      );
       $this->redirectWithFlash('error', $errors, 'email');
     }
 
@@ -287,6 +342,10 @@ class SettingsController extends BaseController
       'type' => 'success',
       'text' => "Na nowy adres e-mail wysłaliśmy kod. Wpisz go poniżej."
     ];
+    $this->getAnalyticsService()->trackSettingsUpdated(
+      $this->currentUser->getId(),
+      'email_change_requested'
+    );
 
     header('Location: ' . url("zmiana-email?token=$token"));
     exit();
@@ -322,6 +381,11 @@ class SettingsController extends BaseController
     $tokenRecord = $this->tokenService->getTokenRecord($token);
 
     if (!$tokenRecord) {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser->getId(),
+        'settings_email',
+        'expired_session'
+      );
       $this->redirectWithFlash('error', ['Sesja wygasła. Spróbuj ponownie.'], 'email');
     }
 
@@ -329,6 +393,11 @@ class SettingsController extends BaseController
     $errors = $this->validator->validateAuthCode($authCode, $tokenRecord['auth_code']);
 
     if (!empty($errors)) {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser->getId(),
+        'settings_email',
+        'invalid_verification_code'
+      );
       $_SESSION['flash_message'] = ['type' => 'error', 'errors' => $errors];
       header('Location: ' . url("zmiana-email?token=$token"));
       exit();
@@ -338,6 +407,11 @@ class SettingsController extends BaseController
     $newEmail = $tokenRecord['token_data'];
     if ($this->userModel->updateAndVerifyEmail($this->currentUser->getId(), $newEmail)) {
       $this->tokenService->deleteTokensForUserByType($this->currentUser->getId(), 'email_change');
+      $this->getAnalyticsService()->trackEmailVerified(
+        $this->currentUser->getId(),
+        'settings_email_change'
+      );
+      $this->getAnalyticsService()->trackSettingsUpdated($this->currentUser->getId(), 'email_updated');
       $this->refreshSessionUser();
       $this->redirectWithFlash('success', 'Adres e-mail został pomyślnie zmieniony.', 'email');
     } else {
@@ -360,10 +434,21 @@ class SettingsController extends BaseController
 
     // Walidacja wyboru egzaminu i hasła (dla kont lokalnych)
     if (!$examTypeId) {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser->getId(),
+        'progress_anonymization',
+        'missing_exam'
+      );
       $this->redirectWithFlash('error', ['Musisz wybrać egzamin z listy.'], 'progress');
     }
 
     if (!$isGoogleUser && !$this->userModel->checkPassword($this->currentUser->getId(), $password)) {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser->getId(),
+        'progress_anonymization',
+        'invalid_password',
+        ['exam_id' => (int) $examTypeId]
+      );
       $this->redirectWithFlash('error', ['Podane hasło jest nieprawidłowe.'], 'progress');
     }
 
@@ -380,6 +465,12 @@ class SettingsController extends BaseController
     }
 
     if (!$examCode) {
+      $this->getAnalyticsService()->trackValidationError(
+        $userId,
+        'progress_anonymization',
+        'exam_not_started',
+        ['exam_id' => (int) $examTypeId]
+      );
       $this->redirectWithFlash('error', ['Wybrany egzamin nie istnieje lub nie został rozpoczęty.'], 'progress');
     }
 
@@ -448,6 +539,10 @@ class SettingsController extends BaseController
     // KROK 5: Sprzątanie i przekierowanie z komunikatem o sukcesie
     if ($progressDeleted !== false && $attemptsResult !== false) {
       $this->tokenService->deleteTokensForUserByType($userId, 'progress_anonymization');
+      $this->getAnalyticsService()->trackSettingsUpdated($userId, 'progress_anonymized', [
+        'exam_id' => $examTypeId,
+        'count' => $answeredCount,
+      ]);
       $_SESSION['flash_message'] = [
         'type' => 'success',
         'text' => 'Postęp dla wskazanego egzaminu został pomyślnie wyzerowany.'

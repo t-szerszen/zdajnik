@@ -201,6 +201,33 @@ class ApiClient {
     };
     return this._request('/toggle-saved', options);
   }
+
+  /**
+   * Wysyła ograniczony event produktowy. Tryb beacon jest używany przy
+   * opuszczaniu strony, kiedy zwykły fetch może zostać anulowany.
+   */
+  trackAnalyticsEvent(eventType, metadata = {}, useBeacon = false) {
+    const payload = JSON.stringify({
+      event_type: eventType,
+      metadata,
+    });
+    const endpoint = `${this.baseUrl}/analytics/event`;
+
+    if (useBeacon && navigator.sendBeacon) {
+      const queued = navigator.sendBeacon(
+        endpoint,
+        new Blob([payload], { type: 'application/json' })
+      );
+      return Promise.resolve({ success: queued });
+    }
+
+    return this._request('/analytics/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      keepalive: useBeacon,
+    });
+  }
 }
 
 /**

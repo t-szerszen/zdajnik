@@ -144,7 +144,7 @@ class UIHandler {
   }
 
   // Metoda renderActionButtons
-  renderActionButtons(explanation, nextCallback) {
+  renderActionButtons(explanation, nextCallback, analyticsContext = {}) {
     const actionContainer = document.querySelector('.quiz-card__actions');
     if (!actionContainer) return;
 
@@ -161,6 +161,7 @@ class UIHandler {
       const explBtn = document.createElement('button');
       explBtn.type = 'button';
       explBtn.className = 'btn btn--secondary btn--small';
+      this.applyExplanationAnalytics(explBtn, analyticsContext);
 
       // Używamy helpera do obsługi logiki i wyglądu (w tym ikony)
       ExplanationToggler.attach(explBtn, explContainer);
@@ -177,6 +178,23 @@ class UIHandler {
     nextBtn.textContent = 'Następne pytanie';
     nextBtn.addEventListener('click', nextCallback);
     btnContainer.appendChild(nextBtn);
+  }
+
+  applyExplanationAnalytics(button, context) {
+    const mappings = {
+      examId: context.examId,
+      questionId: context.questionId,
+      topicId: context.topicId,
+      testType: context.testType,
+      source: context.source,
+      isCorrect: context.isCorrect,
+    };
+
+    Object.entries(mappings).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        button.dataset[key] = String(value);
+      }
+    });
   }
 
   /**

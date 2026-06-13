@@ -54,9 +54,12 @@ export class TestRunner {
     this.timerInterval = null;
     this.timeSpent = 0;
     this.isTestInProgress = false;
+    this.exitTracked = false;
+    this.answerSelections = new Map();
 
     // Bindowanie metod
     this.handleBeforeUnload = this.handleBeforeUnload.bind(this);
+    this.handlePageHide = this.handlePageHide.bind(this);
     this.finishTest = this.finishTest.bind(this);
     this.handleAnswerSelection = this.handleAnswerSelection.bind(this);
     this.togglePause = this.togglePause.bind(this);
@@ -156,6 +159,7 @@ export class TestRunner {
    */
   bindListeners() {
     window.addEventListener('beforeunload', this.handleBeforeUnload);
+    window.addEventListener('pagehide', this.handlePageHide);
     this.finishBtn.addEventListener('click', this.finishTest);
     this.questionsWrapper.addEventListener('click', this.handleAnswerSelection);
 
@@ -242,6 +246,7 @@ export class TestRunner {
     this.isTestInProgress = false;
     this.stopTimer();
     window.removeEventListener('beforeunload', this.handleBeforeUnload);
+    window.removeEventListener('pagehide', this.handlePageHide);
     window.removeEventListener('scroll', this.handleSyncScroll);
     document.body.classList.remove('test-scrolled-past-header');
 
@@ -449,7 +454,16 @@ export class TestRunner {
       `;
 
       if (explanation && explanation.trim()) {
-        this.renderExplanationResult(card, explanation);
+        this.renderExplanationResult(card, explanation, {
+          examId: qData.question.exam_type_id,
+          questionId: question_id,
+          topicId: qData.question.topic_id,
+          testType: this.isFullExam ? 'full_exam' : 'personalized',
+          source: 'test_results',
+          isCorrect: userAnswerId === null || userAnswerId === undefined
+            ? null
+            : Boolean(isUserCorrectHeader),
+        });
       }
 
       this.resultsDetailsContainer.appendChild(card);
@@ -461,7 +475,7 @@ export class TestRunner {
   /**
    * Renderuje sekcję wyjaśnienia w wynikach (z działającym przyciskiem).
    */
-  renderExplanationResult(card, explanation) {
+  renderExplanationResult(card, explanation, analyticsContext = {}) {
     const actionsContainer = card.querySelector('.quiz-card__actions');
 
     const btnContainer = document.createElement('div');
@@ -488,6 +502,18 @@ export class TestRunner {
     button.className = 'btn btn--secondary btn--small toggle-explanation-btn';
     button.innerHTML = '<i class="fas fa-lightbulb"></i> Pokaż wyjaśnienie';
     button.dataset.target = explId;
+    Object.entries({
+      examId: analyticsContext.examId,
+      questionId: analyticsContext.questionId,
+      topicId: analyticsContext.topicId,
+      testType: analyticsContext.testType,
+      source: analyticsContext.source,
+      isCorrect: analyticsContext.isCorrect,
+    }).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        button.dataset[key] = String(value);
+      }
+    });
 
     // Używamy helpera do obsługi logiki
     ExplanationToggler.attach(button, explContainer);
@@ -509,6 +535,23 @@ export class TestRunner {
     }
   }
 
+  handlePageHide() {
+    if (!this.isTestInProgress || this.exitTracked) {
+      return;
+    }
+
+    this.exitTracked = true;
+    const firstQuestion = this.questionsData[0]?.question || {};
+    api.trackAnalyticsEvent('test_exited', {
+      exam_id: firstQuestion.exam_type_id || null,
+      test_type: this.isFullExam ? 'full_exam' : 'personalized',
+      source: 'test_runner',
+      result: 'page_hidden_before_completion',
+      duration_seconds: this.timeSpent,
+      count: this.answerSelections.size,
+    }, true).catch(() => {});
+  }
+
   /**
    * Dodaje wizualny feedback (klasę CSS) po kliknięciu na odpowiedź.
    * @private
@@ -527,6 +570,28 @@ export class TestRunner {
 
     const currentQuestionCard = answerLabel.closest('.quiz-card');
     if (currentQuestionCard) {
+      const input = answerLabel.querySelector('input[type="radio"]');
+      const questionId = Number.parseInt(currentQuestionCard.id.replace('question-', ''), 10);
+      const previousAnswer = this.answerSelections.get(questionId);
+      const currentAnswer = input?.value || null;
+
+      if (previousAnswer !== undefined && previousAnswer !== currentAnswer) {
+        const question = this.questionsData.find(
+          (item) => Number(item.question.question_id) === questionId
+        )?.question;
+        api.trackAnalyticsEvent('answer_changed', {
+          exam_id: question?.exam_type_id || null,
+          question_id: questionId,
+          topic_id: question?.topic_id || null,
+          test_type: this.isFullExam ? 'full_exam' : 'personalized',
+          source: 'test_runner',
+          result: 'changed_before_completion',
+        }).catch(() => {});
+      }
+      if (currentAnswer !== null) {
+        this.answerSelections.set(questionId, currentAnswer);
+      }
+
       // Usuń zaznaczenie z poprzednio wybranej odpowiedzi w ramach TEGO pytania.
       currentQuestionCard
         .querySelectorAll('.quiz-card__answer.selected')

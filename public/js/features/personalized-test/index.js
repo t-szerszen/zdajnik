@@ -93,6 +93,11 @@ class PersonalizedTest {
       // Walidacja kroku 1: Sprawdź, czy wybrano co najmniej jeden temat.
       const selectedSubjects = this.form.querySelectorAll('input[name="subject[]"]:checked');
       if (selectedSubjects.length === 0) {
+        api.trackAnalyticsEvent('validation_error', {
+          source: 'personalized_test_configurator',
+          result: 'missing_topics',
+          count: 0,
+        }).catch(() => {});
         Toast.show('Wybierz przynajmniej jedną kategorię tematyczną.', 'info');
         return false;
       }

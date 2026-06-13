@@ -132,6 +132,32 @@ class BaseController
   }
 
   /**
+   * Nieblokujący zapis zdarzenia dla kontrolerów potomnych.
+   */
+  protected function trackAnalyticsEvent(string $eventType, array $metadata = [], ?int $userId = null): bool
+  {
+    try {
+      $this->analyticsService ??= new AnalyticsService();
+      return $this->analyticsService->trackEvent(
+        $eventType,
+        $userId ?? $this->currentUser?->getId(),
+        $metadata
+      );
+    } catch (\Throwable $e) {
+      return false;
+    }
+  }
+
+  /**
+   * Udostępnia serwis metodom trackującym z własną normalizacją danych.
+   */
+  protected function getAnalyticsService(): AnalyticsService
+  {
+    $this->analyticsService ??= new AnalyticsService();
+    return $this->analyticsService;
+  }
+
+  /**
    * Rejestruje page view dla publicznych widoków.
    */
   private function trackPageView(string $viewName): void
@@ -144,19 +170,10 @@ class BaseController
       return;
     }
 
-    try {
-      $this->analyticsService ??= new AnalyticsService();
-
-      $metadata = [
-        'view' => $viewName,
-        'path' => (string) ($_GET['url'] ?? ''),
-      ];
-
-      $userId = $this->currentUser?->getId();
-      $this->analyticsService->trackEvent('page_view', $userId, $metadata);
-    } catch (\Throwable $e) {
-      // Analitka nie może blokować renderowania strony.
-    }
+    $this->trackAnalyticsEvent('page_view', [
+      'path' => $this->getAnalyticsPath(),
+      'source' => $this->getAnalyticsTrafficSource(),
+    ]);
   }
 
   /**
@@ -173,5 +190,50 @@ class BaseController
     }
 
     return true;
+  }
+
+  /**
+   * Zapisuje wyłącznie ścieżkę bez query stringa, aby parametry z tokenami
+   * lub danymi użytkownika nie trafiły do metadata.
+   */
+  private function getAnalyticsPath(): string
+  {
+    $requestUri = (string) ($_SERVER['REQUEST_URI'] ?? '');
+    $path = parse_url($requestUri, PHP_URL_PATH);
+
+    if (!is_string($path) || $path === '') {
+      $path = '/' . ltrim((string) ($_GET['url'] ?? ''), '/');
+    }
+
+    return mb_substr($path, 0, 255);
+  }
+
+  /**
+   * Źródło ruchu jest klasyfikowane po hoście referera. Pełny URL nie jest
+   * przechowywany, dzięki czemu query string nie trafia do analityki.
+   */
+  private function getAnalyticsTrafficSource(): string
+  {
+    $referer = (string) ($_SERVER['HTTP_REFERER'] ?? '');
+    if ($referer === '') {
+      return 'direct';
+    }
+
+    $refererHost = strtolower((string) parse_url($referer, PHP_URL_HOST));
+    $currentHost = strtolower((string) preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? ''));
+
+    if ($refererHost === '' || $refererHost === $currentHost) {
+      return 'internal';
+    }
+
+    if (preg_match('/(^|\.)google\.|(^|\.)bing\.|(^|\.)duckduckgo\./', $refererHost)) {
+      return 'organic-search';
+    }
+
+    if (preg_match('/facebook\.|instagram\.|tiktok\.|linkedin\.|x\.com$|twitter\./', $refererHost)) {
+      return 'social';
+    }
+
+    return mb_substr($refererHost, 0, 100);
   }
 }
