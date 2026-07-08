@@ -57,8 +57,8 @@ class AdminController extends BaseController
   public function index(): void
   {
     $this->renderView('admin/dashboard', [
-      'pageTitle' => 'Admin Panel | Examly',
-      'pageDescription' => 'Panel administracyjny Examly do zarządzania treścią i strukturą serwisu.',
+      'pageTitle' => 'Admin Panel | Zdajnik',
+      'pageDescription' => 'Panel administracyjny Zdajnik do zarządzania treścią i strukturą serwisu.',
       'overview' => $this->adminService->getOverview(),
       'attention' => $this->adminService->getAttentionItems(6),
       'recentAuditActions' => $this->adminService->getRecentAuditActions(8),
@@ -95,8 +95,8 @@ class AdminController extends BaseController
     $result = $this->userService->searchUsers($filters, $page, $perPage, $sort, $dir);
 
     $this->renderView('admin/users', [
-      'pageTitle' => 'Użytkownicy | Admin Panel | Examly',
-      'pageDescription' => 'Lista użytkowników w panelu CMS Examly.',
+      'pageTitle' => 'Użytkownicy | Admin Panel | Zdajnik',
+      'pageDescription' => 'Lista użytkowników w panelu CMS Zdajnik.',
       'overview' => $this->adminService->getOverview(),
       'users' => $result['items'],
       'filters' => $filters,
@@ -123,8 +123,8 @@ class AdminController extends BaseController
     }
 
     $this->renderView('admin/user_detail', [
-      'pageTitle' => 'Użytkownik #' . $userId . ' | Admin Panel | Examly',
-      'pageDescription' => 'Szczegóły użytkownika w panelu CMS Examly.',
+      'pageTitle' => 'Użytkownik #' . $userId . ' | Admin Panel | Zdajnik',
+      'pageDescription' => 'Szczegóły użytkownika w panelu CMS Zdajnik.',
       'user' => $user,
       'userStats' => $this->userService->getUserStats($userId),
       'attempts' => $this->userService->getUserAttempts($userId, 100),
@@ -276,8 +276,8 @@ class AdminController extends BaseController
     $result = $this->examService->searchExams($filters, $page, $perPage, $sort, $dir);
 
     $this->renderView('admin/exams', [
-      'pageTitle' => 'Egzaminy | Admin Panel | Examly',
-      'pageDescription' => 'Zarządzanie egzaminami w panelu CMS Examly.',
+      'pageTitle' => 'Egzaminy | Admin Panel | Zdajnik',
+      'pageDescription' => 'Zarządzanie egzaminami w panelu CMS Zdajnik.',
       'overview' => $this->adminService->getOverview(),
       'exams' => $result['items'],
       'filters' => $filters,
@@ -391,8 +391,8 @@ class AdminController extends BaseController
     }
 
     $this->renderView('admin/exam_detail', [
-      'pageTitle' => 'Egzamin ' . ($exam['code'] ?? ('#' . $examId)) . ' | Admin Panel | Examly',
-      'pageDescription' => 'Szczegóły egzaminu w panelu CMS Examly.',
+      'pageTitle' => 'Egzamin ' . ($exam['code'] ?? ('#' . $examId)) . ' | Admin Panel | Zdajnik',
+      'pageDescription' => 'Szczegóły egzaminu w panelu CMS Zdajnik.',
       'exam' => $exam,
       'questions' => $this->examService->getExamQuestions($examId, 200),
       'topics' => $this->examService->getExamTopics($examId),
@@ -568,8 +568,8 @@ class AdminController extends BaseController
     $result = $this->questionService->searchQuestions($filters, $page, $perPage, $sort, $dir);
 
     $this->renderView('admin/questions', [
-      'pageTitle' => 'Pytania | Admin Panel | Examly',
-      'pageDescription' => 'Zarządzanie pytaniami z wersjonowaniem w panelu CMS Examly.',
+      'pageTitle' => 'Pytania | Admin Panel | Zdajnik',
+      'pageDescription' => 'Zarządzanie pytaniami z wersjonowaniem w panelu CMS Zdajnik.',
       'overview' => $this->adminService->getOverview(),
       'questions' => $result['items'],
       'filters' => $filters,
@@ -646,8 +646,8 @@ class AdminController extends BaseController
     }
 
     $this->renderView('admin/question_detail', [
-      'pageTitle' => 'Pytanie #' . $questionId . ' | Admin Panel | Examly',
-      'pageDescription' => 'Szczegóły pytania w panelu CMS Examly.',
+      'pageTitle' => 'Pytanie #' . $questionId . ' | Admin Panel | Zdajnik',
+      'pageDescription' => 'Szczegóły pytania w panelu CMS Zdajnik.',
       'question' => $question,
       'csrfToken' => $this->csrfService->token(),
     ]);
@@ -801,8 +801,8 @@ class AdminController extends BaseController
     $filterOptions = $this->analyticsService->getFilterOptions();
 
     $this->renderView('admin/analytics', [
-      'pageTitle' => 'Analityka | Admin Panel | Examly',
-      'pageDescription' => 'Panel analityczny produktu Examly dla administratorów.',
+      'pageTitle' => 'Analityka | Admin Panel | Zdajnik',
+      'pageDescription' => 'Panel analityczny produktu Zdajnik dla administratorów.',
       'analytics' => $dashboardData,
       'filters' => $filters,
       'filterOptions' => $filterOptions,
@@ -899,8 +899,8 @@ class AdminController extends BaseController
     $result = $this->auditService->searchLogs($filters, $page, $perPage);
 
     $this->renderView('admin/audit_logs', [
-      'pageTitle' => 'Audyt administracji | Admin Panel | Examly',
-      'pageDescription' => 'Lista ostatnich akcji administracyjnych w panelu CMS Examly.',
+      'pageTitle' => 'Audyt administracji | Admin Panel | Zdajnik',
+      'pageDescription' => 'Lista ostatnich akcji administracyjnych w panelu CMS Zdajnik.',
       'filters' => $filters,
       'logs' => $result['items'],
       'pagination' => $result,
@@ -1126,8 +1126,8 @@ class AdminController extends BaseController
     $title = $isEdit ? 'Edycja egzaminu' : 'Dodawanie egzaminu';
 
     $this->renderView('admin/exam_form', [
-      'pageTitle' => $title . ' | Admin Panel | Examly',
-      'pageDescription' => 'Formularz zarządzania egzaminem w panelu CMS Examly.',
+      'pageTitle' => $title . ' | Admin Panel | Zdajnik',
+      'pageDescription' => 'Formularz zarządzania egzaminem w panelu CMS Zdajnik.',
       'mode' => $mode,
       'examId' => $examId,
       'exam' => $exam,
@@ -1201,8 +1201,8 @@ class AdminController extends BaseController
     $question['answers'] = $this->normalizeAnswersForForm($question['answers'] ?? []);
 
     $this->renderView('admin/question_form', [
-      'pageTitle' => ($mode === 'edit' ? 'Edycja pytania' : 'Dodawanie pytania') . ' | Admin Panel | Examly',
-      'pageDescription' => 'Formularz zarządzania pytaniem w panelu CMS Examly.',
+      'pageTitle' => ($mode === 'edit' ? 'Edycja pytania' : 'Dodawanie pytania') . ' | Admin Panel | Zdajnik',
+      'pageDescription' => 'Formularz zarządzania pytaniem w panelu CMS Zdajnik.',
       'mode' => $mode,
       'questionId' => $questionId,
       'question' => $question,

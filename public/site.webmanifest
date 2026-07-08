@@ -1,6 +1,6 @@
 {
-  "name": "Examly",
-  "short_name": "Examly",
+  "name": "Zdajnik",
+  "short_name": "Zdajnik",
   "icons": [
     {
       "src": "/images/company/android-chrome-192x192.png",
@@ -13,7 +13,7 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#7928CA",
-  "background_color": "#ffffff",
+  "theme_color": "#10B981",
+  "background_color": "#F5F7FA",
   "display": "standalone"
 }

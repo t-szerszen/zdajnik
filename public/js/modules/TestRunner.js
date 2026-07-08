@@ -56,6 +56,7 @@ export class TestRunner {
     this.isTestInProgress = false;
     this.exitTracked = false;
     this.answerSelections = new Map();
+    this.pendingSaveToggles = new Set();
 
     // Bindowanie metod
     this.handleBeforeUnload = this.handleBeforeUnload.bind(this);
@@ -209,7 +210,7 @@ export class TestRunner {
 
       const imageHTML = image_name
         ? `<div class="quiz-card__image-container">
-             <img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_name)}"
+             <img src="${window.zdajnikAppState.baseUrl}/images/questions/${escapeHTML(image_name)}"
                   alt="Ilustracja do pytania" class="quiz-card__image">
            </div>`
         : '';
@@ -221,7 +222,7 @@ export class TestRunner {
               <span class="quiz-card__id">ID: ${question_id}</span>
             </div>
             <div class="quiz-card__header-actions">
-           ${window.examlyAppState.isUserLoggedIn ? `
+           ${window.zdajnikAppState.isUserLoggedIn ? `
              <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz pytanie" aria-label="${qData.question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-pressed="${qData.question.is_saved ? 'true' : 'false'}">
                <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
              </button>
@@ -284,7 +285,7 @@ export class TestRunner {
     const totalQuestions = this.questionsData.length;
     const score = totalQuestions > 0 ? (correctAnswersCount / totalQuestions) * 100 : 0;
 
-    if (window.examlyAppState?.isUserLoggedIn) {
+    if (window.zdajnikAppState?.isUserLoggedIn) {
       const attemptPayload = {
         examCode: this.examCode || 'INF.03',
         isFullExam: this.isFullExam,
@@ -295,6 +296,10 @@ export class TestRunner {
         answers: answersDetails
       };
       await api.saveAttempt(attemptPayload);
+    }
+
+    if (this.pendingSaveToggles.size > 0) {
+      await Promise.allSettled(Array.from(this.pendingSaveToggles));
     }
 
     // WAŻNE: Przekazujemy trzeci argument
@@ -313,6 +318,11 @@ export class TestRunner {
     this.testView.classList.add('hidden');
     if (this.testView.parentElement) {
       this.testView.parentElement.classList.add('hidden');
+    }
+    const dynamicQuizContainer = this.testView.closest('#quiz-container');
+    if (dynamicQuizContainer) {
+      dynamicQuizContainer.classList.remove('test-container--active');
+      dynamicQuizContainer.classList.add('hidden');
     }
 
     // Dodaj klasę do body dla stylów tła
@@ -437,8 +447,8 @@ export class TestRunner {
                 <span class="quiz-card__id">ID: ${question_id}</span>
               </div>
               <div class="quiz-card__header-actions">
-               ${window.examlyAppState.isUserLoggedIn ? `
-                 <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz pytanie">
+               ${window.zdajnikAppState.isUserLoggedIn ? `
+                 <button class="quiz-card__save-btn" data-question-id="${question_id}" title="${qData.question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-label="${qData.question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-pressed="${qData.question.is_saved ? 'true' : 'false'}">
                    <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
                  </button>
                ` : ''}
@@ -447,7 +457,7 @@ export class TestRunner {
          </div>
         <div class="quiz-card__content">
           <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
-          ${image_name ? `<div class="quiz-card__image-container"><img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_name)}" class="quiz-card__image"></div>` : ''}
+          ${image_name ? `<div class="quiz-card__image-container"><img src="${window.zdajnikAppState.baseUrl}/images/questions/${escapeHTML(image_name)}" class="quiz-card__image"></div>` : ''}
         </div>
         <div class="quiz-card__answers" data-answered="true">${answersHTML}</div>
         <div class="quiz-card__actions"></div>
@@ -561,7 +571,11 @@ export class TestRunner {
     // Krok 1: Przycisk zapisu
     const saveBtn = event.target.closest('.quiz-card__save-btn');
     if (saveBtn) {
-      this.handleSaveToggle(saveBtn);
+      const pendingToggle = this.handleSaveToggle(saveBtn);
+      this.pendingSaveToggles.add(pendingToggle);
+      pendingToggle.finally(() => {
+        this.pendingSaveToggles.delete(pendingToggle);
+      });
       return;
     }
 
@@ -733,7 +747,15 @@ export class TestRunner {
    * @async
    * @param {HTMLElement} btn - Element przycisku zapisu.
    */
-  handleSaveToggle(btn) {
-    saveToggle.toggle(btn);
+  async handleSaveToggle(btn) {
+    const result = await saveToggle.toggle(btn);
+    if (!result || result.is_saved === undefined) return;
+
+    const questionId = Number.parseInt(btn.dataset.questionId, 10);
+    this.questionsData.forEach((qData) => {
+      if (Number(qData.question.question_id) === questionId) {
+        qData.question.is_saved = result.is_saved;
+      }
+    });
   }
 }

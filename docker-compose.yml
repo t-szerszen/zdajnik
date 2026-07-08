@@ -1,14 +1,16 @@
+name: zdajnik
+
 services:
   app:
     build: .
-    container_name: examly_app
+    container_name: zdajnik_app
     ports:
       - "8080:80"
       - "8443:443"
     volumes:
       - .:/var/www/html
     networks:
-      - examly_network
+      - zdajnik_network
     depends_on:
       - db
     environment:
@@ -19,7 +21,7 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: examly_db
+    container_name: zdajnik_db
     restart: no
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASS}
@@ -27,13 +29,15 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql
+      - zdajnik_db_data:/var/lib/mysql
     networks:
-      - examly_network
+      - zdajnik_network
 
 networks:
-  examly_network:
+  zdajnik_network:
+    name: zdajnik_network
     driver: bridge
 
 volumes:
-  db_data:
+  zdajnik_db_data:
+    name: zdajnik_db_data

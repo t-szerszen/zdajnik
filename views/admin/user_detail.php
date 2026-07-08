@@ -5,8 +5,8 @@
  * Szczegóły użytkownika w panelu CMS.
  */
 
-$pageTitle = $pageTitle ?? 'Użytkownik | Admin Panel | Examly';
-$pageDescription = $pageDescription ?? 'Szczegóły użytkownika w panelu CMS Examly.';
+$pageTitle = $pageTitle ?? 'Użytkownik | Panel administracyjny | Zdajnik';
+$pageDescription = $pageDescription ?? 'Szczegóły użytkownika w panelu CMS Zdajnik.';
 $user = $user ?? [];
 $userStats = $userStats ?? [];
 $attempts = $attempts ?? [];

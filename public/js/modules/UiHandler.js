@@ -42,7 +42,7 @@ class UIHandler {
      * @private
      * @type {string}
      */
-    this.IMAGE_BASE_PATH = `${window.examlyAppState.baseUrl}/images/questions/`;
+    this.IMAGE_BASE_PATH = `${window.zdajnikAppState.baseUrl}/images/questions/`;
   }
 
   /**
@@ -82,7 +82,7 @@ class UIHandler {
 
     // Krok 3: Wygeneruj przycisk zapisu (tylko dla zalogowanych)
     let saveBtnHTML = '';
-    if (window.examlyAppState.isUserLoggedIn) {
+    if (window.zdajnikAppState.isUserLoggedIn) {
       const heartType = question.is_saved ? 'fas' : 'far';
       saveBtnHTML = `
         <button class="quiz-card__save-btn" data-question-id="${question.question_id}" title="Zapisz pytanie" aria-label="${question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-pressed="${question.is_saved ? 'true' : 'false'}">
@@ -147,10 +147,11 @@ class UIHandler {
   renderActionButtons(explanation, nextCallback, analyticsContext = {}) {
     const actionContainer = document.querySelector('.quiz-card__actions');
     if (!actionContainer) return;
+    actionContainer.classList.add('quiz-card__actions--single-question');
 
     actionContainer.innerHTML = `
       <div class="quiz-card__button-container"></div>
-      <div class="quiz-card__explanation"></div>
+      <div class="quiz-card__explanation quiz-card__explanation--compact"></div>
     `;
 
     const btnContainer = actionContainer.querySelector('.quiz-card__button-container');
@@ -167,7 +168,13 @@ class UIHandler {
       ExplanationToggler.attach(explBtn, explContainer);
 
       // Parsowanie markdown dla wyjaśnienia
-      explContainer.innerHTML = DOMPurify.sanitize(marked.parse(explanation));
+      const explanationHTML = this.renderExplanationHTML(explanation);
+      explContainer.innerHTML = `
+        <div class="explanation-title">
+          <i class="fas fa-lightbulb"></i> Wyjaśnienie
+        </div>
+        <div class="explanation-inner">${explanationHTML}</div>
+      `;
       btnContainer.appendChild(explBtn);
     }
 
@@ -178,6 +185,32 @@ class UIHandler {
     nextBtn.textContent = 'Następne pytanie';
     nextBtn.addEventListener('click', nextCallback);
     btnContainer.appendChild(nextBtn);
+  }
+
+  renderExplanationHTML(explanation) {
+    const rawExplanation = String(explanation || '').trim();
+    if (!rawExplanation) return '';
+
+    let parsedHTML = '';
+    try {
+      if (window.marked && typeof marked.parse === 'function') {
+        parsedHTML = marked.parse(rawExplanation, { gfm: true, breaks: true });
+      }
+    } catch (error) {
+      parsedHTML = '';
+    }
+
+    const sanitizedHTML = window.DOMPurify
+      ? DOMPurify.sanitize(parsedHTML)
+      : '';
+
+    const textProbe = document.createElement('div');
+    textProbe.innerHTML = sanitizedHTML;
+    if (textProbe.textContent.trim() !== '') {
+      return sanitizedHTML;
+    }
+
+    return `<p>${escapeHTML(rawExplanation).replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
   }
 
   applyExplanationAnalytics(button, context) {

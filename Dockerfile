@@ -35,5 +35,5 @@ RUN echo '<Directory /var/www/html/public>\n\
   Options Indexes FollowSymLinks\n\
   AllowOverride All\n\
   Require all granted\n\
-  </Directory>' > /etc/apache2/conf-available/examly.conf \
-  && a2enconf examly
+  </Directory>' > /etc/apache2/conf-available/zdajnik.conf \
+  && a2enconf zdajnik

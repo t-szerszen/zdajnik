@@ -1,6 +1,6 @@
 <?php
-$pageTitle = $pageTitle ?? 'Pytania | Admin Panel | Examly';
-$pageDescription = $pageDescription ?? 'Zarządzanie pytaniami Examly.';
+$pageTitle = $pageTitle ?? 'Pytania | Panel administracyjny | Zdajnik';
+$pageDescription = $pageDescription ?? 'Zarządzanie pytaniami Zdajnik.';
 $questions = $questions ?? [];
 $filters = $filters ?? [];
 $pagination = $pagination ?? ['page' => 1, 'totalPages' => 1];

@@ -193,13 +193,7 @@ class RegisterController extends BaseController
     $verifyLink = url("weryfikacja?token=$token");
 
     // KROK 4: Składanie treści i wysyłka e-maila
-    $body =
-      "<p>Witaj {$user->getFullName()},</p>" .
-      '<p>Dziękujemy za dołączenie do Examly! Kliknij poniższy link, aby aktywować swoje konto:</p>' .
-      "<p><a href='$verifyLink'>$verifyLink</a></p>" .
-      '<p>Link jest ważny przez 24 godziny.</p>';
-
-    if ($this->mailer->send($user->getEmail(), 'Aktywuj swoje konto w Examly', $body)) {
+    if ($this->mailer->sendAccountVerificationEmail($user->getEmail(), $user->getFullName(), $verifyLink)) {
       // Sukces wysyłki
       $_SESSION['email_sent'] = time();
       $_SESSION['flash_message'] = [

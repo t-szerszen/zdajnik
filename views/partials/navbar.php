@@ -33,8 +33,8 @@ use App\Models\User;
 <nav class="main-nav">
   <!-- Sekcja 1: Logo i link do strony głównej -->
   <div class="main-nav__logo">
-    <a href="<?= url() ?>" aria-label="Strona główna Examly">
-      <img src="<?= url('images/company/examly.svg') ?>" alt="Examly" class="logo">
+    <a href="<?= url() ?>" aria-label="Strona główna Zdajnik">
+      <img src="<?= url('images/company/zdajnik.svg') ?>" alt="Zdajnik" class="logo">
     </a>
   </div>
 
@@ -65,7 +65,7 @@ use App\Models\User;
     <div class="main-nav__drawer-header">
       <div class="main-nav__logo">
         <a href="<?= url() ?>">
-          <img src="<?= url('images/company/examly.svg') ?>" alt="Examly" class="logo">
+          <img src="<?= url('images/company/zdajnik.svg') ?>" alt="Zdajnik" class="logo">
         </a>
       </div>
     </div>
@@ -171,7 +171,7 @@ use App\Models\User;
             <?php if ($currentUser && $currentUser->isAdmin()): ?>
               <li class="dropdown__item">
                 <a href="<?= url('admin') ?>" class="dropdown__link">
-                  <i class="dropdown__icon fas fa-shield-halved"></i> Admin Panel
+                  <i class="dropdown__icon fas fa-shield-halved"></i> Panel administracyjny
                 </a>
               </li>
             <?php endif; ?>
@@ -189,7 +189,7 @@ use App\Models\User;
     <!-- Drawer Footer (Tylko na mobile) -->
     <div class="main-nav__drawer-footer">
       <p>&copy;
-        <?= date('Y') ?> Examly.pl
+        <?= date('Y') ?> Zdajnik.pl
       </p>
     </div>
   </div>
@@ -198,20 +198,18 @@ use App\Models\User;
 <div class="nav-overlay" data-nav-overlay></div>
 <!-- /Koniec Komponentu Nawigacji -->
 
-<script type="module" src="<?= url('js/components/NavbarHandler.js') ?>"></script>
-
 <!-- 
   =======================================================================
   Skrypt: Inicjalizacja stanu aplikacji po stronie klienta
   -----------------------------------------------------------------------
   Cel: Przekazuje kluczowe dane z PHP (backend) do JavaScript (frontend).
-       Utworzenie globalnego obiektu `window.examlyAppState` pozwala 
+       Utworzenie globalnego obiektu `window.zdajnikAppState` pozwala 
        na łatwy i spójny dostęp do stanu zalogowania użytkownika 
        w różnych skryptach JS bez potrzeby dodatkowych zapytań AJAX.
   =======================================================================
 -->
 <script>
-  window.examlyAppState = {
+  window.zdajnikAppState = {
     isUserLoggedIn: <?= isset($_SESSION['user']) && $_SESSION['user'] instanceof User ? 'true' : 'false' ?>,
     baseUrl: '<?= BASE_URL ?>'
   };

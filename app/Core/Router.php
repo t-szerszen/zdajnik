@@ -171,7 +171,7 @@ class Router
   }
 
   /**
-   * Kompletna mapa drogowa aplikacji Examly.
+   * Kompletna mapa drogowa aplikacji Zdajnik.
    * 
    * Służy do konfiguracji wszystkich punktów wejścia (endpointów) systemu.
    * Grupuje trasy funkcjonalnie (Auth, Analityka, Nauka, API).
@@ -182,6 +182,9 @@ class Router
   {
     // --- STREFY GŁÓWNE I UWIERZYTELNIANIE ---
     $this->get('', 'HomeController@show');
+    $this->get('o-projekcie', 'HomeController@showAboutProject');
+    $this->get('kontakt', 'HomeController@showContact');
+    $this->post('kontakt', 'HomeController@handleContact');
     $this->get('polityka-prywatnosci', 'HomeController@showPrivacyPolicy');
     $this->get('logowanie', 'LoginController@showLoginForm');
     $this->post('logowanie', 'LoginController@processLogin');
@@ -264,6 +267,7 @@ class Router
     $this->post('api/analytics/event', 'ApiController@trackAnalyticsEventFromClient');
 
     // --- WYSZUKIWARKA I FILTRACJA ---
+    $this->get('search/topics', 'SearchController@getTopics');
     $this->get('search', 'SearchController@showSearch');
   }
 }

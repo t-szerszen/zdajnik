@@ -13,7 +13,7 @@ $activeSection = $activeSection ?? 'dashboard';
 <aside class="admin-sidebar">
   <div class="admin-sidebar__brand">
     <span class="admin-sidebar__eyebrow">Admin</span>
-    <h2 class="admin-sidebar__title">Admin Panel</h2>
+    <h2 class="admin-sidebar__title">Panel administracyjny</h2>
   </div>
 
   <nav class="admin-sidebar__nav" aria-label="Nawigacja panelu CMS">

@@ -1,6 +1,6 @@
 <?php
-$pageTitle = $pageTitle ?? 'Egzaminy | Admin Panel | Examly';
-$pageDescription = $pageDescription ?? 'Zarządzanie egzaminami Examly.';
+$pageTitle = $pageTitle ?? 'Egzaminy | Panel administracyjny | Zdajnik';
+$pageDescription = $pageDescription ?? 'Zarządzanie egzaminami Zdajnik.';
 $exams = $exams ?? [];
 $filters = $filters ?? [];
 $pagination = $pagination ?? ['page' => 1, 'totalPages' => 1];

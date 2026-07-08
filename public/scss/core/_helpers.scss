@@ -1,0 +1,64 @@
+// Reużywalne klasy pomocnicze
+
+@use 'mixins' as *;
+
+.centered {
+  display: flex;
+  margin-top: 1rem;
+  justify-content: center;
+  width: 100%; // Upewnij się, że kontener zajmuje całą dostępną szerokość
+}
+
+// Możesz tu w przyszłości dodawać inne pomocne klasy, np.:
+.text-center {
+  text-align: center;
+}
+
+.text-success {
+  color: var(--success) !important;
+}
+
+.text-danger {
+  color: var(--error) !important;
+}
+
+// Ukryty input plików (zastępuje style="display: none;")
+.file-input--hidden {
+  display: none;
+}
+
+// Semantycznie dostępne ukrycie elementu (dla czytników ekranu)
+.visually-hidden {
+  @include visually-hidden;
+}
+
+// Wariant .centered z większym marginesem górnym
+.centered--push-down {
+  display: flex;
+  margin-top: 4rem;
+  justify-content: center;
+  width: 100%;
+}
+
+.text-gradient {
+  background-image: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.sparkling {
+  font-size: 17px;
+  display: inline-block;
+  animation: sparkle 1.5s infinite ease-in-out;
+}
+
+.link {
+  color: var(--muted-text);
+  text-decoration: none;
+  font-weight: 400;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

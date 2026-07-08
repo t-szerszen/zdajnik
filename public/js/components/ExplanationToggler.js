@@ -5,14 +5,15 @@ class ExplanationToggler {
    * Inicjalizuje instancję i automatycznie nasłuchuje na gotowość DOM.
    * @param {string} selector - Selektor CSS dla przycisków (domyślnie .toggle-explanation-btn)
    */
-  constructor(selector = '.toggle-explanation-btn') {
+  constructor(selector = '.toggle-explanation-btn', options = {}) {
     this.selector = selector;
 
-    // Automatyczna inicjalizacja po załadowaniu DOM
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.init());
-    } else {
-      this.init();
+    if (options.autoInit === true) {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => this.init(), { once: true });
+      } else {
+        this.init();
+      }
     }
   }
 
@@ -93,9 +94,12 @@ class ExplanationToggler {
   }
 }
 
-/**
- * Eksportujemy gotową instancję (Singleton), podobnie jak w Toast.js.
- * Dzięki temu po zaimportowaniu skrypt automatycznie zacznie działać
- * (nasłuchując na DOMContentLoaded).
- */
-export default new ExplanationToggler();
+const explanationToggler = new ExplanationToggler();
+
+export function initExplanationToggler(selector = '.toggle-explanation-btn') {
+  explanationToggler.selector = selector;
+  explanationToggler.init();
+  return explanationToggler;
+}
+
+export default explanationToggler;

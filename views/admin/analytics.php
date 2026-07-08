@@ -4,8 +4,8 @@
  * @description Roboczy dashboard analityki produktowej dla administratorów.
  */
 
-$pageTitle = $pageTitle ?? 'Analityka | Panel administracyjny | Examly';
-$pageDescription = $pageDescription ?? 'Dane produktowe, edukacyjne i operacyjne Examly.';
+$pageTitle = $pageTitle ?? 'Analityka | Panel administracyjny | Zdajnik';
+$pageDescription = $pageDescription ?? 'Dane produktowe, edukacyjne i operacyjne Zdajnik.';
 $analytics = $analytics ?? [];
 $filters = $filters ?? [];
 $filterOptions = $filterOptions ?? [];
@@ -328,7 +328,5 @@ $exports = [
   </main>
 
   <?php include __DIR__ . '/../partials/footer.php'; ?>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="<?= $h(url('js/components/AdminAnalytics.js')) ?>"></script>
 </body>
 </html>

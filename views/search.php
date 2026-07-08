@@ -13,9 +13,9 @@
  */
 
 /**
- * Widok Wyszukiwarki Pytań | Examly
+ * Widok Wyszukiwarki Pytań | Zdajnik
  */
-$pageTitle = 'Wyszukiwarka Pytań | Examly';
+$pageTitle = 'Wyszukiwarka Pytań | Zdajnik';
 $pageDescription = 'Znajdź pytanie po treści lub numerze (ID) w bazie egzaminacyjnej INF.03, INF.02 i INF.04.';
 
 // Dane z kontrolera
@@ -100,8 +100,6 @@ $results = $results ?? [];
   </main>
 
   <?php include 'partials/footer.php'; ?>
-
-  <script type="module" src="<?= url('js/features/search/SearchHandler.js') ?>"></script>
 </body>
 
 </html>

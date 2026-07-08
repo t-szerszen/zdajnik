@@ -13,9 +13,9 @@
 
 $noIndex = true;
 $noFollow = true;
-$pageTitle = 'Ustawienia Konta | Examly';
-$pageDescription = 'Zarządzaj swoimi preferencjami i danymi konta w serwisie Examly.';
-$canonicalUrl = 'https://www.examly.pl/ustawienia';
+$pageTitle = 'Ustawienia Konta | Zdajnik';
+$pageDescription = 'Zarządzaj swoimi preferencjami i danymi konta w serwisie Zdajnik.';
+$canonicalUrl = 'https://www.zdajnik.pl/ustawienia';
 
 // Sprawdzenie typu zalogowanego użytkownika dla logiki UI
 $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
@@ -31,7 +31,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
   <header class="page-header">
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Ustawienia</span> Konta</h1>
-      <p class="page-header__text">Zarządzaj swoim profilem i dbaj o bezpieczeństwo swoich danych w Examly.</p>
+      <p class="page-header__text">Zarządzaj swoim profilem i dbaj o bezpieczeństwo swoich danych w Zdajnik.</p>
     </div>
   </header>
 
@@ -408,20 +408,6 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
   </main>
 
   <?php include 'partials/footer.php'; ?>
-
-  <script type="module" src="<?= url('js/components/SettingsAccordion.js') ?>"></script>
-  <script type="module" src="<?= url('js/components/show-password-toggle.js') ?>"></script>
-  <script type="module">
-    import CountdownButton from '<?= url('js/components/CountdownButton.js') ?>';
-    import AvatarUploader from '<?= url('js/features/settings/AvatarUploader.js') ?>';
-
-    <?php if (!$isGoogleUser): ?>
-      new CountdownButton('changeEmailBtn');
-    <?php endif; ?>
-
-    // Inicjalizacja uploadera awatarów
-    new AvatarUploader();
-  </script>
 </body>
 
 </html>

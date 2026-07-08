@@ -4,8 +4,8 @@
  * @description Szczegóły egzaminu i lista przypisanych pytań.
  */
 
-$pageTitle = $pageTitle ?? 'Egzamin | Admin Panel | Examly';
-$pageDescription = $pageDescription ?? 'Szczegóły egzaminu w panelu CMS Examly.';
+$pageTitle = $pageTitle ?? 'Egzamin | Panel administracyjny | Zdajnik';
+$pageDescription = $pageDescription ?? 'Szczegóły egzaminu w panelu CMS Zdajnik.';
 $exam = $exam ?? [];
 $questions = $questions ?? [];
 $topics = $topics ?? [];

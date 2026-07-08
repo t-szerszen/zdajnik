@@ -15,7 +15,7 @@
 /**
  * Konfiguracja komponentu head
  */
-$pageTitle = 'Pytanie ID: ' . $question['id'] . ' | Examly';
+$pageTitle = 'Pytanie ID: ' . $question['id'] . ' | Zdajnik';
 $pageDescription = mb_strimwidth(strip_tags($question['question_text']), 0, 155, '...');
 
 // Schema.org dla pytania (Quiz/Question)
@@ -140,12 +140,6 @@ $extraSchemas = [
   </main>
 
   <?php include 'partials/footer.php'; ?>
-
-  <script type="module" src="<?= url('js/components/ExplanationToggler.js') ?>"></script>
-  <script type="module">
-    import saveToggle from '<?= url('js/components/SaveToggleHandler.js') ?>';
-    saveToggle.init('.review-page__main');
-  </script>
 </body>
 
 </html>

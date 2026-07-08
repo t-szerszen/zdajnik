@@ -17,7 +17,7 @@
  */
 $pageTitle = $exam['title_test'];
 $pageDescription = $exam['desc_test'];
-$canonicalUrl = 'https://www.examly.pl/test/' . htmlspecialchars($examCode);
+$canonicalUrl = 'https://www.zdajnik.pl/test/' . htmlspecialchars($examCode);
 $extraScripts = [
   'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
   'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js'
@@ -184,9 +184,6 @@ $extraScripts = [
   </main>
 
   <?php include 'partials/footer.php'; ?>
-
-  <!-- Główny skrypt aplikacji dla tego widoku, zarządzający całą logiką testu -->
-  <script type="module" src="<?= url('js/features/test/index.js') ?>"></script>
 </body>
 
 </html>

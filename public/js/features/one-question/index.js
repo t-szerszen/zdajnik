@@ -23,7 +23,7 @@ import ui from '../../modules/UiHandler.js';
 import Toast from '../../components/Toast.js';
 import saveToggle from '../../components/SaveToggleHandler.js';
 
-class Quiz {
+export class SingleQuestionPage {
   /**
    * Wyszukuje kluczowe elementy DOM i dane inicjalizacyjne, a następnie
    * uruchamia logikę quizu.
@@ -314,6 +314,6 @@ class Quiz {
  * Po pełnym załadowaniu struktury DOM, tworzy nową instancję klasy Quiz,
  * inicjując w ten sposób całą logikę aplikacji.
  */
-document.addEventListener('DOMContentLoaded', () => {
-  new Quiz();
-});
+export function initSingleQuestionPage() {
+  return new SingleQuestionPage();
+}

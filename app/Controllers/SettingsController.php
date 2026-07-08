@@ -334,8 +334,7 @@ class SettingsController extends BaseController
     $code = $tokenData['code'];
 
     // Wysyłka kodu weryfikacyjnego
-    $body = "<p>Twój kod weryfikacyjny zmiany e-maila to: <b>$code</b></p>";
-    $this->mailer->send($newEmail, 'Weryfikacja zmiany e-mail - Examly', $body);
+    $this->mailer->sendEmailChangeVerificationEmail($newEmail, $code);
 
     $_SESSION['email_change_sent'] = time();
     $_SESSION['flash_message'] = [

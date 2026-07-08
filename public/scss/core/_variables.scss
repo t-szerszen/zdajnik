@@ -1,0 +1,286 @@
+/**
+ * @file _variables.scss
+ * @author Tobiasz Szerszeń
+ * @group theme
+ *
+ * @description
+ * Definiuje globalne zmienne CSS (custom properties) dla motywu jasnego
+ * i ciemnego. Użycie zmiennych CSS zamiast zmiennych SASS pozwala na
+ * dynamiczną zmianę motywu w przeglądarce poprzez dodanie/usunięcie
+ * klasy `.dark` na elemencie `<body>`.
+ */
+
+$breakpoints: (
+  xs: 430px,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1400px,
+  wide: 1536px
+);
+
+// =============================================================================
+// Definicje Zmiennych Motywu i Tokenów Projektu
+// =============================================================================
+
+:root {
+  // --- Marka Zdajnik ----------------------------------------------------------
+  --color-primary: #10b981;
+  --color-primary-rgb: 16, 185, 129;
+  --color-primary-hover: #059669;
+  --color-primary-hover-rgb: 5, 150, 105;
+  --color-primary-soft: #d1fae5;
+  --color-primary-soft-rgb: 209, 250, 229;
+  --color-navy: #0d1b3d;
+  --color-navy-rgb: 13, 27, 61;
+  --color-bg-light: #f7faf9;
+  --color-bg-dark: #0b1110;
+  --color-surface-dark: #121a18;
+  --color-surface-dark-rgb: 18, 26, 24;
+  --color-surface-dark-raised: #18231f;
+  --color-text-light: #0d1b3d;
+  --color-text-dark: #f5f7fa;
+  --color-border-light: #d8e3dd;
+  --color-border-dark: rgba(148, 163, 184, 0.18);
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  // --- Tła i powierzchnie -----------------------------------------------------
+  --bg: var(--color-bg-light); // Główne tło
+  --surface: #ffffff; // Karty, kontenery, panele
+  --surface-raised: #ffffff;
+  --surface-subtle: #eef7f2;
+  --field-bg: #ffffff;
+  --card-bg: #ffffff;
+  --bg-overlay: rgba(255, 255, 255, 0.92);
+
+  // --- Tekst ------------------------------------------------------------------
+  --text: var(--color-text-light); // Tekst główny
+  --text-rgb: var(--color-navy-rgb); // RGB tekstu (do rgba())
+  --text-muted: #52645f; // Tekst pomocniczy, etykiety
+  --muted-text: var(--text-muted);
+
+  // --- Akcenty ----------------------------------------------------------------
+  --accent: var(--color-primary);
+  --accent-rgb: var(--color-primary-rgb);
+  --accent-hover: var(--color-primary-hover);
+  --accent-contrast: var(--color-navy);
+  --accent-soft: rgba(var(--color-primary-rgb), 0.1);
+  --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  --brand-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-navy) 100%);
+
+  // --- Obramowania ------------------------------------------------------------
+  --border: var(--color-border-light);
+  --subtle-border: rgba(13, 27, 61, 0.08);
+  --card-border: rgba(13, 27, 61, 0.08);
+
+  // --- Spacing ----------------------------------------------------------------
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+
+  // --- Border radius ----------------------------------------------------------
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-pill: 999px;
+  --border-radius-base: var(--radius-sm);
+  --border-radius-large: var(--radius-md);
+
+  // --- Typografia -------------------------------------------------------------
+  --font-family-base: 'Outfit', sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.85rem;
+  --font-size-md: 0.95rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.1rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 2rem;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  // --- Cienie -----------------------------------------------------------------
+  --shadow-sm: 0 1px 2px rgba(13, 27, 61, 0.05);
+  --shadow-md: 0 10px 28px rgba(13, 27, 61, 0.07);
+  --shadow-lg: 0 18px 42px rgba(13, 27, 61, 0.09);
+  --shadow-focus: 0 0 0 4px rgba(var(--accent-rgb), 0.1);
+  --shadow-accent-sm: 0 4px 12px rgba(var(--accent-rgb), 0.1);
+  --shadow-accent-md: 0 8px 20px rgba(var(--accent-rgb), 0.25);
+
+  // Statusy
+  --success: var(--color-primary);
+  --success-bg: var(--color-primary-soft);
+  --success-text: #047857;
+  --success-border: rgba(var(--color-primary-rgb), 0.24);
+  --progress-bar-bg: linear-gradient(90deg, #34d399 0%, var(--color-primary-hover) 100%);
+
+  --error: #dc2626;
+  --error-hover: #b91c1c;
+  --error-bg: #fef2f2;
+  --error-text: #b91c1c;
+  --error-border: rgba(220, 38, 38, 0.2);
+
+  --warning: #b45309;
+  --warning-bg: #fef3c7;
+  --warning-text: #92400e;
+  --warning-border: rgba(180, 83, 9, 0.22);
+
+  // Disabled
+  --disabled-bg: #d1d5db;
+  --disabled-text: #374151;
+  --disabled-primary-bg: #9ca3af;
+
+  // Stopka
+  --footer-bg: #eaf0f6;
+  --footer-icon: #66758a;
+
+  // Navbar (light mode - jasne tło)
+  --nav-bg: rgba(255, 255, 255, 0.82);
+  --nav-border: rgba(13, 27, 61, 0.08);
+  --nav-link-hover-bg: rgba(var(--color-primary-rgb), 0.1);
+  --nav-dropdown-bg: rgba(255, 255, 255, 0.98);
+  --nav-dropdown-shadow: 0 20px 50px -10px rgba(13, 27, 61, 0.14), 0 0 0 1px rgba(13, 27, 61, 0.05);
+
+  // Glassmorphism System
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-border: rgba(13, 27, 61, 0.08);
+  --glass-shadow: var(--shadow-md);
+
+  // --- Motion -----------------------------------------------------------------
+  --duration-fast: 0.2s;
+  --duration-base: 0.3s;
+  --duration-slow: 0.4s;
+  --duration-slower: 0.6s;
+  --ease-standard: ease;
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-fast: all var(--duration-fast) var(--ease-standard);
+  --transition-base: all var(--duration-base) var(--ease-standard);
+  --transition-smooth: all var(--duration-slow) var(--ease-smooth);
+  --transition-emphasized: all var(--duration-slow) var(--ease-emphasized);
+
+  // --- Layout -----------------------------------------------------------------
+  --container-sm: 720px;
+  --container-md: 850px;
+  --container-lg: 1120px;
+  --container-xl: 1240px;
+  --container-2xl: 1400px;
+  --breakpoint-xs: 430px;
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+  --breakpoint-xxl: 1400px;
+
+  // --- Z-index ----------------------------------------------------------------
+  --z-base: 1;
+  --z-sticky: 999;
+  --z-nav: 1000;
+  --z-drawer: 1100;
+  --z-nav-toggle: 1200;
+  --z-nav-open: 1300;
+  --z-modal: 10000;
+  --z-tutorial-overlay: 2100;
+  --z-tutorial-spotlight: 2150;
+  --z-tutorial-target: 2200;
+  --z-tutorial-panel: 2250;
+}
+
+/**
+ * Nadpisanie zmiennych dla motywu ciemnego.
+ */
+html.dark {
+  // --- Motyw Ciemny ---------------------------------------------------------
+
+  --bg: var(--color-bg-dark);
+  --color-navy: #17241f;
+  --color-navy-rgb: 23, 36, 31;
+  --surface: var(--color-surface-dark);
+  --surface-raised: var(--color-surface-dark-raised);
+  --surface-subtle: rgba(var(--color-primary-rgb), 0.08);
+  --text: var(--color-text-dark);
+  --text-rgb: 245, 247, 250;
+  --text-muted: #aab8b1;
+
+  --accent: var(--color-primary);
+  --accent-rgb: var(--color-primary-rgb);
+  --accent-hover: #34d399;
+  --accent-contrast: var(--color-navy);
+  --accent-soft: rgba(var(--color-primary-rgb), 0.14);
+  --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--accent-hover) 100%);
+  --brand-gradient: linear-gradient(135deg, #34d399 0%, #f5f7fa 100%);
+
+  --border: rgba(169, 183, 176, 0.16);
+  --subtle-border: rgba(169, 183, 176, 0.1);
+
+  --shadow-sm: 0 1px 3px rgba(2, 8, 23, 0.36);
+  --shadow-md: 0 4px 20px rgba(2, 8, 23, 0.46);
+  --shadow-lg: 0 10px 40px rgba(2, 8, 23, 0.56);
+
+  --field-bg: #0e1614;
+
+  --error-bg: #4d2323;
+  --success-bg: #1e4a2a;
+
+  // Statusy - Dark Mode
+  --success: var(--color-primary);
+  --success-bg: rgba(var(--color-primary-rgb), 0.12);
+  --success-text: #6ee7b7;
+  --success-border: rgba(var(--color-primary-rgb), 0.24);
+
+  --error: #ef4444;
+  --error-hover: #f87171;
+  --error-bg: rgba(239, 68, 68, 0.08);
+  --error-text: #fca5a5;
+  --error-border: rgba(239, 68, 68, 0.15);
+
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --warning-text: #fcd34d;
+  --warning-border: rgba(245, 158, 11, 0.2);
+
+  // Progress bar
+  --progress-bar-bg: linear-gradient(90deg, #6ee7b7 0%, var(--color-primary) 100%);
+
+  --muted-text: var(--text-muted);
+  --card-bg: rgba(18, 26, 24, 0.92);
+  --card-border: rgba(169, 183, 176, 0.14);
+  --bg-overlay: rgba(11, 17, 16, 0.98);
+  --disabled-bg: #3f3f46;
+  --disabled-text: #9ca3af;
+  --disabled-primary-bg: #4b5563;
+
+  --footer-bg: #080f0e;
+  --footer-icon: #9caea6;
+
+  // Navbar (dark mode - ciemne tło)
+  --nav-bg: rgba(11, 17, 16, 0.8);
+  --nav-border: rgba(169, 183, 176, 0.12);
+  --nav-link-hover-bg: rgba(var(--color-primary-rgb), 0.11);
+  --nav-dropdown-bg: rgba(18, 26, 24, 0.96);
+  --nav-dropdown-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(169, 183, 176, 0.08);
+
+  // Glassmorphism System
+  --glass-bg: rgba(18, 26, 24, 0.86);
+  --glass-border: rgba(169, 183, 176, 0.14);
+  --glass-shadow: var(--shadow-md);
+}

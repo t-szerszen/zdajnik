@@ -2,7 +2,7 @@
  * Komponent wykresu trendu skuteczności oparty na Chart.js
  * Wymaga załadowanej biblioteki Chart.js
  */
-class EfficiencyChart {
+export class EfficiencyChart {
   constructor(canvasId) {
     this.canvas = document.getElementById(canvasId);
     if (!this.canvas) {
@@ -31,7 +31,7 @@ class EfficiencyChart {
   }
 
   getAccentColor() {
-    return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#7928ca';
+    return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#10b981';
   }
 
   render(data) {
@@ -48,7 +48,7 @@ class EfficiencyChart {
       this.chartInstance.destroy();
     }
 
-    this.chartInstance = new Chart(this.ctx, {
+    this.chartInstance = new window.Chart(this.ctx, {
       type: 'line',
       data: {
         labels: labels,
@@ -125,9 +125,7 @@ class EfficiencyChart {
   }
 }
 
-// Globalna inicjalizacja jeśli element istnieje
-document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('efficiencyTrendChart')) {
-    new EfficiencyChart('efficiencyTrendChart');
-  }
-});
+export function initEfficiencyChart(canvasId = 'efficiencyTrendChart') {
+  if (!document.getElementById(canvasId)) return null;
+  return new EfficiencyChart(canvasId);
+}

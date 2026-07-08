@@ -85,7 +85,7 @@ class ErrorController extends BaseController
       'errorTitle' => $errorConfig['title'],
       'errorMessage' => $errorConfig['message'],
       'errorIcon' => $errorConfig['icon'],
-      'pageTitle' => "Błąd $code | Examly"
+      'pageTitle' => "Błąd $code | Zdajnik"
     ];
 
     $this->renderView('errors/index', $data);

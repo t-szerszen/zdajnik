@@ -16,8 +16,8 @@
 /**
  * Konfiguracja komponentu head
  */
-$pageTitle = 'Statystyki Twojej Nauki | Examly';
-$pageDescription = 'Śledź swoje postępy, analizuj wyniki i obserwuj swoją drogę do sukcesu w Examly.';
+$pageTitle = 'Statystyki Twojej Nauki | Zdajnik';
+$pageDescription = 'Śledź swoje postępy, analizuj wyniki i obserwuj swoją drogę do sukcesu w Zdajnik.';
 
 // Dane przekazane z kontrolera
 $categories = $categories ?? [];
@@ -102,7 +102,7 @@ $extraScripts = [
 
           <div class="stats-card__pie-wrapper">
             <div class="stats-card__pie-chart"
-              style="background: conic-gradient(var(--accent) 0%, #8b5cf6 <?= $masteryStats['percent'] ?>%, var(--field-bg) <?= $masteryStats['percent'] ?>% 100%);">
+              style="background: conic-gradient(var(--accent) 0%, var(--accent-hover) <?= $masteryStats['percent'] ?>%, var(--field-bg) <?= $masteryStats['percent'] ?>% 100%);">
               <div class="stats-card__pie-center">
                 <div class="stats-card__pie-data">
                   <span class="stats-card__pie-percentage">
@@ -197,7 +197,7 @@ $extraScripts = [
           </div>
         </section>
       <?php else: ?>
-      <!-- MAIN CONTENT GRID -->
+      <!-- Główna siatka treści -->
       <section class="stats-page__content">
 
         <!-- Efficiency Trend Chart -->
@@ -546,9 +546,6 @@ $extraScripts = [
   </main>
 
   <?php include 'partials/footer.php'; ?>
-  <script type="module" src="<?= url('js/features/statistics/DefaultStatsExamPreference.js') ?>"></script>
-  <script type="module" src="<?= url('js/components/EfficiencyChart.js') ?>"></script>
-  <script type="module" src="<?= url('js/features/statistics/StatisticsTutorial.js') ?>"></script>
 </body>
 
 </html>

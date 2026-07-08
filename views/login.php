@@ -18,9 +18,9 @@
  */
 $noIndex = true;
 $noFollow = true;
-$pageTitle = 'Logowanie do Konta | Examly';
-$pageDescription = 'Zaloguj się na swoje konto w Examly, aby uzyskać dostęp do zapisanych wyników, statystyk i kontynuować naukę do egzaminu zawodowego.';
-$canonicalUrl = 'https://www.examly.pl/logowanie';
+$pageTitle = 'Logowanie do Konta | Zdajnik';
+$pageDescription = 'Zaloguj się na swoje konto w Zdajnik, aby uzyskać dostęp do zapisanych wyników, statystyk i kontynuować naukę do egzaminu zawodowego.';
+$canonicalUrl = 'https://www.zdajnik.pl/logowanie';
 
 /**
  * ========================================================================
@@ -158,8 +158,6 @@ $canonicalUrl = 'https://www.examly.pl/logowanie';
   </main>
 
   <?php include 'partials/footer.php'; ?>
-
-  <script type="module" src="<?= url('js/components/show-password-toggle.js') ?>"></script>
 </body>
 
 </html>

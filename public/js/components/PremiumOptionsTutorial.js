@@ -1,4 +1,4 @@
-class PremiumOptionsTutorial {
+export class PremiumOptionsTutorial {
   constructor(config = {}) {
     this.mode = config.mode || 'one-question';
     this.form = document.getElementById('topic-form');
@@ -8,6 +8,8 @@ class PremiumOptionsTutorial {
     this.isOpen = false;
     this.currentStep = 0;
     this.storageKey = `examly.premium.tutorial.${this.mode}.completed`;
+    this.forceOpen = config.forceOpen === true;
+    this.guestPreview = config.guestPreview === true;
     this.elements = this.createUI();
     this.steps = this.buildSteps();
     this.pendingAutoStart = true;
@@ -109,14 +111,23 @@ class PremiumOptionsTutorial {
     const isUserLoggedIn = window.examlyAppState?.isUserLoggedIn === true;
     const isAnyOptionEnabled = this.premiumCheckboxes.some((checkbox) => !checkbox.disabled);
     const isSectionVisible = this.isPremiumSectionVisible();
-    const shouldShowTrigger = isUserLoggedIn && isSectionVisible;
+    const shouldShowTrigger = (isUserLoggedIn || this.guestPreview) && isSectionVisible;
 
     this.trigger.classList.toggle('hidden', !shouldShowTrigger);
+    if (this.guestPreview && !isUserLoggedIn) {
+      this.premiumCheckboxes.forEach((checkbox) => {
+        checkbox.disabled = true;
+        const label = checkbox.closest('.topic-selector__label');
+        if (label) {
+          label.title = 'Utwórz darmowe konto, aby korzystać z inteligentnych filtrów nauki.';
+        }
+      });
+    }
 
     if (this.pendingAutoStart && shouldShowTrigger) {
       this.pendingAutoStart = false;
       const completed = window.localStorage.getItem(this.storageKey) === '1';
-      if (!completed && isAnyOptionEnabled) {
+      if (this.forceOpen || (!completed && (isAnyOptionEnabled || this.guestPreview))) {
         this.start(false);
       }
     }
@@ -199,7 +210,6 @@ class PremiumOptionsTutorial {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const config = window.examlyPremiumTutorialConfig || {};
-  new PremiumOptionsTutorial(config);
-});
+export function initPremiumOptionsTutorial(config = window.examlyPremiumTutorialConfig || {}) {
+  return new PremiumOptionsTutorial(config);
+}

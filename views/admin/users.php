@@ -1,6 +1,6 @@
 <?php
-$pageTitle = $pageTitle ?? 'Użytkownicy | Admin Panel | Examly';
-$pageDescription = $pageDescription ?? 'Zarządzanie użytkownikami Examly.';
+$pageTitle = $pageTitle ?? 'Użytkownicy | Panel administracyjny | Zdajnik';
+$pageDescription = $pageDescription ?? 'Zarządzanie użytkownikami Zdajnik.';
 $users = $users ?? [];
 $filters = $filters ?? [];
 $summary = $summary ?? [];

@@ -134,6 +134,39 @@ class SearchController extends BaseController
   }
 
   /**
+   * Zwraca listę tematów dla wybranego egzaminu używaną przez dynamiczne filtry wyszukiwarki.
+   *
+   * @return void
+   */
+  public function getTopics(): void
+  {
+    $examId = isset($_GET['exam_id']) ? (int) $_GET['exam_id'] : 0;
+
+    header('Content-Type: application/json');
+
+    if ($examId <= 0) {
+      echo json_encode([
+        'status' => 'success',
+        'topics' => []
+      ]);
+      exit;
+    }
+
+    $topics = array_map(static function (array $topic): array {
+      return [
+        'id' => (int) $topic['id'],
+        'name' => (string) $topic['name']
+      ];
+    }, $this->dynamicData->getCategoriesForExam($examId));
+
+    echo json_encode([
+      'status' => 'success',
+      'topics' => $topics
+    ]);
+    exit;
+  }
+
+  /**
    * Renderuje tylko fragment HTML bez głównego layoutu aplikacji.
    *
    * Używane głównie przez mechanizm AJAX do dynamicznej aktualizacji listy

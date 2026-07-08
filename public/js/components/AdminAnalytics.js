@@ -1,4 +1,4 @@
-class AdminAnalytics {
+export class AdminAnalytics {
   constructor() {
     this.root = document.querySelector('[data-analytics-root]');
     if (!this.root) {
@@ -590,11 +590,15 @@ class AdminAnalytics {
 
   renderChart(daily) {
     const labels = Array.isArray(daily.labels) ? daily.labels : [];
+    const styles = getComputedStyle(document.documentElement);
+    const accent = styles.getPropertyValue('--accent').trim() || '#10b981';
+    const accentHover = styles.getPropertyValue('--accent-hover').trim() || '#059669';
+    const navy = styles.getPropertyValue('--color-navy').trim() || '#0d1b3d';
     const datasets = [
-      ['Odsłony', daily.pageViews || [], '#3b82f6'],
+      ['Odsłony', daily.pageViews || [], navy],
       ['Rejestracje', daily.registrations || [], '#f59e0b'],
-      ['Logowania', daily.logins || [], '#10b981'],
-      ['Starty testów', daily.testsStarted || [], '#8b5cf6'],
+      ['Logowania', daily.logins || [], accent],
+      ['Starty testów', daily.testsStarted || [], accentHover],
       ['Ukończenia', daily.testsCompleted || [], '#ef4444'],
     ];
     const hasData = datasets.some(([, values]) => values.some((value) => Number(value) > 0));
@@ -816,10 +820,6 @@ class AdminAnalytics {
   }
 }
 
-const initAdminAnalytics = () => new AdminAnalytics();
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initAdminAnalytics, { once: true });
-} else {
-  initAdminAnalytics();
+export function initAdminAnalytics() {
+  return new AdminAnalytics();
 }

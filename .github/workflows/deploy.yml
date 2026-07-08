@@ -1,4 +1,4 @@
-name: Local code to production deploy
+name: Production deploy
 
 on:
   push:
@@ -6,64 +6,54 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: 🚚 Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # --- 1. Budowanie CSS ---
-      - name: 🛠️ Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+      - name: Check whether deploy is enabled
+        id: deploy_config
+        env:
+          DEPLOY_GITHUB_ACTIONS_ENABLED: ${{ vars.DEPLOY_ENABLED }}
+        run: |
+          enabled="$(php deploy.php --check-github-actions-enabled)"
+          echo "enabled=${enabled}" >> "$GITHUB_OUTPUT"
+          if [ "$enabled" != "true" ]; then
+            echo "Deploy skipped because deploy.config.php / DEPLOY_ENABLED does not enable GitHub Actions deploy."
+          fi
 
-      - name: 📦 Install Node Dependencies
-        run: npm install
+      - name: Configure SSH key
+        if: steps.deploy_config.outputs.enabled == 'true'
+        env:
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          install -m 600 /dev/null ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          ssh-keyscan -p "${DEPLOY_PORT:-22}" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
 
-      - name: 🎨 Build CSS
-        run: npm run build:css
-
-      # --- 3. Synchronizacja FTP ---
-      - name: 📂 Sync Files to Hostinger
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          # Deploy do głównego katalogu użytkownika FTP (skonfiguruj katalog w Hostingerze w "FTP Accounts")
-          server-dir: ./
-          protocol: ftp
-          port: 21
-          # Zwiekszamy timeout (domyślnie 3000ms = 30s) na 5 minut
-          timeout: 300000 
-          # Logowanie verbose pomoże zdiagnozować błędy połączenia
-          log-level: verbose
-          # Bezpieczeństwo - spróbujmy wymusić, ale przy problemach z certyfikatem można dac false
-          security: strict
-          # Zmiana nazwy pliku stanu wymusi ponowne przesłanie wszystkich plików naprawiając desynchronizację
-          state-name: .ftp-deploy-sync-state-repair.json
-          
-          # false = wysyłaj tylko zmienione pliki (szybko); true = kasuj wszystko i wgrywaj od nowa (wolno)
-          dangerous-clean-slate: false
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.github*/**
-            **/node_modules/**
-            **/vendor/**
-            .env
-            .env.example
-            docker-compose.yml
-            Dockerfile
-            db/**
-            examly_db.sql
-            debug_mailer.php
-            package.json
-            package-lock.json
-            README.md
-            composer.json
-            composer.lock
-            .prettierrc
-            .dockerignore
+      - name: Run deploy
+        if: steps.deploy_config.outputs.enabled == 'true'
+        env:
+          DEPLOY_GITHUB_ACTIONS_ENABLED: ${{ vars.DEPLOY_ENABLED }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH }}
+          DEPLOY_BACKUP_DIR: ${{ secrets.DEPLOY_BACKUP_DIR }}
+          DEPLOY_RUN_MIGRATIONS: ${{ vars.DEPLOY_RUN_MIGRATIONS }}
+          DEPLOY_MAINTENANCE_ENABLED: ${{ vars.DEPLOY_MAINTENANCE_ENABLED }}
+          DEPLOY_SSH_KEY_PATH: ~/.ssh/deploy_key
+        run: php deploy.php --yes

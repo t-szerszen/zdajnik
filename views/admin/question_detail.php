@@ -4,8 +4,8 @@
  * @description Szczegóły pytania z wersjonowaniem.
  */
 
-$pageTitle = $pageTitle ?? 'Pytanie | Admin Panel | Examly';
-$pageDescription = $pageDescription ?? 'Szczegóły pytania w panelu CMS Examly.';
+$pageTitle = $pageTitle ?? 'Pytanie | Panel administracyjny | Zdajnik';
+$pageDescription = $pageDescription ?? 'Szczegóły pytania w panelu CMS Zdajnik.';
 $question = $question ?? [];
 $questionId = (int) ($question['id'] ?? 0);
 $currentVersion = is_array($question['current_version'] ?? null) ? $question['current_version'] : [];

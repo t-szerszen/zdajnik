@@ -237,6 +237,6 @@ class ApiClient {
  * Zapewnia to, że cała aplikacja korzysta z tego samego, poprawnie
  * skonfigurowanego obiektu do komunikacji z API.
  */
-const api = new ApiClient(`${window.examlyAppState.baseUrl}/api`);
+const api = new ApiClient(`${window.zdajnikAppState.baseUrl}/api`);
 
 export default api;

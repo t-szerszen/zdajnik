@@ -13,7 +13,7 @@
  */
 
 // Wartości domyślne, jeśli nie przekazano ich z kontrolera
-$pageTitle = $pageTitle ?? 'Błąd | Examly';
+$pageTitle = $pageTitle ?? 'Błąd | Zdajnik';
 $errorCode = $errorCode ?? 404;
 $errorTitle = $errorTitle ?? 'Strona nie znaleziona';
 $errorMessage = $errorMessage ?? 'Przepraszamy, ale strona której szukasz nie istnieje.';
@@ -44,7 +44,7 @@ $errorIcon = $errorIcon ?? 'fas fa-exclamation-circle';
         <a href="<?= url('/') ?>" class="btn btn--secondary">
           <i class="fas fa-home"></i> Strona główna
         </a>
-        <a href="mailto:examlyacademy@gmail.com" class="btn btn--primary">
+        <a href="mailto:<?= htmlspecialchars(CONTACT_EMAIL) ?>" class="btn btn--primary">
           <i class="fas fa-envelope"></i> Zgłoś problem
         </a>
       </div>

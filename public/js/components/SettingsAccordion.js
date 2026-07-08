@@ -7,7 +7,7 @@
  * @version 1.1.0
  * @author Tobiasz Szerszeń
  */
-class SettingsAccordion {
+export class SettingsAccordion {
   constructor(accordionContainerId) {
     this.container = document.getElementById(accordionContainerId);
     if (!this.container) return;
@@ -36,6 +36,6 @@ class SettingsAccordion {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  new SettingsAccordion('settings-accordion');
-});
+export function initSettingsAccordion(accordionContainerId = 'settings-accordion') {
+  return new SettingsAccordion(accordionContainerId);
+}

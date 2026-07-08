@@ -14,7 +14,7 @@
 /**
  * Widok pełnej historii (egzaminy, błędy, krytyczne)
  */
-$pageTitle = ($title ?? 'Historia') . ' | Examly';
+$pageTitle = ($title ?? 'Historia') . ' | Zdajnik';
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -51,10 +51,10 @@ $pageTitle = ($title ?? 'Historia') . ' | Examly';
         <div class="stats-card__header">
           <div class="stats-card__title">
             <?php if ($type === 'exams'): ?>
-              <i class="fas fa-file-invoice" style="color: #3b82f6; background: rgba(59, 130, 246, 0.1);"></i>
+              <i class="fas fa-file-invoice" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
               <?php
             elseif ($type === 'saved'): ?>
-              <i class="fas fa-heart" style="color: #ec4899; background: rgba(236, 72, 153, 0.1);"></i>
+              <i class="fas fa-heart" style="color: var(--accent-hover); background: rgba(var(--accent-rgb), 0.1);"></i>
               <?php
             elseif ($type === 'critical'): ?>
               <i class="fas fa-fire" style="color: #ef4444; background: rgba(239, 68, 68, 0.1);"></i>

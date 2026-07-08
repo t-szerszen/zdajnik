@@ -1,5 +1,5 @@
 {
-  "name": "tobiaszszerszen/examly",
+  "name": "tobiaszszerszen/zdajnik",
   "description": "Aplikacja e-learningowa przeznaczona dla uczniów techników w Polsce pomagająca im przygotować się do egzaminów zawodowych.",
   "autoload": {
     "psr-4": {

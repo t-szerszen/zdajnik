@@ -1,6 +1,6 @@
 <?php
-$pageTitle = $pageTitle ?? 'Admin Panel | Examly';
-$pageDescription = $pageDescription ?? 'Operacyjny panel administracyjny Examly.';
+$pageTitle = $pageTitle ?? 'Panel administracyjny | Zdajnik';
+$pageDescription = $pageDescription ?? 'Operacyjny panel administracyjny Zdajnik.';
 $overview = $overview ?? [];
 $attention = $attention ?? [];
 $recentAuditActions = $recentAuditActions ?? [];
@@ -21,7 +21,7 @@ $actionLabel = static fn(string $action): string => $auditActions[$action] ?? $a
     <header class="page-header" id="top">
       <div class="page-header__content">
         <h1 class="page-header__title"><span class="text-gradient">Panel administracyjny</span></h1>
-        <p class="page-header__text">Stan kont, treści i ostatnich operacji w Examly.</p>
+        <p class="page-header__text">Stan kont, treści i ostatnich operacji w Zdajnik.</p>
       </div>
     </header>
 

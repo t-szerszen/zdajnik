@@ -17,9 +17,9 @@
  */
 $noIndex = true;
 $noFollow = true;
-$pageTitle = 'Załóż Darmowe Konto i Śledź Postępy | Examly';
-$pageDescription = 'Dołącz do Examly i przygotuj się do egzaminu zawodowego. Załóż darmowe konto, aby śledzić postępy i korzystać z inteligentnych trybów nauki.';
-$canonicalUrl = 'https://www.examly.pl/rejestracja';
+$pageTitle = 'Załóż Darmowe Konto i Śledź Postępy | Zdajnik';
+$pageDescription = 'Dołącz do Zdajnik i przygotuj się do egzaminu zawodowego. Załóż darmowe konto, aby śledzić postępy i korzystać z inteligentnych trybów nauki.';
+$canonicalUrl = 'https://www.zdajnik.pl/rejestracja';
 
 /**
  * ========================================================================
@@ -154,8 +154,6 @@ $canonicalUrl = 'https://www.examly.pl/rejestracja';
   </main>
 
   <?php include 'partials/footer.php'; ?>
-
-  <script type="module" src="<?= url('js/components/show-password-toggle.js') ?>"></script>
 </body>
 
 </html>

@@ -26,7 +26,7 @@
 import api from '../../modules/ApiClient.js';
 import { TestRunner } from '../../modules/TestRunner.js';
 
-class Test {
+export class FullTestPage {
   /**
    * Wyszukuje kluczowe elementy DOM i uruchamia proces inicjalizacji testu.
    * @constructs Test
@@ -97,6 +97,6 @@ class Test {
  * Po pełnym załadowaniu struktury DOM, tworzy nową instancję klasy Test,
  * aby aktywować logikę strony.
  */
-document.addEventListener('DOMContentLoaded', () => {
-  new Test();
-});
+export function initFullTestPage() {
+  return new FullTestPage();
+}

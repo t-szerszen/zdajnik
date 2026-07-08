@@ -27,7 +27,7 @@ import api from '../../modules/ApiClient.js';
 import { TestRunner } from '../../modules/TestRunner.js';
 import Toast from '../../components/Toast.js';
 
-class PersonalizedTest {
+export class PersonalizedTestPage {
   /**
    * Inicjalizuje kreator testu spersonalizowanego.
    * @constructs PersonalizedTest
@@ -227,7 +227,6 @@ class PersonalizedTest {
         questionsWrapper: document.getElementById('questions-wrapper'),
         resultsScreen: document.getElementById('results-screen'),
         finishBtn: document.getElementById('finish-test-btn'),
-        finishBtn: document.getElementById('finish-test-btn'),
         resultsDetailsContainer: document.getElementById('results-details'),
         isFullExam: isConsideredFullExam,
         examCode: this.examCode,
@@ -250,6 +249,6 @@ class PersonalizedTest {
 /**
  * --- Punkt Startowy Aplikacji ---
  */
-document.addEventListener('DOMContentLoaded', () => {
-  new PersonalizedTest();
-});
+export function initPersonalizedTestPage() {
+  return new PersonalizedTestPage();
+}

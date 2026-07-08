@@ -146,7 +146,6 @@ export class NavbarHandler {
   }
 }
 
-// Inicjalizacja
-document.addEventListener('DOMContentLoaded', () => {
-  new NavbarHandler();
-});
+export function initNavbarHandler() {
+  return new NavbarHandler();
+}

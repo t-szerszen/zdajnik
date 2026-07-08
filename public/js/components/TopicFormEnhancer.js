@@ -27,14 +27,14 @@
  * ## Zależność od Stanu Globalnego
  *
  * Skrypt odczytuje stan zalogowania użytkownika z globalnego obiektu
- * `window.examlyAppState.isUserLoggedIn`. Obiekt ten musi być zdefiniowany
+ * `window.zdajnikAppState.isUserLoggedIn`. Obiekt ten musi być zdefiniowany
  * w kodzie HTML strony, np. w tagu `<script>`, przed załadowaniem tego pliku.
  *
  * @version 1.1.0
  * @author Tobiasz Szerszeń
  */
 
-class TopicFormEnhancer {
+export class TopicFormEnhancer {
   /**
    * Wyszukuje wszystkie niezbędne elementy w DOM i inicjalizuje logikę.
    * @constructs TopicFormEnhancer
@@ -64,7 +64,7 @@ class TopicFormEnhancer {
      * @private
      * @type {boolean}
      */
-    this.isUserLoggedIn = window.examlyAppState?.isUserLoggedIn || false;
+    this.isUserLoggedIn = window.zdajnikAppState?.isUserLoggedIn || false;
 
     this.bindEvents();
     this.initFromUrl();
@@ -229,12 +229,6 @@ class TopicFormEnhancer {
   }
 }
 
-/**
- * --- Punkt Startowy Aplikacji ---
- *
- * Po pełnym załadowaniu struktury DOM, tworzy nową instancję `TopicFormEnhancer`,
- * aby aktywować całą logikę interaktywną formularza.
- */
-document.addEventListener('DOMContentLoaded', () => {
-  new TopicFormEnhancer('topic-form');
-});
+export function initTopicFormEnhancer(formId = 'topic-form') {
+  return new TopicFormEnhancer(formId);
+}

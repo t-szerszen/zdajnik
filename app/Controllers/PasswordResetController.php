@@ -101,13 +101,7 @@ class PasswordResetController extends BaseController
 
         // KROK 4: Składanie i wysyłka wiadomości e-mail
         $resetLink = url("nowe-haslo?token=$token");
-        $body = "<p>Witaj,</p>" .
-          "<p>Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta. Kliknij poniższy link, aby ustawić nowe hasło:</p>" .
-          "<p><a href='$resetLink'>$resetLink</a></p>" .
-          "<p>Na następnej stronie zostaniesz poproszony o podanie 6-cyfrowego kodu bezpieczeństwa, który jest widoczny na stronie resetowania hasła.</p>" .
-          "<p>Jeśli to nie Ty prosiłeś o zmianę, zignoruj tę wiadomość.</p>";
-
-        if ($this->mailer->send($user->getEmail(), 'Reset hasła w serwisie Examly', $body)) {
+        if ($this->mailer->sendPasswordResetEmail($user->getEmail(), $resetLink)) {
           $_SESSION['password_reset_sent'] = time();
         }
 

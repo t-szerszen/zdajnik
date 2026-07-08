@@ -17,7 +17,7 @@
  */
 $pageTitle = $exam['title_personalized'];
 $pageDescription = $exam['desc_personalized'];
-$canonicalUrl = 'https://www.examly.pl/personalizowany-test/' . htmlspecialchars($examCode);
+$canonicalUrl = 'https://www.zdajnik.pl/personalizowany-test/' . htmlspecialchars($examCode);
 $extraScripts = [
   'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
   'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js'
@@ -88,7 +88,7 @@ $extraScripts = [
       =====================================================================
     -->
     <div class="test-configurator">
-      <form id="topic-form">
+      <form id="topic-form" class="topic-selector">
 
         <!-- Krok 1: Wybór tematów -->
         <fieldset class="config-step" data-step="1">
@@ -230,18 +230,6 @@ $extraScripts = [
   </main>
 
   <?php include 'partials/footer.php'; ?>
-
-  <!-- Skrypty JS ładowane jako moduły na końcu strony -->
-  <!-- Skrypt obsługujący interaktywność suwaka -->
-  <script type="module" src="<?= url('js/components/SliderEnhancer.js') ?>"></script>
-  <!-- Główny skrypt logiki dla tej strony (zarządzanie krokami, pobieranie i renderowanie testu) -->
-  <script type="module" src="<?= url('js/features/personalized-test/index.js') ?>"></script>
-  <!-- Skrypt pomocniczy do obsługi checkboxów (np. "zaznacz wszystko") -->
-  <script type="module" src="<?= url('js/components/TopicFormEnhancer.js') ?>"></script>
-  <script>
-    window.examlyPremiumTutorialConfig = { mode: 'personalized-test' };
-  </script>
-  <script type="module" src="<?= url('js/components/PremiumOptionsTutorial.js') ?>"></script>
 </body>
 
 </html>

@@ -17,7 +17,7 @@
  * Konfiguracja komponentu head
  */
 $score = round(($exam['meta']['correct_count'] / $exam['meta']['total_questions']) * 100);
-$pageTitle = 'Wynik: ' . $score . '% | Egzamin z ' . date('d.m.Y', strtotime($exam['meta']['completed_at'])) . ' | Examly';
+$pageTitle = 'Wynik: ' . $score . '% | Egzamin z ' . date('d.m.Y', strtotime($exam['meta']['completed_at'])) . ' | Zdajnik';
 $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego wynikiem ' . $score . '%. Przejrzyj swoje błędy i przygotuj się lepiej.';
 ?>
 <!DOCTYPE html>
@@ -208,12 +208,6 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
   </main>
 
   <?php include 'partials/footer.php'; ?>
-
-  <script type="module" src="<?= url('js/components/ExplanationToggler.js') ?>"></script>
-  <script type="module">
-    import saveToggle from '<?= url('js/components/SaveToggleHandler.js') ?>';
-    saveToggle.init('.review-page__questions');
-  </script>
 </body>
 
 </html>

@@ -15,7 +15,7 @@
  * @author Tobiasz Szerszeń
  */
 
-$pageTitle = 'Weryfikacja Nowego Adresu E-mail | Examly';
+$pageTitle = 'Weryfikacja Nowego Adresu E-mail | Zdajnik';
 $noIndex = true;
 ?>
 <!DOCTYPE html>

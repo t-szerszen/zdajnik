@@ -1,8 +1,8 @@
-class StatisticsTutorial {
+export class StatisticsTutorial {
   constructor() {
     this.root = document.querySelector('[data-stats-tutorial-root]');
     this.restartButton = document.querySelector('[data-restart-stats-tutorial]');
-    this.storageKey = 'examly.statistics.tutorial.v1.completed';
+    this.storageKey = 'zdajnik.statistics.tutorial.v1.completed';
     this.currentStep = 0;
     this.isOpen = false;
     this.elements = this.createTutorialElements();
@@ -211,6 +211,6 @@ class StatisticsTutorial {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  new StatisticsTutorial();
-});
+export function initStatisticsTutorial() {
+  return new StatisticsTutorial();
+}

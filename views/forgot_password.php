@@ -17,7 +17,7 @@
  * @author Tobiasz Szerszeń
  */
 
-$pageTitle = 'Resetowanie Hasła | Examly';
+$pageTitle = 'Resetowanie Hasła | Zdajnik';
 $noIndex = true;
 ?>
 <!DOCTYPE html>
@@ -73,11 +73,6 @@ $noIndex = true;
     </form>
   </main>
   <?php include 'partials/footer.php'; ?>
-
-  <script type="module">
-    import CountdownButton from '<?= url('js/components/CountdownButton.js') ?>';
-    new CountdownButton('submitBtn');
-  </script>
 </body>
 
 </html>

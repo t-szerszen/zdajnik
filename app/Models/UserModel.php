@@ -366,7 +366,7 @@ class UserModel
     $sqlUserUpdate = "UPDATE users 
             SET 
               google_id = NULL,
-              email = CONCAT('anon_', MD5(id), '@examly.pl'),
+              email = CONCAT('anon_', MD5(id), '@zdajnik.pl'),
               first_name = 'Anonimowy',
               last_name = 'Użytkownik',
               password_hash = 'ANONYMIZED',
