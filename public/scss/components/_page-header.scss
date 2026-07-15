@@ -1,61 +1,72 @@
-// Plik: scss/6-components/_page-header.scss
+@use '../core/mixins' as *;
 
 .page-header {
-  padding: 8rem 1.5rem 5rem; // Increased top padding to account for transparent navbar
-  margin-top: -6.5rem; // Pull header up to go under the navbar area
-  background-color: var(--field-bg);
+  position: relative;
+  z-index: 1;
+  margin-top: -6.5rem;
+  padding: 8.5rem 1.5rem 4.75rem;
+  overflow: hidden;
   text-align: center;
   border-bottom: 1px solid var(--subtle-border);
-  position: relative;
-  overflow: hidden;
-  z-index: 1; // Lower than navbar
+  background:
+    radial-gradient(circle at 50% -18%, rgba(var(--accent-rgb), 0.16), transparent 36%),
+    linear-gradient(180deg, rgba(var(--accent-rgb), 0.055), rgba(var(--accent-rgb), 0.018) 58%, transparent),
+    var(--bg);
 
-  // Dwie "kulki" gradientu dla dynamicznego tła
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    // ZMIANA: Ulepszone gradienty dla świeżego wyglądu
-    background-image:
-      radial-gradient(circle at 10% -20%, rgba(59, 130, 246, 0.2), transparent 45%),
-      radial-gradient(circle at 90% 120%, rgba(139, 92, 246, 0.2), transparent 45%);
-
-    .dark & {
-      background-image:
-        radial-gradient(circle at 20% -20%, rgba(59, 130, 246, 0.25) 0%, transparent 50%),
-        radial-gradient(circle at 80% 0%, rgba(139, 92, 246, 0.2) 0%, transparent 50%),
-        linear-gradient(180deg, rgba(11, 12, 14, 0.2) 0%, var(--bg) 100%);
-      background-color: var(--bg);
-    }
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(rgba(13, 27, 61, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(13, 27, 61, 0.035) 1px, transparent 1px);
+    background-size: 42px 42px;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 88%);
+    mask-image: linear-gradient(to bottom, #000 0%, transparent 88%);
   }
 
-  // Kontener na treść
   &__content {
     position: relative;
-    z-index: 2;
+    z-index: 1;
     max-width: 850px;
     margin: 0 auto;
   }
 
   &__title {
-    font-size: 2.8rem;
-    font-weight: 800;
-    margin: 0 0 1.5rem 0;
+    margin: 0 0 1rem;
     color: var(--text);
-    // Dodajemy odstępy między literami dla lepszego wyglądu
-    letter-spacing: -1px;
+    font-size: clamp(2.1rem, 5vw, 3.7rem);
+    font-weight: 900;
+    line-height: 1.02;
+    letter-spacing: 0;
   }
 
   &__text {
-    font-size: 1.1rem;
-    color: var(--muted-text);
-    line-height: 1.7;
-    margin: 0;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 720px;
+    margin: 0.65rem auto 0;
+    color: var(--text-muted);
+    font-size: clamp(1rem, 1vw, 1.12rem);
+    line-height: 1.72;
+  }
+}
+
+html.dark .page-header {
+  background:
+    radial-gradient(circle at 50% -18%, rgba(var(--accent-rgb), 0.11), transparent 38%),
+    linear-gradient(180deg, rgba(var(--accent-rgb), 0.035), rgba(255, 255, 255, 0.012) 58%, transparent),
+    var(--bg);
+
+  &::before {
+    background:
+      linear-gradient(rgba(169, 183, 176, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(169, 183, 176, 0.045) 1px, transparent 1px);
+  }
+}
+
+@include media-down(sm) {
+  .page-header {
+    padding: 7.5rem 1rem 3.5rem;
   }
 }
