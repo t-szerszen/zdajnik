@@ -530,17 +530,20 @@ class StatisticsService
     }
 
     // 3. Pobierz pytania użyte w tej próbie
-    $sqlQuestions = "SELECT 
-                                qv.id as version_id, 
+    // Sortujemy po position - kolejności zapisanej przy tworzeniu próby, odzwierciedlającej
+    // faktyczną, jednorazowo wylosowaną kolejność prezentacji pytań (Attempt::createAttempt()).
+    // answered_at jako fallback dla starszych prób sprzed dodania kolumny position.
+    $sqlQuestions = "SELECT
+                                qv.id as version_id,
                                 qv.question_id,
-                                qv.question_text, 
-                                qv.explanation, 
+                                qv.question_text,
+                                qv.explanation,
                                 qv.image_name
                              FROM attempt_answers aa
                              JOIN question_versions qv ON aa.question_version_id = qv.id
                              WHERE aa.attempt_id = ?
-                             GROUP BY qv.id, aa.attempt_id, aa.question_version_id, aa.answered_at
-                             ORDER BY aa.answered_at ASC";
+                             GROUP BY qv.id, aa.attempt_id, aa.question_version_id, aa.position, aa.answered_at
+                             ORDER BY aa.position ASC, aa.answered_at ASC";
 
     $questions = $this->db->fetchAll($sqlQuestions, [$attemptId]);
 

@@ -76,7 +76,8 @@ $extraScripts = [
   </header>
 
   <!-- Główny kontener strony, przekazujący kod egzaminu do JS -->
-  <div class="container" id="personalized-test-page" data-exam-code="<?= htmlspecialchars($examCode) ?>">
+  <div class="container" id="personalized-test-page" data-exam-code="<?= htmlspecialchars($examCode) ?>"
+    data-personalized-test-tutorial-root>
 
     <!-- 
       =====================================================================
@@ -165,19 +166,19 @@ $extraScripts = [
           <div class="topic-selector__options">
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="toDiscover" class="premium-checkbox">
-              <span>Nieodkryte pytania</span>
+              <span>Nieodkryte</span>
             </label>
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="toImprove" class="premium-checkbox">
-              <span>Pytania, które gorzej Ci idą</span>
+              <span>Słabe punkty</span>
             </label>
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="toRemind" class="premium-checkbox">
-              <span>Pytania najdawniej powtórzone</span>
+              <span>Powtórki</span>
             </label>
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="lastMistakes" class="premium-checkbox">
-              <span>Ostatnio błędne</span>
+              <span>Ostatnie błędy</span>
             </label>
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="saved" class="premium-checkbox">
@@ -186,13 +187,13 @@ $extraScripts = [
           </div>
           <div class="config-step__actions">
             <button type="button" class="btn btn--secondary" data-action="prev">Wróć</button>
-            <button type="submit" class="btn btn--primary btn">Rozpocznij Test!</button>
+            <button type="submit" class="btn btn--primary btn" id="start-test-btn">Rozpocznij Test!</button>
           </div>
         </fieldset>
       </form>
     </div>
 
-    <!-- 
+    <!--
       Główny kontener na dynamicznie renderowany test.
       Początkowo pusty, zostaje wypełniony przez JS po wysłaniu formularza.
     -->
@@ -226,6 +227,12 @@ $extraScripts = [
         </div>
       </div>
     </section>
+
+    <div class="centered--push-down">
+      <button type="button" class="btn btn--secondary" data-restart-personalized-test-tutorial>
+        <i class="fas fa-route"></i> Uruchom samouczek ponownie
+      </button>
+    </div>
   </div>
   </main>
 

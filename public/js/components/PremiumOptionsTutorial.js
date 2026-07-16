@@ -10,6 +10,7 @@ export class PremiumOptionsTutorial {
     this.storageKey = `examly.premium.tutorial.${this.mode}.completed`;
     this.forceOpen = config.forceOpen === true;
     this.guestPreview = config.guestPreview === true;
+    this.autoStart = config.autoStart !== false;
     this.elements = this.createUI();
     this.steps = this.buildSteps();
     this.pendingAutoStart = true;
@@ -108,7 +109,7 @@ export class PremiumOptionsTutorial {
   }
 
   updateTriggerState() {
-    const isUserLoggedIn = window.examlyAppState?.isUserLoggedIn === true;
+    const isUserLoggedIn = window.zdajnikAppState?.isUserLoggedIn === true;
     const isAnyOptionEnabled = this.premiumCheckboxes.some((checkbox) => !checkbox.disabled);
     const isSectionVisible = this.isPremiumSectionVisible();
     const shouldShowTrigger = (isUserLoggedIn || this.guestPreview) && isSectionVisible;
@@ -127,7 +128,7 @@ export class PremiumOptionsTutorial {
     if (this.pendingAutoStart && shouldShowTrigger) {
       this.pendingAutoStart = false;
       const completed = window.localStorage.getItem(this.storageKey) === '1';
-      if (this.forceOpen || (!completed && (isAnyOptionEnabled || this.guestPreview))) {
+      if (this.forceOpen || (this.autoStart && !completed && (isAnyOptionEnabled || this.guestPreview))) {
         this.start(false);
       }
     }

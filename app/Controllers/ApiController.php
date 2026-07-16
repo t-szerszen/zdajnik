@@ -691,10 +691,13 @@ class ApiController extends BaseController
             'exam_id' => $examTypeId,
             'count' => $answeredCount,
           ]);
+          $gatekeeperMessage = $specialFilter === 'toRemind'
+            ? 'Musisz odpowiedzieć na co najmniej 100 pytań, abyśmy mogli dobrać pytania dawno niepowtarzane.'
+            : 'Musisz odpowiedzieć na co najmniej 100 pytań, abyśmy mogli przeanalizować Twoje słabe strony.';
           $this->sendJsonResponse([
             'success' => false,
             'status' => 'gatekeeper',
-            'message' => 'Musisz odpowiedzieć na co najmniej 100 pytań, abyśmy mogli przeanalizować Twoje słabe strony.'
+            'message' => $gatekeeperMessage
           ], 403);
           return ['success' => false, 'questions' => []];
         }

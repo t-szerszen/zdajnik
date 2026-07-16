@@ -32,10 +32,11 @@
   @include visually-hidden;
 }
 
-// Wariant .centered z większym marginesem górnym
+// Wariant .centered z większym marginesem górnym i dolnym
 .centered--push-down {
   display: flex;
   margin-top: 4rem;
+  margin-bottom: 4rem;
   justify-content: center;
   width: 100%;
 }

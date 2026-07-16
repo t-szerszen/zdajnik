@@ -151,7 +151,7 @@ $extraSchemas = [
         <div class="hero-section__content">
           <p class="hero-section__lockup">
             <span class="hero-section__lockup-badge">Zdajnik</span>
-            <span class="hero-section__lockup-text">Nauka do egzaminów zawodowych</span>
+            <span class="hero-section__lockup-text">Od ucznia dla uczniów ;)</span>
           </p>
           <h1 class="hero-section__title">
             Przygotuj się do egzaminu zawodowego
@@ -170,47 +170,47 @@ $extraSchemas = [
           </div>
         </div>
         <aside class="hero-feature-grid" aria-label="Możliwości Zdajnika">
-          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Baza pytań" data-feature-icon="fas fa-database" data-feature-href="<?= url('#egzaminy') ?>" data-feature-cta="Zobacz kwalifikacje">
+          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Baza pytań" data-feature-icon="fas fa-database">
             <span class="hero-feature-card__icon"><i class="fas fa-database"></i></span>
             <span class="hero-feature-card__title">Baza pytań</span>
             <span class="hero-feature-card__description">Setki pytań egzaminacyjnych podzielonych według kwalifikacji i tematów.</span>
-            <span class="hero-feature-card__details" hidden>Na ten moment bazie znajdziesz pytania uporządkowane według kwalifikacji INF oraz działów tematycznych. Możesz zacząć od całej kwalifikacji albo wybrać konkretny obszar, który chcesz poprawić.</span>
+            <span class="hero-feature-card__details" hidden>Na ten moment w bazie znajdziesz pytania uporządkowane według kwalifikacji INF oraz działów tematycznych. Możesz zacząć od całej kwalifikacji albo wybrać konkretny obszar, który chcesz poprawić.</span>
           </button>
-          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Wyjaśnienia do pytań" data-feature-icon="fas fa-circle-question" data-feature-href="<?= url('jedno-pytanie/INF.04') ?>" data-feature-cta="Przejdź do nauki">
+          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Wyjaśnienia do pytań" data-feature-icon="fas fa-circle-question">
             <span class="hero-feature-card__icon"><i class="fas fa-circle-question"></i></span>
             <span class="hero-feature-card__title">Wyjaśnienia do pytań</span>
             <span class="hero-feature-card__description">Każda odpowiedź zawiera wyjaśnienie pomagające zrozumieć materiał.</span>
             <span class="hero-feature-card__details" hidden>Po sprawdzeniu odpowiedzi zobaczysz krótkie omówienie, które pomaga zrozumieć, dlaczego dana odpowiedź jest poprawna. To przydatne szczególnie przy powtarzających się błędach.</span>
           </button>
-          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Filtry nauki" data-feature-icon="fas fa-filter" data-feature-href="<?= url('jedno-pytanie/INF.04') ?>" data-feature-cta="Zobacz filtry">
+          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Filtry nauki" data-feature-icon="fas fa-filter">
             <span class="hero-feature-card__icon"><i class="fas fa-filter"></i></span>
             <span class="hero-feature-card__title">Filtry nauki</span>
             <span class="hero-feature-card__description">Ucz się z wykorzystaniem filtrów: nieodkryte, najdawniej powtórzone, ostatnio błędne i słabe punkty.</span>
             <span class="hero-feature-card__details" hidden>Filtry pomagają szybko zawęzić naukę do pytań, które najbardziej wymagają pracy: nowych, dawno nierozwiązywanych, błędnych albo oznaczonych jako słabe punkty.</span>
           </button>
-          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Zapisane pytania" data-feature-icon="fas fa-bookmark" data-feature-href="<?= url('jedno-pytanie/INF.04?premium=saved&selectAll=true') ?>" data-feature-cta="Otwórz zapisane">
+          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Zapisane pytania" data-feature-icon="fas fa-bookmark">
             <span class="hero-feature-card__icon"><i class="fas fa-bookmark"></i></span>
             <span class="hero-feature-card__title">Zapisane pytania</span>
             <span class="hero-feature-card__description">Zapisuj pytania i wracaj do nich w dowolnym momencie.</span>
             <span class="hero-feature-card__details" hidden>Jeśli pytanie jest ważne, trudne albo chcesz wrócić do niego przed egzaminem, możesz je zapisać. Zapisane pytania tworzą osobną listę do szybkiej powtórki.</span>
           </button>
-          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Statystyki postępów" data-feature-icon="fas fa-chart-simple" data-feature-href="<?= url('statystyki') ?>" data-feature-cta="Zobacz statystyki">
+          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Statystyki postępów" data-feature-icon="fas fa-chart-simple">
             <span class="hero-feature-card__icon"><i class="fas fa-chart-simple"></i></span>
             <span class="hero-feature-card__title">Statystyki postępów</span>
             <span class="hero-feature-card__description">Sprawdzaj swoje wyniki i identyfikuj obszary wymagające poprawy.</span>
             <span class="hero-feature-card__details" hidden>Panel wyników pokazuje, jak idzie Ci nauka, które tematy wypadają najlepiej i gdzie warto wrócić do powtórki przed egzaminem.</span>
           </button>
-          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Tryby nauki" data-feature-icon="fas fa-pen-to-square" data-feature-href="<?= url('test/INF.04') ?>" data-feature-cta="Wybierz tryb">
+          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Tryby nauki" data-feature-icon="fas fa-pen-to-square">
             <span class="hero-feature-card__icon"><i class="fas fa-pen-to-square"></i></span>
             <span class="hero-feature-card__title">Tryby nauki</span>
             <span class="hero-feature-card__description">Jedno pytanie, personalizowany test lub pełny egzamin próbny.</span>
             <span class="hero-feature-card__details" hidden>Możesz ćwiczyć pojedyncze pytania, złożyć własny test albo przejść pełny egzamin próbny. Dzięki temu łatwiej dopasować naukę do czasu, który masz danego dnia.</span>
           </button>
-          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Wyszukiwarka pytań" data-feature-icon="fas fa-magnifying-glass" data-feature-href="<?= url('search') ?>" data-feature-cta="Otwórz wyszukiwarkę">
+          <button type="button" class="hero-feature-card" data-feature-card data-feature-title="Wyszukiwarka pytań" data-feature-icon="fas fa-magnifying-glass">
             <span class="hero-feature-card__icon"><i class="fas fa-magnifying-glass"></i></span>
             <span class="hero-feature-card__title">Wyszukiwarka pytań</span>
             <span class="hero-feature-card__description">Szybko znajdź konkretne zagadnienie lub pytanie.</span>
-            <span class="hero-feature-card__details" hidden>Wyszukiwarka pozwala znaleźć pytanie po treści, numerze, kwalifikacji albo temacie. Przydaje się, gdy chcesz wrócić do konkretnego pytania, lecz go nie zapisałeś/aś</span>
+            <span class="hero-feature-card__details" hidden>Wyszukiwarka pozwala znaleźć pytanie po treści, numerze, kwalifikacji albo temacie. Przydaje się, gdy chcesz wrócić do konkretnego pytania, lecz go nie zapisałeś/aś.</span>
           </button>
           <div class="hero-feature-card hero-feature-card--soon" aria-disabled="true">
             <span class="hero-feature-card__badge">Wkrótce</span>
@@ -236,7 +236,6 @@ $extraSchemas = [
           <p class="hero-feature-modal__eyebrow">Funkcja Zdajnika</p>
           <h2 class="hero-feature-modal__title" id="hero-feature-modal-title" data-feature-modal-title></h2>
           <p class="hero-feature-modal__text" data-feature-modal-text></p>
-          <a href="#" class="btn btn--primary hero-feature-modal__cta" data-feature-modal-link></a>
         </div>
       </div>
     </section>

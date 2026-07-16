@@ -16,7 +16,7 @@
  */
 $pageTitle = $exam['title_one_question'];
 $pageDescription = $exam['desc_one_question'];
-$canonicalUrl = 'https://www.examly.pl/jedno-pytanie/' . htmlspecialchars($examCode);
+$canonicalUrl = 'https://www.zdajnik.pl/jedno-pytanie/' . htmlspecialchars($examCode);
 $extraScripts = [
   'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
   'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js'
@@ -92,14 +92,15 @@ $extraScripts = [
     Atrybut `data-exam-code`: Przekazuje kod egzaminu do logiki JS.
     =====================================================================
   -->
-  <div class="quiz-page-layout" id="quiz-single-question" data-exam-code="<?= htmlspecialchars($examCode) ?>">
+  <div class="quiz-page-layout" id="quiz-single-question" data-exam-code="<?= htmlspecialchars($examCode) ?>"
+    data-one-question-tutorial-root>
 
     <!-- Panel boczny (Sidebar) z formularzem wyboru tematów -->
     <aside class="quiz-page-layout__sidebar">
       <form id="topic-form" class="topic-selector">
 
         <!-- Grupa: Główne kategorie tematyczne -->
-        <fieldset class="topic-selector__fieldset">
+        <fieldset class="topic-selector__fieldset" id="topic-main-categories">
           <legend class="topic-selector__sub-legend">
             <i class="fas fa-layer-group section-icon"></i> Główne kategorie
           </legend>
@@ -156,7 +157,7 @@ $extraScripts = [
           </div>
         </fieldset>
 
-        <button type="submit" class="btn btn--primary btn--full-width btn--large">
+        <button type="submit" class="btn btn--primary btn--full-width btn--large" id="start-learning-btn">
           <span>Rozpocznij naukę</span>
           <i class="fas fa-play"></i>
         </button>
@@ -185,6 +186,12 @@ $extraScripts = [
         <p class="quiz-placeholder">Wybierz przynajmniej jeden temat, aby rozpocząć naukę.</p>
       </div>
     </section>
+  </div>
+
+  <div class="centered--push-down">
+    <button type="button" class="btn btn--secondary" data-restart-one-question-tutorial>
+      <i class="fas fa-route"></i> Uruchom samouczek ponownie
+    </button>
   </div>
   </main>
 

@@ -56,6 +56,13 @@ async function initSearchPage() {
 }
 
 async function initReviewPage() {
+  // Uwaga: `.review-page__questions` jest też używana na test.php/personalized_test.php
+  // (wspólny styl kart wyników), ale te strony mają WŁASNY handler serduszka
+  // wbudowany w TestRunner.js. Ograniczenie do body.review-page (exam_review.php,
+  // question_review.php) zapobiega podwójnemu podpięciu SaveToggleHandler na tym
+  // samym przycisku (dwa równoległe zapytania toggle-saved przy jednym kliknięciu).
+  if (!document.body.classList.contains('review-page')) return;
+
   const reviewContainer = document.querySelector('.review-page__questions, .review-page__main');
   if (!reviewContainer) return;
 
@@ -73,9 +80,15 @@ async function initReviewPage() {
 async function initSingleQuestionPage() {
   if (!has('#quiz-single-question')) return;
 
-  const [{ initTopicFormEnhancer }, { initPremiumOptionsTutorial }, { initSingleQuestionPage: init }] = await Promise.all([
+  const [
+    { initTopicFormEnhancer },
+    { initPremiumOptionsTutorial },
+    { initOneQuestionTutorial },
+    { initSingleQuestionPage: init },
+  ] = await Promise.all([
     import(modulePath('./components/TopicFormEnhancer.js')),
     import(modulePath('./components/PremiumOptionsTutorial.js')),
+    import(modulePath('./features/one-question/OneQuestionTutorial.js')),
     import(modulePath('./features/one-question/index.js')),
   ]);
 
@@ -85,7 +98,11 @@ async function initSingleQuestionPage() {
     mode: 'one-question',
     forceOpen: urlParams.get('tutorial') === '1',
     guestPreview: urlParams.get('guestPreview') === '1',
+    // Samouczek stronicowy (OneQuestionTutorial) obejmuje już sekcję filtrów jako jeden z kroków,
+    // więc ten poradnik nie startuje automatycznie - dostępny tylko ręcznie przez przycisk "?".
+    autoStart: false,
   });
+  initOneQuestionTutorial();
   init();
 }
 
@@ -97,17 +114,25 @@ async function initPersonalizedTestPage() {
     { initPersonalizedTestPage: init },
     { initTopicFormEnhancer },
     { initPremiumOptionsTutorial },
+    { initPersonalizedTestTutorial },
   ] = await Promise.all([
     import(modulePath('./components/SliderEnhancer.js')),
     import(modulePath('./features/personalized-test/index.js')),
     import(modulePath('./components/TopicFormEnhancer.js')),
     import(modulePath('./components/PremiumOptionsTutorial.js')),
+    import(modulePath('./features/personalized-test/PersonalizedTestTutorial.js')),
   ]);
 
   initSliderEnhancer();
   init();
   initTopicFormEnhancer();
-  initPremiumOptionsTutorial({ mode: 'personalized-test' });
+  initPremiumOptionsTutorial({
+    mode: 'personalized-test',
+    // Samouczek stronicowy (PersonalizedTestTutorial) obejmuje już sekcję filtrów jako
+    // jeden z kroków, więc ten poradnik nie startuje automatycznie - tylko ręcznie przez "?".
+    autoStart: false,
+  });
+  initPersonalizedTestTutorial();
 }
 
 async function initFullTestPage() {

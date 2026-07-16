@@ -103,12 +103,18 @@
     line-height: 0.98;
     letter-spacing: 0;
     opacity: 0;
-    animation: hero-fade-up 0.72s var(--ease-emphasized) forwards;
+    // To jest element LCP - animacja wejścia zostaje, ale znacznie krótsza
+    // (0.32s zamiast 0.72s) i bez opóźnienia, żeby nie dokładać czasu do LCP.
+    animation: hero-fade-up 0.32s var(--ease-emphasized) forwards;
   }
 
   &__title-accent {
     display: block;
     margin-top: 0.45rem;
+    // Wyższy line-height niż reszta tytułu, żeby litery ze zejściem (p, g, j)
+    // nie ucinały się pod background-clip: text.
+    line-height: 1.15;
+    padding-bottom: 0.05em;
     color: var(--accent);
     background: linear-gradient(135deg, var(--accent) 0%, var(--color-navy) 88%);
     -webkit-background-clip: text;
@@ -359,7 +365,7 @@
   }
 
   &__text {
-    margin: 0 0 1.25rem;
+    margin: 0;
     color: var(--text-muted);
     line-height: 1.68;
   }

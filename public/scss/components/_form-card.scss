@@ -386,17 +386,24 @@
         text-decoration: underline;
       }
     }
+  }
 
-    .form-card__forgot-password {
-      font-size: 0.9rem;
-      opacity: 0.8;
-      font-weight: 500;
-      margin-top: 0.5rem;
-      display: inline-block;
+  // Samodzielna klasa - używana zarówno w stopce formularza logowania (.form-card__footer),
+  // jak i poza nią (np. w karcie zmiany hasła w ustawieniach), więc nie może zależeć
+  // od zagnieżdżenia w rodzicu.
+  &__forgot-password {
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0.8;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s ease;
 
-      &:hover {
-        opacity: 1;
-      }
+    &:hover {
+      opacity: 1;
+      color: var(--accent-hover);
+      text-decoration: underline;
     }
   }
 }

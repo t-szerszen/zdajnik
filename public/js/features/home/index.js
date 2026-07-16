@@ -51,10 +51,9 @@ function initFeatureModal() {
   const title = modal?.querySelector('[data-feature-modal-title]');
   const text = modal?.querySelector('[data-feature-modal-text]');
   const icon = modal?.querySelector('[data-feature-modal-icon]');
-  const link = modal?.querySelector('[data-feature-modal-link]');
   const cards = document.querySelectorAll('[data-feature-card]');
 
-  if (!modal || !dialog || !title || !text || !icon || !link || !cards.length) return;
+  if (!modal || !dialog || !title || !text || !icon || !cards.length) return;
 
   let activeTrigger = null;
 
@@ -71,8 +70,6 @@ function initFeatureModal() {
     title.textContent = card.dataset.featureTitle || '';
     text.textContent = details?.textContent?.trim() || '';
     icon.innerHTML = `<i class="${card.dataset.featureIcon || 'fas fa-circle-info'}"></i>`;
-    link.href = card.dataset.featureHref || '#';
-    link.textContent = card.dataset.featureCta || 'Przejdź dalej';
     modal.hidden = false;
     document.body.classList.add('has-open-modal');
     dialog.focus();
