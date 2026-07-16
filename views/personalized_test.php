@@ -17,7 +17,7 @@
  */
 $pageTitle = $exam['title_personalized'];
 $pageDescription = $exam['desc_personalized'];
-$canonicalUrl = 'https://www.examly.pl/personalizowany-test/' . htmlspecialchars($examCode);
+$canonicalUrl = 'https://www.zdajnik.pl/personalizowany-test/' . htmlspecialchars($examCode);
 $extraScripts = [
   'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
   'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js'
@@ -60,21 +60,24 @@ $extraScripts = [
 
   <main class="main-content-wrapper">
   <!-- Nagłówek wprowadzający w kontekst strony -->
-	  <header class="page-header">
-	    <div class="page-header__content">
-	      <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span>
-	        - Własny zestaw pytań</h1>
-	      <p class="page-header__text">
-	        Wybierz tematy, liczbę pytań i sposób ich doboru. Ułożymy zestaw pod to, co chcesz teraz przećwiczyć.
-	      </p>
-		      <p class="page-header__text">
-		        Po kilku rozwiązanych zestawach odblokujesz filtry oparte na swoich wynikach.
-		      </p>
-	    </div>
-	  </header>
+  <header class="page-header">
+    <div class="page-header__content">
+      <h1 class="page-header__title"><span class="text-gradient"><?= htmlspecialchars($exam['formatted_name']) ?></span>
+        - Spersonalizowany test</h1>
+      <p class="page-header__text">
+        Wygeneruj test dopasowany do Twoich aktualnych potrzeb. Skonfiguruj zakres tematyczny, określ liczbę pytań i
+        systematycznie eliminuj swoje luki w wiedzy.
+      </p>
+      <p class="page-header__text">
+        <strong class="text-gradient">Pro Tip:</strong> Rozwiąż kilka testów próbnych, aby algorytm mógł skutecznie
+        kalibrować poziom na podstawie Twoich słabych stron.
+      </p>
+    </div>
+  </header>
 
   <!-- Główny kontener strony, przekazujący kod egzaminu do JS -->
-  <div class="container" id="personalized-test-page" data-exam-code="<?= htmlspecialchars($examCode) ?>">
+  <div class="container" id="personalized-test-page" data-exam-code="<?= htmlspecialchars($examCode) ?>"
+    data-personalized-test-tutorial-root>
 
     <!-- 
       =====================================================================
@@ -86,18 +89,18 @@ $extraScripts = [
       =====================================================================
     -->
     <div class="test-configurator">
-      <form id="topic-form">
+      <form id="topic-form" class="topic-selector">
 
         <!-- Krok 1: Wybór tematów -->
-	        <fieldset class="config-step" data-step="1">
-	          <legend class="config-step__title">
-	            <span class="config-step__number">1</span>
-	            Z jakich tematów mają być pytania?
+        <fieldset class="config-step" data-step="1">
+          <legend class="config-step__title">
+            <span class="config-step__number">1</span>
+            Wybierz tematy, z których chcesz się uczyć
           </legend>
           <div class="topic-selector__options">
             <label class="topic-selector__label">
               <input type="checkbox" value="<?= htmlspecialchars($examCode) ?>" id="select-all-codes">
-              <span>Cały zakres <?= htmlspecialchars($exam['formatted_name']) ?></span>
+              <span>Cały materiał <?= htmlspecialchars($exam['formatted_name']) ?></span>
             </label>
             <!-- Topics are now fetched dynamically in controller if needed, but here we can iterate -->
             <!-- Note: The Controller didn't pass categories here yet unlike one_question. We should fix that or assume hardcoded list for now as per minimal change request, 
@@ -121,76 +124,76 @@ $extraScripts = [
                   <span><?= htmlspecialchars($category['name']) ?></span>
                 </label>
               <?php endforeach; ?>
-	            <?php else: ?>
-	              <!-- Fallback if no categories passed (legacy behavior but cleaner) -->
-	              <p>Nie możemy teraz wczytać listy tematów. Odśwież stronę albo spróbuj ponownie za chwilę.</p>
-	            <?php endif; ?>
+            <?php else: ?>
+              <!-- Fallback if no categories passed (legacy behavior but cleaner) -->
+              <p>Brak kategorii do wyświetlenia dla tego egzaminu.</p>
+            <?php endif; ?>
           </div>
-	          <div class="config-step__actions">
-	            <button type="button" class="btn btn--primary" data-action="next">Następny krok</button>
-	          </div>
-	        </fieldset>
+          <div class="config-step__actions">
+            <button type="button" class="btn btn--primary" data-action="next">Dalej</button>
+          </div>
+        </fieldset>
 
         <!-- Krok 2: Wybór liczby pytań -->
-	        <fieldset class="config-step hidden" data-step="2">
+        <fieldset class="config-step hidden" data-step="2">
           <legend class="config-step__title">
             <span class="config-step__number">2</span>
-            Ile pytań?
+            Określ liczbę pytań
           </legend>
           <div class="slider-container">
             <label for="question-count" class="slider-container__label">
-              Liczba pytań: <output id="question-count-value">25</output>
+              Wybierz liczbę pytań: <output id="question-count-value">25</output>
             </label>
             <input type="range" id="question-count" name="question_count" min="10" max="40" value="25"
               class="slider-container__input">
           </div>
-	          <div class="config-step__actions">
-	            <button type="button" class="btn btn--secondary" data-action="prev">Wróć</button>
-	            <button type="button" class="btn btn--primary" data-action="next">Następny krok</button>
-	          </div>
-	        </fieldset>
+          <div class="config-step__actions">
+            <button type="button" class="btn btn--secondary" data-action="prev">Wróć</button>
+            <button type="button" class="btn btn--primary" data-action="next">Dalej</button>
+          </div>
+        </fieldset>
 
         <!-- Krok 3: Opcje inteligentnej nauki -->
-	        <fieldset class="config-step hidden" data-step="3" data-premium-filters-root>
+        <fieldset class="config-step hidden" data-step="3" data-premium-filters-root>
           <legend class="config-step__title">
             <span class="config-step__number">3</span>
-            Jak dobrać pytania? (opcjonalnie)
+            Chcesz uczyć się inteligentnie? (Opcjonalnie)
             <button type="button" class="topic-selector__help-btn hidden" data-premium-tutorial-trigger
               aria-label="Pokaż poradnik filtrów" title="Pokaż poradnik filtrów">
               <i class="fas fa-question" aria-hidden="true"></i>
             </button>
           </legend>
           <div class="topic-selector__options">
-	            <label class="topic-selector__label premium-option">
-	              <input type="checkbox" name="premium_option" value="toDiscover" class="premium-checkbox">
-	              <span>Nowe pytania</span>
-	            </label>
-	            <label class="topic-selector__label premium-option">
-	              <input type="checkbox" name="premium_option" value="toImprove" class="premium-checkbox">
-	              <span>Najtrudniejsze</span>
-	            </label>
-	            <label class="topic-selector__label premium-option">
-	              <input type="checkbox" name="premium_option" value="toRemind" class="premium-checkbox">
-	              <span>Dawno niewidziane</span>
-	            </label>
-	            <label class="topic-selector__label premium-option">
-	              <input type="checkbox" name="premium_option" value="lastMistakes" class="premium-checkbox">
-	              <span>Ostatnie błędy</span>
-	            </label>
+            <label class="topic-selector__label premium-option">
+              <input type="checkbox" name="premium_option" value="toDiscover" class="premium-checkbox">
+              <span>Nieodkryte</span>
+            </label>
+            <label class="topic-selector__label premium-option">
+              <input type="checkbox" name="premium_option" value="toImprove" class="premium-checkbox">
+              <span>Słabe punkty</span>
+            </label>
+            <label class="topic-selector__label premium-option">
+              <input type="checkbox" name="premium_option" value="toRemind" class="premium-checkbox">
+              <span>Powtórki</span>
+            </label>
+            <label class="topic-selector__label premium-option">
+              <input type="checkbox" name="premium_option" value="lastMistakes" class="premium-checkbox">
+              <span>Ostatnie błędy</span>
+            </label>
             <label class="topic-selector__label premium-option">
               <input type="checkbox" name="premium_option" value="saved" class="premium-checkbox">
               <span>Zapisane</span>
             </label>
           </div>
-		          <div class="config-step__actions">
-		            <button type="button" class="btn btn--secondary" data-action="prev">Wróć</button>
-		            <button type="submit" class="btn btn--primary btn">Ułóż zestaw</button>
-		          </div>
-		        </fieldset>
+          <div class="config-step__actions">
+            <button type="button" class="btn btn--secondary" data-action="prev">Wróć</button>
+            <button type="submit" class="btn btn--primary btn" id="start-test-btn">Rozpocznij Test!</button>
+          </div>
+        </fieldset>
       </form>
     </div>
 
-    <!-- 
+    <!--
       Główny kontener na dynamicznie renderowany test.
       Początkowo pusty, zostaje wypełniony przez JS po wysłaniu formularza.
     -->
@@ -224,22 +227,16 @@ $extraScripts = [
         </div>
       </div>
     </section>
+
+    <div class="centered--push-down">
+      <button type="button" class="btn btn--secondary" data-restart-personalized-test-tutorial>
+        <i class="fas fa-route"></i> Uruchom samouczek ponownie
+      </button>
+    </div>
   </div>
   </main>
 
   <?php include 'partials/footer.php'; ?>
-
-  <!-- Skrypty JS ładowane jako moduły na końcu strony -->
-  <!-- Skrypt obsługujący interaktywność suwaka -->
-  <script type="module" src="<?= url('js/components/SliderEnhancer.js') ?>"></script>
-  <!-- Główny skrypt logiki dla tej strony (zarządzanie krokami, pobieranie i renderowanie testu) -->
-  <script type="module" src="<?= url('js/features/personalized-test/index.js') ?>"></script>
-  <!-- Skrypt pomocniczy do obsługi checkboxów (np. "zaznacz wszystko") -->
-  <script type="module" src="<?= url('js/components/TopicFormEnhancer.js') ?>"></script>
-  <script>
-    window.examlyPremiumTutorialConfig = { mode: 'personalized-test' };
-  </script>
-  <script type="module" src="<?= url('js/components/PremiumOptionsTutorial.js') ?>"></script>
 </body>
 
 </html>

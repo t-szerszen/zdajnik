@@ -1,6 +1,6 @@
-class DefaultStatsExamPreference {
+export class DefaultStatsExamPreference {
   constructor() {
-    this.storageKey = 'examly.defaultStatsExamId';
+    this.storageKey = 'zdajnik.defaultStatsExamId';
     this.select = document.getElementById('category-select');
     this.root = document.querySelector('[data-default-stats-exam]');
     this.checkbox = document.querySelector('[data-default-stats-exam-checkbox]');
@@ -114,6 +114,6 @@ class DefaultStatsExamPreference {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  new DefaultStatsExamPreference();
-});
+export function initDefaultStatsExamPreference() {
+  return new DefaultStatsExamPreference();
+}

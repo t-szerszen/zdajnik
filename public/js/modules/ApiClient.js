@@ -70,7 +70,7 @@ class ApiClient {
       // Krok 3: Sprawdź status odpowiedzi HTTP.
       if (!response.ok) {
         // Jeśli serwer odpowiedział błędem (np. 404, 500), zwróć ustandaryzowany obiekt błędu.
-        const errorMessage = data.message || 'Nie udało się pobrać danych. Spróbuj ponownie za chwilę.';
+        const errorMessage = data.message || `Błąd serwera: ${response.status}`;
         return { success: false, error: errorMessage, status: data.status };
       }
 
@@ -80,7 +80,7 @@ class ApiClient {
       // Krok 5: Jeśli wystąpił błąd sieciowy (np. brak internetu), zaloguj go
       // i zwróć generyczny, przyjazny dla użytkownika komunikat.
       console.error(`Błąd sieci dla endpointu ${endpoint}:`, error);
-      return { success: false, error: 'Nie udało się połączyć z serwerem. Sprawdź internet i spróbuj ponownie.' };
+      return { success: false, error: 'Błąd połączenia. Sprawdź swoje połączenie z internetem.' };
     }
   }
 
@@ -201,6 +201,33 @@ class ApiClient {
     };
     return this._request('/toggle-saved', options);
   }
+
+  /**
+   * Wysyła ograniczony event produktowy. Tryb beacon jest używany przy
+   * opuszczaniu strony, kiedy zwykły fetch może zostać anulowany.
+   */
+  trackAnalyticsEvent(eventType, metadata = {}, useBeacon = false) {
+    const payload = JSON.stringify({
+      event_type: eventType,
+      metadata,
+    });
+    const endpoint = `${this.baseUrl}/analytics/event`;
+
+    if (useBeacon && navigator.sendBeacon) {
+      const queued = navigator.sendBeacon(
+        endpoint,
+        new Blob([payload], { type: 'application/json' })
+      );
+      return Promise.resolve({ success: queued });
+    }
+
+    return this._request('/analytics/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      keepalive: useBeacon,
+    });
+  }
 }
 
 /**
@@ -210,6 +237,6 @@ class ApiClient {
  * Zapewnia to, że cała aplikacja korzysta z tego samego, poprawnie
  * skonfigurowanego obiektu do komunikacji z API.
  */
-const api = new ApiClient(`${window.examlyAppState.baseUrl}/api`);
+const api = new ApiClient(`${window.zdajnikAppState.baseUrl}/api`);
 
 export default api;

@@ -1,4 +1,4 @@
-const rotatingWords = ['spokojnie', 'konkretnie', 'bez chaosu'];
+const rotatingWords = ['spokojnie', 'krok po kroku', 'bez zgadywania', 'na 100%'];
 
 function initRotatingWord() {
   const el = document.querySelector('[data-hero-rotating-word]');
@@ -17,52 +17,24 @@ function initRotatingWord() {
   }, 2500);
 }
 
-function initSpotlight() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const landing = document.querySelector('.home-page');
-  if (!landing) return;
-
-  let raf = null;
-  const onMove = (event) => {
-    if (raf) return;
-    raf = requestAnimationFrame(() => {
-      const x = (event.clientX / window.innerWidth) * 100;
-      const y = (event.clientY / window.innerHeight) * 100;
-      landing.style.setProperty('--spotlight-x', `${Math.max(0, Math.min(100, x))}%`);
-      landing.style.setProperty('--spotlight-y', `${Math.max(0, Math.min(100, y))}%`);
-      raf = null;
-    });
-  };
-
-  landing.addEventListener('pointermove', onMove, { passive: true });
-  landing.addEventListener('pointerleave', () => {
-    landing.style.setProperty('--spotlight-x', '50%');
-    landing.style.setProperty('--spotlight-y', '16%');
-  });
-}
-
-function initMagneticPrimaryCta() {
-  const cta = document.querySelector('.hero-section__cta-primary');
-  if (!cta || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  cta.addEventListener('pointermove', (event) => {
-    const rect = cta.getBoundingClientRect();
-    const x = event.clientX - rect.left - rect.width / 2;
-    const y = event.clientY - rect.top - rect.height / 2;
-    cta.style.transform = `translate(${x * 0.08}px, ${y * 0.12}px)`;
-  });
-
-  cta.addEventListener('pointerleave', () => {
-    cta.style.transform = 'translate(0, 0)';
-  });
-}
-
 function initSearchMockupPulse() {
   const term = document.querySelector('[data-search-demo-term]');
   const item = document.querySelector('[data-search-demo-item]');
   if (!term || !item) return;
 
-  const values = ['402', 'router', 'baza danych'];
+ const values = [
+  'document.getElementById()',
+  'querySelector()',
+  'addEventListener()',
+  'mysqli_connect()',
+  'SELECT',
+  'JOIN',
+  'INSERT INTO',
+  'pętla for',
+  'formularz HTML',
+  'flexbox'
+  ];
+
   let idx = 0;
 
   setInterval(() => {
@@ -73,24 +45,53 @@ function initSearchMockupPulse() {
   }, 2600);
 }
 
-function initFeatureCards() {
-  const cards = document.querySelectorAll('.feature-card');
-  if (!cards.length || !window.matchMedia('(pointer: coarse)').matches) return;
+function initFeatureModal() {
+  const modal = document.querySelector('[data-feature-modal]');
+  const dialog = modal?.querySelector('.hero-feature-modal__dialog');
+  const title = modal?.querySelector('[data-feature-modal-title]');
+  const text = modal?.querySelector('[data-feature-modal-text]');
+  const icon = modal?.querySelector('[data-feature-modal-icon]');
+  const cards = document.querySelectorAll('[data-feature-card]');
+
+  if (!modal || !dialog || !title || !text || !icon || !cards.length) return;
+
+  let activeTrigger = null;
+
+  const close = () => {
+    modal.hidden = true;
+    document.body.classList.remove('has-open-modal');
+    activeTrigger?.focus();
+    activeTrigger = null;
+  };
+
+  const open = (card) => {
+    const details = card.querySelector('.hero-feature-card__details');
+    activeTrigger = card;
+    title.textContent = card.dataset.featureTitle || '';
+    text.textContent = details?.textContent?.trim() || '';
+    icon.innerHTML = `<i class="${card.dataset.featureIcon || 'fas fa-circle-info'}"></i>`;
+    modal.hidden = false;
+    document.body.classList.add('has-open-modal');
+    dialog.focus();
+  };
 
   cards.forEach((card) => {
-    card.addEventListener('click', () => {
-      cards.forEach((item) => {
-        if (item !== card) item.classList.remove('is-active');
-      });
-      card.classList.toggle('is-active');
-    });
+    card.addEventListener('click', () => open(card));
+  });
+
+  modal.querySelectorAll('[data-feature-modal-close]').forEach((closeButton) => {
+    closeButton.addEventListener('click', close);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !modal.hidden) {
+      close();
+    }
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+export function initHomePage() {
   initRotatingWord();
-  initSpotlight();
-  initMagneticPrimaryCta();
   initSearchMockupPulse();
-  initFeatureCards();
-});
+  initFeatureModal();
+}

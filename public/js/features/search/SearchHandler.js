@@ -11,6 +11,7 @@ export default class SearchHandler {
     this.resultsContainer = document.querySelector('.search-page__results');
 
     this.searchTimeout = null;
+    this.topicsAbortController = null;
 
     this.init();
   }
@@ -44,7 +45,11 @@ export default class SearchHandler {
 
     // Nasłuchujemy zmian na selectach - wyszukujemy od razu
     if (this.examSelect) {
-      this.examSelect.addEventListener('change', () => resetPageAndSearch(false));
+      this.examSelect.addEventListener('change', async () => {
+        if (this.pageInput) this.pageInput.value = 1;
+        await this.loadTopicsForSelectedExam();
+        this.performSearch();
+      });
     }
 
     if (this.topicSelect) {
@@ -69,6 +74,71 @@ export default class SearchHandler {
         }
       }
     });
+  }
+
+  async loadTopicsForSelectedExam() {
+    if (!this.examSelect || !this.topicSelect) return;
+
+    const examId = this.examSelect.value;
+    this.resetTopicSelect('Wszystkie tematy', !examId);
+
+    if (!examId) return;
+
+    if (this.topicsAbortController) {
+      this.topicsAbortController.abort();
+    }
+
+    this.topicsAbortController = new AbortController();
+
+    try {
+      this.topicSelect.disabled = true;
+      this.topicSelect.classList.add('is-loading');
+
+      const baseUrl = window.zdajnikAppState?.baseUrl || '';
+      const response = await fetch(`${baseUrl}/search/topics?exam_id=${encodeURIComponent(examId)}`, {
+        headers: {
+          'Accept': 'application/json'
+        },
+        signal: this.topicsAbortController.signal
+      });
+
+      if (!response.ok) {
+        throw new Error('Topics response was not ok');
+      }
+
+      const data = await response.json();
+      const topics = Array.isArray(data.topics) ? data.topics : [];
+
+      this.resetTopicSelect('Wszystkie tematy', topics.length === 0);
+
+      topics.forEach((topic) => {
+        const option = document.createElement('option');
+        option.value = String(topic.id);
+        option.textContent = topic.name;
+        this.topicSelect.append(option);
+      });
+
+      this.topicSelect.disabled = topics.length === 0;
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('Błąd ładowania tematów:', error);
+        this.resetTopicSelect('Nie udało się załadować tematów', true);
+      }
+    } finally {
+      this.topicSelect.classList.remove('is-loading');
+    }
+  }
+
+  resetTopicSelect(label, disabled) {
+    if (!this.topicSelect) return;
+
+    this.topicSelect.innerHTML = '';
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = label;
+    this.topicSelect.append(option);
+    this.topicSelect.value = '';
+    this.topicSelect.disabled = disabled;
   }
 
   scheduleSearch(delay) {
@@ -191,16 +261,14 @@ export default class SearchHandler {
     this.resultsContainer.innerHTML = `
             <div class="stats-card__empty" role="alert">
                 <div class="stats-card__empty-icon">⚠️</div>
-                <p>Nie udało się wyszukać pytań.</p>
-                <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.6;">Odśwież stronę albo spróbuj ponownie za chwilę.</p>
+                <p>Wystąpił błąd podczas wyszukiwania.</p>
+                <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.6;">Spróbuj odświeżyć stronę lub spróbować ponownie za chwilę.</p>
             </div>
         `;
   }
 }
 
-// Inicjalizacja, jeśli jesteśmy na stronie z wyszukiwaniem
-document.addEventListener('DOMContentLoaded', () => {
-  if (document.querySelector('.search-page')) {
-    new SearchHandler();
-  }
-});
+export function initSearchPage() {
+  if (!document.querySelector('.search-page')) return null;
+  return new SearchHandler();
+}

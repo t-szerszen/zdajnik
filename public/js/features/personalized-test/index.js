@@ -27,7 +27,7 @@ import api from '../../modules/ApiClient.js';
 import { TestRunner } from '../../modules/TestRunner.js';
 import Toast from '../../components/Toast.js';
 
-class PersonalizedTest {
+export class PersonalizedTestPage {
   /**
    * Inicjalizuje kreator testu spersonalizowanego.
    * @constructs PersonalizedTest
@@ -93,7 +93,12 @@ class PersonalizedTest {
       // Walidacja kroku 1: Sprawdź, czy wybrano co najmniej jeden temat.
       const selectedSubjects = this.form.querySelectorAll('input[name="subject[]"]:checked');
       if (selectedSubjects.length === 0) {
-        Toast.show('Zaznacz co najmniej jeden temat, żeby przejść dalej.', 'info');
+        api.trackAnalyticsEvent('validation_error', {
+          source: 'personalized_test_configurator',
+          result: 'missing_topics',
+          count: 0,
+        }).catch(() => {});
+        Toast.show('Wybierz przynajmniej jedną kategorię tematyczną.', 'info');
         return false;
       }
     }
@@ -156,47 +161,47 @@ class PersonalizedTest {
     // Nadaj kontenerowi klasę, aby zapobiec "skokowi" stopki podczas ładowania.
     this.quizContainer.classList.add('test-container--active');
     // Wstrzyknij cały szkielet HTML dla widoku testu i wyników.
-	    this.quizContainer.innerHTML = `
-	      <!-- Wrapper dla widoku testu - to ten element zostanie ukryty przez TestRunner -->
-	      <div class="test-container">
-	        <div id="loading-screen" class="test-loading hidden">
-	          <div role="status" aria-live="polite">
-	          <h2>Układamy zestaw pytań...</h2><div class="spinner"></div>
-	          </div>
-	        </div>
-	        <div id="test-view" class="hidden">
-	          <div class="test-header">
-	            <div class="test-header__content-left">
-	               <div id="test-progress-text" class="test-header__progress-info">Postęp: <span>0 / 0</span></div>
-	               <h2 class="test-header__title">Własny zestaw - <span class="text-gradient">${this.examCode}</span></h2>
-	            </div>
+    this.quizContainer.innerHTML = `
+      <!-- Wrapper dla widoku testu - to ten element zostanie ukryty przez TestRunner -->
+      <div class="test-container"> 
+        <div id="loading-screen" class="test-loading hidden">
+          <div role="status" aria-live="polite">
+          <h2>Trwa przygotowywanie Twojego testu...</h2><div class="spinner"></div>
+          </div>
+        </div>
+        <div id="test-view" class="hidden">
+          <div class="test-header">
+            <div class="test-header__content-left">
+               <div id="test-progress-text" class="test-header__progress-info">Postęp: <span>0 / 0</span></div>
+               <h2 class="test-header__title">Test Spersonalizowany - <span class="text-gradient">${this.examCode}</span></h2>
+            </div>
             <div class="test-header__progress-container">
                <div id="test-progress-bar" class="test-header__progress-bar" style="width: 0%"></div>
             </div>
             <div class="test-header__meta">
                <div id="timer" class="timer">00:00</div>
-	               <button id="pause-test-btn" class="test-header__pause-btn" title="Wstrzymaj" aria-label="Wstrzymaj" aria-pressed="false">
-	                 <i class="fas fa-pause"></i>
-	               </button>
+               <button id="pause-test-btn" class="test-header__pause-btn" title="Zapauzuj egzamin" aria-label="Zapauzuj egzamin" aria-pressed="false">
+                 <i class="fas fa-pause"></i>
+               </button>
             </div>
           </div>
-	          <div id="questions-wrapper" class="questions-wrapper"></div>
-	          <div class="test-footer">
-	            <button id="finish-test-btn" class="btn btn--primary">Zakończ i zobacz podsumowanie</button>
-	          </div>
-	          <!-- Nakładka PAUZY -->
-	          <div id="pause-overlay" class="test-pause-overlay hidden">
-	            <div class="test-pause-overlay__content">
+          <div id="questions-wrapper" class="questions-wrapper"></div>
+          <div class="test-footer">
+            <button id="finish-test-btn" class="btn btn--primary">Zakończ i sprawdź test</button>
+          </div>
+          <!-- Nakładka PAUZY -->
+          <div id="pause-overlay" class="test-pause-overlay hidden">
+            <div class="test-pause-overlay__content">
               <div class="test-pause-overlay__icon">
                 <i class="fas fa-mug-hot"></i>
               </div>
-	              <h2>Pauza</h2>
-	              <p>Czas jest zatrzymany. Możesz wrócić do tego zestawu w dowolnej chwili.</p>
-	              <button id="resume-test-btn" class="btn btn--primary btn--large" aria-label="Wznów">Wznów</button>
-	            </div>
-	          </div>
-	        </div>
-	      </div>`;
+              <h2>Test Zapauzowany</h2>
+              <p>Czas został zatrzymany. Możesz spokojnie zająć się innymi sprawami i wrócić do testu, gdy będziesz gotowy.</p>
+              <button id="resume-test-btn" class="btn btn--primary btn--large" aria-label="Wznów egzamin">Wznów egzamin</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
 
     // Krok 5: Uruchom opóźniony wskaźnik ładowania.
     const loadingScreen = document.getElementById('loading-screen');
@@ -222,7 +227,6 @@ class PersonalizedTest {
         questionsWrapper: document.getElementById('questions-wrapper'),
         resultsScreen: document.getElementById('results-screen'),
         finishBtn: document.getElementById('finish-test-btn'),
-        finishBtn: document.getElementById('finish-test-btn'),
         resultsDetailsContainer: document.getElementById('results-details'),
         isFullExam: isConsideredFullExam,
         examCode: this.examCode,
@@ -234,17 +238,17 @@ class PersonalizedTest {
         Toast.show(response.data.message, 'info');
       } else if (response.status === 'gatekeeper') {
         Toast.show(response.error, 'info');
-	      } else {
-	        Toast.show(response.error || 'Nie udało się pobrać pytań. Spróbuj ponownie za chwilę.', 'error');
-	      }
-	      this.resetToConfigurator();
-	    }
+      } else {
+        Toast.show(response.error || 'Nie udało się załadować pytań.', 'error');
+      }
+      this.resetToConfigurator();
+    }
   }
 }
 
 /**
  * --- Punkt Startowy Aplikacji ---
  */
-document.addEventListener('DOMContentLoaded', () => {
-  new PersonalizedTest();
-});
+export function initPersonalizedTestPage() {
+  return new PersonalizedTestPage();
+}

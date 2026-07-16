@@ -21,7 +21,7 @@
  * @author Tobiasz Szerszeń
  */
 
-class SliderEnhancer {
+export class SliderEnhancer {
   /**
    * Inicjalizuje komponent, łącząc suwak z elementem wyjściowym.
    *
@@ -74,12 +74,6 @@ class SliderEnhancer {
   }
 }
 
-/**
- * --- Punkt Startowy Aplikacji ---
- *
- * Po pełnym załadowaniu struktury DOM strony, tworzy nową instancję
- * `SliderEnhancer`, aby aktywować komponent dla suwaka wyboru liczby pytań.
- */
-document.addEventListener('DOMContentLoaded', () => {
-  new SliderEnhancer('question-count', 'question-count-value');
-});
+export function initSliderEnhancer(sliderId = 'question-count', outputId = 'question-count-value') {
+  return new SliderEnhancer(sliderId, outputId);
+}

@@ -16,9 +16,9 @@
  */
 $noIndex = true;
 $noFollow = true;
-$pageTitle = 'Autoryzacja adresu e-mail | Examly';
-$pageDescription = 'Proces weryfikacji konta w serwisie Examly.';
-$canonicalUrl = 'https://www.examly.pl/autoryzacja-email';
+$pageTitle = 'Autoryzacja adresu e-mail | Zdajnik';
+$pageDescription = 'Proces weryfikacji konta w serwisie Zdajnik.';
+$canonicalUrl = 'https://www.zdajnik.pl/autoryzacja-email';
 
 /**
  * ========================================================================
@@ -108,12 +108,6 @@ $canonicalUrl = 'https://www.examly.pl/autoryzacja-email';
   </main>
 
   <?php include 'partials/footer.php'; ?>
-
-  <!-- Skrypt odpowiedzialny za logikę odliczania na przycisku "Wyślij ponownie" -->
-  <script type="module">
-    import CountdownButton from '<?= url('js/components/CountdownButton.js') ?>';
-    new CountdownButton('resendButton');
-  </script>
 </body>
 
 </html>

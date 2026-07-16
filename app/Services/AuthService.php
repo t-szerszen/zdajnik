@@ -6,6 +6,7 @@ use App\Core\Database;
 use App\Models\UserModel;
 use App\Models\User;
 use App\Services\Validator;
+use App\Services\AnalyticsService;
 
 /**
  * Serwis Uwierzytelniania (AuthService).
@@ -36,6 +37,9 @@ class AuthService
   /** @var User|null Obiekt aktualnie uwierzytelnionego użytkownika w ramach sesji */
   private ?User $loggedUser = null;
 
+  /** @var AnalyticsService Serwis do śledzenia zdarzeń produktu */
+  private AnalyticsService $analyticsService;
+
   /**
    * Inicjalizuje serwis autoryzacji i wymagane komponenty.
    */
@@ -44,6 +48,7 @@ class AuthService
     $this->db = Database::getInstance();
     $this->userModel = new UserModel();
     $this->validator = new Validator();
+    $this->analyticsService = new AnalyticsService();
   }
 
   /**
@@ -64,6 +69,9 @@ class AuthService
     $errors = $this->validator->validateRegistrationData($formData);
 
     if (!empty($errors)) {
+      $this->analyticsService->trackValidationError(null, 'registration', 'invalid_form', [
+        'count' => count($errors),
+      ]);
       return ['success' => false, 'errors' => $errors];
     }
 
@@ -81,10 +89,17 @@ class AuthService
     // KROK 4: Finalizacja etapu rejestracji i przygotowanie do weryfikacji e-mail
     if ($success) {
       // Zapamiętujemy ID użytkownika w sesji, aby umożliwić wysyłkę e-maila aktywacyjnego
-      $_SESSION['verify_user_id'] = $this->db->lastInsertId();
+      $newUserId = $this->db->lastInsertId();
+      $_SESSION['verify_user_id'] = $newUserId;
+
+      $this->analyticsService->trackEvent('registration', $newUserId ? (int) $newUserId : null, [
+        'auth_provider' => 'local',
+      ]);
+
       return ['success' => true, 'errors' => []];
     }
 
+    $this->analyticsService->trackValidationError(null, 'registration', 'save_failed');
     return ['success' => false, 'errors' => ['Wystąpił nieoczekiwany błąd serwera podczas rejestracji.']];
   }
 
@@ -107,6 +122,7 @@ class AuthService
     $password = $formData['password'] ?? '';
 
     if (empty($email) || empty($password)) {
+      $this->analyticsService->trackValidationError(null, 'login', 'missing_credentials');
       return ['success' => false, 'errors' => ['Podaj adres e-mail oraz hasło.']];
     }
 
@@ -118,16 +134,21 @@ class AuthService
       if (!$user->isVerified()) {
         // Blokada dostępu do czasu potwierdzenia adresu e-mail
         $_SESSION['verify_user_id'] = $user->getId();
+        $this->analyticsService->trackValidationError($user->getId(), 'login', 'email_not_verified');
         return ['success' => false, 'error_type' => 'not_verified'];
       }
 
       // KROK 4: Ustanowienie sesji zalogowanej
       $this->loggedUser = $user;
       $_SESSION['user'] = $this->loggedUser;
+
+      $this->analyticsService->trackLogin($user, $_SERVER);
+
       return ['success' => true];
     }
 
     // KROK 5: Fallback dla błędnych poświadczeń
+    $this->analyticsService->trackValidationError(null, 'login', 'invalid_credentials');
     return ['success' => false, 'errors' => ['Nieprawidłowy adres e-mail lub hasło.']];
   }
 }

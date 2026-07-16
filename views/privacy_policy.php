@@ -14,8 +14,8 @@
 /**
  * Konfiguracja komponentu head
  */
-$pageTitle = 'Polityka Prywatności | Examly';
-$pageDescription = 'Przeczytaj politykę prywatności serwisu Examly. Dowiedz się, jakie dane gromadzimy i jak je chronimy.';
+$pageTitle = 'Polityka Prywatności | Zdajnik';
+$pageDescription = 'Przeczytaj politykę prywatności serwisu Zdajnik. Dowiedz się, jakie dane gromadzimy i jak je chronimy.';
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -29,7 +29,7 @@ $pageDescription = 'Przeczytaj politykę prywatności serwisu Examly. Dowiedz si
     <div class="page-header__content">
       <h1 class="page-header__title"><span class="text-gradient">Polityka</span> Prywatności</h1>
       <p class="page-header__text">Dokument określający zasady przetwarzania i ochrony danych osobowych użytkowników
-        serwisu Examly.</p>
+        serwisu Zdajnik.</p>
     </div>
   </header>
 
@@ -47,7 +47,7 @@ $pageDescription = 'Przeczytaj politykę prywatności serwisu Examly. Dowiedz si
           <h2 class="legal-section__title"><span class="legal-section__number">§ 1</span> Postanowienia ogólne</h2>
           <div class="legal-section__body">
             <p>Niniejsza Polityka Prywatności określa zasady przetwarzania i ochrony danych osobowych użytkowników
-              korzystających z serwisu edukacyjnego <strong>Examly</strong> (dalej: „Serwis").</p>
+              korzystających z serwisu edukacyjnego <strong>Zdajnik</strong> (dalej: „Serwis").</p>
             <p>Dokument ma charakter informacyjny i określa standardy gromadzenia, wykorzystywania oraz zabezpieczania
               danych, a także opisuje prawa przysługujące osobom, których dane dotyczą, zgodnie z Rozporządzeniem
               Parlamentu Europejskiego i Rady (UE) 2016/679 z dnia 27 kwietnia 2016 r. (RODO).</p>

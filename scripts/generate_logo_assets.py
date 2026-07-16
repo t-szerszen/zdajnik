@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generuje zasoby logo dla Examly na podstawie bazowej i miniaturowej wersji logo.
+Generuje zasoby logo dla Zdajnika na podstawie bazowej i miniaturowej wersji logo.
 
 Outputs:
 - public/images/company/favicon.ico
@@ -10,9 +10,9 @@ Outputs:
 - public/images/company/apple-touch-icon.png
 - public/images/company/android-chrome-192x192.png
 - public/images/company/android-chrome-512x512.png
-- public/images/company/examly-og-1200x630.png
-- public/images/company/examly-twitter-1200x600.png
-- public/images/company/examly-logo-512.png
+- public/images/company/zdajnik-og-1200x630.png
+- public/images/company/zdajnik-twitter-1200x600.png
+- public/images/company/zdajnik-logo-512.png
 """
 
 from pathlib import Path
@@ -24,8 +24,8 @@ from PIL import Image, ImageOps
 ROOT = Path(__file__).resolve().parents[1]
 COMPANY_DIR = ROOT / "public" / "images" / "company"
 
-SMALL_SVG = COMPANY_DIR / "examly-small.svg"
-FULL_SVG = COMPANY_DIR / "examly.svg"
+SMALL_SVG = COMPANY_DIR / "zdajnik-small.svg"
+FULL_SVG = COMPANY_DIR / "zdajnik.svg"
 
 
 def svg_to_png(svg_path: Path, out_path: Path, width: int, height: int) -> None:
@@ -96,20 +96,20 @@ def main() -> None:
     make_square_icon(SMALL_SVG, COMPANY_DIR / "apple-touch-icon.png", 180)
     make_square_icon(SMALL_SVG, COMPANY_DIR / "android-chrome-192x192.png", 192)
     make_square_icon(SMALL_SVG, COMPANY_DIR / "android-chrome-512x512.png", 512)
-    make_square_icon(FULL_SVG, COMPANY_DIR / "examly-logo-512.png", 512, inset_ratio=0.08)
+    make_square_icon(FULL_SVG, COMPANY_DIR / "zdajnik-logo-512.png", 512, inset_ratio=0.08)
 
     create_favicon_ico(COMPANY_DIR / "favicon-48x48.png", COMPANY_DIR / "favicon.ico")
 
     build_social_image(
         FULL_SVG,
-        COMPANY_DIR / "examly-og-1200x630.png",
+        COMPANY_DIR / "zdajnik-og-1200x630.png",
         width=1200,
         height=630,
         bg=(255, 255, 255, 255),
     )
     build_social_image(
         FULL_SVG,
-        COMPANY_DIR / "examly-twitter-1200x600.png",
+        COMPANY_DIR / "zdajnik-twitter-1200x600.png",
         width=1200,
         height=600,
         bg=(255, 255, 255, 255),

@@ -33,13 +33,13 @@
     @description Ustawia kolor paska narzędzi przeglądarki na urządzeniach mobilnych,
                  co poprawia spójność wizualną marki i postrzeganie strony.
   -->
-  <meta name="theme-color" content="#7928CA">
-  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#10B981">
+  <meta name="color-scheme" content="light">
 
   <!-- ================================================================== -->
   <!-- 2. Kluczowe Tagi SEO (Tytuł, Opis, Kanoniczny URL) -->
   <!-- ================================================================== -->
-  <title><?= htmlspecialchars($pageTitle ?? 'Examly - Egzaminy Zawodowe INF.03') ?></title>
+  <title><?= htmlspecialchars($pageTitle ?? 'Zdajnik - Egzaminy Zawodowe INF.03') ?></title>
 
   <!-- 
     @property description
@@ -48,7 +48,7 @@
                  Powinien być zwięzły (ok. 155 znaków) i zachęcający.
   -->
   <meta name="description"
-    content="<?= htmlspecialchars($pageDescription ?? 'Pytania z arkuszy, własne zestawy i statystyki do nauki przed egzaminem zawodowym.') ?>">
+    content="<?= htmlspecialchars($pageDescription ?? 'Zdajnik to platforma edukacyjna z testami i materiałami do egzaminów zawodowych. Przygotuj się skutecznie do egzaminu INF.03.') ?>">
 
   <!-- 
     @property canonical
@@ -64,7 +64,7 @@
                  standardowe ustawienie, które pozwala na indeksowanie
                  strony i podążanie za linkami.
   -->
-  <meta name="author" content="Examly.pl">
+  <meta name="author" content="Zdajnik.pl">
   <?php
   // Ustaw domyślne wartości
   $index_directive = 'index';
@@ -88,25 +88,25 @@
   <!-- 3. Podglądy w mediach społecznościowych (Open Graph & Twitter) -->
   <!-- ================================================================== -->
   <!-- Protokół Open Graph (Facebook, LinkedIn, Pinterest, etc.) -->
-  <meta property="og:title" content="<?= htmlspecialchars($pageTitle ?? 'Examly - Egzaminy Zawodowe INF.03') ?>">
+  <meta property="og:title" content="<?= htmlspecialchars($pageTitle ?? 'Zdajnik - Egzaminy Zawodowe INF.03') ?>">
   <meta property="og:description"
-    content="<?= htmlspecialchars($pageDescription ?? 'Ćwicz na pytaniach z arkuszy i sprawdzaj swoje postępy.') ?>">
+    content="<?= htmlspecialchars($pageDescription ?? 'Zdobądź wiedzę i pewność przed egzaminem zawodowym.') ?>">
   <meta property="og:type" content="website">
   <meta property="og:url" content="<?= htmlspecialchars($canonicalUrl ?? url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
-  <meta property="og:image" content="<?= url('images/company/examly-og-1200x630.png') ?>">
+  <meta property="og:image" content="<?= url('images/company/zdajnik-og-1200x630.png') ?>">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Examly - platforma do nauki i testów egzaminów zawodowych">
+  <meta property="og:image:alt" content="Zdajnik - platforma do nauki i testów egzaminów zawodowych">
   <meta property="og:locale" content="pl_PL">
-  <meta property="og:site_name" content="Examly">
+  <meta property="og:site_name" content="Zdajnik">
 
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle ?? 'Examly - Egzaminy Zawodowe INF.03') ?>">
+  <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle ?? 'Zdajnik - Egzaminy Zawodowe INF.03') ?>">
   <meta name="twitter:description"
     content="<?= htmlspecialchars($pageDescription ?? 'Sprawdź darmowe testy i materiały edukacyjne.') ?>">
-  <meta name="twitter:site" content="@examlypl">
-  <meta name="twitter:image" content="<?= url('images/company/examly-twitter-1200x600.png') ?>">
+  <meta name="twitter:site" content="@zdajnikpl">
+  <meta name="twitter:image" content="<?= url('images/company/zdajnik-twitter-1200x600.png') ?>">
 
   <!-- ================================================================== -->
   <!-- 4. Ikony i zasoby (Assets) -->
@@ -144,7 +144,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Examly",
+      "name": "Zdajnik",
       "url": "<?= url('/') ?>",
       "potentialAction": {
         "@type": "SearchAction",
@@ -157,9 +157,9 @@
     {
       "@context": "https://schema.org",
       "@type": "Organization",
-      "name": "Examly",
+      "name": "Zdajnik",
       "url": "<?= url('/') ?>",
-      "logo": "<?= url('images/company/examly-logo-512.png') ?>"
+      "logo": "<?= url('images/company/zdajnik-logo-512.png') ?>"
     }
   </script>
 
@@ -181,11 +181,6 @@
           document.documentElement.classList.add('dark');
         } else if (savedTheme === 'light') {
           document.documentElement.classList.remove('dark');
-        } else {
-          // Jeśli brak zapisanego motywu, sprawdź preferencje systemowe
-          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
-          }
         }
       } catch (e) {
         // W razie problemów z localStorage, nic nie rób

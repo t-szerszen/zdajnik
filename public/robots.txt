@@ -1,4 +1,4 @@
-# robots.txt dla Examly
+# robots.txt dla Zdajnik
 # TODO: Jeśli sitemap ma inny adres, podmień URL poniżej.
 
 User-agent: *
@@ -15,4 +15,4 @@ Disallow: /ustawienia
 Disallow: /verify
 Disallow: /verify-email
 
-Sitemap: https://www.examly.pl/sitemap.xml
+Sitemap: https://www.zdajnik.pl/sitemap.xml

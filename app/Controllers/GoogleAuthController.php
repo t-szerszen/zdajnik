@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\UserModel;
 use App\Models\User;
+use App\Services\AnalyticsService;
 use Google\Client;
 use Google\Service\Oauth2;
 use Exception;
@@ -28,6 +29,8 @@ class GoogleAuthController extends BaseController
   /** @var UserModel Model do operacji na danych użytkownika */
   private UserModel $userModel;
 
+  private AnalyticsService $analyticsService;
+
   /**
    * Inicjalizuje kontroler i konfiguruje klienta Google OAuth.
    *
@@ -40,6 +43,7 @@ class GoogleAuthController extends BaseController
     // Zabezpieczenie przed ponownym logowaniem zalogowanych użytkowników
     $this->requireGuest();
     $this->userModel = new UserModel();
+    $this->analyticsService = new AnalyticsService();
 
     // Konfiguracja parametrów połączenia z Google Cloud Console
     $this->googleClient = new Client();
@@ -115,6 +119,7 @@ class GoogleAuthController extends BaseController
 
       // KROK 4: Lokalna integracja użytkownika (Model-level Sync)
       // Metoda findOrCreateGoogleUser zapewnia, że konto zostanie utworzone lub powiązane (linkage).
+      $existingUser = $this->userModel->getUserByEmail($email);
       $user = $this->userModel->findOrCreateGoogleUser($googleId, $email, $firstName, $lastName);
 
       if ($user instanceof User) {
@@ -122,6 +127,17 @@ class GoogleAuthController extends BaseController
         session_regenerate_id(true);
         $_SESSION['user'] = $user;
         unset($_SESSION['verify_user_id']);
+
+        try {
+          if ($existingUser === null) {
+            $this->analyticsService->trackEvent('registration', $user->getId(), [
+              'auth_provider' => 'google',
+            ]);
+          }
+          $this->analyticsService->trackLogin($user, $_SERVER);
+        } catch (\Throwable $e) {
+          // Analityka nie może przerwać logowania OAuth.
+        }
 
         // KROK 6: Przekierowanie do wnętrza aplikacji
         header('Location: ' . url('/'));

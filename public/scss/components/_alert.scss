@@ -1,0 +1,94 @@
+
+// Komponent .alert do wyświetlania wiadomości i błędów
+.alert {
+  width: auto;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border-left: 5px solid;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+
+  // Modyfikator błędu
+  &--error {
+    background-color: var(--error-bg);
+    border-color: var(--error);
+    color: var(--error-text);
+
+    .dark & {
+      // Specjalne style dla motywu ciemnego
+      color: var(--error-text);
+    }
+  }
+
+  // Modyfikator sukcesu
+  &--success {
+    background-color: var(--success-bg);
+    border-color: var(--success);
+    color: var(--success-text);
+
+    .dark & {
+      // Specjalne style dla motywu ciemnego
+      color: var(--success-text);
+    }
+  }
+
+  // Modyfikator informacyjny
+  &--info {
+    background-color: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--text);
+
+    .dark & {
+      // Style dla motywu ciemnego
+      background-color: rgba(var(--accent-rgb), 0.12);
+      border-color: var(--accent);
+      color: var(--text);
+    }
+  }
+
+  // Element: lista błędów
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__item {
+    margin-bottom: 0.25rem;
+  }
+
+  // Element: linki wewnątrz alertów
+  a {
+    color: inherit;
+    text-decoration: underline;
+    font-weight: 600;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  // Ikony Font Awesome wewnątrz alertów
+  i {
+    margin-right: 0.5rem;
+    color: inherit;
+  }
+
+  // Modyfikator: alert bez dolnego marginesu (np. w form-card)
+  &--no-margin-bottom {
+    margin-bottom: 0;
+  }
+
+  // Modyfikator ostrzeżenia
+  &--warning {
+    background-color: var(--warning-bg);
+    border-color: var(--warning);
+    color: var(--warning-text);
+
+    .dark & {
+      background-color: var(--warning-bg);
+      border-color: var(--warning);
+      color: var(--warning-text);
+    }
+  }
+}

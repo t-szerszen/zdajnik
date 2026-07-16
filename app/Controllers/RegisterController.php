@@ -166,7 +166,7 @@ class RegisterController extends BaseController
     if (!isset($_SESSION['verify_user_id'])) {
       $_SESSION['flash_message'] = [
         'type' => 'error',
-        'text' => 'Sesja wygasła. Zaloguj się albo rozpocznij rejestrację jeszcze raz.',
+        'text' => 'Sesja wygasła. Zaloguj się lub zarejestruj ponownie.',
       ];
       header('Location: ' . url('logowanie'));
       exit();
@@ -174,7 +174,7 @@ class RegisterController extends BaseController
 
     // KROK 2: Kontrola częstotliwości wysyłek (Cooldown 60s)
     if (isset($_SESSION['email_sent']) && time() - $_SESSION['email_sent'] < 60) {
-      $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Poczekaj minutę przed ponowną wysyłką e-maila.'];
+      $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Kolejny e-mail można wysłać dopiero po minucie.'];
       header('Location: ' . url('autoryzacja-email'));
       exit();
     }
@@ -182,7 +182,7 @@ class RegisterController extends BaseController
     $user = $this->userModel->getUserById($_SESSION['verify_user_id']);
     if (!$user || $user->isVerified()) {
       unset($_SESSION['verify_user_id']);
-      $_SESSION['flash_message'] = ['type' => 'info', 'text' => 'Twoje konto jest już aktywne. Zaloguj się, aby rozpocząć naukę.'];
+      $_SESSION['flash_message'] = ['type' => 'info', 'text' => 'Twoje konto jest już aktywne. Możesz się zalogować.'];
       header('Location: ' . url('logowanie'));
       exit();
     }
@@ -193,24 +193,18 @@ class RegisterController extends BaseController
     $verifyLink = url("weryfikacja?token=$token");
 
     // KROK 4: Składanie treści i wysyłka e-maila
-    $body =
-      "<p>Witaj {$user->getFullName()},</p>" .
-      '<p>Dziękujemy za rejestrację w Examly. Kliknij poniższy link, aby aktywować konto:</p>' .
-      "<p><a href='$verifyLink'>$verifyLink</a></p>" .
-      '<p>Link jest ważny przez 24 godziny. Jeśli nie Ty zakładałeś konto, zignoruj tę wiadomość.</p>';
-
-    if ($this->mailer->send($user->getEmail(), 'Aktywuj swoje konto w Examly', $body)) {
+    if ($this->mailer->sendAccountVerificationEmail($user->getEmail(), $user->getFullName(), $verifyLink)) {
       // Sukces wysyłki
       $_SESSION['email_sent'] = time();
       $_SESSION['flash_message'] = [
         'type' => 'success',
-        'text' => "Wysłaliśmy nowy link aktywacyjny na adres {$user->getEmail()}.",
+        'text' => "Nowa wiadomość weryfikacyjna została wysłana na adres {$user->getEmail()}.",
       ];
     } else {
       // Porażka wysyłki (problem z serwerem SMTP/API)
       $_SESSION['flash_message'] = [
         'type' => 'error',
-        'text' => 'Nie udało się wysłać e-maila. Spróbuj ponownie za chwilę.',
+        'text' => 'Wystąpił błąd podczas wysyłania e-maila. Spróbuj ponownie później.',
       ];
     }
 

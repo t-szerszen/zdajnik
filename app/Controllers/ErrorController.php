@@ -38,7 +38,7 @@ class ErrorController extends BaseController
       header('Content-Type: application/json; charset=utf-8');
       echo json_encode([
         'success' => false,
-        'message' => $customMessage ?? ($code === 404 ? 'Nie znaleźliśmy tego adresu API.' : 'Wystąpił błąd po stronie serwera.')
+        'message' => $customMessage ?? ($code === 404 ? 'Endpoint not found' : 'Internal Server Error')
       ]);
       exit;
     }
@@ -85,7 +85,7 @@ class ErrorController extends BaseController
       'errorTitle' => $errorConfig['title'],
       'errorMessage' => $errorConfig['message'],
       'errorIcon' => $errorConfig['icon'],
-      'pageTitle' => "Błąd $code | Examly"
+      'pageTitle' => "Błąd $code | Zdajnik"
     ];
 
     $this->renderView('errors/index', $data);

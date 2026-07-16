@@ -60,12 +60,14 @@ class VerificationController extends BaseController
     // KROK 1: Walidacja obecności i poprawności tokenu w bazie danych
     $token = $_GET['token'] ?? null;
     if (!$token) {
+      $this->getAnalyticsService()->trackValidationError(null, 'email_verification', 'missing_token');
       $this->renderErrorView('Brak tokenu weryfikacyjnego w żądaniu.');
       return;
     }
 
     $tokenRecord = $this->tokenService->getTokenRecord($token);
     if (!$tokenRecord) {
+      $this->getAnalyticsService()->trackValidationError(null, 'email_verification', 'invalid_or_expired_token');
       $this->renderErrorView('Podany token jest nieprawidłowy, został już wykorzystany lub wygasł.');
       return;
     }
@@ -90,6 +92,10 @@ class VerificationController extends BaseController
     if ($success) {
       // KROK 4: Sprzątanie zużytych tokenów (bezpieczeństwo One-Time Token)
       $this->tokenService->deleteTokensForUserByType($userId, $tokenType);
+      $this->getAnalyticsService()->trackEmailVerified(
+        (int) $userId,
+        $tokenType === 'email_change' ? 'email_change_link' : 'registration_verification'
+      );
 
       // KROK 5: Automatyczne logowanie użytkownika po pomyślnej weryfikacji
       $user = $this->userModel->getUserById($userId);
@@ -117,6 +123,11 @@ class VerificationController extends BaseController
       header('Location: ' . url('logowanie'));
       exit();
     } else {
+      $this->getAnalyticsService()->trackValidationError(
+        (int) $userId,
+        'email_verification',
+        'verification_failed'
+      );
       $this->renderErrorView('Wystąpił nieoczekiwany błąd serwera podczas przetwarzania procesu weryfikacji.');
     }
   }

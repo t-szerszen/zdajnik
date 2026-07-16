@@ -4,11 +4,13 @@
  * @description Szczegóły egzaminu i lista przypisanych pytań.
  */
 
-$pageTitle = $pageTitle ?? 'Egzamin | Panel administracyjny | Examly';
-$pageDescription = $pageDescription ?? 'Szczegóły egzaminu w panelu CMS Examly.';
+$pageTitle = $pageTitle ?? 'Egzamin | Panel administracyjny | Zdajnik';
+$pageDescription = $pageDescription ?? 'Szczegóły egzaminu w panelu CMS Zdajnik.';
 $exam = $exam ?? [];
 $questions = $questions ?? [];
+$topics = $topics ?? [];
 $examId = (int) ($exam['id'] ?? 0);
+$isActive = (int) ($exam['is_active'] ?? 0) === 1;
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -30,12 +32,7 @@ $examId = (int) ($exam['id'] ?? 0);
         <?php $activeSection = 'exams'; include __DIR__ . '/partials/navigation.php'; ?>
 
         <div class="admin-content">
-          <?php if (isset($_SESSION['flash_message'])): ?>
-            <div class="alert alert--<?= htmlspecialchars($_SESSION['flash_message']['type']) ?>">
-              <?= htmlspecialchars((string) ($_SESSION['flash_message']['text'] ?? '')) ?>
-            </div>
-            <?php unset($_SESSION['flash_message']); ?>
-          <?php endif; ?>
+          <?php include __DIR__ . '/partials/flash.php'; ?>
 
           <div class="admin-grid admin-grid--compact">
             <div class="stats-card admin-tile admin-tile--static">
@@ -60,7 +57,7 @@ $examId = (int) ($exam['id'] ?? 0);
               <div class="admin-tile__icon"><i class="fas fa-toggle-on"></i></div>
               <div class="admin-tile__content">
                 <span class="admin-tile__label">Status</span>
-                <strong class="admin-tile__value"><?= ((int) ($exam['is_active'] ?? 1) === 1) ? 'Aktywny' : 'Nieaktywny' ?></strong>
+                <strong class="admin-tile__value"><?= $isActive ? 'Aktywny' : 'Nieaktywny' ?></strong>
                 <span class="admin-tile__meta">
                   Utworzono: <?= !empty($exam['created_at']) ? htmlspecialchars(date('d.m.Y H:i', strtotime((string) $exam['created_at']))) : 'Brak' ?>
                 </span>
@@ -82,15 +79,21 @@ $examId = (int) ($exam['id'] ?? 0);
           <div class="stats-card">
             <div class="stats-card__header">
               <div class="stats-card__title">
-                <i class="fas fa-info-circle" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
+                <i class="fas fa-info-circle"></i>
                 <span>Opis egzaminu</span>
               </div>
-              <div class="stats-card__header-actions" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+              <div class="admin-actions">
                 <a href="<?= url('admin/egzaminy/' . $examId . '/edytuj') ?>" class="btn btn--secondary btn--sm">Edytuj</a>
-                <?php if ((int) ($exam['is_active'] ?? 1) === 1): ?>
-                  <form method="POST" action="<?= url('admin/egzaminy/' . $examId . '/dezaktywuj') ?>" style="display:inline;">
+                <a href="<?= url('admin/pytania/dodaj?exam_id=' . $examId) ?>" class="btn btn--primary btn--sm">Dodaj pytanie</a>
+                <?php if ($isActive): ?>
+                  <form method="POST" action="<?= url('admin/egzaminy/' . $examId . '/dezaktywuj') ?>">
                     <?= csrf_field() ?>
                     <button type="submit" class="btn btn--danger btn--sm" onclick="return confirm('Na pewno dezaktywować ten egzamin?')">Dezaktywuj</button>
+                  </form>
+                <?php else: ?>
+                  <form method="POST" action="<?= url('admin/egzaminy/' . $examId . '/aktywuj') ?>">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn--primary btn--sm">Aktywuj</button>
                   </form>
                 <?php endif; ?>
                 <a href="<?= url('admin/egzaminy') ?>" class="btn btn--secondary btn--sm">Wróć do listy</a>
@@ -105,8 +108,31 @@ $examId = (int) ($exam['id'] ?? 0);
           <div class="stats-card">
             <div class="stats-card__header">
               <div class="stats-card__title">
-                <i class="fas fa-list-check" style="color: var(--accent); background: rgba(var(--accent-rgb), 0.1);"></i>
-                <span>Pytania przypisane do egzaminu</span>
+                <i class="fas fa-layer-group"></i>
+                <span>Tematy egzaminu</span>
+              </div>
+              <span class="badge badge--secondary">Razem: <?= count($topics) ?></span>
+            </div>
+            <div class="admin-topic-list">
+              <?php if (empty($topics)): ?>
+                <div class="admin-empty">Egzamin nie ma przypisanych tematów.</div>
+              <?php else: ?>
+                <?php foreach ($topics as $topic): ?>
+                  <a class="admin-topic-list__row" href="<?= url('admin/pytania?exam_id=' . $examId . '&topic_id=' . (int) $topic['id']) ?>">
+                    <span class="admin-truncate"><strong><?= htmlspecialchars((string) $topic['name']) ?></strong></span>
+                    <span class="admin-status admin-status--<?= (int) ($topic['is_active'] ?? 0) === 1 ? 'success' : 'danger' ?>"><?= (int) ($topic['is_active'] ?? 0) === 1 ? 'Aktywny' : 'Nieaktywny' ?></span>
+                    <span><?= (int) ($topic['questions_count'] ?? 0) ?> pytań</span>
+                  </a>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </div>
+          </div>
+
+          <div class="stats-card">
+            <div class="stats-card__header">
+              <div class="stats-card__title">
+                <i class="fas fa-list-check"></i>
+                <span>Ostatnio edytowane pytania</span>
               </div>
               <div class="stats-card__header-actions">
                 <span class="badge badge--secondary">Razem: <?= count($questions) ?></span>
@@ -118,7 +144,7 @@ $examId = (int) ($exam['id'] ?? 0);
                 <div class="admin-empty">Ten egzamin nie ma jeszcze przypisanych pytań.</div>
               <?php else: ?>
                 <?php foreach ($questions as $question): ?>
-                  <div class="admin-table__row admin-table__row--stacked">
+                  <a class="admin-table__row admin-table__row--stacked admin-table__row--link" href="<?= url('admin/pytania/' . (int) $question['id']) ?>">
                     <div>
                       <strong>#<?= (int) $question['id'] ?></strong>
                       <div class="admin-table__muted">
@@ -144,7 +170,7 @@ $examId = (int) ($exam['id'] ?? 0);
                         <span><?= !empty($question['created_at']) ? htmlspecialchars(date('d.m.Y H:i', strtotime((string) $question['created_at']))) : 'Brak' ?></span>
                       </div>
                     </div>
-                  </div>
+                  </a>
                 <?php endforeach; ?>
               <?php endif; ?>
             </div>

@@ -372,6 +372,18 @@ class AdminQuestionService
         return ['success' => false, 'errors' => ['general' => 'Nie udało się zapisać wpisu audytowego.'], 'data' => $data];
       }
 
+      if (
+        (int) ($current['is_active'] ?? 1) !== (int) $data['is_active']
+        && !(
+          (int) $data['is_active'] === 1
+            ? $this->auditService->logQuestionActivated($adminUserId, $questionId, ['is_active' => 0], ['is_active' => 1])
+            : $this->auditService->logQuestionDeactivated($adminUserId, $questionId, ['is_active' => 1], ['is_active' => 0])
+        )
+      ) {
+        $db->rollBack();
+        return ['success' => false, 'errors' => ['general' => 'Nie udało się zapisać audytu zmiany statusu.'], 'data' => $data];
+      }
+
       $db->commit();
       return ['success' => true];
     } catch (\Throwable $e) {
@@ -411,8 +423,13 @@ class AdminQuestionService
 
       if (!empty($versionIds)) {
         $placeholders = implode(',', array_fill(0, count($versionIds), '?'));
-        $db->execute("UPDATE question_versions SET is_active = 0, updated_at = NOW() WHERE id IN ($placeholders)", $versionIds);
-        $db->execute("UPDATE answers SET is_active = 0, updated_at = NOW() WHERE question_version_id IN ($placeholders)", $versionIds);
+        if (
+          !$db->execute("UPDATE question_versions SET is_active = 0, updated_at = NOW() WHERE id IN ($placeholders)", $versionIds)
+          || !$db->execute("UPDATE answers SET is_active = 0, updated_at = NOW() WHERE question_version_id IN ($placeholders)", $versionIds)
+        ) {
+          $db->rollBack();
+          return ['success' => false, 'errors' => ['general' => 'Nie udało się zsynchronizować wersji i odpowiedzi pytania.']];
+        }
       }
 
       $oldValue = ['is_active' => 1];
@@ -428,6 +445,74 @@ class AdminQuestionService
       $db->rollBack();
       error_log('[AdminQuestionService] deactivateQuestion: ' . $e->getMessage());
       return ['success' => false, 'errors' => ['general' => 'Wystąpił nieoczekiwany błąd podczas dezaktywacji.']];
+    }
+  }
+
+  /**
+   * Aktywuje pytanie, jego najnowszą wersję i odpowiedzi tej wersji.
+   */
+  public function activateQuestion(int $questionId, int $adminUserId): array
+  {
+    $current = $this->getQuestionById($questionId);
+    if (!$current) {
+      return ['success' => false, 'errors' => ['general' => 'Pytanie nie istnieje.']];
+    }
+
+    if ((int) ($current['is_active'] ?? 0) === 1) {
+      return ['success' => false, 'errors' => ['general' => 'Pytanie jest już aktywne.']];
+    }
+
+    $latestVersionId = (int) ($current['current_version']['id'] ?? 0);
+    if ($latestVersionId <= 0) {
+      return ['success' => false, 'errors' => ['general' => 'Pytanie nie ma wersji, którą można aktywować.']];
+    }
+
+    if (!$this->db->beginTransaction()) {
+      return ['success' => false, 'errors' => ['general' => 'Nie udało się rozpocząć transakcji.']];
+    }
+
+    try {
+      if (!$this->db->execute(
+        "UPDATE questions SET is_active = 1, updated_at = NOW() WHERE id = ? AND deleted_at IS NULL",
+        [$questionId]
+      )) {
+        $this->db->rollBack();
+        return ['success' => false, 'errors' => ['general' => 'Nie udało się aktywować pytania.']];
+      }
+
+      if (
+        !$this->db->execute(
+          "UPDATE question_versions
+           SET is_active = CASE WHEN id = ? THEN 1 ELSE 0 END, updated_at = NOW()
+           WHERE question_id = ? AND deleted_at IS NULL",
+          [$latestVersionId, $questionId]
+        )
+        || !$this->db->execute(
+          "UPDATE answers SET is_active = 1, updated_at = NOW()
+           WHERE question_version_id = ? AND deleted_at IS NULL",
+          [$latestVersionId]
+        )
+      ) {
+        $this->db->rollBack();
+        return ['success' => false, 'errors' => ['general' => 'Nie udało się zsynchronizować wersji i odpowiedzi pytania.']];
+      }
+
+      if (!$this->auditService->logQuestionActivated(
+        $adminUserId,
+        $questionId,
+        ['is_active' => 0],
+        ['is_active' => 1]
+      )) {
+        $this->db->rollBack();
+        return ['success' => false, 'errors' => ['general' => 'Nie udało się zapisać wpisu audytowego.']];
+      }
+
+      $this->db->commit();
+      return ['success' => true];
+    } catch (\Throwable $e) {
+      $this->db->rollBack();
+      error_log('[AdminQuestionService] activateQuestion: ' . $e->getMessage());
+      return ['success' => false, 'errors' => ['general' => 'Wystąpił nieoczekiwany błąd podczas aktywacji.']];
     }
   }
 
@@ -508,6 +593,24 @@ class AdminQuestionService
             ORDER BY name ASC";
 
     return $this->db->fetchAll($sql, [$examId]);
+  }
+
+  /**
+   * @return array<int, array<string, mixed>>
+   */
+  public function getTopicsForFilter(?int $examId = null): array
+  {
+    $where = $examId !== null && $examId > 0 ? ' AND t.exam_type_id = ?' : '';
+    $params = $where !== '' ? [$examId] : [];
+
+    return $this->db->fetchAll(
+      "SELECT t.id, t.name, t.exam_type_id, et.code as exam_code
+       FROM topics t
+       JOIN exam_types et ON et.id = t.exam_type_id
+       WHERE t.deleted_at IS NULL AND et.deleted_at IS NULL $where
+       ORDER BY et.code ASC, t.name ASC",
+      $params
+    );
   }
 
   /**
@@ -770,6 +873,11 @@ class AdminQuestionService
     if (!empty($filters['exam_id']) && ctype_digit((string) $filters['exam_id'])) {
       $where .= ' AND q.exam_type_id = ?';
       $params[] = (int) $filters['exam_id'];
+    }
+
+    if (!empty($filters['topic_id']) && ctype_digit((string) $filters['topic_id'])) {
+      $where .= ' AND q.topic_id = ?';
+      $params[] = (int) $filters['topic_id'];
     }
 
     if (!empty($filters['status'])) {

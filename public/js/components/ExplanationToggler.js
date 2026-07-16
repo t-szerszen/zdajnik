@@ -1,16 +1,19 @@
+import api from '../modules/ApiClient.js';
+
 class ExplanationToggler {
   /**
    * Inicjalizuje instancję i automatycznie nasłuchuje na gotowość DOM.
    * @param {string} selector - Selektor CSS dla przycisków (domyślnie .toggle-explanation-btn)
    */
-  constructor(selector = '.toggle-explanation-btn') {
+  constructor(selector = '.toggle-explanation-btn', options = {}) {
     this.selector = selector;
 
-    // Automatyczna inicjalizacja po załadowaniu DOM
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.init());
-    } else {
-      this.init();
+    if (options.autoInit === true) {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => this.init(), { once: true });
+      } else {
+        this.init();
+      }
     }
   }
 
@@ -51,7 +54,29 @@ class ExplanationToggler {
       e.preventDefault();
       const isVisible = content.classList.toggle('quiz-card__explanation--visible');
       this.updateButtonState(button, isVisible);
+
+      if (isVisible && button.dataset.explanationTracked !== 'true') {
+        button.dataset.explanationTracked = 'true';
+        api.trackAnalyticsEvent('explanation_viewed', {
+          exam_id: this.toPositiveInt(button.dataset.examId),
+          question_id: this.toPositiveInt(button.dataset.questionId),
+          topic_id: this.toPositiveInt(button.dataset.topicId),
+          test_type: button.dataset.testType || null,
+          source: button.dataset.source || 'question_explanation',
+          result: button.dataset.isCorrect === 'true'
+            ? 'correct'
+            : (button.dataset.isCorrect === 'false' ? 'incorrect' : 'unknown'),
+          is_correct: button.dataset.isCorrect === 'true'
+            ? 1
+            : (button.dataset.isCorrect === 'false' ? 0 : null),
+        }).catch(() => {});
+      }
     });
+  }
+
+  toPositiveInt(value) {
+    const number = Number.parseInt(value, 10);
+    return Number.isInteger(number) && number > 0 ? number : null;
   }
 
   /**
@@ -69,9 +94,12 @@ class ExplanationToggler {
   }
 }
 
-/**
- * Eksportujemy gotową instancję (Singleton), podobnie jak w Toast.js.
- * Dzięki temu po zaimportowaniu skrypt automatycznie zacznie działać
- * (nasłuchując na DOMContentLoaded).
- */
-export default new ExplanationToggler();
+const explanationToggler = new ExplanationToggler();
+
+export function initExplanationToggler(selector = '.toggle-explanation-btn') {
+  explanationToggler.selector = selector;
+  explanationToggler.init();
+  return explanationToggler;
+}
+
+export default explanationToggler;

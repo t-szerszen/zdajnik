@@ -1,0 +1,201 @@
+
+.button,
+.btn {
+  display: inline-block;
+  padding: 0.85rem 2rem; // Zwiększony padding dla lepszego wyglądu
+  border: none;
+  border-radius: 50px; // Zaokrąglone rogi dla nowoczesnego feelingu
+  font-size: 1rem;
+  font-weight: var(--font-weight-bold); // Pogrubiona czcionka
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition-base); // Płynniejsze przejścia
+
+  // Modyfikator: Przycisk główny (domyślny)
+  &--primary {
+    text-decoration: none;
+    background: var(--accent-gradient);
+    color: var(--color-white);
+    box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.25);
+
+    &:visited {
+      color: var(--color-white);
+    }
+
+    &:hover {
+      color: var(--color-white);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(var(--accent-rgb), 0.35);
+      filter: brightness(1.05);
+    }
+
+    &:active {
+      transform: translateY(1px);
+      filter: brightness(0.95);
+      box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.2);
+    }
+  }
+
+  // Przycisk drugorzędny
+  &--secondary {
+    text-decoration: none;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+
+    &:hover {
+      background-color: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-contrast);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(var(--accent-rgb), 0.25);
+    }
+
+    &:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+  }
+
+  &--large {
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+  }
+
+  &--sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  &--danger {
+    background: var(--error);
+    color: var(--color-white);
+
+    &:hover {
+      background: var(--error-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(220, 38, 38, 0.25);
+    }
+
+    &:active {
+      transform: translateY(1px);
+      filter: brightness(0.9);
+    }
+  }
+
+  &:disabled,
+  &[disabled] {
+    background-color: var(--disabled-bg);
+    // Wyłącz gradient na wyłączonych przyciskach
+    background-image: none;
+    // Ciemny tekst dla wariantów secondary/danger (kontrast WCAG)
+    color: var(--disabled-text);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    opacity: 0.75;
+  }
+
+  // Wyłączony przycisk primary: szare tło + biały napis
+  // (nawiązuje do języka wizualnego gradientów - zachowuje kolor tekstu)
+  &--primary:disabled,
+  &--primary[disabled] {
+    background-color: var(--disabled-primary-bg);
+    background-image: none;
+    color: var(--color-white);
+    opacity: 1;
+  }
+
+  &--full-width {
+    width: 100%;
+    display: block;
+  }
+
+  &--icon-only {
+    padding: 0;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.1rem;
+
+    &.btn--sm {
+      width: 38px;
+      height: 38px;
+      font-size: 0.9rem;
+    }
+  }
+
+  // Zapewniamy, że motyw ciemny również poprawnie obsłuży stan disabled
+  .dark &:disabled,
+  .dark &[disabled] {
+    background-color: var(--disabled-bg);
+    color: var(--disabled-text);
+  }
+
+  // Ikony wewnątrz przycisków — domyślny margines
+  i {
+    margin-right: 0.5rem;
+
+    &:last-child:not(:first-child) {
+      margin-right: 0;
+      margin-left: 0.5rem;
+    }
+
+    &:only-child {
+      margin-right: 0;
+    }
+  }
+
+  // Kompaktowy przycisk — zmniejszony padding (używany w listach kart statystyk)
+  &--compact {
+    padding: 0.4rem 1rem;
+  }
+
+  // Przycisk z ramką (outline)
+  &--outline {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+
+    &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(var(--accent-rgb), 0.05);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.button--small {
+  @extend .btn--sm;
+}
+
+.button--full-width {
+  @extend .btn--full-width;
+}
+
+.button--ghost {
+  @extend .btn--outline;
+}
+
+.btn--ghost {
+  @extend .btn--outline;
+}
+
+.button--disabled,
+.button.is-disabled,
+.btn.is-disabled {
+  background-color: var(--disabled-bg);
+  background-image: none;
+  color: var(--disabled-text);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  opacity: 0.75;
+  pointer-events: none;
+}

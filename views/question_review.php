@@ -15,7 +15,7 @@
 /**
  * Konfiguracja komponentu head
  */
-$pageTitle = 'Pytanie ID: ' . $question['id'] . ' | Examly';
+$pageTitle = 'Pytanie ID: ' . $question['id'] . ' | Zdajnik';
 $pageDescription = mb_strimwidth(strip_tags($question['question_text']), 0, 155, '...');
 
 // Schema.org dla pytania (Quiz/Question)
@@ -50,8 +50,9 @@ $extraSchemas = [
   <main class="main-content-wrapper">
   <header class="page-header">
     <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient">Pytanie</span> i odpowiedź</h1>
-      <p class="page-header__text">Sprawdź poprawną odpowiedź i przeczytaj wyjaśnienie.</p>
+      <h1 class="page-header__title"><span class="text-gradient">Podgląd</span> pytania</h1>
+      <p class="page-header__text">Indywidualna weryfikacja zagadnienia. Przeanalizuj odpowiedź oraz zapoznaj się ze
+        szczegółowym wyjaśnieniem, aby dogłębnie zrozumieć omawiany problem.</p>
     </div>
   </header>
 
@@ -139,12 +140,6 @@ $extraSchemas = [
   </main>
 
   <?php include 'partials/footer.php'; ?>
-
-  <script type="module" src="<?= url('js/components/ExplanationToggler.js') ?>"></script>
-  <script type="module">
-    import saveToggle from '<?= url('js/components/SaveToggleHandler.js') ?>';
-    saveToggle.init('.review-page__main');
-  </script>
 </body>
 
 </html>

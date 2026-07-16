@@ -303,8 +303,8 @@ class StatisticsService
       $exam['score'] = $this->formatScore((float) $exam['score_raw']);
 
       if ($exam['test_type'] === 'full_exam') {
-        $exam['display_name'] = "Próba egzaminacyjna";
-        $exam['badge_text'] = "Próba egzaminacyjna";
+        $exam['display_name'] = "Pełny test";
+        $exam['badge_text'] = "Pełny test";
       } else {
         // Pobierz tematy dla personalizowanego testu
         $topicsSql = "SELECT t.name FROM topics t 
@@ -315,11 +315,11 @@ class StatisticsService
 
         // Sprawdź czy test obejmuje wszystkie tematy kategorii
         if (count($topicNames) >= $totalTopicsInExam && $totalTopicsInExam > 0) {
-          $exam['display_name'] = "Własny zestaw (" . $exam['exam_code'] . ")";
+          $exam['display_name'] = "Personalizowany test (" . $exam['exam_code'] . ")";
         } else {
-          $exam['display_name'] = "Zestaw: " . implode(', ', $topicNames);
+          $exam['display_name'] = "Test z " . implode(', ', $topicNames);
         }
-        $exam['badge_text'] = "Własny zestaw";
+        $exam['badge_text'] = "Personalizowany test";
       }
     }
 
@@ -530,17 +530,20 @@ class StatisticsService
     }
 
     // 3. Pobierz pytania użyte w tej próbie
-    $sqlQuestions = "SELECT 
-                                qv.id as version_id, 
+    // Sortujemy po position - kolejności zapisanej przy tworzeniu próby, odzwierciedlającej
+    // faktyczną, jednorazowo wylosowaną kolejność prezentacji pytań (Attempt::createAttempt()).
+    // answered_at jako fallback dla starszych prób sprzed dodania kolumny position.
+    $sqlQuestions = "SELECT
+                                qv.id as version_id,
                                 qv.question_id,
-                                qv.question_text, 
-                                qv.explanation, 
+                                qv.question_text,
+                                qv.explanation,
                                 qv.image_name
                              FROM attempt_answers aa
                              JOIN question_versions qv ON aa.question_version_id = qv.id
                              WHERE aa.attempt_id = ?
-                             GROUP BY qv.id, aa.attempt_id, aa.question_version_id, aa.answered_at
-                             ORDER BY aa.answered_at ASC";
+                             GROUP BY qv.id, aa.attempt_id, aa.question_version_id, aa.position, aa.answered_at
+                             ORDER BY aa.position ASC, aa.answered_at ASC";
 
     $questions = $this->db->fetchAll($sqlQuestions, [$attemptId]);
 

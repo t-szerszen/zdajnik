@@ -1,7 +1,7 @@
 /**
  * Zarządza zmianą motywu (jasny/ciemny) i zapisuje wybór użytkownika.
  */
-class ThemeSwitcher {
+export class ThemeSwitcher {
   constructor(checkboxId) {
     this.checkbox = document.getElementById(checkboxId);
 
@@ -40,9 +40,6 @@ class ThemeSwitcher {
   }
 }
 
-// Skrypty importowane jako 'module' (<script type="module">) są zawsze odraczane (defer),
-// co oznacza, że parser DOM już skończył przepracowywać cały dokument HTML.
-// Zabezpieczenia takie jak asynchronicznie zawiązane zdarzenie 'DOMContentLoaded' zazwyczaj
-// powodują usterki wyścigów czasowych na szybszych sieciach i na stronach statycznych.
-const initThemeSwitcher = () => new ThemeSwitcher('theme-toggle-checkbox');
-initThemeSwitcher();
+export function initThemeSwitcher(checkboxId = 'theme-toggle-checkbox') {
+  return new ThemeSwitcher(checkboxId);
+}

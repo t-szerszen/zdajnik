@@ -17,7 +17,7 @@
  * Konfiguracja komponentu head
  */
 $score = round(($exam['meta']['correct_count'] / $exam['meta']['total_questions']) * 100);
-$pageTitle = 'Wynik: ' . $score . '% | Egzamin z ' . date('d.m.Y', strtotime($exam['meta']['completed_at'])) . ' | Examly';
+$pageTitle = 'Wynik: ' . $score . '% | Egzamin z ' . date('d.m.Y', strtotime($exam['meta']['completed_at'])) . ' | Zdajnik';
 $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego wynikiem ' . $score . '%. Przejrzyj swoje błędy i przygotuj się lepiej.';
 ?>
 <!DOCTYPE html>
@@ -30,8 +30,9 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
   <main class="main-content-wrapper">
   <header class="page-header" id="top">
     <div class="page-header__content">
-      <h1 class="page-header__title"><span class="text-gradient">Wynik</span> próby</h1>
-      <p class="page-header__text">Sprawdź odpowiedzi, przeczytaj wyjaśnienia i zapisz pytania, do których chcesz wrócić.</p>
+      <h1 class="page-header__title"><span class="text-gradient">Podgląd</span> egzaminu</h1>
+      <p class="page-header__text">Kompleksowa analiza rozwiązanego testu. Przeanalizuj swoje odpowiedzi, zapoznaj się z
+        opracowaniami w ramach wiedzy eksperckiej i skutecznie eliminuj powtarzające się błędy.</p>
     </div>
   </header>
 
@@ -207,12 +208,6 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
   </main>
 
   <?php include 'partials/footer.php'; ?>
-
-  <script type="module" src="<?= url('js/components/ExplanationToggler.js') ?>"></script>
-  <script type="module">
-    import saveToggle from '<?= url('js/components/SaveToggleHandler.js') ?>';
-    saveToggle.init('.review-page__questions');
-  </script>
 </body>
 
 </html>

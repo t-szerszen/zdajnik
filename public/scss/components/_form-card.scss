@@ -1,0 +1,458 @@
+@use '../core/mixins' as *;
+
+.form-field,
+.search-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: var(--transition-base);
+
+  &--full {
+    grid-column: 1 / -1;
+
+    &:focus-within {
+      transform: translateY(-2px);
+
+      .form-field__label,
+      .search-form__label {
+        color: var(--accent);
+      }
+
+      .form-field__input-wrapper,
+      .search-form__input-wrapper {
+        box-shadow: 0 10px 30px rgba(var(--accent-rgb), 0.15);
+        border-radius: var(--radius-md);
+      }
+
+      .form-field__icon,
+      .search-form__input-icon {
+        color: var(--accent);
+      }
+    }
+  }
+}
+
+.form-field__label,
+.search-form__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: color var(--duration-base) var(--ease-standard);
+}
+
+.form-field__select,
+.form-field__input,
+.search-form__select,
+.search-form__input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-field, 10px);
+  padding: var(--space-4) var(--space-5);
+  color: var(--text);
+  font-size: var(--font-size-base);
+  transition: all var(--duration-base) var(--ease-smooth);
+  width: 100%;
+
+  &:focus {
+    @include focus-state(var(--accent), 0 0 0 3px rgba(var(--accent-rgb), 0.1));
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.form-field__select,
+.search-form__select {
+  appearance: none;
+  padding-right: 3.2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2310b981' stroke-width='2.4'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.15rem center;
+  background-size: 1.05rem;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.68;
+    color: var(--text-muted);
+    background-color: rgba(var(--text-rgb), 0.03);
+  }
+
+  &.is-loading {
+    border-color: rgba(var(--accent-rgb), 0.38);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.08);
+  }
+}
+
+.form-field__input-wrapper,
+.search-form__input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  transition: box-shadow var(--duration-base) var(--ease-standard);
+
+  .form-field__icon,
+  .search-form__input-icon {
+    position: absolute;
+    left: var(--space-5);
+    color: var(--text-muted);
+    font-size: var(--font-size-lg);
+    pointer-events: none;
+    transition: color var(--duration-base) var(--ease-standard);
+    z-index: 2;
+  }
+
+  .form-field__input,
+  .search-form__input {
+    flex: 1;
+    padding-left: var(--space-12);
+  }
+}
+
+.form-card {
+  max-width: 480px;
+  margin: 4rem auto;
+  padding: 3.5rem;
+
+  &--wide {
+    max-width: 720px;
+  }
+
+  @include media-down(sm) {
+    margin: 2rem auto;
+    padding: 2rem 1.5rem;
+    border-radius: 1.5rem;
+  }
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  // --- EFEKT GŁĘBI ---
+  box-shadow: var(--shadow-md);
+
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-family-base);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  html.dark & {
+    background: var(--surface);
+    border-color: var(--border);
+    box-shadow: var(--shadow-md);
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  &__title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem 0;
+    color: var(--text);
+    background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  &__subtitle {
+    font-size: 1.1rem;
+    color: var(--muted-text);
+    margin: 0;
+    font-weight: 500;
+
+    // Modyfikator: mniejszy podtytuł (np. info w stopce karty)
+    &--small {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+  }
+
+  &__group {
+    margin-bottom: 2rem;
+  }
+
+  &__label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text);
+    opacity: 0.9;
+  }
+
+  &__input-hint {
+    font-size: 0.85rem;
+    color: var(--muted-text);
+    margin-top: 0.75rem;
+    line-height: 1.4;
+  }
+
+  &__input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  &__input-icon {
+    position: absolute;
+    left: 1.25rem;
+    color: var(--muted-text);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 1;
+    font-size: 1rem;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 1.15rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-family: var(--font-family-base);
+    color: var(--text);
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    border: 2px solid var(--subtle-border);
+    background: var(--field-bg);
+
+    &--with-icon {
+      padding-left: 3.5rem;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent);
+      background-color: var(--bg);
+      box-shadow: var(--shadow-focus);
+    }
+
+    &::placeholder {
+      color: var(--muted-text);
+      opacity: 0.5;
+    }
+  }
+
+  textarea.form-card__input {
+    min-height: 170px;
+    line-height: 1.55;
+    resize: vertical;
+  }
+
+  select.form-card__input {
+    appearance: none;
+    padding-right: 3.2rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2310b981' stroke-width='2.4'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1.15rem center;
+    background-size: 1rem;
+
+    &.form-card__input--with-icon {
+      padding-right: 3.2rem;
+    }
+  }
+
+  &__icon-circle {
+    width: 64px;
+    height: 64px;
+    background: rgba(var(--accent-rgb), 0.1);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+
+    i {
+      font-size: 1.5rem;
+      color: var(--accent);
+      margin-right: 0; // Resetuj globalny margin z _button.scss
+    }
+
+    // Modyfikatory ikon statusu
+    &--success i {
+      color: var(--success-color, var(--success));
+    }
+
+    &--error i {
+      color: var(--error-color, var(--error));
+    }
+  }
+
+  &__google-btn {
+    width: 100%;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--subtle-border);
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    text-decoration: none;
+
+    img {
+      width: 18px;
+      height: 18px;
+      margin-right: 0.75rem;
+    }
+
+    &:hover {
+      background: var(--field-bg);
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  &__grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+
+    @include media-down(sm) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__action-container {
+    margin: 2.5rem 0 2rem 0;
+
+    // Modyfikator: bez marginesu górnego (np. po alercie)
+    &--no-top {
+      margin-top: 0;
+    }
+
+    // Modyfikator: kontener przycisku Google
+    &--google {
+      margin-top: 0;
+      margin-bottom: 2rem;
+    }
+  }
+
+  &__divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0;
+    color: var(--muted-text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+
+    &::before,
+    &::after {
+      content: "";
+      flex: 1;
+      border-bottom: 1px solid var(--subtle-border);
+    }
+
+    &::before {
+      margin-right: 1rem;
+    }
+
+    &::after {
+      margin-left: 1rem;
+    }
+  }
+
+  &__footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    font-size: 1.05rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--subtle-border);
+
+    p {
+      margin: 0.5rem 0;
+      color: var(--muted-text);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: var(--accent-hover);
+        text-decoration: underline;
+      }
+    }
+  }
+
+  // Samodzielna klasa - używana zarówno w stopce formularza logowania (.form-card__footer),
+  // jak i poza nią (np. w karcie zmiany hasła w ustawieniach), więc nie może zależeć
+  // od zagnieżdżenia w rodzicu.
+  &__forgot-password {
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0.8;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+  }
+}
+
+.contact-form {
+  &__honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  &__textarea {
+    display: block;
+  }
+}
+
+select.form-card__input {
+  appearance: none;
+  padding-right: 3.2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2310b981' stroke-width='2.4'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.15rem center;
+  background-size: 1rem;
+}
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .form-card__input {
+    padding-right: 3.5rem;
+  }
+
+  .password-toggle-icon {
+    position: absolute;
+    right: 1.25rem;
+    color: var(--muted-text);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+
+    &:hover {
+      color: var(--accent);
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+}

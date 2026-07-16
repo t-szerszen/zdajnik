@@ -15,7 +15,7 @@
  * @author Tobiasz Szerszeń
  */
 
-$pageTitle = 'Ustaw Nowe Hasło | Examly';
+$pageTitle = 'Ustaw Nowe Hasło | Zdajnik';
 $noIndex = true;
 ?>
 <!DOCTYPE html>
@@ -80,8 +80,6 @@ $noIndex = true;
     </form>
   </main>
   <?php include 'partials/footer.php'; ?>
-
-  <script type="module" src="<?= url('js/components/show-password-toggle.js') ?>"></script>
 </body>
 
 </html>

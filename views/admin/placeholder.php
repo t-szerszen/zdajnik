@@ -4,7 +4,7 @@
  * @description Widok zastępczy dla modułów CMS przygotowanych na kolejne etapy.
  */
 
-$pageTitle = $pageTitle ?? 'Panel administracyjny | Examly';
+$pageTitle = $pageTitle ?? 'Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Sekcja panelu CMS.';
 $title = $title ?? 'Sekcja';
 $description = $description ?? 'Sekcja przygotowana pod kolejne etapy.';
@@ -39,7 +39,7 @@ $icon = $icon ?? 'fas fa-layer-group';
             </div>
             <h2><?= htmlspecialchars($title) ?></h2>
             <p><?= htmlspecialchars($description) ?></p>
-            <a href="<?= url('admin') ?>" class="btn btn--primary">Wróć do dashboardu</a>
+            <a href="<?= url('admin') ?>" class="btn btn--primary">Wróć do pulpitu</a>
           </div>
         </div>
       </div>

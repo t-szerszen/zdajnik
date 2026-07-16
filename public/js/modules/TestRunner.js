@@ -54,9 +54,13 @@ export class TestRunner {
     this.timerInterval = null;
     this.timeSpent = 0;
     this.isTestInProgress = false;
+    this.exitTracked = false;
+    this.answerSelections = new Map();
+    this.pendingSaveToggles = new Set();
 
     // Bindowanie metod
     this.handleBeforeUnload = this.handleBeforeUnload.bind(this);
+    this.handlePageHide = this.handlePageHide.bind(this);
     this.finishTest = this.finishTest.bind(this);
     this.handleAnswerSelection = this.handleAnswerSelection.bind(this);
     this.togglePause = this.togglePause.bind(this);
@@ -156,6 +160,7 @@ export class TestRunner {
    */
   bindListeners() {
     window.addEventListener('beforeunload', this.handleBeforeUnload);
+    window.addEventListener('pagehide', this.handlePageHide);
     this.finishBtn.addEventListener('click', this.finishTest);
     this.questionsWrapper.addEventListener('click', this.handleAnswerSelection);
 
@@ -205,7 +210,7 @@ export class TestRunner {
 
       const imageHTML = image_name
         ? `<div class="quiz-card__image-container">
-             <img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_name)}"
+             <img src="${window.zdajnikAppState.baseUrl}/images/questions/${escapeHTML(image_name)}"
                   alt="Ilustracja do pytania" class="quiz-card__image">
            </div>`
         : '';
@@ -217,7 +222,7 @@ export class TestRunner {
               <span class="quiz-card__id">ID: ${question_id}</span>
             </div>
             <div class="quiz-card__header-actions">
-           ${window.examlyAppState.isUserLoggedIn ? `
+           ${window.zdajnikAppState.isUserLoggedIn ? `
              <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz pytanie" aria-label="${qData.question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-pressed="${qData.question.is_saved ? 'true' : 'false'}">
                <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
              </button>
@@ -242,6 +247,7 @@ export class TestRunner {
     this.isTestInProgress = false;
     this.stopTimer();
     window.removeEventListener('beforeunload', this.handleBeforeUnload);
+    window.removeEventListener('pagehide', this.handlePageHide);
     window.removeEventListener('scroll', this.handleSyncScroll);
     document.body.classList.remove('test-scrolled-past-header');
 
@@ -279,7 +285,7 @@ export class TestRunner {
     const totalQuestions = this.questionsData.length;
     const score = totalQuestions > 0 ? (correctAnswersCount / totalQuestions) * 100 : 0;
 
-    if (window.examlyAppState?.isUserLoggedIn) {
+    if (window.zdajnikAppState?.isUserLoggedIn) {
       const attemptPayload = {
         examCode: this.examCode || 'INF.03',
         isFullExam: this.isFullExam,
@@ -290,6 +296,10 @@ export class TestRunner {
         answers: answersDetails
       };
       await api.saveAttempt(attemptPayload);
+    }
+
+    if (this.pendingSaveToggles.size > 0) {
+      await Promise.allSettled(Array.from(this.pendingSaveToggles));
     }
 
     // WAŻNE: Przekazujemy trzeci argument
@@ -309,10 +319,6 @@ export class TestRunner {
     if (this.testView.parentElement) {
       this.testView.parentElement.classList.add('hidden');
     }
-
-    // Własny zestaw jest renderowany w osobnym kontenerze z minimalną
-    // wysokością ekranu. Po zakończeniu ukrywamy go, żeby nie zostawiał
-    // pustej przestrzeni przed podsumowaniem.
     const dynamicQuizContainer = this.testView.closest('#quiz-container');
     if (dynamicQuizContainer) {
       dynamicQuizContainer.classList.remove('test-container--active');
@@ -342,40 +348,40 @@ export class TestRunner {
     const dateString = now.toLocaleDateString('pl-PL');
     const timeString = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
 
-	    scoreSummaryContainer.innerHTML = `
-	      <div class="review-page__score-display">
-	        <div class="score-circle" style="--score: ${scoreForAnimation}">
-	          <div class="score-circle__percent">${scoreToDisplay}%</div>
-	        </div>
-	        <p class="label-text">Twój wynik</p>
-	      </div>
+    scoreSummaryContainer.innerHTML = `
+      <div class="review-page__score-display">
+        <div class="score-circle" style="--score: ${scoreForAnimation}">
+          <div class="score-circle__percent">${scoreToDisplay}%</div>
+        </div>
+        <p class="label-text">Twój wynik</p>
+      </div>
 
-	      <div class="review-page__stats-grid">
-	        <div class="review-page__stat-box">
-	          <span class="stat-label">Poprawne odpowiedzi</span>
-	          <span class="stat-value text-gradient">
-	            <i class="fas fa-bullseye" style="font-size: 0.8em; margin-right: 0.25rem;"></i>
-	            ${correctCount} / ${totalQuestions}
-	          </span>
-	        </div>
-	        <div class="review-page__stat-box">
-	          <span class="stat-label">Czas rozwiązywania</span>
-	          <span class="stat-value">
-	            <i class="fas fa-clock" style="font-size: 0.8em; margin-right: 0.25rem;"></i>
-	            ${durationString}
-	          </span>
-	        </div>
-	        <div class="review-page__stat-box">
-	             <span class="stat-label">Data i godzina</span>
-	             <span class="stat-value" style="font-size: 1.1rem; line-height: 1.2;">
-	               <i class="fas fa-calendar-alt" style="font-size: 0.8em; margin-right: 0.25rem; color: var(--accent);"></i>
-	               ${dateString}
-	               <small style="display: block; opacity: 0.6; font-size: 0.8rem; margin-top: 2px;">
-	                 Godzina: ${timeString}
-	               </small>
-	             </span>
-	        </div>
-	      </div>`;
+      <div class="review-page__stats-grid">
+        <div class="review-page__stat-box">
+          <span class="stat-label">Wynik punktowy</span>
+          <span class="stat-value text-gradient">
+            <i class="fas fa-bullseye" style="font-size: 0.8em; margin-right: 0.25rem;"></i>
+            ${correctCount} / ${totalQuestions}
+          </span>
+        </div>
+        <div class="review-page__stat-box">
+          <span class="stat-label">Czas pracy</span>
+          <span class="stat-value">
+            <i class="fas fa-clock" style="font-size: 0.8em; margin-right: 0.25rem;"></i>
+            ${durationString}
+          </span>
+        </div>
+        <div class="review-page__stat-box">
+             <span class="stat-label">Data podejścia</span>
+             <span class="stat-value" style="font-size: 1.1rem; line-height: 1.2;">
+               <i class="fas fa-calendar-alt" style="font-size: 0.8em; margin-right: 0.25rem; color: var(--accent);"></i>
+               ${dateString}
+               <small style="display: block; opacity: 0.6; font-size: 0.8rem; margin-top: 2px;">
+                 Godzina ${timeString}
+               </small>
+             </span>
+        </div>
+      </div>`;
 
     // Sekcja detali pytań (szczegóły są w htmlu statycznie, ale content dynamicznie)
     this.resultsDetailsContainer.innerHTML = '';
@@ -398,7 +404,7 @@ export class TestRunner {
       } else if (isUserCorrectHeader) {
         badgeHTML = '<span class="status-badge status-badge--success"><i class="fas fa-check"></i> Poprawne</span>';
       } else {
-        badgeHTML = '<span class="status-badge status-badge--error"><i class="fas fa-times"></i> Niepoprawne</span>';
+        badgeHTML = '<span class="status-badge status-badge--error"><i class="fas fa-times"></i> Błąd</span>';
       }
 
       let answersHTML = '';
@@ -441,24 +447,33 @@ export class TestRunner {
                 <span class="quiz-card__id">ID: ${question_id}</span>
               </div>
               <div class="quiz-card__header-actions">
-	               ${window.examlyAppState.isUserLoggedIn ? `
-	                 <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz do powtórki">
-	                   <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
-	                 </button>
-	               ` : ''}
-	               ${badgeHTML}
-	             </div>
-	         </div>
-	        <div class="quiz-card__content">
-	          <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
-	          ${image_name ? `<div class="quiz-card__image-container"><img src="${window.examlyAppState.baseUrl}/images/questions/${escapeHTML(image_name)}" alt="Ilustracja do pytania" class="quiz-card__image"></div>` : ''}
-	        </div>
-	        <div class="quiz-card__answers" data-answered="true">${answersHTML}</div>
-	        <div class="quiz-card__actions"></div>
-	      `;
+               ${window.zdajnikAppState.isUserLoggedIn ? `
+                 <button class="quiz-card__save-btn" data-question-id="${question_id}" title="${qData.question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-label="${qData.question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-pressed="${qData.question.is_saved ? 'true' : 'false'}">
+                   <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
+                 </button>
+               ` : ''}
+               ${badgeHTML}
+             </div>
+         </div>
+        <div class="quiz-card__content">
+          <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
+          ${image_name ? `<div class="quiz-card__image-container"><img src="${window.zdajnikAppState.baseUrl}/images/questions/${escapeHTML(image_name)}" class="quiz-card__image"></div>` : ''}
+        </div>
+        <div class="quiz-card__answers" data-answered="true">${answersHTML}</div>
+        <div class="quiz-card__actions"></div>
+      `;
 
       if (explanation && explanation.trim()) {
-        this.renderExplanationResult(card, explanation);
+        this.renderExplanationResult(card, explanation, {
+          examId: qData.question.exam_type_id,
+          questionId: question_id,
+          topicId: qData.question.topic_id,
+          testType: this.isFullExam ? 'full_exam' : 'personalized',
+          source: 'test_results',
+          isCorrect: userAnswerId === null || userAnswerId === undefined
+            ? null
+            : Boolean(isUserCorrectHeader),
+        });
       }
 
       this.resultsDetailsContainer.appendChild(card);
@@ -470,7 +485,7 @@ export class TestRunner {
   /**
    * Renderuje sekcję wyjaśnienia w wynikach (z działającym przyciskiem).
    */
-  renderExplanationResult(card, explanation) {
+  renderExplanationResult(card, explanation, analyticsContext = {}) {
     const actionsContainer = card.querySelector('.quiz-card__actions');
 
     const btnContainer = document.createElement('div');
@@ -497,6 +512,18 @@ export class TestRunner {
     button.className = 'btn btn--secondary btn--small toggle-explanation-btn';
     button.innerHTML = '<i class="fas fa-lightbulb"></i> Pokaż wyjaśnienie';
     button.dataset.target = explId;
+    Object.entries({
+      examId: analyticsContext.examId,
+      questionId: analyticsContext.questionId,
+      topicId: analyticsContext.topicId,
+      testType: analyticsContext.testType,
+      source: analyticsContext.source,
+      isCorrect: analyticsContext.isCorrect,
+    }).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        button.dataset[key] = String(value);
+      }
+    });
 
     // Używamy helpera do obsługi logiki
     ExplanationToggler.attach(button, explContainer);
@@ -518,6 +545,23 @@ export class TestRunner {
     }
   }
 
+  handlePageHide() {
+    if (!this.isTestInProgress || this.exitTracked) {
+      return;
+    }
+
+    this.exitTracked = true;
+    const firstQuestion = this.questionsData[0]?.question || {};
+    api.trackAnalyticsEvent('test_exited', {
+      exam_id: firstQuestion.exam_type_id || null,
+      test_type: this.isFullExam ? 'full_exam' : 'personalized',
+      source: 'test_runner',
+      result: 'page_hidden_before_completion',
+      duration_seconds: this.timeSpent,
+      count: this.answerSelections.size,
+    }, true).catch(() => {});
+  }
+
   /**
    * Dodaje wizualny feedback (klasę CSS) po kliknięciu na odpowiedź.
    * @private
@@ -527,7 +571,11 @@ export class TestRunner {
     // Krok 1: Przycisk zapisu
     const saveBtn = event.target.closest('.quiz-card__save-btn');
     if (saveBtn) {
-      this.handleSaveToggle(saveBtn);
+      const pendingToggle = this.handleSaveToggle(saveBtn);
+      this.pendingSaveToggles.add(pendingToggle);
+      pendingToggle.finally(() => {
+        this.pendingSaveToggles.delete(pendingToggle);
+      });
       return;
     }
 
@@ -536,6 +584,28 @@ export class TestRunner {
 
     const currentQuestionCard = answerLabel.closest('.quiz-card');
     if (currentQuestionCard) {
+      const input = answerLabel.querySelector('input[type="radio"]');
+      const questionId = Number.parseInt(currentQuestionCard.id.replace('question-', ''), 10);
+      const previousAnswer = this.answerSelections.get(questionId);
+      const currentAnswer = input?.value || null;
+
+      if (previousAnswer !== undefined && previousAnswer !== currentAnswer) {
+        const question = this.questionsData.find(
+          (item) => Number(item.question.question_id) === questionId
+        )?.question;
+        api.trackAnalyticsEvent('answer_changed', {
+          exam_id: question?.exam_type_id || null,
+          question_id: questionId,
+          topic_id: question?.topic_id || null,
+          test_type: this.isFullExam ? 'full_exam' : 'personalized',
+          source: 'test_runner',
+          result: 'changed_before_completion',
+        }).catch(() => {});
+      }
+      if (currentAnswer !== null) {
+        this.answerSelections.set(questionId, currentAnswer);
+      }
+
       // Usuń zaznaczenie z poprzednio wybranej odpowiedzi w ramach TEGO pytania.
       currentQuestionCard
         .querySelectorAll('.quiz-card__answer.selected')
@@ -677,7 +747,15 @@ export class TestRunner {
    * @async
    * @param {HTMLElement} btn - Element przycisku zapisu.
    */
-  handleSaveToggle(btn) {
-    saveToggle.toggle(btn);
+  async handleSaveToggle(btn) {
+    const result = await saveToggle.toggle(btn);
+    if (!result || result.is_saved === undefined) return;
+
+    const questionId = Number.parseInt(btn.dataset.questionId, 10);
+    this.questionsData.forEach((qData) => {
+      if (Number(qData.question.question_id) === questionId) {
+        qData.question.is_saved = result.is_saved;
+      }
+    });
   }
 }

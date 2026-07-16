@@ -8,6 +8,7 @@ use App\Models\UserProgress;
 use App\Models\Attempt;
 use App\Models\SavedQuestion;
 use App\Models\UserModel;
+use App\Services\AnalyticsService;
 
 /**
  * Kontroler API (ApiController).
@@ -47,6 +48,9 @@ class ApiController extends BaseController
   /** @var UserModel Model do aktualizacji danych użytkownika */
   private UserModel $userModel;
 
+  /** @var AnalyticsService Serwis analityki produktu */
+  private AnalyticsService $analyticsService;
+
   /**
    * Projektuje i inicjalizuje mosty do warstwy danych.
    */
@@ -59,6 +63,7 @@ class ApiController extends BaseController
     $this->attemptModel = new Attempt();
     $this->savedQuestionModel = new SavedQuestion();
     $this->userModel = new UserModel();
+    $this->analyticsService = new AnalyticsService();
   }
 
   // --- ENDPOINTY POBIERANIA PYTAŃ (READ) ---
@@ -81,13 +86,21 @@ class ApiController extends BaseController
     }
 
     $question = $result['questions'][0] ?? null;
+    $examTypeId = $this->questionModel->getExamTypeIdByCode($examCode);
 
     // Obsługa scenariusza, w którym brak pytań spełniających filtry (np. wszystko odkryte)
     if (!$question) {
+      $this->analyticsService->trackNoQuestionsLeft(
+        $this->currentUser?->getId(),
+        $examTypeId ? (int) $examTypeId : null,
+        null,
+        'single_question_module',
+        'empty_pool'
+      );
       $this->sendJsonResponse([
         'success' => true,
         'status' => 'no_questions_left',
-        'message' => 'To wszystko w tym zakresie. Zmień temat albo ustaw inne filtry, żeby ćwiczyć dalej.',
+        'message' => 'Gratulacje! Przerobiłeś już wszystkie dostępne pytania w tej sekcji.',
       ]);
       return;
     }
@@ -99,6 +112,20 @@ class ApiController extends BaseController
     if ($this->isUserLoggedIn) {
       $question['is_saved'] = $this->savedQuestionModel->isSaved($this->currentUser->getId(), $question['question_id']);
       $question['was_answered'] = $this->userProgressModel->hasAnsweredQuestion($this->currentUser->getId(), (int) $question['question_id']);
+    }
+
+    try {
+      $this->analyticsService->trackSingleQuestionStarted(
+        $this->isUserLoggedIn ? $this->currentUser->getId() : null,
+        $examTypeId ? (int) $examTypeId : null,
+        isset($question['question_id']) ? (int) $question['question_id'] : null,
+        [
+          'topic_id' => isset($question['topic_id']) ? (int) $question['topic_id'] : null,
+          'source' => 'single_question_module',
+        ]
+      );
+    } catch (\Throwable $e) {
+      // Analityka nie może blokować pobierania pytania.
     }
 
     $responseData = [
@@ -126,6 +153,7 @@ class ApiController extends BaseController
     // Walidacja limitu (bezpieczne granice 10-40)
     $limit = isset($_GET['question_count']) ? (int) $_GET['question_count'] : 20;
     $limit = max(10, min(40, $limit));
+    $examTypeId = $this->questionModel->getExamTypeIdByCode($examCode);
 
     $result = $this->fetchFilteredQuestions($examCode, $limit);
 
@@ -136,13 +164,31 @@ class ApiController extends BaseController
     $questions = $result['questions'];
 
     if (count($questions) < $limit) {
+      $this->analyticsService->trackNoQuestionsLeft(
+        $this->currentUser?->getId(),
+        $examTypeId ? (int) $examTypeId : null,
+        'personalized',
+        'personalized_test',
+        'insufficient_pool',
+        count($questions)
+      );
       $this->sendJsonResponse([
         'success' => true,
         'status' => 'no_questions_left',
-        'message' => 'W tej konfiguracji jest za mało pytań. Zmień tematy lub wyłącz filtry i spróbuj ponownie.',
+        'message' => 'Baza posiada zbyt mało pytań spełniających Twoje kryteria filtrowania.',
       ]);
       return;
     }
+
+    $this->analyticsService->trackTestStarted(
+      $this->isUserLoggedIn ? $this->currentUser->getId() : null,
+      (int) $examTypeId,
+      [
+        'test_type' => 'personalized',
+        'count' => count($questions),
+        'source' => 'personalized_test',
+      ]
+    );
 
     $questionsData = [];
     $savedIds = $this->isUserLoggedIn ? $this->savedQuestionModel->getUserSavedIds($this->currentUser->getId()) : [];
@@ -166,13 +212,33 @@ class ApiController extends BaseController
     $examTypeId = $this->questionModel->getExamTypeIdByCode($examCode);
 
     if (!$examTypeId) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Nie znaleźliśmy tego egzaminu. Wybierz go ponownie i spróbuj jeszcze raz.'], 404);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy kod egzaminu.'], 404);
       return;
     }
 
     // Wybieramy wszystkie tematy przypisane do tej kwalifikacji
     $allTopicIds = $this->questionModel->getTopicIdsByExamType($examTypeId);
     $questions = $this->questionModel->getQuestions($allTopicIds, 40, $examTypeId);
+
+    if (empty($questions)) {
+      $this->analyticsService->trackNoQuestionsLeft(
+        $this->currentUser?->getId(),
+        $examTypeId,
+        'full_exam',
+        'full_exam',
+        'empty_pool'
+      );
+    } else {
+      $this->analyticsService->trackTestStarted(
+        $this->isUserLoggedIn ? $this->currentUser->getId() : null,
+        $examTypeId,
+        [
+          'test_type' => 'full_exam',
+          'count' => count($questions),
+          'source' => 'full_exam',
+        ]
+      );
+    }
 
     $questionsData = [];
     $savedIds = $this->isUserLoggedIn ? $this->savedQuestionModel->getUserSavedIds($this->currentUser->getId()) : [];
@@ -199,18 +265,48 @@ class ApiController extends BaseController
     $userAnswerId = (int) ($_POST['answer_id'] ?? 0);
 
     if (!$qvId || !$userAnswerId) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Brakuje danych odpowiedzi. Odśwież stronę i spróbuj ponownie.'], 400);
+      $this->analyticsService->trackValidationError(
+        $this->currentUser?->getId(),
+        'single_question_answer',
+        'missing_parameters'
+      );
+      $this->sendJsonResponse(['success' => false, 'message' => 'Brak wymaganych parametrów (version_id/answer_id).'], 400);
       return;
     }
 
     // Pobranie wzorcowej poprawnej odpowiedzi dla danej wersji
     $correctAnswer = $this->answerModel->getCorrectAnswerForVersion($qvId);
     if (!$correctAnswer) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Nie udało się sprawdzić tego pytania. Odśwież stronę i spróbuj ponownie.'], 404);
+      $this->analyticsService->trackValidationError(
+        $this->currentUser?->getId(),
+        'single_question_answer',
+        'invalid_question_version'
+      );
+      $this->sendJsonResponse(['success' => false, 'message' => 'Błąd wersji pytania.'], 404);
       return;
     }
 
     $isCorrect = $userAnswerId === (int) $correctAnswer['id'];
+
+    try {
+      $questionId = $this->questionModel->getQuestionIdByVersionId($qvId);
+      if ($questionId) {
+        $question = $this->questionModel->getQuestionById((int) $questionId);
+        $examId = (int) ($question['exam_type_id'] ?? 0);
+        $this->analyticsService->trackSingleQuestionAnswered(
+          $this->isUserLoggedIn ? $this->currentUser->getId() : null,
+          $examId > 0 ? $examId : null,
+          (int) $questionId,
+          $isCorrect,
+          [
+            'topic_id' => isset($question['topic_id']) ? (int) $question['topic_id'] : null,
+            'source' => 'single_question_module',
+          ]
+        );
+      }
+    } catch (\Throwable $e) {
+      // Analityka nie może blokować sprawdzenia odpowiedzi.
+    }
 
     // Utrwalenie progresu dla zalogowanych (Micro-save)
     if ($this->isUserLoggedIn) {
@@ -236,13 +332,13 @@ class ApiController extends BaseController
     $this->ensurePostRequest();
 
     if (!$this->isUserLoggedIn) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Zaloguj się, aby zapisywać postęp i statystyki.'], 403);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Funkcja dostępna tylko dla zalogowanych.'], 403);
       return;
     }
 
     $progressData = json_decode(file_get_contents('php://input'), true);
     if (!is_array($progressData)) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Nie udało się odczytać danych. Spróbuj ponownie.'], 400);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy format danych JSON.'], 400);
       return;
     }
 
@@ -254,7 +350,7 @@ class ApiController extends BaseController
       }
     }
 
-    $this->sendJsonResponse(['success' => true, 'message' => 'Postęp zapisany. Statystyki zostały zaktualizowane.']);
+    $this->sendJsonResponse(['success' => true, 'message' => 'Postęp zaktualizowany pomyślnie.']);
   }
 
   /**
@@ -271,17 +367,28 @@ class ApiController extends BaseController
     $this->ensurePostRequest();
 
     if (!$this->isUserLoggedIn) {
-      $this->sendJsonResponse(['error' => 'Zaloguj się, aby zapisać wynik próby.'], 403);
+      $this->analyticsService->trackValidationError(null, 'save_attempt', 'authentication_required');
+      $this->sendJsonResponse(['error' => 'Wymagane uwierzytelnienie'], 403);
       return;
     }
 
     // Dekodowanie wejścia JSON Raw
     $input = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($input)) {
+      $this->analyticsService->trackValidationError(
+        $this->currentUser->getId(),
+        'save_attempt',
+        'invalid_json'
+      );
+      $this->sendJsonResponse(['error' => 'Nieprawidłowy format danych'], 400);
+      return;
+    }
     $userId = $this->currentUser->getId();
 
     $examTypeId = $this->questionModel->getExamTypeIdByCode($input['examCode'] ?? 'INF.03');
     if (!$examTypeId) {
-      $this->sendJsonResponse(['error' => 'Nie znaleźliśmy tego egzaminu. Spróbuj ponownie.'], 400);
+      $this->analyticsService->trackValidationError($userId, 'save_attempt', 'invalid_exam');
+      $this->sendJsonResponse(['error' => 'Nieprawidłowy typ egzaminu'], 400);
       return;
     }
 
@@ -303,9 +410,35 @@ class ApiController extends BaseController
     if ($attemptId) {
       // KROK 3: Masowa aktualizacja statystyk pytań
       $this->userProgressModel->updateBatchProgress($userId, $answersDetails);
+
+      try {
+        $score = $attemptData['total_questions'] > 0
+          ? round(($attemptData['correct_count'] * 100) / $attemptData['total_questions'], 1)
+          : 0;
+
+        $this->analyticsService->trackTestCompleted($userId, $examTypeId, (int) $attemptId, [
+          'score' => $score,
+          'correct_answers' => (int) $attemptData['correct_count'],
+          'wrong_answers' => max(0, (int) $attemptData['total_questions'] - (int) $attemptData['correct_count']),
+          'total_questions' => (int) $attemptData['total_questions'],
+          'duration_seconds' => (int) $attemptData['duration_seconds'],
+          'test_type' => $attemptData['test_type'],
+        ]);
+
+        $this->analyticsService->trackQuestionAnsweredBatch(
+          $userId,
+          $examTypeId,
+          (int) $attemptId,
+          $answersDetails,
+          $attemptData['test_type']
+        );
+      } catch (\Throwable $e) {
+        // Analityka nie może blokować zapisu próby.
+      }
+
       $this->sendJsonResponse(['success' => true, 'attempt_id' => $attemptId]);
     } else {
-      $this->sendJsonResponse(['error' => 'Nie udało się zapisać wyniku. Spróbuj ponownie za chwilę.'], 500);
+      $this->sendJsonResponse(['error' => 'Błąd krytyczny podczas zapisu próby.'], 500);
     }
   }
 
@@ -324,7 +457,12 @@ class ApiController extends BaseController
     $questionId = (int) ($_POST['question_id'] ?? 0);
 
     if (!$questionId) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Nie udało się odczytać pytania. Odśwież stronę i spróbuj ponownie.'], 400);
+      $this->analyticsService->trackValidationError(
+        $this->currentUser->getId(),
+        'saved_question',
+        'missing_question_id'
+      );
+      $this->sendJsonResponse(['success' => false, 'message' => 'Brak identyfikatora pytania.'], 400);
       return;
     }
 
@@ -332,13 +470,22 @@ class ApiController extends BaseController
 
     if ($success) {
       $isSaved = $this->savedQuestionModel->isSaved($this->currentUser->getId(), $questionId);
+      $question = $this->questionModel->getQuestionById($questionId);
+      $this->analyticsService->trackSavedQuestion(
+        $this->currentUser->getId(),
+        $questionId,
+        $question ? (int) ($question['exam_type_id'] ?? 0) : null,
+        $question ? (int) ($question['topic_id'] ?? 0) : null,
+        $isSaved,
+        'question_save_button'
+      );
       $this->sendJsonResponse([
         'success' => true,
         'is_saved' => $isSaved,
         'message' => $isSaved ? 'Dodano do zapisanych.' : 'Usunięto z zapisanych.'
       ]);
     } else {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Nie udało się zapisać tej zmiany. Spróbuj ponownie za chwilę.'], 500);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Błąd po stronie serwera.'], 500);
     }
   }
 
@@ -350,13 +497,13 @@ class ApiController extends BaseController
     $this->ensurePostRequest();
 
     if (!$this->isUserLoggedIn) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Zaloguj się, aby zmienić awatar.'], 403);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Wymagane uwierzytelnienie.'], 403);
       return;
     }
 
     $input = json_decode(file_get_contents('php://input'), true);
     if (!isset($input['type']) || !isset($input['avatar'])) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Brakuje danych awatara. Odśwież stronę i spróbuj ponownie.'], 400);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Brak wymaganych parametrów.'], 400);
       return;
     }
 
@@ -425,6 +572,7 @@ class ApiController extends BaseController
 
     // Aktualizacja w bazie
     if ($this->userModel->updateAvatar($userId, $newAvatarPath)) {
+      $this->analyticsService->trackSettingsUpdated($userId, 'avatar_updated');
       $this->sendJsonResponse([
         'success' => true,
         'message' => 'Awatar zaktualizowany.',
@@ -433,6 +581,60 @@ class ApiController extends BaseController
     } else {
       $this->sendJsonResponse(['success' => false, 'message' => 'Błąd aktualizacji bazy danych.'], 500);
     }
+  }
+
+  /**
+   * Przyjmuje wyłącznie bezpieczne eventy interakcji z modułów JavaScript.
+   */
+  public function trackAnalyticsEventFromClient(): void
+  {
+    $this->ensurePostRequest();
+
+    $rawInput = file_get_contents('php://input');
+    if (!is_string($rawInput) || strlen($rawInput) > 4096) {
+      $this->sendJsonResponse(['success' => false], 413);
+      return;
+    }
+
+    $windowStart = (int) ($_SESSION['analytics_event_window'] ?? 0);
+    $windowCount = (int) ($_SESSION['analytics_event_count'] ?? 0);
+    if ($windowStart === 0 || time() - $windowStart >= 60) {
+      $windowStart = time();
+      $windowCount = 0;
+    }
+    if ($windowCount >= 120) {
+      $this->sendJsonResponse(['success' => false], 429);
+      return;
+    }
+    $_SESSION['analytics_event_window'] = $windowStart;
+    $_SESSION['analytics_event_count'] = $windowCount + 1;
+
+    $input = json_decode($rawInput, true);
+    if (!is_array($input)) {
+      $this->sendJsonResponse(['success' => false], 400);
+      return;
+    }
+
+    $eventType = trim((string) ($input['event_type'] ?? ''));
+    $allowedClientEvents = [
+      'test_exited',
+      'explanation_viewed',
+      'answer_changed',
+      'validation_error',
+    ];
+    if (!in_array($eventType, $allowedClientEvents, true)) {
+      $this->sendJsonResponse(['success' => false], 400);
+      return;
+    }
+
+    $metadata = is_array($input['metadata'] ?? null) ? $input['metadata'] : [];
+    $success = $this->analyticsService->trackEvent(
+      $eventType,
+      $this->currentUser?->getId(),
+      $metadata
+    );
+
+    $this->sendJsonResponse(['success' => $success], $success ? 200 : 202);
   }
 
   // --- LOGIKA WEWNĘTRZNA (PRIVATE HELPERS) ---
@@ -456,6 +658,11 @@ class ApiController extends BaseController
     $subjectIds = $_GET['subject'] ?? [];
 
     if (!$examCode || empty($subjectIds)) {
+      $this->analyticsService->trackValidationError(
+        $this->currentUser?->getId(),
+        'question_filters',
+        'missing_topics'
+      );
       $this->sendJsonResponse(['success' => false, 'message' => 'Nie wybrano żadnego tematu egzaminacyjnego.'], 400);
       return ['success' => false, 'questions' => []];
     }
@@ -466,7 +673,10 @@ class ApiController extends BaseController
 
     // KROK: Weryfikacja uprawnień do filtrów zaawansowanych
     if ($specialFilter && !$this->isUserLoggedIn) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Zaloguj się, aby dobierać pytania na podstawie swoich wyników.'], 403);
+      $this->analyticsService->trackValidationError(null, 'question_filters', 'authentication_required', [
+        'exam_id' => $examTypeId,
+      ]);
+      $this->sendJsonResponse(['success' => false, 'message' => 'Filtry zaawansowane wymagają konta użytkownika.'], 403);
       return ['success' => false, 'questions' => []];
     }
 
@@ -477,10 +687,17 @@ class ApiController extends BaseController
       if ($userId) {
         $answeredCount = $this->userProgressModel->countAnsweredQuestionsForExam($userId, $examTypeId);
         if ($answeredCount < 100) {
+          $this->analyticsService->trackValidationError($userId, 'question_filters', 'gatekeeper', [
+            'exam_id' => $examTypeId,
+            'count' => $answeredCount,
+          ]);
+          $gatekeeperMessage = $specialFilter === 'toRemind'
+            ? 'Musisz odpowiedzieć na co najmniej 100 pytań, abyśmy mogli dobrać pytania dawno niepowtarzane.'
+            : 'Musisz odpowiedzieć na co najmniej 100 pytań, abyśmy mogli przeanalizować Twoje słabe strony.';
           $this->sendJsonResponse([
             'success' => false,
             'status' => 'gatekeeper',
-            'message' => 'Ten filtr działa po rozwiązaniu co najmniej 100 pytań z tego egzaminu. Potrzebujemy wcześniejszych odpowiedzi, żeby poprawnie dobrać pytania.'
+            'message' => $gatekeeperMessage
           ], 403);
           return ['success' => false, 'questions' => []];
         }

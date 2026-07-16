@@ -1,0 +1,426 @@
+@use '../core/mixins' as *;
+
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-section {
+  position: relative;
+  min-height: min(860px, calc(100vh - 1rem));
+  padding: 7.5rem 1.5rem 5rem;
+  overflow: clip;
+  isolation: isolate;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 16% 18%, rgba(var(--accent-rgb), 0.18), transparent 28%),
+      radial-gradient(circle at 82% 12%, rgba(var(--color-navy-rgb), 0.08), transparent 30%),
+      linear-gradient(180deg, rgba(var(--accent-rgb), 0.06), transparent 58%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
+  }
+
+  @include media-down(md) {
+    min-height: auto;
+    padding: 6rem 1rem 3.75rem;
+  }
+
+  &__grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 0.82fr) minmax(440px, 1fr);
+    gap: clamp(1.5rem, 4vw, 4rem);
+    align-items: center;
+    width: min(var(--landing-max, 1240px), 100%);
+    margin: 0 auto;
+
+    @include media-down(xl) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__content {
+    max-width: 680px;
+
+    @include media-down(xl) {
+      max-width: 820px;
+      margin: 0 auto;
+      text-align: center;
+    }
+  }
+
+  &__lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin: 0 0 1.25rem;
+    padding: 0.35rem;
+    border: 1px solid rgba(var(--accent-rgb), 0.18);
+    border-radius: var(--radius-pill);
+    background: rgba(var(--accent-rgb), 0.06);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &__lockup-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0 0.85rem;
+    border-radius: var(--radius-pill);
+    color: var(--accent-contrast);
+    background: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  &__lockup-text {
+    padding-right: 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  &__title {
+    margin: 0 0 1.35rem;
+    color: var(--text);
+    font-size: clamp(2.2rem, 5vw, 4.6rem);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: 0;
+    opacity: 0;
+    // To jest element LCP - animacja wejścia zostaje, ale znacznie krótsza
+    // (0.32s zamiast 0.72s) i bez opóźnienia, żeby nie dokładać czasu do LCP.
+    animation: hero-fade-up 0.32s var(--ease-emphasized) forwards;
+  }
+
+  &__title-accent {
+    display: block;
+    margin-top: 0.45rem;
+    // Wyższy line-height niż reszta tytułu, żeby litery ze zejściem (p, g, j)
+    // nie ucinały się pod background-clip: text.
+    line-height: 1.15;
+    padding-bottom: 0.05em;
+    color: var(--accent);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--color-navy) 88%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  &__subtitle {
+    max-width: 620px;
+    margin: 0 0 2rem;
+    color: var(--text-muted);
+    font-size: clamp(1.05rem, 1.1vw + 0.78rem, 1.28rem);
+    line-height: 1.68;
+    opacity: 0;
+    animation: hero-fade-up 0.72s var(--ease-emphasized) 0.08s forwards;
+
+    @include media-down(xl) {
+      margin-right: auto;
+      margin-left: auto;
+    }
+  }
+
+  &__cta-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    opacity: 0;
+    animation: hero-fade-up 0.72s var(--ease-emphasized) 0.16s forwards;
+
+    @include media-down(xl) {
+      justify-content: center;
+    }
+
+    .btn {
+      white-space: normal;
+    }
+  }
+}
+
+.hero-feature-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(var(--accent-rgb), 0.16);
+  border-radius: var(--radius-2xl);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(var(--accent-rgb), 0.045)),
+    var(--landing-card-bg-strong, var(--surface));
+  box-shadow: var(--landing-card-shadow, var(--shadow-lg));
+  opacity: 0;
+  animation: hero-fade-up 0.72s var(--ease-emphasized) 0.24s forwards;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0.9rem;
+    z-index: -1;
+    border-radius: inherit;
+    background:
+      linear-gradient(var(--landing-grid-color, rgba(13, 27, 61, 0.04)) 1px, transparent 1px),
+      linear-gradient(90deg, var(--landing-grid-color, rgba(13, 27, 61, 0.04)) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+  }
+
+  @include media-down(xl) {
+    width: min(920px, 100%);
+    margin: 0 auto;
+  }
+
+  @include media-down(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0.75rem;
+  }
+
+  @include media-down(xs) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hero-feature-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 0.55rem;
+  min-height: 178px;
+  padding: 1rem;
+  border: 1px solid rgba(var(--accent-rgb), 0.12);
+  border-radius: var(--radius-lg);
+  color: var(--text);
+  text-align: left;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 12px 30px rgba(13, 27, 61, 0.055);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), rgba(var(--color-navy-rgb), 0.72));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-4px);
+    border-color: rgba(var(--accent-rgb), 0.34);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 18px 40px rgba(13, 27, 61, 0.1);
+    outline: none;
+
+    &::after {
+      transform: scaleX(1);
+    }
+  }
+
+  &--soon {
+    cursor: default;
+    opacity: 0.78;
+
+    &:hover {
+      transform: none;
+      border-color: rgba(var(--accent-rgb), 0.12);
+      box-shadow: 0 12px 30px rgba(13, 27, 61, 0.055);
+    }
+  }
+
+  &__badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: var(--radius-pill);
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.1);
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+
+  &__icon {
+    display: inline-grid;
+    width: 2.65rem;
+    height: 2.65rem;
+    place-items: center;
+    border: 1px solid rgba(var(--accent-rgb), 0.18);
+    border-radius: var(--radius-md);
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.09);
+    font-size: 1.15rem;
+  }
+
+  &__title {
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 850;
+    line-height: 1.2;
+  }
+
+  &__description {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+}
+
+.hero-feature-modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 12, 10, 0.62);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  &__dialog {
+    position: relative;
+    width: min(520px, 100%);
+    padding: 1.5rem;
+    border: 1px solid rgba(var(--accent-rgb), 0.2);
+    border-radius: var(--radius-2xl);
+    background: var(--surface);
+    box-shadow: 0 26px 70px rgba(2, 8, 23, 0.28);
+  }
+
+  &__close {
+    position: absolute;
+    top: 0.85rem;
+    right: 0.85rem;
+    display: inline-grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    color: var(--text-muted);
+    background: var(--surface-subtle);
+    cursor: pointer;
+  }
+
+  &__icon {
+    display: inline-grid;
+    width: 3.2rem;
+    height: 3.2rem;
+    margin-bottom: 1rem;
+    place-items: center;
+    border-radius: var(--radius-lg);
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.12);
+    font-size: 1.35rem;
+  }
+
+  &__eyebrow {
+    margin: 0 0 0.4rem;
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    margin: 0 2rem 0.75rem 0;
+    color: var(--text);
+    font-size: clamp(1.45rem, 4vw, 2rem);
+    line-height: 1.08;
+  }
+
+  &__text {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.68;
+  }
+}
+
+html.dark {
+  .hero-section {
+    &::before {
+      background:
+        radial-gradient(circle at 16% 18%, rgba(var(--accent-rgb), 0.12), transparent 30%),
+        radial-gradient(circle at 82% 12%, rgba(245, 247, 250, 0.055), transparent 28%),
+        linear-gradient(180deg, rgba(var(--accent-rgb), 0.035), transparent 58%);
+    }
+
+    &__title-accent {
+      background: linear-gradient(135deg, #6ee7b7 0%, #f5f7fa 92%);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+  }
+
+  .hero-feature-grid {
+    background:
+      linear-gradient(145deg, rgba(18, 26, 24, 0.94), rgba(var(--accent-rgb), 0.055)),
+      var(--surface);
+    border-color: rgba(169, 183, 176, 0.14);
+  }
+
+  .hero-feature-card {
+    background: rgba(18, 26, 24, 0.78);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.24);
+
+    &:hover,
+    &:focus-visible {
+      background: rgba(24, 35, 31, 0.98);
+      box-shadow: 0 20px 44px rgba(0, 0, 0, 0.34);
+    }
+  }
+
+  .hero-feature-modal__dialog {
+    background: var(--surface-raised);
+    box-shadow: 0 26px 80px rgba(0, 0, 0, 0.54);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-section__title,
+  .hero-section__subtitle,
+  .hero-section__cta-group,
+  .hero-feature-grid {
+    opacity: 1;
+    animation: none;
+  }
+
+  .hero-feature-card {
+    transition: none;
+  }
+}

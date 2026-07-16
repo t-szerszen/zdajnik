@@ -90,17 +90,23 @@ class Attempt
       if (!empty($answersDetails)) {
         $values = [];
         $params = [];
-        foreach ($answersDetails as $ans) {
-          $values[] = "(?, ?, ?, ?)";
+        // Indeks tablicy odzwierciedla faktyczną kolejność prezentacji pytań w tej
+        // próbie (klient wysyła odpowiedzi w kolejności, w jakiej pytania były
+        // wylosowane i wyświetlone), więc zapisujemy go jako position - dzięki temu
+        // podgląd egzaminu (StatisticsService::getExamReviewDetails) może odtworzyć
+        // tę samą, jednorazowo wylosowaną kolejność zamiast polegać na answered_at,
+        // który przy zbiorczym zapisie jest identyczny dla wszystkich wierszy.
+        foreach (array_values($answersDetails) as $position => $ans) {
+          $values[] = "(?, ?, ?, ?, ?)";
 
           // Obsługa pytań pominiętych (null answer_id)
           $isCorrect = isset($ans['is_correct']) ? (int) $ans['is_correct'] : 0;
           $answerId = $ans['answer_id'] ?? null;
 
-          array_push($params, $attemptId, $ans['question_version_id'], $answerId, $isCorrect);
+          array_push($params, $attemptId, $ans['question_version_id'], $answerId, $isCorrect, $position);
         }
 
-        $sqlAnswers = "INSERT INTO attempt_answers (attempt_id, question_version_id, answer_id, is_correct) VALUES " . implode(',', $values);
+        $sqlAnswers = "INSERT INTO attempt_answers (attempt_id, question_version_id, answer_id, is_correct, position) VALUES " . implode(',', $values);
         if (!$this->db->execute($sqlAnswers, $params)) {
           throw new \Exception('Błąd zapisu szczegółowych odpowiedzi.');
         }

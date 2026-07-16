@@ -42,6 +42,12 @@ class QuizPageController extends BaseController
   private function checkAvailability(string $code): void
   {
     if (strtoupper($code) !== 'INF.04') {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser?->getId(),
+        'quiz_page',
+        'exam_unavailable',
+        ['source' => 'quiz_page']
+      );
       header("Location: /?message=" . urlencode("Ten egzamin będzie dostępny wkrótce!"));
       exit;
     }
@@ -78,6 +84,11 @@ class QuizPageController extends BaseController
         'categories' => $categories
       ]);
     } else {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser?->getId(),
+        'one_question_page',
+        'exam_not_found'
+      );
       http_response_code(404);
       echo "Egzamin o kodzie $code nie istnieje.";
     }
@@ -102,6 +113,11 @@ class QuizPageController extends BaseController
     $exam = $this->dynamicData->getExamDetails($code);
 
     if (!$exam) {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser?->getId(),
+        'personalized_test_page',
+        'exam_not_found'
+      );
       http_response_code(404);
       echo "Egzamin o kodzie $code nie istnieje.";
       return;
@@ -142,6 +158,11 @@ class QuizPageController extends BaseController
         'examCode' => $code
       ]);
     } else {
+      $this->getAnalyticsService()->trackValidationError(
+        $this->currentUser?->getId(),
+        'full_test_page',
+        'exam_not_found'
+      );
       http_response_code(404);
       echo "Egzamin o kodzie $code nie istnieje.";
     }

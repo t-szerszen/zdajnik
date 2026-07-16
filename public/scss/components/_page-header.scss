@@ -1,0 +1,72 @@
+@use '../core/mixins' as *;
+
+.page-header {
+  position: relative;
+  z-index: 1;
+  margin-top: -6.5rem;
+  padding: 8.5rem 1.5rem 4.75rem;
+  overflow: hidden;
+  text-align: center;
+  border-bottom: 1px solid var(--subtle-border);
+  background:
+    radial-gradient(circle at 50% -18%, rgba(var(--accent-rgb), 0.16), transparent 36%),
+    linear-gradient(180deg, rgba(var(--accent-rgb), 0.055), rgba(var(--accent-rgb), 0.018) 58%, transparent),
+    var(--bg);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(rgba(13, 27, 61, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(13, 27, 61, 0.035) 1px, transparent 1px);
+    background-size: 42px 42px;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 88%);
+    mask-image: linear-gradient(to bottom, #000 0%, transparent 88%);
+  }
+
+  &__content {
+    position: relative;
+    z-index: 1;
+    max-width: 850px;
+    margin: 0 auto;
+  }
+
+  &__title {
+    margin: 0 0 1rem;
+    color: var(--text);
+    font-size: clamp(2.1rem, 5vw, 3.7rem);
+    font-weight: 900;
+    line-height: 1.02;
+    letter-spacing: 0;
+  }
+
+  &__text {
+    max-width: 720px;
+    margin: 0.65rem auto 0;
+    color: var(--text-muted);
+    font-size: clamp(1rem, 1vw, 1.12rem);
+    line-height: 1.72;
+  }
+}
+
+html.dark .page-header {
+  background:
+    radial-gradient(circle at 50% -18%, rgba(var(--accent-rgb), 0.11), transparent 38%),
+    linear-gradient(180deg, rgba(var(--accent-rgb), 0.035), rgba(255, 255, 255, 0.012) 58%, transparent),
+    var(--bg);
+
+  &::before {
+    background:
+      linear-gradient(rgba(169, 183, 176, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(169, 183, 176, 0.045) 1px, transparent 1px);
+  }
+}
+
+@include media-down(sm) {
+  .page-header {
+    padding: 7.5rem 1rem 3.5rem;
+  }
+}

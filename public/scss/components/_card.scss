@@ -1,0 +1,86 @@
+@use '../core/mixins' as *;
+
+.card,
+.stats-card,
+.form-card,
+.info-card,
+.exam-card,
+.quiz-card,
+.topic-card,
+.feature-card,
+.info-block,
+.topics-group,
+.search-result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.card {
+  padding: var(--space-8);
+  color: var(--text);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  &__title {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-extrabold);
+    line-height: 1.2;
+  }
+
+  &__description {
+    margin: var(--space-2) 0 0;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  &__content {
+    min-width: 0;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  &--interactive {
+    transition: var(--transition-emphasized);
+
+    &:hover {
+      transform: translateY(-2px);
+      border-color: rgba(var(--accent-rgb), 0.3);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  &--muted {
+    background: var(--surface-subtle);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &--coming-soon {
+    filter: saturate(0.55);
+    opacity: 0.72;
+  }
+}
+
+.exam-card,
+.quiz-card,
+.feature-card,
+.topic-card,
+.topics-group,
+.info-block,
+.search-result-card {
+  min-width: 0;
+}

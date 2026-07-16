@@ -82,6 +82,21 @@ class SearchController extends BaseController
     // KROK 4: Renderowanie wyniku (Wykrycie AJAX)
     $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
+    if ($page === 1 && (!empty($filters['exam_id']) || !empty($filters['topic_id']) || !empty($filters['query']))) {
+      try {
+        $this->getAnalyticsService()->trackSearchPerformed(
+          $this->currentUser?->getId(),
+          !empty($filters['exam_id']) ? (int) $filters['exam_id'] : null,
+          !empty($filters['topic_id']) ? (int) $filters['topic_id'] : null,
+          is_string($filters['query']) ? $filters['query'] : null,
+          $totalCount,
+          $isAjax ? 'search_ajax' : 'search_page'
+        );
+      } catch (\Throwable $e) {
+        // Wyszukiwanie nie może zależeć od dostępności analityki.
+      }
+    }
+
     if ($isAjax) {
       // Przygotowanie tylko fragmentu HTML dla żądania dynamicznego
       ob_start();
@@ -116,6 +131,39 @@ class SearchController extends BaseController
       'totalPages' => $totalPages,
       'totalCount' => $totalCount
     ]);
+  }
+
+  /**
+   * Zwraca listę tematów dla wybranego egzaminu używaną przez dynamiczne filtry wyszukiwarki.
+   *
+   * @return void
+   */
+  public function getTopics(): void
+  {
+    $examId = isset($_GET['exam_id']) ? (int) $_GET['exam_id'] : 0;
+
+    header('Content-Type: application/json');
+
+    if ($examId <= 0) {
+      echo json_encode([
+        'status' => 'success',
+        'topics' => []
+      ]);
+      exit;
+    }
+
+    $topics = array_map(static function (array $topic): array {
+      return [
+        'id' => (int) $topic['id'],
+        'name' => (string) $topic['name']
+      ];
+    }, $this->dynamicData->getCategoriesForExam($examId));
+
+    echo json_encode([
+      'status' => 'success',
+      'topics' => $topics
+    ]);
+    exit;
   }
 
   /**

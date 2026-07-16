@@ -1,4 +1,4 @@
-class PremiumOptionsTutorial {
+export class PremiumOptionsTutorial {
   constructor(config = {}) {
     this.mode = config.mode || 'one-question';
     this.form = document.getElementById('topic-form');
@@ -8,6 +8,9 @@ class PremiumOptionsTutorial {
     this.isOpen = false;
     this.currentStep = 0;
     this.storageKey = `examly.premium.tutorial.${this.mode}.completed`;
+    this.forceOpen = config.forceOpen === true;
+    this.guestPreview = config.guestPreview === true;
+    this.autoStart = config.autoStart !== false;
     this.elements = this.createUI();
     this.steps = this.buildSteps();
     this.pendingAutoStart = true;
@@ -20,11 +23,11 @@ class PremiumOptionsTutorial {
 
   buildSteps() {
     const descriptions = {
-      toDiscover: 'Pytania, na które jeszcze nie odpowiadałeś.',
-      toImprove: 'Pytania, przy których najczęściej wybierasz złą odpowiedź.',
-      toRemind: 'Pytania, których dawno nie widziałeś.',
-      lastMistakes: 'Pytania z Twoich ostatnich błędnych odpowiedzi.',
-      saved: 'Pytania zapisane przez Ciebie do późniejszej powtórki.'
+      toDiscover: 'Wybiera pytania, których jeszcze nie rozwiązywałeś. Użyj, gdy chcesz poszerzyć zakres nauki.',
+      toImprove: 'Pokazuje pytania z niższą skutecznością. Użyj, gdy chcesz poprawić słabe punkty.',
+      toRemind: 'Dobiera pytania dawno niepowtarzane. Użyj, żeby odświeżyć materiał przed testem.',
+      lastMistakes: 'Wraca do ostatnich błędów. Użyj, żeby szybko poprawić świeże pomyłki.',
+      saved: 'Pokazuje zapisane pytania. Użyj do pracy z własną listą trudnych zagadnień.'
     };
 
     const orderedValues = ['toDiscover', 'toImprove', 'toRemind', 'lastMistakes', 'saved'];
@@ -40,7 +43,7 @@ class PremiumOptionsTutorial {
       steps.push({
         target: label,
         title,
-        description: descriptions[value] || 'Ten filtr zmienia sposób doboru pytań.'
+        description: descriptions[value] || 'Filtr pomaga dobrać pytania do konkretnego celu nauki.'
       });
     });
 
@@ -66,8 +69,8 @@ class PremiumOptionsTutorial {
       <h3 class="premium-tutorial__title" data-premium-title></h3>
       <p class="premium-tutorial__description" data-premium-description></p>
       <div class="premium-tutorial__actions">
-        <button type="button" class="btn btn--secondary btn--sm" data-premium-prev>Wróć</button>
-        <button type="button" class="btn btn--primary btn--sm" data-premium-next>Następny krok</button>
+        <button type="button" class="btn btn--secondary btn--sm" data-premium-prev>Wstecz</button>
+        <button type="button" class="btn btn--primary btn--sm" data-premium-next>Dalej</button>
       </div>
     `;
 
@@ -106,17 +109,26 @@ class PremiumOptionsTutorial {
   }
 
   updateTriggerState() {
-    const isUserLoggedIn = window.examlyAppState?.isUserLoggedIn === true;
+    const isUserLoggedIn = window.zdajnikAppState?.isUserLoggedIn === true;
     const isAnyOptionEnabled = this.premiumCheckboxes.some((checkbox) => !checkbox.disabled);
     const isSectionVisible = this.isPremiumSectionVisible();
-    const shouldShowTrigger = isUserLoggedIn && isSectionVisible;
+    const shouldShowTrigger = (isUserLoggedIn || this.guestPreview) && isSectionVisible;
 
     this.trigger.classList.toggle('hidden', !shouldShowTrigger);
+    if (this.guestPreview && !isUserLoggedIn) {
+      this.premiumCheckboxes.forEach((checkbox) => {
+        checkbox.disabled = true;
+        const label = checkbox.closest('.topic-selector__label');
+        if (label) {
+          label.title = 'Utwórz darmowe konto, aby korzystać z inteligentnych filtrów nauki.';
+        }
+      });
+    }
 
     if (this.pendingAutoStart && shouldShowTrigger) {
       this.pendingAutoStart = false;
       const completed = window.localStorage.getItem(this.storageKey) === '1';
-      if (!completed && isAnyOptionEnabled) {
+      if (this.forceOpen || (this.autoStart && !completed && (isAnyOptionEnabled || this.guestPreview))) {
         this.start(false);
       }
     }
@@ -182,7 +194,7 @@ class PremiumOptionsTutorial {
     this.elements.title.textContent = step.title;
     this.elements.description.textContent = step.description;
     this.elements.prevBtn.disabled = this.currentStep === 0;
-    this.elements.nextBtn.textContent = this.currentStep === this.steps.length - 1 ? 'Zamknij' : 'Następny krok';
+    this.elements.nextBtn.textContent = this.currentStep === this.steps.length - 1 ? 'Zakończ' : 'Dalej';
 
     const rect = step.target.getBoundingClientRect();
     const padding = 8;
@@ -199,7 +211,6 @@ class PremiumOptionsTutorial {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const config = window.examlyPremiumTutorialConfig || {};
-  new PremiumOptionsTutorial(config);
-});
+export function initPremiumOptionsTutorial(config = window.examlyPremiumTutorialConfig || {}) {
+  return new PremiumOptionsTutorial(config);
+}

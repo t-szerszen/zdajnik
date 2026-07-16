@@ -1,7 +1,7 @@
 /*M!999999\- enable the sandbox mode */
 -- MariaDB dump 10.19-11.4.10-MariaDB, for Linux (aarch64)
 --
--- Host: db    Database: examly_db
+-- Host: db    Database: zdajnik_db
 -- ------------------------------------------------------
 -- Server version	8.0.45
 
@@ -289,7 +289,7 @@ CREATE TABLE `users` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping routines for database 'examly_db'
+-- Dumping routines for database 'zdajnik_db'
 --
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

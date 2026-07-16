@@ -26,6 +26,13 @@ if (isset($_ENV['DB_HOST'])) {
   define('DB_HOST', 'localhost');
 }
 
+// 2. Konfiguracja poczty i kontaktu
+// Systemowe wiadomości wychodzą z noreply, a formularz kontaktowy trafia na osobną skrzynkę.
+define('SYSTEM_MAIL_FROM_ADDRESS', $_ENV['MAIL_FROM_ADDRESS'] ?? $_ENV['SMTP_USER'] ?? 'noreply@localhost');
+define('MAIL_FROM_ADDRESS', SYSTEM_MAIL_FROM_ADDRESS);
+define('MAIL_FROM_NAME', $_ENV['MAIL_FROM_NAME'] ?? 'Zdajnik - Inteligentna Nauka');
+define('CONTACT_EMAIL', $_ENV['CONTACT_EMAIL'] ?? 'kontakt@localhost');
+
 // Opcjonalnie: zdefiniuj ścieżkę na serwerze do głównego katalogu aplikacji.
 // Przydatne do includowania plików w PHP.
 define('BASE_PATH', __DIR__);

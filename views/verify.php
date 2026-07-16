@@ -17,9 +17,9 @@
  */
 $noIndex = true;
 $noFollow = true;
-$pageTitle = 'Weryfikacja Konta | Examly';
-$pageDescription = 'Proces weryfikacji konta w serwisie Examly i jego wynik.';
-$canonicalUrl = 'https://www.examly.pl/weryfikacja';
+$pageTitle = 'Weryfikacja Konta | Zdajnik';
+$pageDescription = 'Proces weryfikacji konta w serwisie Zdajnik i jego wynik.';
+$canonicalUrl = 'https://www.zdajnik.pl/weryfikacja';
 
 /**
  * ========================================================================

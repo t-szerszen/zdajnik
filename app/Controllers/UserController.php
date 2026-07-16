@@ -37,7 +37,7 @@ class UserController extends BaseController
   public function showStatistics(): void
   {
     $this->renderView('statistics', [
-      'pageTitle' => 'Twoje Statystyki - Examly'
+      'pageTitle' => 'Twoje Statystyki - Zdajnik'
     ]);
   }
 

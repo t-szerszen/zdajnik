@@ -1,7 +1,7 @@
 {
-  "name": "examly",
+  "name": "zdajnik",
   "version": "1.0.0",
-  "description": "Examly Application",
+  "description": "Zdajnik Application",
   "scripts": {
     "build:css": "sass public/scss/main.scss public/scss/main.css --no-source-map --style=compressed"
   },

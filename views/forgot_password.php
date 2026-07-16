@@ -17,7 +17,7 @@
  * @author Tobiasz Szerszeń
  */
 
-$pageTitle = 'Resetowanie Hasła | Examly';
+$pageTitle = 'Resetowanie Hasła | Zdajnik';
 $noIndex = true;
 ?>
 <!DOCTYPE html>
@@ -42,8 +42,8 @@ $noIndex = true;
 
       <?php if (isset($_SESSION['password_reset_code'])): ?>
         <div class="alert alert--success">
-          <strong>Twój kod bezpieczeństwa to: 
-            <?= htmlspecialchars(substr($_SESSION['password_reset_code'], 0, 3) . '-' . substr($_SESSION['password_reset_code'], 3, 3)); ?>
+          <strong>Twój kod bezpieczeństwa to:
+            <?= htmlspecialchars($_SESSION['password_reset_code']); ?>
           </strong>
           <p>Użyj go na stronie resetowania hasła, na którą link wysłaliśmy Ci w e-mailu.</p>
         </div>
@@ -73,11 +73,6 @@ $noIndex = true;
     </form>
   </main>
   <?php include 'partials/footer.php'; ?>
-
-  <script type="module">
-    import CountdownButton from '<?= url('js/components/CountdownButton.js') ?>';
-    new CountdownButton('submitBtn');
-  </script>
 </body>
 
 </html>

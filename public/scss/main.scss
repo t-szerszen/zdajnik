@@ -9,70 +9,59 @@
  */
 
 // =============================================================================
-// 1. USTAWIENIA (SETTINGS)
+// 1. RDZEŃ (CORE)
 // =============================================================================
-@use '1-settings/variables';
+@use 'core/variables';
+@use 'core/animations';
+@use 'core/mixins';
+@use 'core/base';
+@use 'core/typography';
 
 // =============================================================================
-// 2. NARZĘDZIA (TOOLS)
+// 2. KOMPONENTY (COMPONENTS)
 // =============================================================================
-@use '2-tools/animations';
-@use '2-tools/mixins';
+@use 'components/alert';
+@use 'components/badge';
+@use 'components/button';
+@use 'components/card';
+@use 'components/empty-state';
+@use 'components/exam-card';
+@use 'components/exam-info';
+@use 'components/features-grid';
+@use 'components/footer';
+@use 'components/form-card';
+@use 'components/hero-section';
+@use 'components/info-card';
+@use 'components/nav';
+@use 'components/quiz-card';
+@use 'components/quiz-page-layout';
+@use 'components/search-feature';
+@use 'components/section';
+@use 'components/slider';
+@use 'components/test-configurator';
+@use 'components/theme-switcher';
+@use 'components/toast';
+@use 'components/topic-card';
+@use 'components/topic-selector';
+@use 'components/topics-section';
+@use 'components/page-header';
 
 // =============================================================================
-// 3. OGÓLNE (GENERIC)
+// 3. STRONY (PAGES)
 // =============================================================================
-// @use '3-generic/reset';
+@use 'pages/admin';
+@use 'pages/about';
+@use 'pages/auth';
+@use 'pages/error';
+@use 'pages/home';
+@use 'pages/legal';
+@use 'pages/review';
+@use 'pages/search';
+@use 'pages/settings';
+@use 'pages/statistics';
+@use 'pages/test';
 
 // =============================================================================
-// 4. ELEMENTY (ELEMENTS)
+// 4. POMOCNICZE (HELPERS)
 // =============================================================================
-@use '4-elements/base';
-@use '4-elements/typography';
-
-// =============================================================================
-// 5. OBIEKTY (OBJECTS)
-// =============================================================================
-// @use '5-objects/layout';
-
-// =============================================================================
-// 6. KOMPONENTY (COMPONENTS)
-// =============================================================================
-@use '6-components/button';
-@use '6-components/nav';
-@use '6-components/footer';
-@use '6-components/form-card';
-@use '6-components/alert';
-@use '6-components/info-card';
-@use '6-components/topic-selector';
-@use '6-components/quiz-card';
-@use '6-components/quiz-page-layout';
-@use '6-components/test-page';
-@use '6-components/slider';
-@use '6-components/hero-section';
-@use '6-components/features-grid';
-@use '6-components/exam-card';
-@use '6-components/topic-card';
-@use '6-components/topics-section';
-@use '6-components/exam-info';
-@use '6-components/page-header';
-@use '6-components/test-configurator';
-@use '6-components/toast';
-@use '6-components/theme-switcher';
-@use '6-components/settings-page';
-@use '6-components/statistics-page';
-@use '6-components/review-page';
-@use '6-components/search-feature';
-@use '6-components/search-page';
-@use '6-components/legal-page';
-@use '6-components/error-page';
-@use '6-components/admin-panel';
-
-// =============================================================================
-// 7. NARZĘDZIA POMOCNICZE (UTILITIES)
-// =============================================================================
-// @use '7-utilities/spacing';
-@use '7-utilities/home';
-@use '7-utilities/auth-page';
-@use '7-utilities/text';
-@use '7-utilities/helpers';
+@use 'core/helpers';

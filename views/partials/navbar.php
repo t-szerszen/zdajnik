@@ -33,8 +33,8 @@ use App\Models\User;
 <nav class="main-nav">
   <!-- Sekcja 1: Logo i link do strony głównej -->
   <div class="main-nav__logo">
-    <a href="<?= url() ?>" aria-label="Strona główna Examly">
-      <img src="<?= url('images/company/examly.svg') ?>" alt="Examly" class="logo">
+    <a href="<?= url() ?>" aria-label="Strona główna Zdajnik">
+      <img src="<?= url('images/company/zdajnik.svg') ?>" alt="Zdajnik" class="logo">
     </a>
   </div>
 
@@ -47,7 +47,7 @@ use App\Models\User;
       </div>
     </div>
     <div id="nav-timer" class="nav-test-timer">00:00</div>
-    <button id="nav-pause-btn" class="nav-test-pause-btn" title="Wstrzymaj" aria-label="Wstrzymaj">
+    <button id="nav-pause-btn" class="nav-test-pause-btn" title="Zapauzuj egzamin" aria-label="Zapauzuj egzamin">
       <i class="fas fa-pause"></i>
     </button>
   </div>
@@ -65,7 +65,7 @@ use App\Models\User;
     <div class="main-nav__drawer-header">
       <div class="main-nav__logo">
         <a href="<?= url() ?>">
-          <img src="<?= url('images/company/examly.svg') ?>" alt="Examly" class="logo">
+          <img src="<?= url('images/company/zdajnik.svg') ?>" alt="Zdajnik" class="logo">
         </a>
       </div>
     </div>
@@ -102,17 +102,17 @@ use App\Models\User;
         <ul class="dropdown__menu">
           <li class="dropdown__item">
             <a href="<?= url('jedno-pytanie/INF.04') ?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-question-circle"></i> Jedno pytanie
+              <i class="dropdown__icon fas fa-question-circle"></i> Jedno Pytanie
             </a>
           </li>
           <li class="dropdown__item">
             <a href="<?= url('personalizowany-test/INF.04') ?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-sliders-h"></i> Własny zestaw
+              <i class="dropdown__icon fas fa-sliders-h"></i> Spersonalizowany Test
             </a>
           </li>
           <li class="dropdown__item">
             <a href="<?= url('test/INF.04') ?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-file-alt"></i> Próba egzaminacyjna
+              <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
             </a>
           </li>
         </ul>
@@ -160,7 +160,7 @@ use App\Models\User;
           <ul class="dropdown__menu dropdown__menu--right">
             <li class="dropdown__item">
               <a href="<?= url('statystyki') ?>" class="dropdown__link">
-                <i class="dropdown__icon fas fa-chart-bar"></i> Twoje postępy
+                <i class="dropdown__icon fas fa-chart-bar"></i> Statystyki
               </a>
             </li>
             <li class="dropdown__item">
@@ -168,13 +168,13 @@ use App\Models\User;
                 <i class="dropdown__icon fas fa-cog"></i> Ustawienia
               </a>
             </li>
-	            <?php if ($currentUser && $currentUser->isAdmin()): ?>
-	              <li class="dropdown__item">
-	                <a href="<?= url('admin') ?>" class="dropdown__link">
-	                  <i class="dropdown__icon fas fa-shield-halved"></i> Panel administracyjny
-	                </a>
-	              </li>
-	            <?php endif; ?>
+            <?php if ($currentUser && $currentUser->isAdmin()): ?>
+              <li class="dropdown__item">
+                <a href="<?= url('admin') ?>" class="dropdown__link">
+                  <i class="dropdown__icon fas fa-shield-halved"></i> Panel administracyjny
+                </a>
+              </li>
+            <?php endif; ?>
             <li class="dropdown__item dropdown__item--logout">
               <a href="<?= url('wyloguj') ?>" class="dropdown__link">
                 <i class="dropdown__icon fas fa-sign-out-alt"></i> Wyloguj się
@@ -189,7 +189,7 @@ use App\Models\User;
     <!-- Drawer Footer (Tylko na mobile) -->
     <div class="main-nav__drawer-footer">
       <p>&copy;
-        <?= date('Y') ?> Examly.pl
+        <?= date('Y') ?> Zdajnik.pl
       </p>
     </div>
   </div>
@@ -198,20 +198,18 @@ use App\Models\User;
 <div class="nav-overlay" data-nav-overlay></div>
 <!-- /Koniec Komponentu Nawigacji -->
 
-<script type="module" src="<?= url('js/components/NavbarHandler.js') ?>"></script>
-
 <!-- 
   =======================================================================
   Skrypt: Inicjalizacja stanu aplikacji po stronie klienta
   -----------------------------------------------------------------------
   Cel: Przekazuje kluczowe dane z PHP (backend) do JavaScript (frontend).
-       Utworzenie globalnego obiektu `window.examlyAppState` pozwala 
+       Utworzenie globalnego obiektu `window.zdajnikAppState` pozwala 
        na łatwy i spójny dostęp do stanu zalogowania użytkownika 
        w różnych skryptach JS bez potrzeby dodatkowych zapytań AJAX.
   =======================================================================
 -->
 <script>
-  window.examlyAppState = {
+  window.zdajnikAppState = {
     isUserLoggedIn: <?= isset($_SESSION['user']) && $_SESSION['user'] instanceof User ? 'true' : 'false' ?>,
     baseUrl: '<?= BASE_URL ?>'
   };
