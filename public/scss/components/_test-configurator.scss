@@ -19,6 +19,19 @@
   &[style*='display: none;'] {
     display: none;
   }
+
+  // `.config-step` nie ma własnego tła (jest "gołym" fieldsetem), więc gdy
+  // samouczek (PremiumOptionsTutorial lub PersonalizedTestTutorial) podnosi go
+  // ponad przyciemnioną, rozmytą nakładkę przez z-index, treść w środku i tak
+  // prześwituje na tle overlaya - stąd nieczytelny, "wyszarzony" wygląd.
+  // Trzeba mu dać własne, nieprzezroczyste tło na czas podświetlenia.
+  &.premium-tutorial-target,
+  &.pt-tutorial-target {
+    padding: 1.5rem 1.75rem;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+  }
 }
 
 .config-step__title {

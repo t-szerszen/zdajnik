@@ -31,7 +31,7 @@ $extraScripts = [
  * @description Renderuje interfejs do tworzenia i przeprowadzania
  * spersonalizowanego testu. Użytkownik przechodzi przez wieloetapowy
  * formularz (konfigurator), aby wybrać tematy, liczbę pytań
- * i opcjonalne filtry inteligentnej nauki.
+ * i opcjonalne tryby nauki.
  *
  * @dependencies 
  * - partials/head.php (head)
@@ -153,11 +153,11 @@ $extraScripts = [
           </div>
         </fieldset>
 
-        <!-- Krok 3: Opcje inteligentnej nauki -->
+        <!-- Krok 3: Tryby nauki -->
         <fieldset class="config-step hidden" data-step="3" data-premium-filters-root>
           <legend class="config-step__title">
             <span class="config-step__number">3</span>
-            Chcesz uczyć się inteligentnie? (Opcjonalnie)
+            Tryby nauki (opcjonalnie)
             <button type="button" class="topic-selector__help-btn hidden" data-premium-tutorial-trigger
               aria-label="Pokaż poradnik filtrów" title="Pokaż poradnik filtrów">
               <i class="fas fa-question" aria-hidden="true"></i>

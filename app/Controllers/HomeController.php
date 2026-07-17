@@ -113,7 +113,7 @@ class HomeController extends BaseController
     }
 
     if (!empty(trim((string) ($_POST['website'] ?? '')))) {
-      $this->redirectContact('success', 'Dziękujemy za wiadomość. Odpowiemy tak szybko, jak będzie to możliwe.');
+      $this->redirectContact('success', 'Dziękuję za wiadomość. Odpowiem tak szybko, jak będzie to możliwe.');
     }
 
     $errors = $this->validateContactForm($formData);
@@ -136,7 +136,7 @@ class HomeController extends BaseController
       );
     }
 
-    $this->redirectContact('success', 'Dziękujemy za wiadomość. Odpowiemy tak szybko, jak będzie to możliwe.');
+    $this->redirectContact('success', 'Dziękuję za wiadomość. Odpowiem tak szybko, jak będzie to możliwe.');
   }
 
   /**

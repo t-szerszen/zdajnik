@@ -28,7 +28,7 @@ $noIndex = true;
     <form method="POST" class="form-card">
       <div class="form-card__header">
         <h1 class="form-card__title">Potwierdź zmianę e-maila</h1>
-        <p class="form-card__subtitle">Wpisz kod bezpieczeństwa, który wysłaliśmy na Twój nowy adres.</p>
+        <p class="form-card__subtitle">Wpisz kod bezpieczeństwa wysłany na Twój nowy adres.</p>
       </div>
 
       <?php if (isset($_SESSION['flash_message'])):

@@ -7,7 +7,7 @@
  */
 
 $pageTitle = 'Kontakt | Zdajnik';
-$pageDescription = 'Skontaktuj się z zespołem Zdajnik w sprawie pytań, błędów lub współpracy przy projekcie.';
+$pageDescription = 'Skontaktuj się ze mną w sprawie pytań, błędów lub współpracy przy Zdajniku.';
 $formData = $formData ?? [];
 ?>
 <!DOCTYPE html>
@@ -22,7 +22,7 @@ $formData = $formData ?? [];
       <div class="page-header__content">
         <h1 class="page-header__title"><span class="text-gradient">Kontakt</span></h1>
         <p class="page-header__text">
-          Masz pytanie, znalazłeś błąd albo chcesz podzielić się pomysłem? Napisz do nas przez formularz.
+          Masz pytanie, znalazłeś błąd albo chcesz podzielić się pomysłem? Napisz do mnie przez formularz.
         </p>
       </div>
     </header>
@@ -39,8 +39,8 @@ $formData = $formData ?? [];
         <div class="form-card__icon-circle">
           <i class="fas fa-envelope-open-text"></i>
         </div>
-        <h2 class="form-card__title">Napisz do nas</h2>
-        <p class="form-card__subtitle">Odpowiadamy na wiadomości dotyczące działania platformy i materiałów do nauki.</p>
+        <h2 class="form-card__title">Napisz do mnie</h2>
+        <p class="form-card__subtitle">Odpowiadam na wiadomości dotyczące działania platformy i materiałów do nauki.</p>
       </div>
 
       <?php if (isset($_SESSION['flash_message'])):

@@ -15,7 +15,7 @@
  * Konfiguracja komponentu head
  */
 $pageTitle = 'Polityka Prywatności | Zdajnik';
-$pageDescription = 'Przeczytaj politykę prywatności serwisu Zdajnik. Dowiedz się, jakie dane gromadzimy i jak je chronimy.';
+$pageDescription = 'Przeczytaj politykę prywatności serwisu Zdajnik. Dowiedz się, jakie dane są gromadzone i jak są chronione.';
 ?>
 <!DOCTYPE html>
 <html lang="pl">

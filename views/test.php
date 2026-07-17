@@ -100,7 +100,7 @@ $extraScripts = [
       <div id="loading-screen" class="test-loading">
         <div class="spinner"></div>
         <h2>Trwa przygotowywanie testu...</h2>
-        <p>Proszę czekać, losujemy pytania z całej puli specjalnie dla Ciebie.</p>
+        <p>Proszę czekać, trwa losowanie pytań z całej puli specjalnie dla Ciebie.</p>
       </div>
 
       <!-- Stan 2: Widok aktywnego testu (początkowo ukryty) -->

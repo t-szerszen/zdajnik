@@ -7,56 +7,34 @@
 $pageTitle = 'O projekcie | Zdajnik';
 $pageDescription = 'Poznaj historię powstania Zdajnika, projekt tworzonego z myślą o uczniach przygotowujących się do egzaminów zawodowych.';
 
-$features = [
+$collaborationItems = [
   [
-    'icon' => 'fa-list-check',
-    'title' => 'Baza pytań egzaminacyjnych',
-    'text' => 'Pytania zebrane w jednym miejscu i uporządkowane według kwalifikacji.'
+    'icon' => 'fa-bug',
+    'title' => 'Zgłoś błąd w pytaniu',
+    'text' => 'Trafiłeś na nieaktualną odpowiedź, literówkę albo złą treść pytania? Daj znać - poprawki wchodzą od ręki.'
   ],
   [
-    'icon' => 'fa-circle-question',
-    'title' => 'Wyjaśnienia do odpowiedzi',
-    'text' => 'Po odpowiedzi możesz sprawdzić, dlaczego dana odpowiedź jest poprawna.'
+    'icon' => 'fa-lightbulb',
+    'title' => 'Zaproponuj funkcję',
+    'text' => 'Brakuje Ci czegoś w nauce albo masz pomysł na usprawnienie? Twoja sugestia może trafić do najbliższej aktualizacji.'
   ],
   [
-    'icon' => 'fa-filter',
-    'title' => 'Filtry nauki',
-    'text' => 'Możesz wracać do nieodkrytych pytań, błędów i słabszych tematów.'
+    'icon' => 'fa-code',
+    'title' => 'Pomóż programistycznie',
+    'text' => 'Znasz PHP, JavaScript albo SCSS? Zdajnik cały czas rośnie i przyda się dodatkowa para rąk do kodu.'
   ],
   [
-    'icon' => 'fa-clipboard-check',
-    'title' => 'Egzaminy próbne',
-    'text' => 'Sprawdzasz się w trybie zbliżonym do części pisemnej egzaminu.'
-  ],
-  [
-    'icon' => 'fa-chart-simple',
-    'title' => 'Statystyki postępów',
-    'text' => 'Widzisz wyniki nauki i tematy, które warto jeszcze powtórzyć.'
-  ],
-  [
-    'icon' => 'fa-magnifying-glass',
-    'title' => 'Wyszukiwarka pytań',
-    'text' => 'Szybko odnajdujesz konkretne zagadnienia i pytania.'
-  ],
-  [
-    'icon' => 'fa-file-pen',
-    'title' => 'Arkusze praktyczne',
-    'text' => 'Materiały do samodzielnego ćwiczenia zadań praktycznych.',
-    'status' => 'Wkrótce'
-  ],
-  [
-    'icon' => 'fa-graduation-cap',
-    'title' => 'Kursy',
-    'text' => 'Uporządkowane materiały pomagające przygotować się krok po kroku.',
-    'status' => 'Wkrótce'
+    'icon' => 'fa-book-open',
+    'title' => 'Podziel się materiałami',
+    'text' => 'Masz notatki, pytania z kartkówek albo pomysł na treści do kolejnych kwalifikacji (INF.02, INF.03)? Chętnie je wykorzystam.'
   ],
 ];
 
 $trustItems = [
   [
     'icon' => 'fa-user-graduate',
-    'title' => 'Tworzone przez ucznia technikum',
-    'text' => 'Projekt wyrósł z realnych przygotowań do egzaminu zawodowego.'
+    'title' => 'Zbudowane ze złości na kiepskie bazy pytań',
+    'text' => 'Zdajnik nie powstał w agencji marketingowej, tylko z frustracji ucznia, który sam uczył się do egzaminu.'
   ],
   [
     'icon' => 'fa-file-circle-check',
@@ -79,7 +57,7 @@ $trustItems = [
 <html lang="pl">
 <?php include 'partials/head.php'; ?>
 
-<body class="auth-page-background">
+<body class="home-page-background">
   <?php include 'partials/navbar.php'; ?>
 
   <main class="about-project">
@@ -87,20 +65,21 @@ $trustItems = [
       <div class="about-project__container about-project__hero-grid">
         <div class="about-project__hero-copy">
           <p class="about-project__eyebrow">O projekcie</p>
-          <h1>Dlaczego powstał Zdajnik?</h1>
+          <h1>To samo pytanie <span class="text-gradient">dziesiąty raz</span>? Miało tak nie być.</h1>
           <p>
-            Zdajnik powstał podczas przygotowań do egzaminów zawodowych. Celem projektu jest stworzenie miejsca, które
-            pomaga uczniom skuteczniej uczyć się do kwalifikacji zawodowych.
+            Zdajnik powstał z frustracji ucznia technikum, który szukał dobrego miejsca do nauki teorii przed
+            egzaminem zawodowym - i nie znalazł. Zamiast kolejnej bazy pytań rzucającej losowo, zbudowałem narzędzie,
+            które samo pilnuje Twojej nauki, żebyś w dniu egzaminu czuł/a pewność siebie, a nie stres i zgadywanie.
           </p>
           <a href="<?= url('/') ?>" class="btn btn--primary btn--large">Przejdź do platformy</a>
         </div>
 
         <aside class="about-project__note" aria-label="Krótko o Zdajniku">
           <i class="fas fa-seedling"></i>
-          <h2>Projekt tworzony z potrzeby</h2>
+          <h2>Nie kolejna baza pytań</h2>
           <p>
-            Nie jako anonimowa strona z testami, tylko jako narzędzie do nauki, którego brakowało podczas własnych
-            przygotowań do egzaminu.
+            Suchy zbiór pytań to za mało. Zdajnik wie, co już umiesz, a co wymaga powtórki - żebyś nie tracił/a
+            czasu i motywacji na pytania, które opanowałeś/aś dawno temu.
           </p>
         </aside>
       </div>
@@ -115,21 +94,29 @@ $trustItems = [
 
         <div class="about-project__story-content">
           <p>
-            Projekt został stworzony przez ucznia technikum informatycznego. Podczas przygotowań do egzaminów zawodowych
-            brakowało miejsca, które pomaga uczyć się spokojnie, konkretnie i bez zbędnego chaosu.
+            Historia Zdajnika zaczyna się bardzo zwyczajnie - od zwykłej frustracji. Jako uczeń technikum
+            informatycznego szukałem sposobu, żeby solidnie przygotować się do części pisemnej egzaminu zawodowego.
+            Trafiałem na bazy pytań, ale każda miała ten sam problem: rzucała pytaniami losowo, bez żadnego pomysłu
+            na to, jak się naprawdę uczyć.
+          </p>
+          <p>
+            Najgorsze było to, że w jednej sesji nauki potrafiłem zobaczyć to samo pytanie nawet dziesięć razy -
+            mimo że dawno je opanowałem. Zamiast realnej nauki dostawałem czystą loterię. A z każdym powtórzonym,
+            znanym już pytaniem traciłem chęci do nauki, zamiast je zyskiwać.
           </p>
 
           <div class="about-project__missing-box">
             <h3>Brakowało miejsca, które:</h3>
             <ul>
-              <li>zbiera pytania egzaminacyjne w jednym miejscu,</li>
-              <li>tłumaczy poprawne odpowiedzi,</li>
-              <li>pokazuje postępy w nauce,</li>
-              <li>pomaga wracać do trudnych zagadnień.</li>
+              <li>nie pokazuje w kółko tych samych, dawno opanowanych pytań,</li>
+              <li>wie, co już umiesz, a co wymaga powtórki,</li>
+              <li>tłumaczy, dlaczego dana odpowiedź jest poprawna,</li>
+              <li>pokazuje realny postęp zamiast przypadkowych cyfr.</li>
             </ul>
           </div>
 
-          <p>Z tego powodu powstał Zdajnik.</p>
+          <p>Z tego powodu powstał Zdajnik - żebyś w dniu egzaminu, tym ważnym i stresującym dniu, miał/a za sobą
+            naukę zarządzaną z sensem, a nie zgadywanie na loterii pytań.</p>
         </div>
       </div>
     </section>
@@ -141,31 +128,19 @@ $trustItems = [
           <h2>Narzędzia do codziennej nauki</h2>
         </div>
 
-        <div class="about-project__feature-grid">
-          <?php foreach ($features as $feature): ?>
-            <article class="about-project__feature-card <?= isset($feature['status']) ? 'about-project__feature-card--soon' : '' ?>">
-              <div class="about-project__card-icon">
-                <i class="fas <?= htmlspecialchars($feature['icon']) ?>"></i>
-              </div>
-              <div>
-                <div class="about-project__card-title-row">
-                  <h3><?= htmlspecialchars($feature['title']) ?></h3>
-                  <?php if (isset($feature['status'])): ?>
-                    <span><?= htmlspecialchars($feature['status']) ?></span>
-                  <?php endif; ?>
-                </div>
-                <p><?= htmlspecialchars($feature['text']) ?></p>
-              </div>
-            </article>
-          <?php endforeach; ?>
-        </div>
+        <?php
+        $features = include 'partials/data/hero_features.php';
+        $featureGridTag = 'div';
+        $featureGridAriaLabel = 'Funkcje Zdajnika';
+        include 'partials/feature_grid.php';
+        ?>
       </div>
     </section>
 
     <section class="about-project__section">
       <div class="about-project__container">
         <div class="about-project__section-heading">
-          <span>Dlaczego można nam zaufać</span>
+          <span>Dlaczego można mi zaufać</span>
           <h2>Bez wymyślonych liczb i pustych obietnic</h2>
         </div>
 
@@ -202,8 +177,30 @@ $trustItems = [
             <li>dodatkowe materiały edukacyjne.</li>
           </ul>
           <p>
-            Celem jest stworzenie kompletnego miejsca do nauki egzaminów zawodowych.
+            Cel od początku jest ten sam: żebyś w dniu egzaminu wiedział/a, że jesteś gotowy/a - niezależnie od
+            tego, jaką kwalifikację zdajesz.
           </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-project__section">
+      <div class="about-project__container">
+        <div class="about-project__section-heading">
+          <span>Współpraca</span>
+          <h2>Jak możesz pomóc?</h2>
+        </div>
+
+        <div class="about-project__trust-grid">
+          <?php foreach ($collaborationItems as $item): ?>
+            <article class="about-project__trust-item">
+              <i class="fas <?= htmlspecialchars($item['icon']) ?>"></i>
+              <div>
+                <h3><?= htmlspecialchars($item['title']) ?></h3>
+                <p><?= htmlspecialchars($item['text']) ?></p>
+              </div>
+            </article>
+          <?php endforeach; ?>
         </div>
       </div>
     </section>
@@ -213,7 +210,11 @@ $trustItems = [
         <div>
           <span>Kontakt</span>
           <h2>Masz pomysł, uwagi lub chcesz nawiązać współpracę?</h2>
-          <p>Napisz bezpośrednio na adres <a href="mailto:<?= htmlspecialchars(CONTACT_EMAIL) ?>"><?= htmlspecialchars(CONTACT_EMAIL) ?></a>.</p>
+          <p>
+            Niezależnie od tego, czy chcesz zgłosić błąd, zaproponować funkcję, czy dołączyć do rozwoju Zdajnika -
+            napisz bezpośrednio na adres <a href="mailto:<?= htmlspecialchars(CONTACT_EMAIL) ?>"><?= htmlspecialchars(CONTACT_EMAIL) ?></a>
+            albo skorzystaj z formularza. Odpisuję osobiście na każdą wiadomość.
+          </p>
         </div>
         <a href="<?= url('kontakt') ?>" class="btn btn--secondary btn--large">Otwórz formularz</a>
       </div>

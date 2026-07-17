@@ -209,7 +209,7 @@ $extraScripts = [
                 <div class="stats-card__empty-icon">📈</div>
                 <p>Twój wykres skuteczności jest jeszcze pusty.</p>
                 <p class="stats-card__empty-hint">Rozwiąż pierwszy
-                  egzamin, abyśmy mogli wygenerować Twój trend!</p>
+                  egzamin, aby wygenerować Twój trend!</p>
                 <a href="<?= url('test/' . $selectedCategoryCode) ?>" class="btn btn--primary"
                   >Rozpocznij test</a>
               </div>
@@ -361,7 +361,7 @@ $extraScripts = [
                   <li class="stats-card__empty">
                     <p>
                       <?php if ($records['total_exams'] == 0): ?>
-                        Zacznij rozwiązywać testy, abyśmy mogli wyłapać Twoje najczęstsze błędy.
+                        Zacznij rozwiązywać testy, aby wyłapać Twoje najczęstsze błędy.
                         <?php
                       else: ?>
                         Twoja skuteczność jest na najwyższym poziomie! Nie wykryto krytycznych błędów.

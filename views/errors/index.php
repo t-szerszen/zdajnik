@@ -16,7 +16,7 @@
 $pageTitle = $pageTitle ?? 'Błąd | Zdajnik';
 $errorCode = $errorCode ?? 404;
 $errorTitle = $errorTitle ?? 'Strona nie znaleziona';
-$errorMessage = $errorMessage ?? 'Przepraszamy, ale strona której szukasz nie istnieje.';
+$errorMessage = $errorMessage ?? 'Przepraszam, ale strona, której szukasz, nie istnieje.';
 $errorIcon = $errorIcon ?? 'fas fa-exclamation-circle';
 ?>
 <!DOCTYPE html>

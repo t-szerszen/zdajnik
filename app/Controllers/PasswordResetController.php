@@ -113,7 +113,7 @@ class PasswordResetController extends BaseController
     // KROK 5: Wyświetlenie neutralnego komunikatu (zapobieganie User Enumeration)
     $_SESSION['flash_message'] = [
       'type' => 'info',
-      'text' => "Jeśli konto o podanym adresie e-mail ($email) istnieje, wysłaliśmy na nie instrukcję resetowania hasła."
+      'text' => "Jeśli konto o podanym adresie e-mail ($email) istnieje, wysłano na nie instrukcję resetowania hasła."
     ];
 
     header('Location: ' . url('reset-hasla'));

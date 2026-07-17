@@ -21,42 +21,50 @@ export class StatisticsTutorial {
       {
         selector: '#stats-category-selector',
         title: 'Wybór egzaminu',
-        description: 'Wybierz kwalifikację. Metryki i wykresy pokażą wyniki tylko dla tego egzaminu.'
+        description:
+          'Wszystko na tej stronie liczy się osobno dla każdej kwalifikacji. Wybierz tu egzamin, żeby zobaczyć wykresy i liczby tylko dla niego.'
       },
       {
         selector: '#stats-mastery-card',
         title: 'Twoje opanowanie materiału',
-        description: 'Sprawdź, ile materiału masz już opanowane i które tematy wymagają powtórki.'
+        description:
+          'Pytanie liczy się jako „opanowane”, gdy odpowiadasz na nie poprawnie w co najmniej 60% prób. „Poznano” to po prostu liczba pytań, na które w ogóle już odpowiadałeś — nawet jeśli jeszcze ich nie umiesz. Niżej zobaczysz ten sam podział osobno dla każdego działu, żeby wiedzieć, gdzie brakuje Ci powtórek.'
       },
       {
         selector: '#stats-trend-card',
         title: 'Trend skuteczności',
-        description: 'Zobacz, czy Twoja skuteczność rośnie w kolejnych sesjach nauki.'
+        description:
+          'Każdy punkt na wykresie to wynik jednego rozwiązanego testu, a gruba linia to średnia z ostatnich 5 podejść — dzięki niej widać, czy naprawdę robisz postępy, a nie tylko trafiłeś dobry dzień. Oś pozioma to kolejne testy, a nie kalendarz.'
       },
       {
         selector: '#stats-key-metrics-card',
         title: 'Kluczowe wyniki',
-        description: 'Tu znajdziesz najlepszy wynik, średni czas, liczbę testów i ostatni rezultat.'
+        description:
+          'Najlepszy wynik i średni czas liczą się z Twoich pełnych testów, a „Ostatnia aktywność” to data dowolnej odpowiedzi — nawet jednego pytania w trybie „Jedno pytanie”. Przewidywany wynik egzaminu odblokuje się po 5 pełnych egzaminach — to średnia z ostatnich 5 podejść, w której najnowsze liczy się najbardziej.'
       },
       {
         selector: '#criticalMistakes',
         title: 'Krytyczne błędy',
-        description: 'To pytania, które najczęściej obniżają wynik. Zacznij powtórkę właśnie od nich.'
+        description:
+          'To pytania, w których wypadasz poniżej 60% skuteczności — dokładnie ta sama zasada, co w trybie nauki „Słabe punkty”. Tutaj lista jest posortowana od najgorszego wyniku i odblokuje się dopiero po 100 odpowiedziach w tym egzaminie, bo dopiero wtedy widać Twoje prawdziwe słabe punkty, a nie przypadek.'
       },
       {
         selector: '#lastMistakes',
         title: 'Ostatnie błędy',
-        description: 'Wróć do świeżych pomyłek, zanim utrwalą się złe odpowiedzi.'
+        description:
+          'Tu widzisz pytania, w których Twoja ostatnia odpowiedź była błędna — to ten sam warunek, na którym działa tryb nauki „Ostatnie błędy”. Różnica jest taka, że tutaj lista jest posortowana od najświeższej pomyłki. Popraw błąd tu i teraz, zanim się utrwali.'
       },
       {
         selector: '#savedQuestions',
         title: 'Zapisane pytania',
-        description: 'To Twoja lista ważnych pytań. Używaj jej do szybkiej powtórki.'
+        description:
+          'To Twoja własna lista — pytania, które sam odłożyłeś przyciskiem „Zapisz” (serduszko przy pytaniu). To dokładnie ta sama lista, z której korzysta tryb nauki „Zapisane”. Wróć tu przed egzaminem, żeby powtórzyć to, co uznałeś za trudne.'
       },
       {
         selector: '#examsHistory',
         title: 'Historia egzaminów',
-        description: 'Porównuj wyniki testów i sprawdzaj, czy robisz stabilny postęp.'
+        description:
+          'Ostatnie ukończone testy razem z wynikiem procentowym. Porównuj je, żeby sprawdzić, czy Twoja skuteczność naprawdę rośnie z czasem — pełną listę zobaczysz pod przyciskiem „zobacz wszystkie”.'
       }
     ];
 

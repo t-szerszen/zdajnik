@@ -127,7 +127,7 @@ class SettingsController extends BaseController
 
       $_SESSION['flash_message'] = [
         'type' => 'success',
-        'text' => 'Na Twój adres e-mail wysłaliśmy link potwierdzający. Kliknij go, aby dokończyć usuwanie konta.'
+        'text' => 'Na Twój adres e-mail wysłano link potwierdzający. Kliknij go, aby dokończyć usuwanie konta.'
       ];
       $this->getAnalyticsService()->trackSettingsUpdated(
         $this->currentUser->getId(),
@@ -339,7 +339,7 @@ class SettingsController extends BaseController
     $_SESSION['email_change_sent'] = time();
     $_SESSION['flash_message'] = [
       'type' => 'success',
-      'text' => "Na nowy adres e-mail wysłaliśmy kod. Wpisz go poniżej."
+      'text' => "Na nowy adres e-mail wysłano kod. Wpisz go poniżej."
     ];
     $this->getAnalyticsService()->trackSettingsUpdated(
       $this->currentUser->getId(),
@@ -482,7 +482,7 @@ class SettingsController extends BaseController
 
       $_SESSION['flash_message'] = [
         'type' => 'success',
-        'text' => 'Na Twój adres e-mail wysłaliśmy link potwierdzający. Kliknij go, aby wyzerować postęp wybranego egzaminu.'
+        'text' => 'Na Twój adres e-mail wysłano link potwierdzający. Kliknij go, aby wyzerować postęp wybranego egzaminu.'
       ];
     } else {
       $_SESSION['flash_message'] = [

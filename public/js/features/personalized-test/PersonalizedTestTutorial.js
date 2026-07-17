@@ -34,8 +34,8 @@ export class PersonalizedTestTutorial {
       {
         wizardStep: 3,
         selector: '[data-step="3"]',
-        title: 'Inteligentna nauka (opcjonalnie)',
-        description: 'Zalogowani użytkownicy mogą dodatkowo dobrać pytania: nieodkryte, słabe punkty, powtórki, ostatnie błędy lub zapisane. Szczegóły każdego filtra pokazuje ikona "?" obok tytułu.'
+        title: 'Tryby nauki (opcjonalnie)',
+        description: 'Zalogowani użytkownicy mogą dodatkowo dobrać pytania: nieodkryte, słabe punkty, powtórki, ostatnie błędy lub zapisane. Szczegóły każdego trybu pokazuje ikona "?" obok tytułu.'
       },
       {
         wizardStep: 3,

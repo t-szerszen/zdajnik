@@ -73,10 +73,16 @@
     white-space: normal;
     z-index: 1;
 
+    i.section-icon {
+      margin-right: 0.4rem;
+    }
+
     &--premium {
       color: var(--accent);
       border-color: rgba(var(--accent-rgb), 0.28);
-      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), var(--surface));
+      background:
+        linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), rgba(var(--accent-rgb), 0)),
+        var(--surface);
     }
   }
 

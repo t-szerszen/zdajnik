@@ -25,8 +25,8 @@ export class OneQuestionTutorial {
       },
       {
         selector: '[data-premium-filters-root]',
-        title: 'Inteligentna nauka',
-        description: 'Zalogowani użytkownicy mogą dodatkowo dobierać pytania: nieodkryte, słabe punkty, powtórki, ostatnie błędy lub zapisane. Ikona "?" obok pokazuje szczegółowy opis każdego filtra.'
+        title: 'Tryby nauki',
+        description: 'Zalogowani użytkownicy mogą dodatkowo dobierać pytania: nieodkryte, słabe punkty, powtórki, ostatnie błędy lub zapisane. Ikona "?" obok pokazuje szczegółowy opis każdego trybu.'
       },
       {
         selector: '#start-learning-btn',

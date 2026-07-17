@@ -23,15 +23,29 @@ export class PremiumOptionsTutorial {
 
   buildSteps() {
     const descriptions = {
-      toDiscover: 'Wybiera pytania, których jeszcze nie rozwiązywałeś. Użyj, gdy chcesz poszerzyć zakres nauki.',
-      toImprove: 'Pokazuje pytania z niższą skutecznością. Użyj, gdy chcesz poprawić słabe punkty.',
-      toRemind: 'Dobiera pytania dawno niepowtarzane. Użyj, żeby odświeżyć materiał przed testem.',
-      lastMistakes: 'Wraca do ostatnich błędów. Użyj, żeby szybko poprawić świeże pomyłki.',
-      saved: 'Pokazuje zapisane pytania. Użyj do pracy z własną listą trudnych zagadnień.'
+      toDiscover:
+        'Dostajesz wyłącznie pytania, których jeszcze nigdy nie widziałeś. Włącz, gdy chcesz poznawać nowy materiał zamiast ciągle trafiać na te same pytania.',
+      toImprove:
+        'Pokazuje pytania, które wychodzą Ci najsłabiej (poniżej 60% poprawnych odpowiedzi) — najpierw te najgorsze. Odblokuje się dopiero, gdy odpowiesz na min. 100 pytań z wybranego działu.',
+      toRemind:
+        'Przypomina pytania, których najdłużej nie powtarzałeś — nawet jeśli kiedyś umiałeś je świetnie. Chroni przed zapominaniem przed egzaminem. Też wymaga min. 100 odpowiedzi z działu.',
+      lastMistakes:
+        'Wraca do pytań, w których ostatnio się pomyliłeś. Najlepsze, gdy chcesz od razu poprawić świeży błąd, zanim się utrwali lub na drugi dzień sprawdzić, czy nadal popełnisz ten sam błąd.',
+      saved:
+        'Twoja prywatna lista — pytania, które sam odłożyłeś przyciskiem „Zapisz”. Wróć tu tuż przed egzaminem, żeby powtórzyć to, co uznałeś za trudne.'
     };
 
     const orderedValues = ['toDiscover', 'toImprove', 'toRemind', 'lastMistakes', 'saved'];
     const steps = [];
+
+    if (this.root) {
+      steps.push({
+        target: this.root,
+        title: 'Jak działają Tryby nauki?',
+        description:
+          'To 5 trybów, które same dobierają Ci pytania pod konkretny cel — zamiast losowych z całego działu. Możesz włączyć tylko jeden naraz (wybór kolejnego wyłącza poprzedni). „Słabe punkty” i „Powtórki” odblokują się dopiero po 100 odpowiedziach z wybranego działu — dopiero wtedy system wie, co warto Ci pokazać.'
+      });
+    }
 
     orderedValues.forEach((value) => {
       const checkbox = this.form.querySelector(`.premium-checkbox[value="${value}"]`);
@@ -120,7 +134,7 @@ export class PremiumOptionsTutorial {
         checkbox.disabled = true;
         const label = checkbox.closest('.topic-selector__label');
         if (label) {
-          label.title = 'Utwórz darmowe konto, aby korzystać z inteligentnych filtrów nauki.';
+          label.title = 'Utwórz darmowe konto, aby korzystać z trybów nauki.';
         }
       });
     }

@@ -68,7 +68,7 @@ $canonicalUrl = 'https://www.zdajnik.pl/autoryzacja-email';
         </div>
         <h1 class="form-card__title">Sprawdź skrzynkę</h1>
         <p class="form-card__subtitle">
-          Aby zakończyć rejestrację, kliknij w link aktywacyjny, który wysłaliśmy na Twój adres e-mail.
+          Aby zakończyć rejestrację, kliknij w link aktywacyjny wysłany na Twój adres e-mail.
         </p>
       </div>
 

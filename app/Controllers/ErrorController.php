@@ -52,7 +52,7 @@ class ErrorController extends BaseController
       ],
       500 => [
         'title' => 'Błąd serwera',
-        'message' => 'Coś poszło nie tak po naszej stronie. Nasz zespół już nad tym pracuje.',
+        'message' => 'Coś poszło nie tak po stronie serwera. Trwają prace nad naprawą.',
         'icon' => 'fas fa-server'
       ],
       403 => [

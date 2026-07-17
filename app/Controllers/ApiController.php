@@ -692,8 +692,8 @@ class ApiController extends BaseController
             'count' => $answeredCount,
           ]);
           $gatekeeperMessage = $specialFilter === 'toRemind'
-            ? 'Musisz odpowiedzieć na co najmniej 100 pytań, abyśmy mogli dobrać pytania dawno niepowtarzane.'
-            : 'Musisz odpowiedzieć na co najmniej 100 pytań, abyśmy mogli przeanalizować Twoje słabe strony.';
+            ? 'Musisz odpowiedzieć na co najmniej 100 pytań, aby dobrać pytania dawno niepowtarzane.'
+            : 'Musisz odpowiedzieć na co najmniej 100 pytań, aby przeanalizować Twoje słabe strony.';
           $this->sendJsonResponse([
             'success' => false,
             'status' => 'gatekeeper',

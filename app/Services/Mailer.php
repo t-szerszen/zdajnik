@@ -64,7 +64,7 @@ class Mailer
   public function sendAccountVerificationEmail(string $email, string $name, string $link): bool
   {
     $body = $this->paragraph('Cześć ' . $this->e($name) . ',')
-      . $this->paragraph('Dziękujemy za rejestrację w Zdajnik. Potwierdź adres e-mail, żeby aktywować konto i zacząć korzystać z platformy.')
+      . $this->paragraph('Rejestracja w Zdajnik przebiegła pomyślnie. Potwierdź adres e-mail, żeby aktywować konto i zacząć korzystać z platformy.')
       . $this->actionButton('Aktywuj konto', $link)
       . $this->notice('Link aktywacyjny jest ważny przez 24 godziny. Jeśli to nie Ty zakładałeś konto, możesz zignorować tę wiadomość.');
 
@@ -80,13 +80,13 @@ class Mailer
       $email,
       'Aktywuj swoje konto w Zdajnik',
       $html,
-      "Cześć $name,\n\nDziękujemy za rejestrację w Zdajnik. Aktywuj konto pod adresem:\n$link\n\nLink jest ważny przez 24 godziny."
+      "Cześć $name,\n\nRejestracja w Zdajnik przebiegła pomyślnie. Aktywuj konto pod adresem:\n$link\n\nLink jest ważny przez 24 godziny."
     );
   }
 
   public function sendPasswordResetEmail(string $email, string $link): bool
   {
-    $body = $this->paragraph('Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta.')
+    $body = $this->paragraph('Otrzymano prośbę o zresetowanie hasła do Twojego konta.')
       . $this->actionButton('Ustaw nowe hasło', $link)
       . $this->notice('Na stronie resetowania zostaniesz poproszony o kod bezpieczeństwa widoczny w aplikacji. Jeśli to nie Ty zleciłeś reset, zignoruj tę wiadomość.');
 
@@ -102,7 +102,7 @@ class Mailer
       $email,
       'Reset hasła w serwisie Zdajnik',
       $html,
-      "Otrzymaliśmy prośbę o zresetowanie hasła.\n\nUstaw nowe hasło pod adresem:\n$link\n\nJeśli to nie Ty zleciłeś reset, zignoruj tę wiadomość."
+      "Otrzymano prośbę o zresetowanie hasła.\n\nUstaw nowe hasło pod adresem:\n$link\n\nJeśli to nie Ty zleciłeś reset, zignoruj tę wiadomość."
     );
   }
 
@@ -129,7 +129,7 @@ class Mailer
 
   public function sendAccountDeletionConfirmationEmail(string $email, string $link): bool
   {
-    $body = $this->paragraph('Otrzymaliśmy prośbę o usunięcie Twojego konta w Zdajnik.')
+    $body = $this->paragraph('Otrzymano prośbę o usunięcie Twojego konta w Zdajnik.')
       . $this->dangerNotice('Po potwierdzeniu konto zostanie dezaktywowane. Masz 30 dni na anulowanie operacji przez ponowne zalogowanie.')
       . $this->actionButton('Potwierdzam usunięcie konta', $link, 'danger')
       . $this->notice('Jeśli ta prośba nie została wysłana przez Ciebie, zignoruj tę wiadomość. Twoje konto pozostanie aktywne.');
@@ -138,7 +138,7 @@ class Mailer
       'eyebrow' => 'Operacja na koncie',
       'title' => 'Potwierdź usunięcie konta',
       'body' => $body,
-      'summary' => 'Wymagamy potwierdzenia e-mail, zanim rozpoczniemy usuwanie konta.',
+      'summary' => 'Wymagane jest potwierdzenie e-mail, zanim rozpocznie się usuwanie konta.',
       'primaryLink' => $link,
       'variant' => 'danger',
     ]);
@@ -147,13 +147,13 @@ class Mailer
       $email,
       'Potwierdzenie usunięcia Twojego konta - Zdajnik',
       $html,
-      "Otrzymaliśmy prośbę o usunięcie konta.\n\nPotwierdź operację pod adresem:\n$link\n\nJeśli to nie Ty, zignoruj tę wiadomość."
+      "Otrzymano prośbę o usunięcie konta.\n\nPotwierdź operację pod adresem:\n$link\n\nJeśli to nie Ty, zignoruj tę wiadomość."
     );
   }
 
   public function sendProgressAnonymizationEmail(string $email, string $link, string $examCode): bool
   {
-    $body = $this->paragraph('Otrzymaliśmy prośbę o wyzerowanie postępów i statystyk dla egzaminu:')
+    $body = $this->paragraph('Otrzymano prośbę o wyzerowanie postępów i statystyk dla egzaminu:')
       . $this->dataRows(['Egzamin' => $examCode])
       . $this->dangerNotice('Potwierdzenie operacji zanonimizuje historię prób i przywróci stan „0 odkrytych pytań” dla wybranego egzaminu.')
       . $this->actionButton('Potwierdzam wyzerowanie postępu', $link, 'danger')
@@ -172,7 +172,7 @@ class Mailer
       $email,
       'Potwierdzenie wyzerowania postępu - Zdajnik',
       $html,
-      "Otrzymaliśmy prośbę o wyzerowanie postępu dla egzaminu: $examCode.\n\nPotwierdź operację pod adresem:\n$link"
+      "Otrzymano prośbę o wyzerowanie postępu dla egzaminu: $examCode.\n\nPotwierdź operację pod adresem:\n$link"
     );
   }
 

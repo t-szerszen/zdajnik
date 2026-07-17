@@ -51,7 +51,7 @@ class Validator
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
       $errors[] = 'Podano nieprawidłowy format adresu e-mail.';
     } elseif ($this->userModel->checkEmail($email)) {
-      $errors[] = 'Konto z podanym adresem e-mail już istnieje w naszym systemie.';
+      $errors[] = 'Konto z podanym adresem e-mail już istnieje w systemie.';
     }
 
     // KROK 3: Walidacja polityki haseł

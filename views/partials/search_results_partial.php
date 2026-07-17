@@ -131,7 +131,7 @@ $filters = $filters ?? [];
 <?php elseif (!empty($filters['exam_id']) || !empty($filters['topic_id']) || !empty($filters['query'])): ?>
   <div class="stats-card__empty">
     <div class="stats-card__empty-icon">🔍</div>
-    <p>Nie znaleźliśmy pytań spełniających Twoje kryteria.</p>
+    <p>Nie znaleziono pytań spełniających Twoje kryteria.</p>
     <p class="stats-card__empty-hint">Spróbuj wpisać inną frazę lub zmienić filtry.
     </p>
   </div>
