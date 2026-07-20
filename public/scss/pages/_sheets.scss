@@ -1,0 +1,854 @@
+/**
+ * @file _sheets.scss
+ * @author Tobiasz Szerszeń
+ * @group pages
+ *
+ * @description
+ * Style Biblioteki Arkuszy: lista arkuszy pogrupowana po tematach (akordeon),
+ * filtry (temat + zakres trudności), badge poziomu trudności, strona
+ * szczegółów arkusza oraz formularz notatki użytkownika (skala 1-10).
+ */
+
+@use '../core/mixins' as *;
+
+// =============================================================================
+// Układ strony
+// =============================================================================
+.sheets-page {
+  @include section-spacing(var(--space-10), var(--space-6));
+
+  &__container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  &__no-results {
+    text-align: center;
+    color: var(--text-muted);
+    padding: var(--space-8);
+  }
+}
+
+// =============================================================================
+// Hub biblioteki (wybór kwalifikacji)
+// =============================================================================
+.sheets-hub {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.sheets-hub-card {
+  @include card-surface(var(--space-5) var(--space-6), var(--radius-lg), var(--shadow-sm));
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: rgba(var(--accent-rgb), 0.35);
+    box-shadow: var(--shadow-accent-md);
+    transform: translateY(-2px);
+
+    .sheets-hub-card__arrow {
+      transform: translateX(3px);
+    }
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    background: rgba(var(--accent-rgb), 0.1);
+    color: var(--accent);
+    font-size: var(--font-size-lg);
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__code {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+  }
+
+  &__name {
+    margin: var(--space-1) 0 0;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    @include text-truncate(1);
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-shrink: 0;
+  }
+
+  &__arrow {
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+  }
+
+  &--disabled {
+    cursor: default;
+    opacity: 0.6;
+
+    &:hover {
+      transform: none;
+      box-shadow: var(--shadow-sm);
+      border-color: var(--border);
+    }
+  }
+}
+
+// =============================================================================
+// Filtry listy
+// =============================================================================
+.sheets-filters {
+  @include card-surface(var(--space-5) var(--space-6), var(--radius-lg), var(--shadow-sm));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-6);
+
+  &__field,
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  &__select {
+    background: var(--field-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-md);
+
+    &:focus {
+      @include focus-state;
+    }
+  }
+
+  &__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  &__btn {
+    @include button-reset;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    color: var(--text-muted);
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: rgba(var(--accent-rgb), 0.4);
+      color: var(--accent);
+    }
+
+    &:focus-visible {
+      @include focus-state;
+    }
+
+    &.is-active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--color-white);
+    }
+  }
+
+  @include media-down(sm) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+// =============================================================================
+// Sekcja tematu (akordeon)
+// =============================================================================
+.sheets-topic {
+  @include card-surface(0, var(--radius-lg), var(--shadow-sm));
+  overflow: hidden;
+
+  &__header {
+    @include button-reset;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-5) var(--space-6);
+    text-align: left;
+
+    &:focus-visible {
+      @include focus-state;
+    }
+  }
+
+  &__title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text);
+    margin: 0;
+  }
+
+  &__description {
+    margin: var(--space-1) 0 0;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-shrink: 0;
+  }
+
+  &__arrow {
+    color: var(--text-muted);
+    transition: transform 0.25s ease;
+  }
+
+  &__body {
+    display: none;
+    border-top: 1px solid var(--subtle-border);
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: var(--space-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &.is-open {
+    .sheets-topic__body {
+      display: block;
+    }
+
+    .sheets-topic__arrow {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+// =============================================================================
+// Karta arkusza na liście
+// =============================================================================
+.sheet-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--subtle-border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: rgba(var(--accent-rgb), 0.35);
+    box-shadow: var(--shadow-accent-sm);
+
+    .sheet-card__arrow {
+      transform: translateX(3px);
+      color: var(--accent);
+    }
+  }
+
+  &__thumb {
+    width: 4.5rem;
+    height: 4.5rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    background: var(--surface-subtle);
+
+    &--placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: var(--font-size-xl);
+    }
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__title {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    @include text-truncate(2);
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+  }
+
+  &__meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  &__side {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-shrink: 0;
+  }
+
+  &__note-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    border-radius: var(--radius-pill);
+    background: rgba(var(--accent-rgb), 0.08);
+    color: var(--accent);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    padding: 0.3rem 0.65rem;
+    white-space: nowrap;
+  }
+
+  &__arrow {
+    color: var(--text-muted);
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  @include media-down(sm) {
+    flex-direction: column;
+    align-items: flex-start;
+
+    &__thumb {
+      width: 100%;
+      height: 8rem;
+    }
+
+    &__side {
+      width: 100%;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    &__arrow {
+      display: none;
+    }
+  }
+}
+
+// =============================================================================
+// Badge poziomu trudności (1-10, grupy: łatwy / średni / trudny)
+// =============================================================================
+.difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.35rem 0.75rem;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+
+  &--easy {
+    background: var(--success-bg);
+    border-color: var(--success-border);
+    color: var(--success-text);
+  }
+
+  &--medium {
+    background: var(--warning-bg);
+    border-color: var(--warning-border);
+    color: var(--warning-text);
+  }
+
+  &--hard {
+    background: var(--danger-bg);
+    border-color: var(--danger-border);
+    color: var(--danger-text);
+  }
+}
+
+// =============================================================================
+// Strona szczegółów arkusza
+// =============================================================================
+.sheet-detail {
+  &__card {
+    @include card-surface(var(--space-8), var(--radius-lg), var(--shadow-md));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+
+    @include media-down(sm) {
+      flex-direction: column;
+    }
+  }
+
+  &__thumb {
+    width: 6rem;
+    height: 6rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    background: var(--surface-subtle);
+
+    @include media-down(sm) {
+      width: 100%;
+      height: 10rem;
+    }
+  }
+
+  &__heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  &__title {
+    margin: 0;
+    font-size: var(--font-size-2xl);
+    color: var(--text);
+  }
+
+  &__description {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  &__downloads {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  &__no-zip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    font-style: italic;
+  }
+
+  &__meta {
+    display: flex;
+    gap: var(--space-4);
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    border-top: 1px solid var(--subtle-border);
+    padding-top: var(--space-4);
+  }
+}
+
+// =============================================================================
+// Notatka użytkownika
+// =============================================================================
+.sheet-note {
+  @include card-surface(var(--space-8), var(--radius-lg), var(--shadow-sm));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin: 0;
+    font-size: var(--font-size-xl);
+    color: var(--text);
+
+    i {
+      color: var(--accent);
+    }
+  }
+
+  &__login-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    color: var(--text-muted);
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+.sheet-note-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+
+  &__scale {
+    border: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  &__label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-muted);
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+
+    textarea {
+      background: var(--field-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-3);
+      font-size: var(--font-size-md);
+      font-family: inherit;
+      resize: vertical;
+
+      &:focus {
+        @include focus-state;
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  &__saved-at {
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+  }
+}
+
+// =============================================================================
+// Podgląd PDF arkusza
+// =============================================================================
+.sheet-preview {
+  @include card-surface(var(--space-6), var(--radius-lg), var(--shadow-sm));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin: 0;
+    font-size: var(--font-size-xl);
+    color: var(--text);
+
+    i {
+      color: var(--accent);
+    }
+  }
+
+  &__frame {
+    width: 100%;
+    height: 70vh;
+    min-height: 420px;
+    border: 1px solid var(--subtle-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+
+    object {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  }
+
+  &__fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    margin: 0;
+    padding: var(--space-6);
+    text-align: center;
+    color: var(--text-muted);
+  }
+}
+
+// =============================================================================
+// Panel "Moje notatki"
+// =============================================================================
+.sheet-notes-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4);
+}
+
+.sheet-notes-summary__tile {
+  @include card-surface(var(--space-5), var(--radius-lg), var(--shadow-sm));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.sheet-notes-summary__value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-black);
+  color: var(--accent);
+}
+
+.sheet-notes-summary__label {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.sheet-notes-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.sheet-notes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sheet-note-card {
+  @include card-surface(var(--space-6), var(--radius-lg), var(--shadow-sm));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+
+    @include media-down(sm) {
+      flex-direction: column;
+    }
+  }
+
+  &__thumb {
+    width: 4rem;
+    height: 4rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    background: var(--surface-subtle);
+
+    &--placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: var(--font-size-lg);
+    }
+
+    @include media-down(sm) {
+      width: 100%;
+      height: 6rem;
+    }
+  }
+
+  &__heading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  &__title {
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+    color: var(--text);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--accent);
+    }
+  }
+
+  &__ratings {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+  }
+
+  &__delta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--radius-pill);
+
+    &--harder {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+    }
+
+    &--easier {
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+  }
+
+  &__description {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.6;
+
+    &--empty {
+      font-style: italic;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    border-top: 1px solid var(--subtle-border);
+    padding-top: var(--space-4);
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+
+    @include media-down(sm) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+}
+
+// Skala 1-10 jako rząd przycisków radio
+.difficulty-scale {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+
+  &__option {
+    position: relative;
+    cursor: pointer;
+
+    input {
+      @include visually-hidden;
+    }
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.5rem;
+      height: 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-weight: var(--font-weight-bold);
+      transition: all 0.15s ease;
+    }
+
+    &:hover span {
+      border-color: rgba(var(--accent-rgb), 0.4);
+      color: var(--accent);
+    }
+
+    input:checked + span {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--color-white);
+      box-shadow: var(--shadow-accent-sm);
+    }
+
+    input:focus-visible + span {
+      @include focus-state;
+    }
+  }
+}

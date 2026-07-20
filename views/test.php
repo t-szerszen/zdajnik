@@ -158,8 +158,8 @@ $extraScripts = [
       <div class="review-page__container">
 
         <div class="review-page__back-nav">
-          <a href="<?= url('/') ?>" class="review-page__back-link">
-            <i class="fas fa-chevron-left"></i> Wróć na stronę główną
+          <a href="<?= url('/') ?>" class="back-link">
+            <i class="fas fa-arrow-left"></i> Wróć na stronę główną
           </a>
         </div>
 

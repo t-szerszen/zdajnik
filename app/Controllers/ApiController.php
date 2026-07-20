@@ -7,6 +7,8 @@ use App\Models\Answer;
 use App\Models\UserProgress;
 use App\Models\Attempt;
 use App\Models\SavedQuestion;
+use App\Models\Sheet;
+use App\Models\SheetNote;
 use App\Models\UserModel;
 use App\Services\AnalyticsService;
 
@@ -487,6 +489,60 @@ class ApiController extends BaseController
     } else {
       $this->sendJsonResponse(['success' => false, 'message' => 'Błąd po stronie serwera.'], 500);
     }
+  }
+
+  /**
+   * Endpoint: Zapis lub aktualizacja notatki użytkownika do arkusza (upsert).
+   *
+   * Przyjmuje subiektywną ocenę trudności (1-10) oraz opcjonalny opis
+   * napotkanych problemów. Wymaga zalogowanego użytkownika oraz istnienia
+   * aktywnego arkusza o wskazanym ID.
+   */
+  public function saveSheetNote(): void
+  {
+    $this->ensurePostRequest();
+
+    if (!$this->isUserLoggedIn) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Zaloguj się, aby zapisywać notatki do arkuszy.'], 403);
+      return;
+    }
+
+    $sheetId = (int) ($_POST['sheet_id'] ?? 0);
+    $difficulty = (int) ($_POST['difficulty'] ?? 0);
+    $description = trim((string) ($_POST['description'] ?? ''));
+
+    if ($sheetId <= 0) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Brak identyfikatora arkusza.'], 400);
+      return;
+    }
+
+    if ($difficulty < 1 || $difficulty > 10) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Oceń trudność arkusza w skali od 1 do 10.'], 400);
+      return;
+    }
+
+    if (mb_strlen($description) > 5000) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Opis notatki może mieć maksymalnie 5000 znaków.'], 400);
+      return;
+    }
+
+    $sheetModel = new Sheet();
+    if (!$sheetModel->findActiveById($sheetId)) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Arkusz nie istnieje lub jest niedostępny.'], 404);
+      return;
+    }
+
+    $noteModel = new SheetNote();
+    if (!$noteModel->upsert($this->currentUser->getId(), $sheetId, $difficulty, $description)) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Błąd po stronie serwera.'], 500);
+      return;
+    }
+
+    $this->sendJsonResponse([
+      'success' => true,
+      'message' => 'Notatka została zapisana.',
+      'difficulty' => $difficulty,
+    ]);
   }
 
   /**

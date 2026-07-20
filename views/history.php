@@ -42,7 +42,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Zdajnik';
 
       <div class="stats-page__back-nav">
         <a href="<?= (string) url('statystyki') ?>?category=<?= (string) $selectedCategoryId ?>#<?= (string) ($backTo ?? '') ?>"
-          class="stats-page__back-link">
+          class="back-link">
           <i class="fas fa-arrow-left"></i> Wróć do Statystyk
         </a>
       </div>

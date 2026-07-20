@@ -225,6 +225,15 @@ class Router
     $this->post('admin/pytania/{questionId}/aktywuj', 'AdminController@activateQuestion');
     $this->post('admin/pytania/{questionId}/dezaktywuj', 'AdminController@deactivateQuestion');
     $this->get('admin/pytania/{questionId}', 'AdminController@showQuestion');
+    $this->get('admin/arkusze', 'AdminController@sheets');
+    $this->get('admin/arkusze/dodaj', 'AdminController@showCreateSheetForm');
+    $this->post('admin/arkusze/dodaj', 'AdminController@storeSheet');
+    $this->post('admin/arkusze/tematy/dodaj', 'AdminController@storeSheetTopic');
+    $this->post('admin/arkusze/tematy/{topicId}/edytuj', 'AdminController@updateSheetTopic');
+    $this->get('admin/arkusze/{sheetId}/edytuj', 'AdminController@showEditSheetForm');
+    $this->post('admin/arkusze/{sheetId}/edytuj', 'AdminController@updateSheet');
+    $this->post('admin/arkusze/{sheetId}/aktywuj', 'AdminController@activateSheet');
+    $this->post('admin/arkusze/{sheetId}/dezaktywuj', 'AdminController@deactivateSheet');
     $this->get('admin/analytics', 'AdminController@analytics');
     $this->get('admin/analytics/data', 'AdminController@analyticsData');
     $this->get('admin/analytics/export', 'AdminController@analyticsExport');
@@ -246,6 +255,12 @@ class Router
     $this->get('zmiana-email', 'SettingsController@showVerifyEmailForm');
     $this->post('zmiana-email', 'SettingsController@handleVerifyEmailRequest');
 
+    // --- BIBLIOTEKA ARKUSZY ---
+    $this->get('arkusze', 'SheetController@index');
+    $this->get('arkusze/{code}', 'SheetController@listByExam');
+    $this->get('arkusze/{code}/{sheetId}', 'SheetController@show');
+    $this->get('moje-notatki', 'SheetController@myNotes');
+
     // --- MODUŁY NAUKI I QUIZY (WEB INTERFACE) ---
     $this->get('jedno-pytanie/{code}', 'QuizPageController@showOneQuestionPage');
     $this->get('personalizowany-test/{code}', 'QuizPageController@showPersonalizedTestPage');
@@ -263,6 +278,7 @@ class Router
     $this->post('api/save-attempt', 'ApiController@saveAttempt');
     $this->post('api/save-progress-bulk', 'ApiController@saveProgressBulk');
     $this->post('api/toggle-saved', 'ApiController@toggleSavedQuestion');
+    $this->post('api/sheet-note', 'ApiController@saveSheetNote');
     $this->post('api/user/avatar', 'ApiController@updateAvatar');
     $this->post('api/analytics/event', 'ApiController@trackAnalyticsEventFromClient');
 

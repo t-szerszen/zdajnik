@@ -96,7 +96,7 @@ $isActive = (int) ($exam['is_active'] ?? 0) === 1;
                     <button type="submit" class="btn btn--primary btn--sm">Aktywuj</button>
                   </form>
                 <?php endif; ?>
-                <a href="<?= url('admin/egzaminy') ?>" class="btn btn--secondary btn--sm">Wróć do listy</a>
+                <a href="<?= url('admin/egzaminy') ?>" class="back-link"><i class="fas fa-arrow-left"></i> Wróć do listy</a>
               </div>
             </div>
 

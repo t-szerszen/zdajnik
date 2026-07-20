@@ -33,6 +33,10 @@ $activeSection = $activeSection ?? 'dashboard';
       <i class="fas fa-circle-question"></i>
       <span>Pytania</span>
     </a>
+    <a href="<?= url('admin/arkusze') ?>" class="admin-sidebar__link <?= $activeSection === 'sheets' ? 'is-active' : '' ?>">
+      <i class="fas fa-file-pdf"></i>
+      <span>Arkusze</span>
+    </a>
     <a href="<?= url('admin/analytics') ?>" class="admin-sidebar__link <?= $activeSection === 'analytics' ? 'is-active' : '' ?>">
       <i class="fas fa-chart-line"></i>
       <span>Analityka</span>

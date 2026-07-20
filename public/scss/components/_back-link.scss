@@ -1,0 +1,47 @@
+/**
+ * @file _back-link.scss
+ * @author Tobiasz Szerszeń
+ * @group components
+ *
+ * @description
+ * Ujednolicony, minimalistyczny przycisk powrotu używany w całym serwisie
+ * (strony przeglądu, historia, biblioteka arkuszy, formularze admina).
+ * Zastępuje wcześniejsze, rozproszone stylizacje "glassowych" pigułek powrotu.
+ */
+
+@use '../core/mixins' as *;
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  transition: color 0.2s ease;
+
+  i {
+    font-size: 0.9em;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    color: var(--accent);
+
+    i {
+      transform: translateX(-3px);
+    }
+  }
+
+  &:focus-visible {
+    @include focus-state;
+    border-radius: var(--radius-xs);
+  }
+
+  // Wariant wyśrodkowany (np. w kartach formularzy auth)
+  &--center {
+    width: 100%;
+    justify-content: center;
+  }
+}

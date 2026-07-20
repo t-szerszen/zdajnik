@@ -135,6 +135,14 @@ async function initPersonalizedTestPage() {
   initPersonalizedTestTutorial();
 }
 
+async function initSheetsPages() {
+  if (!has('.sheets-page')) return;
+
+  const { initSheetsListPage, initSheetDetailPage } = await import(modulePath('./features/sheets/index.js'));
+  initSheetsListPage();
+  initSheetDetailPage();
+}
+
 async function initFullTestPage() {
   if (!has('#test-container')) return;
   const { initFullTestPage: init } = await import(modulePath('./features/test/index.js'));
@@ -199,6 +207,7 @@ async function initPageModules() {
     initReviewPage(),
     initSingleQuestionPage(),
     initPersonalizedTestPage(),
+    initSheetsPages(),
     initFullTestPage(),
     initSettingsPage(),
     initCountdownButtons(),

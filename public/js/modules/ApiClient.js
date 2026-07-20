@@ -203,6 +203,27 @@ class ApiClient {
   }
 
   /**
+   * Zapisuje (upsert) notatkę użytkownika do arkusza z Biblioteki Arkuszy.
+   *
+   * @param {number|string} sheetId - ID arkusza.
+   * @param {number|string} difficulty - Subiektywna trudność w skali 1-10.
+   * @param {string} description - Opis napotkanych problemów.
+   * @returns {Promise<{success: boolean, data?: object, error?: string}>}
+   */
+  saveSheetNote(sheetId, difficulty, description) {
+    const options = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        sheet_id: sheetId,
+        difficulty,
+        description,
+      }),
+    };
+    return this._request('/sheet-note', options);
+  }
+
+  /**
    * Wysyła ograniczony event produktowy. Tryb beacon jest używany przy
    * opuszczaniu strony, kiedy zwykły fetch może zostać anulowany.
    */

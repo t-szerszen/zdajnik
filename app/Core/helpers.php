@@ -17,6 +17,27 @@ if (!function_exists('url')) {
   }
 }
 
+if (!function_exists('slugify')) {
+  /**
+   * Zamienia dowolny tekst na bezpieczny slug (np. do nazw pobieranych plików).
+   *
+   * Transliteruje polskie znaki, usuwa znaki specjalne i skleja słowa
+   * myślnikami, np. "Arkusz INF.03 — czerwiec 2025" => "arkusz-inf-03-czerwiec-2025".
+   *
+   * @param string $text Tekst wejściowy.
+   * @return string Slug (małe litery, cyfry i myślniki).
+   */
+  function slugify(string $text): string
+  {
+    $polish = ['ą', 'ć', 'ę', 'ł', 'ń', 'ó', 'ś', 'ź', 'ż', 'Ą', 'Ć', 'Ę', 'Ł', 'Ń', 'Ó', 'Ś', 'Ź', 'Ż'];
+    $latin = ['a', 'c', 'e', 'l', 'n', 'o', 's', 'z', 'z', 'a', 'c', 'e', 'l', 'n', 'o', 's', 'z', 'z'];
+    $text = str_replace($polish, $latin, $text);
+    $text = strtolower(trim($text));
+    $text = preg_replace('/[^a-z0-9]+/', '-', $text) ?? '';
+    return trim($text, '-') ?: 'plik';
+  }
+}
+
 if (!function_exists('csrf_token')) {
   function csrf_token(): string
   {

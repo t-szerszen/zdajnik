@@ -86,7 +86,7 @@ $title = $isEdit ? 'Edycja egzaminu' : 'Dodawanie egzaminu';
 
               <div class="admin-filters__actions">
                 <button type="submit" class="btn btn--primary">Zapisz</button>
-                <a href="<?= url('admin/egzaminy') ?>" class="btn btn--secondary">Wróć do listy</a>
+                <a href="<?= url('admin/egzaminy') ?>" class="back-link"><i class="fas fa-arrow-left"></i> Wróć do listy</a>
               </div>
             </form>
           </div>

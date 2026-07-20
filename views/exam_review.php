@@ -39,8 +39,8 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
   <div class="review-page__main-wrapper">
     <div class="review-page__container">
       <div class="review-page__back-nav">
-        <a href="<?= $backUrl ?>" class="review-page__back-link">
-          <i class="fas fa-chevron-left"></i> Powrót
+        <a href="<?= $backUrl ?>" class="back-link">
+          <i class="fas fa-arrow-left"></i> Powrót
         </a>
       </div>
 

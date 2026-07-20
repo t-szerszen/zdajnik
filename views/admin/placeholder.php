@@ -39,7 +39,7 @@ $icon = $icon ?? 'fas fa-layer-group';
             </div>
             <h2><?= htmlspecialchars($title) ?></h2>
             <p><?= htmlspecialchars($description) ?></p>
-            <a href="<?= url('admin') ?>" class="btn btn--primary">Wróć do pulpitu</a>
+            <a href="<?= url('admin') ?>" class="back-link"><i class="fas fa-arrow-left"></i> Wróć do pulpitu</a>
           </div>
         </div>
       </div>

@@ -111,7 +111,7 @@ $hasQualityWarning = count($answers) < 2 || $correctAnswersCount === 0;
                     <button type="submit" class="btn btn--primary btn--sm">Aktywuj</button>
                   </form>
                 <?php endif; ?>
-                <a href="<?= url('admin/pytania') ?>" class="btn btn--secondary btn--sm">Wróć do listy</a>
+                <a href="<?= url('admin/pytania') ?>" class="back-link"><i class="fas fa-arrow-left"></i> Wróć do listy</a>
               </div>
             </div>
 

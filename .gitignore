@@ -6,6 +6,7 @@
 .prettierrc
 public/scss/*.css
 public/scss/*.css.map
+public/files/sheets/
 .DS_Store
 *.zip
 AGENTS.md

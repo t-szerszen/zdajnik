@@ -115,7 +115,19 @@ use App\Models\User;
               <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
             </a>
           </li>
+          <li class="dropdown__item">
+            <a href="<?= url('arkusze/INF.04') ?>" class="dropdown__link">
+              <i class="dropdown__icon fas fa-file-pdf"></i> Arkusze praktyczne
+            </a>
+          </li>
         </ul>
+      </li>
+
+      <li class="main-nav__item">
+        <a href="<?= url('arkusze') ?>" class="main-nav__link">
+          <i class="main-nav__icon fas fa-file-pdf"></i>
+          <span>Arkusze</span>
+        </a>
       </li>
 
       <li class="main-nav__item dropdown">
@@ -161,6 +173,11 @@ use App\Models\User;
             <li class="dropdown__item">
               <a href="<?= url('statystyki') ?>" class="dropdown__link">
                 <i class="dropdown__icon fas fa-chart-bar"></i> Statystyki
+              </a>
+            </li>
+            <li class="dropdown__item">
+              <a href="<?= url('moje-notatki') ?>" class="dropdown__link">
+                <i class="dropdown__icon fas fa-note-sticky"></i> Moje notatki
               </a>
             </li>
             <li class="dropdown__item">

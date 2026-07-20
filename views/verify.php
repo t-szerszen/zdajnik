@@ -86,8 +86,8 @@ $canonicalUrl = 'https://www.zdajnik.pl/weryfikacja';
         </div>
 
         <div class="form-card__action-container">
-          <a href="<?= url('/') ?>" class="btn btn--secondary btn--full-width">
-            Wróć na stronę główną
+          <a href="<?= url('/') ?>" class="back-link back-link--center">
+            <i class="fas fa-arrow-left"></i> Wróć na stronę główną
           </a>
         </div>
 
