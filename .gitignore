@@ -7,6 +7,7 @@
 public/scss/*.css
 public/scss/*.css.map
 public/files/sheets/
+public/images/questions/
 .DS_Store
 *.zip
 AGENTS.md
