@@ -25,13 +25,18 @@ export class NavbarHandler {
       this.overlay.addEventListener('click', () => this.closeMenu());
     }
 
-    // Obsługa dropdownów na mobile (Akordeon) i Tablet (Touch)
+    // Obsługa dropdownów na mobile (Akordeon) i Tablet (Touch).
+    // Zagnieżdżone podmenu (np. Teoria > INF.04 > tryby nauki) mają tę samą
+    // klasę .dropdown co poziom pierwszy, więc ten sam mechanizm obsługuje
+    // oba poziomy akordeonu.
     const dropdowns = document.querySelectorAll('.main-nav .dropdown');
 
     dropdowns.forEach(dropdown => {
-      const link = dropdown.querySelector('.main-nav__link');
-      if (link) {
-        link.addEventListener('click', (e) => {
+      // ':scope >' ogranicza wyszukiwanie do bezpośredniego triggera TEGO
+      // dropdownu, żeby nie złapać triggera zagnieżdżonego dziecka.
+      const trigger = dropdown.querySelector(':scope > .main-nav__link, :scope > .dropdown__link');
+      if (trigger) {
+        trigger.addEventListener('click', (e) => {
           // Jeśli szerokość ekranu jest <= 992px (Mobile menu)
           // LUB jeśli urządzenie wspiera touch (np. iPad w trybie desktopowym)
           const isTouchCapability = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -42,10 +47,15 @@ export class NavbarHandler {
             if (!dropdown.classList.contains('is-open')) {
               e.preventDefault();
 
-              // Zamknij inne otwarte dropdowny
-              dropdowns.forEach(d => {
-                if (d !== dropdown) d.classList.remove('is-open');
-              });
+              // Zamknij tylko dropdowny na TYM SAMYM poziomie (rodzeństwo
+              // w obrębie tej samej listy) - nigdy przodków, bo otwarcie
+              // zagnieżdżonego podmenu nie powinno zwijać menu nadrzędnego.
+              Array.from(dropdown.parentElement.children)
+                .filter((el) => el !== dropdown && el.classList.contains('dropdown'))
+                .forEach((sibling) => {
+                  sibling.classList.remove('is-open');
+                  sibling.querySelectorAll('.dropdown.is-open').forEach((nested) => nested.classList.remove('is-open'));
+                });
 
               dropdown.classList.add('is-open');
             }
@@ -61,7 +71,13 @@ export class NavbarHandler {
       }
     });
 
-    const links = this.drawer.querySelectorAll('.main-nav__link:not(.dropdown > .main-nav__link), .dropdown__link, .nav-button');
+    // Wykluczamy triggery rozwijające submenu (np. zagnieżdżony "INF.04" pod
+    // Teoria/Praktyka) z listy linków zamykających drawer - inaczej pierwsze
+    // dotknięcie triggera otwierałoby submenu i JEDNOCZEŚNIE zamykałoby cały
+    // drawer (dwa niezależne listenery na tym samym elemencie).
+    const links = this.drawer.querySelectorAll(
+      '.main-nav__link:not(.dropdown > .main-nav__link), .dropdown__link:not(.dropdown__link--trigger), .nav-button'
+    );
     links.forEach(link => {
       link.addEventListener('click', () => {
         if (this.drawer.classList.contains('is-active')) {

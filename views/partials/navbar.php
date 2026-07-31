@@ -72,62 +72,84 @@ use App\Models\User;
 
     <ul class="main-nav__links">
 
-      <!-- Element nawigacji z menu rozwijanym (dropdown) -->
+      <!-- TEORIA: kwalifikacje -> tryby nauki teoretycznej -->
       <li class="main-nav__item dropdown">
-        <span class="main-nav__link main-nav__link--disabled" aria-disabled="true">
-          <i class="main-nav__icon fas fa-microchip"></i>
-          <div class="main-nav__link-content">
-            <span>INF.02</span>
-            <span class="badge badge--soon">Wkrótce</span>
-          </div>
-        </span>
-      </li>
-
-      <li class="main-nav__item dropdown">
-        <span class="main-nav__link main-nav__link--disabled" aria-disabled="true">
-          <i class="main-nav__icon fas fa-laptop-code"></i>
-          <div class="main-nav__link-content">
-            <span>INF.03</span>
-            <span class="badge badge--soon">Wkrótce</span>
-          </div>
-        </span>
-      </li>
-
-      <li class="main-nav__item dropdown">
-        <a href="<?= url('#inf04') ?>" class="main-nav__link">
-          <i class="main-nav__icon fas fa-code"></i>
-          <span>INF.04</span>
+        <a href="<?= url('jedno-pytanie/INF.04') ?>" class="main-nav__link">
+          <i class="main-nav__icon fas fa-book"></i>
+          <span>Teoria</span>
           <i class="dropdown__arrow fas fa-chevron-down"></i>
         </a>
         <ul class="dropdown__menu">
           <li class="dropdown__item">
-            <a href="<?= url('jedno-pytanie/INF.04') ?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-question-circle"></i> Jedno Pytanie
-            </a>
+            <span class="dropdown__link dropdown__link--disabled">
+              <i class="dropdown__icon fas fa-microchip"></i>
+              <span>INF.02</span>
+              <span class="badge badge--soon">Wkrótce</span>
+            </span>
           </li>
           <li class="dropdown__item">
-            <a href="<?= url('personalizowany-test/INF.04') ?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-sliders-h"></i> Spersonalizowany Test
-            </a>
+            <span class="dropdown__link dropdown__link--disabled">
+              <i class="dropdown__icon fas fa-laptop-code"></i>
+              <span>INF.03</span>
+              <span class="badge badge--soon">Wkrótce</span>
+            </span>
           </li>
-          <li class="dropdown__item">
-            <a href="<?= url('test/INF.04') ?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
+          <li class="dropdown__item dropdown dropdown--nested">
+            <a href="<?= url('jedno-pytanie/INF.04') ?>" class="dropdown__link dropdown__link--trigger">
+              <i class="dropdown__icon fas fa-code"></i>
+              <span>INF.04</span>
+              <i class="dropdown__arrow dropdown__arrow--nested fas fa-chevron-right"></i>
             </a>
-          </li>
-          <li class="dropdown__item">
-            <a href="<?= url('arkusze/INF.04') ?>" class="dropdown__link">
-              <i class="dropdown__icon fas fa-file-pdf"></i> Arkusze praktyczne
-            </a>
+            <ul class="dropdown__menu dropdown__menu--nested">
+              <li class="dropdown__item">
+                <a href="<?= url('jedno-pytanie/INF.04') ?>" class="dropdown__link">
+                  <i class="dropdown__icon fas fa-question-circle"></i> Jedno Pytanie
+                </a>
+              </li>
+              <li class="dropdown__item">
+                <a href="<?= url('personalizowany-test/INF.04') ?>" class="dropdown__link">
+                  <i class="dropdown__icon fas fa-sliders-h"></i> Spersonalizowany Test
+                </a>
+              </li>
+              <li class="dropdown__item">
+                <a href="<?= url('test/INF.04') ?>" class="dropdown__link">
+                  <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
+                </a>
+              </li>
+            </ul>
           </li>
         </ul>
       </li>
 
-      <li class="main-nav__item">
+      <!-- PRAKTYKA: kwalifikacje -> arkusze praktyczne danej kwalifikacji -->
+      <li class="main-nav__item dropdown">
         <a href="<?= url('arkusze') ?>" class="main-nav__link">
-          <i class="main-nav__icon fas fa-file-pdf"></i>
-          <span>Arkusze</span>
+          <i class="main-nav__icon fas fa-tools"></i>
+          <span>Praktyka</span>
+          <i class="dropdown__arrow fas fa-chevron-down"></i>
         </a>
+        <ul class="dropdown__menu">
+          <li class="dropdown__item">
+            <span class="dropdown__link dropdown__link--disabled">
+              <i class="dropdown__icon fas fa-microchip"></i>
+              <span>INF.02</span>
+              <span class="badge badge--soon">Wkrótce</span>
+            </span>
+          </li>
+          <li class="dropdown__item">
+            <span class="dropdown__link dropdown__link--disabled">
+              <i class="dropdown__icon fas fa-laptop-code"></i>
+              <span>INF.03</span>
+              <span class="badge badge--soon">Wkrótce</span>
+            </span>
+          </li>
+          <li class="dropdown__item">
+            <a href="<?= url('arkusze/INF.04') ?>" class="dropdown__link">
+              <i class="dropdown__icon fas fa-code"></i>
+              <span>INF.04</span>
+            </a>
+          </li>
+        </ul>
       </li>
 
       <li class="main-nav__item dropdown">

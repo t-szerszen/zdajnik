@@ -412,6 +412,19 @@
 .dropdown {
   position: relative;
 
+  // Na desktopie usuwamy pozycjonowanie WZGLĘDEM TEGO <li> (INF.04), żeby
+  // zagnieżdżony panel podmenu pozycjonował się względem PANELU NADRZĘDNEGO
+  // (.dropdown__menu, który ma position:absolute) - dzięki temu obie karty
+  // startują z tej samej wysokości i wyglądają jak jedna spójna, dwukolumnowa
+  // całość, a nie dwa niezależne, kolidujące "szklane" panele. Na mobile
+  // position:relative zostaje (dziedziczone), bo strzałka triggera jest
+  // position:absolute względem TEGO wiersza.
+  &--nested {
+    @include media-up(1400px) {
+      position: static;
+    }
+  }
+
   &__arrow {
     display: none;
     font-size: 0.9rem;
@@ -424,9 +437,20 @@
       position: absolute;
       right: 1.5rem; // Strzałka zostaje po prawej
     }
+
+    // Strzałka triggera drugiego poziomu (chevron-right -> obrót 90° = "w dół")
+    // zamiast chevron-down -> 180° używanego na pierwszym poziomie.
+    // Descendant (nie ">"): strzałka jest wnukiem .dropdown--nested (li > a > i).
+    &--nested {
+      .dropdown--nested:is(:hover, .is-open) & {
+        transform: rotate(90deg);
+        color: var(--accent-hover);
+        opacity: 1;
+      }
+    }
   }
 
-  &:is(:hover, .is-open)>.dropdown__menu:not(.dropdown__menu--right) {
+  &:is(:hover, .is-open)>.dropdown__menu:not(.dropdown__menu--right):not(.dropdown__menu--nested) {
     @include media-up(lg) {
       opacity: 1;
       visibility: visible;
@@ -439,6 +463,18 @@
       opacity: 1;
       visibility: visible;
       transform: translateY(0) scale(1);
+    }
+  }
+
+  // Zagnieżdżone podmenu (np. Teoria > INF.04 > tryby nauki) - "wylatuje" w bok,
+  // nie centruje się pod triggerem jak menu pierwszego poziomu.
+  &--nested {
+    &:is(:hover, .is-open)>.dropdown__menu--nested {
+      @include media-up(lg) {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+      }
     }
   }
 
@@ -492,7 +528,11 @@
       margin-left: 2.15rem;
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
-      .dropdown.is-open & {
+      // Combinator zawężony do bezpośredniego rodzica (>), aby otwarcie
+      // zewnętrznego dropdownu (np. "Teoria") nie ujawniało od razu
+      // zagnieżdżonego podmenu (np. "INF.04" > tryby) - każdy poziom
+      // akordeonu rozwija się niezależnie, krok po kroku.
+      .dropdown.is-open > & {
         opacity: 1;
         visibility: visible;
         max-height: 500px;
@@ -518,6 +558,24 @@
       left: auto;
       right: 0;
       transform: translateY(10px) scale(0.95);
+    }
+
+    &--nested {
+      // Wyrównanie do góry panelu nadrzędnego (patrz .dropdown--nested wyżej:
+      // position:static, więc "top: 0" liczy się od .dropdown__menu, nie od
+      // wiersza INF.04) - obie karty zaczynają się na tej samej wysokości,
+      // co czyta się jako jedna, spójna dwukolumnowa całość.
+      @include media-up(1400px) {
+        top: 0;
+        left: calc(100% + 0.75rem);
+        transform: translateY(0) scale(0.95);
+      }
+
+      // Drugi poziom akordeonu na mobile - mniejszy wcięcie niż pierwszy,
+      // żeby trzy poziomy zagnieżdżenia nie "wyjadały" szerokości drawera.
+      @include media-down(1400px) {
+        margin-left: 1.5rem;
+      }
     }
   }
 
@@ -561,6 +619,53 @@
 
       @include media-down(1400px) {
         transform: translateX(5px);
+      }
+    }
+
+    // Pozycja "Wkrótce" w drugim poziomie (np. INF.02/INF.03 pod Teoria/Praktyka)
+    &--disabled {
+      opacity: 0.55;
+      pointer-events: none;
+      cursor: not-allowed;
+
+      &:hover {
+        background-color: transparent;
+        color: var(--text);
+        transform: none;
+      }
+
+      .badge--soon {
+        // margin-left:auto działa tylko na desktopowym flyoucie (szeroki,
+        // width:max-content). Na mobile rząd jest wąski i w pełni ciasny -
+        // "wypychanie" badge'a do prawej krawędzi obcinałoby go w drawerze,
+        // dlatego tam ukrywamy sam badge (spójnie z zachowaniem badge'a przy
+        // zdezaktywowanych pozycjach pierwszego poziomu main-nav__link).
+        margin-left: auto;
+        font-size: 0.6rem;
+
+        @include media-down(1400px) {
+          display: none !important;
+        }
+      }
+    }
+
+    // Wyróżnienie triggera zagnieżdżonego podmenu (np. "INF.04" w Teoria)
+    &--trigger {
+      // space-between tylko na desktopowym flyoucie - tam strzałka jest
+      // częścią przepływu flex. Na mobile strzałka jest position:absolute
+      // (patrz &__arrow), więc space-between miałby tylko 2 dzieci (ikona +
+      // tekst) i wypychałby tekst do prawej krawędzi wąskiego drawera,
+      // obcinając go. Na mobile zostaje domyślny flex-start.
+      @include media-up(1400px) {
+        justify-content: space-between;
+      }
+
+      .dropdown--nested:is(:hover, .is-open)>& {
+        color: var(--accent);
+
+        .dropdown__icon {
+          color: var(--accent);
+        }
       }
     }
   }

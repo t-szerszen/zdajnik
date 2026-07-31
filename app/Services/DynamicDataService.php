@@ -79,7 +79,7 @@ class DynamicDataService
     // UWAGA: W przyszłości ta mapa powinna zostać przeniesiona do tabeli w bazie danych (np. exam_meta).
     $metadata = [
       'INF.03' => [
-        'formatted_name' => 'EE.09 / INF.03',
+        'formatted_name' => 'INF.03',
         'title_one_question' => 'INF.03 - Jedno pytanie - Inteligentna Powtórka Online | Zdajnik',
         'desc_one_question' => 'Nie masz czasu na cały test? Wylosuj jedno pytanie z bazy egzaminacyjnej INF.03 i sprawdź swoją wiedzę w mniej niż minutę.',
         'title_test' => 'INF.03 - Egzamin próbny - Test Online 40 Pytań | Zdajnik',
@@ -88,7 +88,7 @@ class DynamicDataService
         'desc_personalized' => 'Dopasuj naukę do swoich potrzeb. Stwórz spersonalizowany test z kwalifikacji INF.03.'
       ],
       'INF.02' => [
-        'formatted_name' => 'EE.08 / INF.02',
+        'formatted_name' => 'INF.02',
         'title_one_question' => 'INF.02 - Jedno pytanie - Szybka powtórka | Zdajnik',
         'desc_one_question' => 'Szybka powtórka z INF.02. Jedno pytanie losowe.',
         'title_test' => 'INF.02 - Egzamin próbny - Test Online | Zdajnik',
@@ -97,7 +97,7 @@ class DynamicDataService
         'desc_personalized' => 'Skonfiguruj swój test z INF.02.'
       ],
       'INF.04' => [
-        'formatted_name' => 'E.14 / INF.04',
+        'formatted_name' => 'INF.04',
         'title_one_question' => 'INF.04 - Jedno pytanie - Trening | Zdajnik',
         'desc_one_question' => 'Poćwicz z INF.04. Jedno pytanie losowe.',
         'title_test' => 'INF.04 - Egzamin próbny - Test Online | Zdajnik',
