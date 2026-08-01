@@ -2,6 +2,7 @@
 /vendor/
 .env
 .vscode/
+CLAUDE.md
 public/scss/*.css
 public/scss/*.css.map
 public/files/sheets/
