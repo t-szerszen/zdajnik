@@ -434,11 +434,6 @@ export class TestRunner {
 
         const contentHTML = DOMPurify.sanitize(marked.parse(ans.answer_text || ''));
 
-        // Input checked tylko wizualnie, żeby widzieć co się kliknęło (opcjonalne, bo mamy kolory)
-        // Ale dodajmy dla pewności
-        const checkedAttr = isSelected ? 'checked' : '';
-        // const checkedAttr = isSelected ? 'checked' : '';
-
         answersHTML += `
           <div class="quiz-card__answer ${statusClass}">
             <span class="quiz-card__answer-prefix">${letter}</span>

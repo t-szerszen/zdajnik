@@ -102,32 +102,13 @@ $extraScripts = [
               <input type="checkbox" value="<?= htmlspecialchars($examCode) ?>" id="select-all-codes">
               <span>Cały materiał <?= htmlspecialchars($exam['formatted_name']) ?></span>
             </label>
-            <!-- Topics are now fetched dynamically in controller if needed, but here we can iterate -->
-            <!-- Note: The Controller didn't pass categories here yet unlike one_question. We should fix that or assume hardcoded list for now as per minimal change request, 
-                 but wait, the request was "Refactor hardcoded views". The hardcoded IDs 1-6 are specific to INF.03.
-                 Ideally, we should fetch topics from DB. 
-                 The "one_question" view received $categories. I should do the same for personalized_test.
-                 For now, I'll assume categories are passed or I need to update controller to pass them.
-                 Checking Controller... I only passed $exam, $examCode, $selectedSubjectId. 
-                 I should Update Controller to pass categories too. 
-            -->
-            <?php
-            // Temporarily retaining hardcoded list if categories are not available, BUT I should have passed them. 
-            // I will update the controller in next step if I missed it, or just use a placeholder Loop here assuming I will fix it.
-            // Let's assume I will fix Controller to pass 'categories' like in one_question.
-            ?>
-            <?php if (isset($categories)): ?>
-              <?php foreach ($categories as $category): ?>
-                <label class="topic-selector__label">
-                  <input type="checkbox" name="subject[]" value="<?= htmlspecialchars($category['id']) ?>"
-                    class="topic-checkbox" <?= ($selectedSubjectId === (int) $category['id']) ? 'checked' : '' ?>>
-                  <span><?= htmlspecialchars($category['name']) ?></span>
-                </label>
-              <?php endforeach; ?>
-            <?php else: ?>
-              <!-- Fallback if no categories passed (legacy behavior but cleaner) -->
-              <p>Brak kategorii do wyświetlenia dla tego egzaminu.</p>
-            <?php endif; ?>
+            <?php foreach ($categories as $category): ?>
+              <label class="topic-selector__label">
+                <input type="checkbox" name="subject[]" value="<?= htmlspecialchars($category['id']) ?>"
+                  class="topic-checkbox" <?= ($selectedSubjectId === (int) $category['id']) ? 'checked' : '' ?>>
+                <span><?= htmlspecialchars($category['name']) ?></span>
+              </label>
+            <?php endforeach; ?>
           </div>
           <div class="config-step__actions">
             <button type="button" class="btn btn--primary" data-action="next">Dalej</button>
