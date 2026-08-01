@@ -39,12 +39,27 @@ class SheetController extends BaseController
   }
 
   /**
+   * Tymczasowe zabezpieczenie: Biblioteka Arkuszy nie jest jeszcze udostępniona
+   * użytkownikom (funkcja w przygotowaniu), więc każde publiczne żądanie
+   * jest przekierowywane na stronę główną.
+   *
+   * @return void
+   */
+  private function checkAvailability(): void
+  {
+    header('Location: ' . url('/'));
+    exit();
+  }
+
+  /**
    * Hub biblioteki — wybór kwalifikacji.
    *
    * @return void
    */
   public function index(): void
   {
+    $this->checkAvailability();
+
     $this->renderView('sheets_hub', [
       'pageTitle' => 'Biblioteka Arkuszy | Zdajnik',
       'pageDescription' => 'Arkusze praktyczne do egzaminów zawodowych INF — wybierz kwalifikację i przeglądaj arkusze z poziomem trudności oraz prywatnymi notatkami.',
@@ -60,6 +75,8 @@ class SheetController extends BaseController
    */
   public function listByExam(string $code): void
   {
+    $this->checkAvailability();
+
     $exam = $this->dynamicData->getExamDetails($code);
 
     if (!$exam) {
@@ -88,6 +105,8 @@ class SheetController extends BaseController
    */
   public function show(string $code, string $sheetId): void
   {
+    $this->checkAvailability();
+
     $sheet = ctype_digit($sheetId) ? $this->sheetModel->findActiveById((int) $sheetId) : false;
 
     // Arkusz musi istnieć i należeć do kwalifikacji wskazanej w adresie
@@ -118,6 +137,7 @@ class SheetController extends BaseController
    */
   public function myNotes(): void
   {
+    $this->checkAvailability();
     $this->requireAuth();
     $userId = $this->currentUser->getId();
 

@@ -204,6 +204,9 @@ export class TestRunner {
           </label>`;
       });
 
+      // Sparsuj treść pytania z formatu Markdown na HTML (np. bloki kodu) i zabezpiecz przed XSS.
+      const questionHTML = DOMPurify.sanitize(marked.parse(question_text || '', { gfm: true, breaks: true }));
+
       const questionElement = document.createElement('section');
       questionElement.className = 'quiz-card';
       questionElement.id = `question-${question_id}`; // ID bazowe dla DOM
@@ -230,7 +233,7 @@ export class TestRunner {
            </div>
          </div>
         <div class="quiz-card__content">
-          <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
+          <div class="quiz-card__question-text">${questionHTML}</div>
           ${imageHTML}
         </div>
         <div class="quiz-card__answers">${answersHTML}</div>
@@ -407,6 +410,9 @@ export class TestRunner {
         badgeHTML = '<span class="status-badge status-badge--error"><i class="fas fa-times"></i> Błąd</span>';
       }
 
+      // Sparsuj treść pytania z formatu Markdown na HTML (np. bloki kodu) i zabezpiecz przed XSS.
+      const questionHTML = DOMPurify.sanitize(marked.parse(question_text || '', { gfm: true, breaks: true }));
+
       let answersHTML = '';
       answers.forEach((ans, idx) => {
         const letter = String.fromCharCode(65 + idx);
@@ -456,7 +462,7 @@ export class TestRunner {
              </div>
          </div>
         <div class="quiz-card__content">
-          <p class="quiz-card__question-text">${escapeHTML(question_text)}</p>
+          <div class="quiz-card__question-text">${questionHTML}</div>
           ${image_name ? `<div class="quiz-card__image-container"><img src="${window.zdajnikAppState.baseUrl}/images/questions/${escapeHTML(image_name)}" class="quiz-card__image"></div>` : ''}
         </div>
         <div class="quiz-card__answers" data-answered="true">${answersHTML}</div>

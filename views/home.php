@@ -83,7 +83,7 @@ $extraSchemas = [
     "@context" => "https://schema.org",
     "@type" => "Course",
     "name" => "Kurs przygotowawczy INF.03 - Wkrótce!",
-    "description" => "Nadchodzący kompleksowy kurs wideo oraz pełna baza pytań egzaminacyjnych dla kwalifikacji INF.03 (Tworzenie stron i baz danych).",
+    "description" => "Nadchodzący kompleksowy kurs wideo dla kwalifikacji INF.03 (Tworzenie stron i baz danych), uzupełniający dostępną już bazę pytań egzaminacyjnych.",
     "provider" => [
       "@type" => "Organization",
       "name" => "Zdajnik",
@@ -93,8 +93,8 @@ $extraSchemas = [
   [
     "@context" => "https://schema.org",
     "@type" => "Service",
-    "name" => "Baza pytań INF.02 i INF.03 - Uzupelnianie!",
-    "description" => "Trwają intensywne prace nad uzupełnieniem pełnej bazy pytań egzaminacyjnych dla kwalifikacji INF.02 oraz INF.03.",
+    "name" => "Baza pytań INF.02 - Uzupelnianie!",
+    "description" => "Trwają intensywne prace nad uzupełnieniem pełnej bazy pytań egzaminacyjnych dla kwalifikacji INF.02.",
     "provider" => [
       "@type" => "Organization",
       "name" => "Zdajnik",
@@ -221,17 +221,16 @@ $extraSchemas = [
     -->
     <section class="exams-section" id="egzaminy">
       <h2 class="section-title">Wybierz kwalifikację i zacznij ćwiczyć</h2>
-      <p class="section-subtitle">Na start dostępna jest kwalifikacja INF.04. Kolejne działy będziemy dodawać stopniowo.</p>
+      <p class="section-subtitle">Dostępne są kwalifikacje INF.03 i INF.04. Kolejne działy będziemy dodawać stopniowo.</p>
       <div class="exams-grid">
-        <a href="#" class="exam-card exam-card--disabled" onclick="return false;">
+        <a href="<?= url('test/INF.03') ?>" class="exam-card">
           <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop"
             alt="Praca przy komputerze i nauka programowania webowego INF.03" class="exam-card__background">
           <div class="exam-card__overlay"></div>
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.03 (dawniej E.14)</h3>
             <p class="exam-card__subtitle">
-              Programowanie webowe<br>
-              <span class="soon-badge soon-badge--block">Wkrótce!</span>
+              Programowanie webowe
             </p>
           </div>
         </a>
@@ -346,7 +345,7 @@ $extraSchemas = [
         ];
         foreach ($examsCategories as $examCode => $categories):
           $icon = $icons[$examCode] ?? 'fas fa-laptop-code';
-          $isSoon = $examCode !== 'INF.04';
+          $isSoon = $examCode === 'INF.02';
           ?>
           <div class="topics-group">
             <h3 class="topics-group__subheading">
@@ -356,27 +355,15 @@ $extraSchemas = [
                 <span class="soon-badge">Wkrótce!</span>
               <?php endif; ?>
             </h3>
-            <div class="topics-grid">
-              <?php if ($isSoon): ?>
-                <?php if ($examCode === 'INF.02'): ?>
-                  <a href="#" class="topic-card topic-card--disabled">Sprzęt komputerowy</a>
-                  <a href="#" class="topic-card topic-card--disabled">Systemy operacyjne</a>
-                  <a href="#" class="topic-card topic-card--disabled">Sieci komputerowe</a>
-                <?php elseif ($examCode === 'INF.03'): ?>
-                  <a href="#" class="topic-card topic-card--disabled">Tworzenie stron internetowych</a>
-                  <a href="#" class="topic-card topic-card--disabled">Bazy danych</a>
-                  <a href="#" class="topic-card topic-card--disabled">Aplikacje internetowe</a>
-                <?php else: ?>
-                  <p>Brak działów.</p>
-                <?php endif; ?>
-              <?php else: ?>
+            <?php if (!$isSoon): ?>
+              <div class="topics-grid">
                 <?php foreach ($categories as $category): ?>
                   <a href="<?= url("jedno-pytanie/{$examCode}?subject[]=" . $category['id']) ?>" class="topic-card">
                     <?= htmlspecialchars($category['name']) ?>
                   </a>
                 <?php endforeach; ?>
-              <?php endif; ?>
-            </div>
+              </div>
+            <?php endif; ?>
           </div>
         <?php endforeach; ?>
       </div>

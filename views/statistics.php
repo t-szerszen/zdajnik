@@ -185,53 +185,6 @@ $extraScripts = [
         </div>
         <?php endif; ?>
 
-        <!-- Notatki do arkuszy (Biblioteka Arkuszy) -->
-        <?php $sheetNotesSummary = $sheetNotesSummary ?? ['count' => 0, 'avg_difficulty' => null, 'hard_count' => 0, 'hardest' => []]; ?>
-        <div class="stats-card sheet-notes-widget">
-          <div class="stats-card__header-minimal">
-            <h3 class="stats-card__title"><i class="fas fa-note-sticky"></i> Notatki do arkuszy</h3>
-          </div>
-
-          <?php if ((int) $sheetNotesSummary['count'] === 0): ?>
-            <p class="sheet-notes-widget__empty">Nie masz jeszcze notatek. Otwórz arkusz w
-              <a href="<?= url('arkusze') ?>">Bibliotece Arkuszy</a> i oceń jego trudność — tutaj zobaczysz
-              podsumowanie swoich słabych stron.</p>
-          <?php else: ?>
-            <div class="sheet-notes-widget__stats">
-              <div class="sheet-notes-widget__stat">
-                <strong><?= (int) $sheetNotesSummary['count'] ?></strong>
-                <span>notatek</span>
-              </div>
-              <div class="sheet-notes-widget__stat">
-                <strong><?= $sheetNotesSummary['avg_difficulty'] !== null ? number_format((float) $sheetNotesSummary['avg_difficulty'], 1, ',', '') : '—' ?></strong>
-                <span>śr. ocena</span>
-              </div>
-              <div class="sheet-notes-widget__stat">
-                <strong><?= (int) $sheetNotesSummary['hard_count'] ?></strong>
-                <span>ocenione 8+</span>
-              </div>
-            </div>
-
-            <?php if (!empty($sheetNotesSummary['hardest'])): ?>
-              <p class="sheet-notes-widget__subtitle">Najtrudniejsze dla Ciebie:</p>
-              <ul class="sheet-notes-widget__list">
-                <?php foreach ($sheetNotesSummary['hardest'] as $hardNote): ?>
-                  <li class="sheet-notes-widget__item">
-                    <a href="<?= url('arkusze/' . rawurlencode((string) $hardNote['exam_code']) . '/' . (int) $hardNote['sheet_id']) ?>">
-                      <?= htmlspecialchars((string) $hardNote['sheet_title']) ?>
-                    </a>
-                    <span class="sheet-notes-widget__rating"><?= (int) $hardNote['subjective_difficulty'] ?>/10</span>
-                  </li>
-                <?php endforeach; ?>
-              </ul>
-            <?php endif; ?>
-          <?php endif; ?>
-
-          <a href="<?= url('moje-notatki') ?>" class="btn btn--secondary btn--sm sheet-notes-widget__cta">
-            <i class="fas fa-list"></i> Wszystkie notatki
-          </a>
-        </div>
-
       </aside>
 
       <?php if (!$hasSelectedCategory): ?>

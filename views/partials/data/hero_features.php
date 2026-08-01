@@ -13,7 +13,7 @@ return [
     'icon' => 'fas fa-database',
     'title' => 'Baza pytań',
     'description' => 'Setki pytań prosto z arkuszy egzaminacyjnych, poukładane według kwalifikacji i działów.',
-    'details' => 'Pytania są pogrupowane po kwalifikacji (na start INF.04) i po dziale tematycznym, więc możesz ćwiczyć całą kwalifikację naraz albo wejść tylko w temat, który akurat macie na lekcji lub idzie Ci najsłabiej.',
+    'details' => 'Pytania są pogrupowane po kwalifikacji (na start INF.03 i INF.04) i po dziale tematycznym, więc możesz ćwiczyć całą kwalifikację naraz albo wejść tylko w temat, który akurat macie na lekcji lub idzie Ci najsłabiej.',
   ],
   [
     'icon' => 'fas fa-circle-question',

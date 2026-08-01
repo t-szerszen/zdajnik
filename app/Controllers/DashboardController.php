@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Models\SheetNote;
 use App\Services\StatisticsService;
 
 /**
@@ -65,15 +64,11 @@ class DashboardController extends BaseController
       }
     }
 
-    // Podsumowanie notatek do arkuszy (niezależne od wybranej kwalifikacji)
-    $sheetNotesSummary = (new SheetNote())->getSummaryForUser($userId);
-
     if ($selectedExamTypeId === null) {
       $this->renderView('statistics', [
         'categories' => $examTypes,
         'selectedCategoryId' => null,
-        'hasSelectedCategory' => false,
-        'sheetNotesSummary' => $sheetNotesSummary
+        'hasSelectedCategory' => false
       ]);
       return;
     }
@@ -93,8 +88,7 @@ class DashboardController extends BaseController
       'criticalErrors' => $this->statsService->getCriticalErrors($userId, $selectedExamTypeId, 5),
       'recentExams' => $this->statsService->getRecentExams($userId, $selectedExamTypeId, 5),
       'efficiencyTrend' => $this->statsService->getEfficiencyTrendWithMovingAvg($userId, $selectedExamTypeId, 10),
-      'savedQuestions' => $this->statsService->getSavedQuestions($userId, $selectedExamTypeId, 5),
-      'sheetNotesSummary' => $sheetNotesSummary
+      'savedQuestions' => $this->statsService->getSavedQuestions($userId, $selectedExamTypeId, 5)
     ];
 
     // KROK 5: Przekazanie danych do modułu statystyk

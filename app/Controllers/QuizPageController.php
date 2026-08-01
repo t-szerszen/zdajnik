@@ -30,18 +30,21 @@ class QuizPageController extends BaseController
     $this->dynamicData = new DynamicDataService();
   }
 
+  /** @var string[] Kody kwalifikacji z gotową bazą pytań, dostępne dla użytkowników */
+  private const AVAILABLE_EXAM_CODES = ['INF.03', 'INF.04'];
+
   /**
    * Strażnik dostępności egzaminów.
-   * 
-   * Tymczasowe zabezpieczenie blokujące dostęp do egzaminów innych niż INF.04
-   * (które są w fazie przygotowania bazy pytań).
+   *
+   * Tymczasowe zabezpieczenie blokujące dostęp do kwalifikacji, których baza
+   * pytań jest wciąż w przygotowaniu (obecnie INF.02).
    *
    * @param string $code Kod kwalifikacji (np. INF.02, INF.03, INF.04).
    * @return void
    */
   private function checkAvailability(string $code): void
   {
-    if (strtoupper($code) !== 'INF.04') {
+    if (!in_array(strtoupper($code), self::AVAILABLE_EXAM_CODES, true)) {
       $this->getAnalyticsService()->trackValidationError(
         $this->currentUser?->getId(),
         'quiz_page',

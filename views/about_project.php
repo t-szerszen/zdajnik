@@ -26,7 +26,7 @@ $collaborationItems = [
   [
     'icon' => 'fa-book-open',
     'title' => 'Podziel się materiałami',
-    'text' => 'Masz notatki, pytania z kartkówek albo pomysł na treści do kolejnych kwalifikacji (INF.02, INF.03)? Chętnie je wykorzystam.'
+    'text' => 'Masz notatki, pytania z kartkówek albo pomysł na treści do kolejnej kwalifikacji (INF.02)? Chętnie je wykorzystam.'
   ],
 ];
 

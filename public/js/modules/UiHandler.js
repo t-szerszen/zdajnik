@@ -72,6 +72,9 @@ class UIHandler {
         </label>`;
     });
 
+    // Krok 1d: Sparsuj treść pytania z formatu Markdown na HTML (np. bloki kodu) i zabezpiecz przed XSS.
+    const questionHTML = DOMPurify.sanitize(marked.parse(question.question_text || '', { gfm: true, breaks: true }));
+
     // Krok 2: Wygeneruj HTML dla obrazka, jeśli istnieje.
     const imageHTML = question.image_name?.trim()
       ? `<div class="quiz-card__image-container">
@@ -103,7 +106,7 @@ class UIHandler {
           </div>
         </div>
         <div class="quiz-card__content">
-          <p class="quiz-card__question-text">${escapeHTML(question.question_text)}</p>
+          <div class="quiz-card__question-text">${questionHTML}</div>
           ${imageHTML}
         </div>
         <div class="quiz-card__answers">${answersHTML}</div>

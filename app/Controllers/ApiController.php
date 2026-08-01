@@ -502,6 +502,10 @@ class ApiController extends BaseController
   {
     $this->ensurePostRequest();
 
+    // Biblioteka Arkuszy nie jest jeszcze udostępniona użytkownikom — endpoint tymczasowo wyłączony
+    $this->sendJsonResponse(['success' => false, 'message' => 'Ta funkcja nie jest jeszcze dostępna.'], 404);
+    return;
+
     if (!$this->isUserLoggedIn) {
       $this->sendJsonResponse(['success' => false, 'message' => 'Zaloguj się, aby zapisywać notatki do arkuszy.'], 403);
       return;
