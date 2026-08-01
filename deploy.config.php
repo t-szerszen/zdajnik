@@ -47,6 +47,17 @@ return [
         ],
     ],
 
+    // Kopie zapasowe bazy danych: dump przy każdym deployu (siatka bezpieczeństwa przed
+    // migracją) + automatyczna rejestracja crona robiącego niezależny, codzienny dump.
+    'db_backup' => [
+        'enabled' => filter_var(getenv('DEPLOY_DB_BACKUP_ENABLED') ?: true, FILTER_VALIDATE_BOOL),
+        // Pusty = domyślnie podkatalog "db" wewnątrz backup.dir (patrz Deployer::dbBackupDir()).
+        'dir' => getenv('DEPLOY_DB_BACKUP_DIR') ?: '',
+        'retention_days' => (int) (getenv('DEPLOY_DB_BACKUP_RETENTION_DAYS') ?: 14),
+        'register_cron' => filter_var(getenv('DEPLOY_DB_BACKUP_REGISTER_CRON') ?: true, FILTER_VALIDATE_BOOL),
+        'cron_schedule' => getenv('DEPLOY_DB_BACKUP_CRON') ?: '0 3 * * *',
+    ],
+
     'logs' => [
         'dir' => getenv('DEPLOY_LOG_DIR') ?: __DIR__ . '/var/deploy-logs',
     ],

@@ -9,3 +9,4 @@ public/files/sheets/
 public/images/questions/
 .DS_Store
 *.zip
+/var/deploy-logs/

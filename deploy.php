@@ -112,6 +112,10 @@ final class Deployer
         if ($this->config['backup']['enabled'] && $this->blank($this->config['backup']['dir'])) {
             throw new DeployFailed('Backup is enabled, but backup.dir is empty.');
         }
+
+        if ($this->config['db_backup']['enabled'] && $this->blank($this->dbBackupDir())) {
+            throw new DeployFailed('DB backup is enabled, but db_backup.dir is empty and backup.dir has no fallback either.');
+        }
     }
 
     private function buildSteps(): array
@@ -134,6 +138,20 @@ final class Deployer
                 'name' => 'Create application backup',
                 'command' => $this->backupCommand(),
             ];
+        }
+
+        if ($this->config['db_backup']['enabled']) {
+            $steps[] = [
+                'name' => 'Backup database',
+                'command' => $this->dbBackupCommand(),
+            ];
+
+            if ($this->config['db_backup']['register_cron']) {
+                $steps[] = [
+                    'name' => 'Register daily DB backup cron job',
+                    'command' => $this->registerDbBackupCronCommand(),
+                ];
+            }
         }
 
         $steps[] = ['name' => 'Git fetch', 'command' => 'git fetch --prune origin'];
@@ -201,17 +219,95 @@ final class Deployer
     private function backupCommand(): string
     {
         $backupDir = rtrim($this->config['backup']['dir'], '/');
-        $appName = strtolower(preg_replace('/[^a-zA-Z0-9_-]+/', '-', $this->config['app']['name'])) ?: 'app';
+        $appName = $this->appSlug();
         $excludes = '';
 
         foreach ($this->config['backup']['exclude'] as $exclude) {
             $excludes .= ' --exclude=' . $this->remoteQuote($exclude);
         }
 
-        return 'mkdir -p ' . $this->remoteQuote($backupDir)
-            . ' && tar -czf ' . $this->remoteQuote($backupDir . '/' . $appName . '-$(date +%Y%m%d%H%M%S).tar.gz')
+        // Uwaga: $(date ...) musi zostac zbudowany w zmiennej bashowej PRZED uzyciem,
+        // a nie wewnatrz remoteQuote() (pojedynczy cudzyslow wylacza podstawienie polecen).
+        return 'BACKUP_DIR=' . $this->remoteQuote($backupDir)
+            . ' && mkdir -p "$BACKUP_DIR"'
+            . ' && ARCHIVE_FILE="$BACKUP_DIR/' . $appName . '-$(date +%Y%m%d%H%M%S).tar.gz"'
+            . ' && tar -czf "$ARCHIVE_FILE"'
             . $excludes
             . ' .';
+    }
+
+    private function appSlug(): string
+    {
+        return strtolower(preg_replace('/[^a-zA-Z0-9_-]+/', '-', $this->config['app']['name'])) ?: 'app';
+    }
+
+    private function dbBackupDir(): string
+    {
+        $dir = trim((string) ($this->config['db_backup']['dir'] ?? ''));
+
+        if ($dir !== '') {
+            return rtrim($dir, '/');
+        }
+
+        $appBackupDir = trim((string) ($this->config['backup']['dir'] ?? ''));
+
+        return $appBackupDir === '' ? '' : rtrim($appBackupDir, '/') . '/db';
+    }
+
+    /**
+     * Dump bazy danych: czyta dane polaczenia z produkcyjnego .env (DB_HOST/DB_NAME/DB_USER/DB_PASS),
+     * zrzuca przez mysqldump, gzipuje z timestampem w nazwie, i usuwa zrzuty starsze niz retention_days.
+     * Haslo przekazywane przez MYSQL_PWD (nie -p), zeby nie bylo widoczne w `ps aux`.
+     *
+     * Uwaga: CELOWO nie robimy `source .env` - haslo bazy moze zawierac znaki specjalne dla
+     * basha (cudzyslowy, $, srednik), ktore zepsulyby/wypaczylyby zrodlowanie calego pliku
+     * jako kodu powloki. Zamiast tego czytamy tylko potrzebne klucze jako czysty tekst przez
+     * sed (linia zaczynajaca sie od "KLUCZ=", reszta linii to wartosc - bez interpretacji).
+     * Wymaga, zeby DB_HOST/DB_NAME/DB_USER/DB_PASS w .env NIE byly owiniete w cudzyslowy,
+     * tak jak juz sa w .env.example.
+     */
+    private function dbBackupCommand(): string
+    {
+        $dir = $this->dbBackupDir();
+        $envPath = $this->config['env']['path'];
+        $appName = $this->appSlug();
+        $retentionDays = max(1, (int) $this->config['db_backup']['retention_days']);
+        $namePattern = $appName . '-db-*.sql.gz';
+        $readVar = static fn (string $key): string => 'sed -n \'s/^' . $key . '=//p\' "$ENV_FILE" | tail -n1';
+
+        return 'ENV_FILE=' . $this->remoteQuote($envPath)
+            . ' && DB_BACKUP_DIR=' . $this->remoteQuote($dir)
+            . ' && mkdir -p "$DB_BACKUP_DIR"'
+            . ' && DB_HOST="$(' . $readVar('DB_HOST') . ')"'
+            . ' && DB_NAME="$(' . $readVar('DB_NAME') . ')"'
+            . ' && DB_USER="$(' . $readVar('DB_USER') . ')"'
+            . ' && DB_PASS="$(' . $readVar('DB_PASS') . ')"'
+            . ' && DUMP_FILE="$DB_BACKUP_DIR/' . $appName . '-db-$(date +%Y%m%d%H%M%S).sql.gz"'
+            . ' && MYSQL_PWD="$DB_PASS" mysqldump --single-transaction --quick --no-tablespaces -h"$DB_HOST" -u"$DB_USER" "$DB_NAME" | gzip > "$DUMP_FILE"'
+            . ' && find "$DB_BACKUP_DIR" -maxdepth 1 -name ' . $this->remoteQuote($namePattern)
+            . ' -mtime +' . $retentionDays . ' -print0 | xargs -0 -r rm --';
+    }
+
+    /**
+     * Idempotentnie dopisuje (lub podmienia) wpis crontab uruchamiajacy dbBackupCommand()
+     * niezaleznie od deployow. Wpis rozpoznawany po znaczniku w komentarzu na koncu linii,
+     * wiec ponowne deploye nie duplikuja crona.
+     */
+    private function registerDbBackupCronCommand(): string
+    {
+        $schedule = trim((string) $this->config['db_backup']['cron_schedule']) ?: '0 3 * * *';
+        $marker = 'zdajnik-db-backup';
+        $logFile = $this->dbBackupDir() . '/backup.log';
+
+        $innerCommand = 'cd ' . $this->remoteQuote($this->config['app']['path']) . ' && ' . $this->dbBackupCommand();
+        $cronCommand = 'bash -lc ' . $this->remoteQuote($innerCommand) . ' >> ' . $this->remoteQuote($logFile) . ' 2>&1';
+
+        // Crontab traktuje niezescapowany "%" jako znak nowej linii / separator stdin,
+        // a nasza komenda zawiera "date +%Y%m%d..." - trzeba zescapowac przed zapisem.
+        $cronCommand = str_replace('%', '\\%', $cronCommand);
+        $cronLine = $schedule . ' ' . $cronCommand . ' # ' . $marker;
+
+        return '(crontab -l 2>/dev/null | grep -Fv ' . $this->remoteQuote($marker) . '; echo ' . $this->remoteQuote($cronLine) . ') | crontab -';
     }
 
     private function validateCommands(array $steps): void
@@ -283,6 +379,7 @@ final class Deployer
         $this->line('- galaz produkcyjna: ' . $this->config['app']['production_branch']);
         $this->line('- maintenance mode: ' . ($this->config['maintenance']['enabled'] ? 'wlaczony' : 'wylaczony'));
         $this->line('- backup: ' . ($this->config['backup']['enabled'] ? $this->config['backup']['dir'] : 'wylaczony'));
+        $this->line('- backup bazy danych: ' . ($this->config['db_backup']['enabled'] ? $this->dbBackupDir() . ' (retencja ' . $this->config['db_backup']['retention_days'] . ' dni)' : 'wylaczony'));
         $this->line('- log: ' . $this->logFile);
         $this->line('- dry-run: ' . ($this->options['dry_run'] ? 'tak' : 'nie'));
         $this->line("\nKroki:");

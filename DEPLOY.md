@@ -56,17 +56,56 @@ Runner wykonuje kroki w tej kolejnosci:
 4. Opcjonalnie wlacza maintenance mode.
 5. Sprawdza, czy istnieje produkcyjny `.env`.
 6. Tworzy backup aplikacji.
-7. Wykonuje `git fetch --prune origin`.
-8. Przelacza sie na galaz produkcyjna.
-9. Wykonuje `git pull --ff-only origin <branch>`.
-10. Uruchamia `composer install`, jesli istnieje `composer.json`.
-11. Uruchamia `npm ci && npm run build:css`, jesli istnieje `package.json`.
-12. Opcjonalnie uruchamia migracje.
-13. Opcjonalnie czysci cache i ustawia uprawnienia.
-14. Opcjonalnie wylacza maintenance mode.
-15. Zapisuje log deployu.
+7. Tworzy dump bazy danych (opcjonalnie) i rejestruje/odswieza codzienny cron do backupu bazy (opcjonalnie) - patrz "Kopie zapasowe bazy danych" nizej.
+8. Wykonuje `git fetch --prune origin`.
+9. Przelacza sie na galaz produkcyjna.
+10. Wykonuje `git pull --ff-only origin <branch>`.
+11. Uruchamia `composer install`, jesli istnieje `composer.json`.
+12. Uruchamia `npm ci && npm run build:css`, jesli istnieje `package.json`.
+13. Opcjonalnie uruchamia migracje.
+14. Opcjonalnie czysci cache i ustawia uprawnienia.
+15. Opcjonalnie wylacza maintenance mode.
+16. Zapisuje log deployu.
 
 Deploy zatrzymuje sie przy pierwszym bledzie.
+
+## Kopie zapasowe bazy danych
+
+Oprócz backupu plików aplikacji (tar przed każdym deployem), runner umie też robić kopie
+zapasowe bazy danych. Dwa niezależne mechanizmy, oba sterowane sekcją `db_backup` w
+`deploy.config.php`:
+
+1. **Dump przed każdym deployem** — krok "Backup database" wykonuje się tuż przed
+   `git pull`/migracjami, jako siatka bezpieczeństwa gdyby coś poszło nie tak.
+2. **Niezależny, codzienny dump przez cron** — przy pierwszym (i każdym kolejnym) deployu
+   runner sam dopisuje wpis do crontaba użytkownika SSH (rozpoznawany po znaczniku w
+   komentarzu, więc kolejne deploye go nie duplikują, tylko podmieniają). Domyślnie
+   `0 3 * * *` (3:00 w nocy).
+
+Dane połączenia z bazą są czytane bezpośrednio z produkcyjnego `.env` (`DB_HOST`, `DB_NAME`,
+`DB_USER`, `DB_PASS`) — **te wartości nie mogą być owinięte w cudzysłowy** w `.env` (tak jak
+już są w `.env.example`), bo runner celowo nie robi `source .env` (hasło mogłoby zawierać
+znaki specjalne dla basha), tylko czyta te klucze jako czysty tekst.
+
+Dumpy trafiają jako `<backup.dir>/db/<app>-db-<timestamp>.sql.gz` (gzip, `mysqldump
+--single-transaction --quick`, bezpieczne dla InnoDB bez blokowania tabel), z automatyczną
+rotacją — pliki starsze niż `db_backup.retention_days` (domyślnie 14 dni) są usuwane przy
+każdym uruchomieniu.
+
+Zmienne środowiskowe (opcjonalne, wszystkie mają sensowne domyślne wartości):
+
+- `DEPLOY_DB_BACKUP_ENABLED` — domyślnie włączone.
+- `DEPLOY_DB_BACKUP_DIR` — domyślnie `<DEPLOY_BACKUP_DIR>/db`.
+- `DEPLOY_DB_BACKUP_RETENTION_DAYS` — domyślnie `14`.
+- `DEPLOY_DB_BACKUP_CRON` — domyślnie `0 3 * * *`.
+- `DEPLOY_DB_BACKUP_REGISTER_CRON` — domyślnie włączone; ustaw na `false`, jeśli wolisz sam
+  skonfigurować cron w panelu hostingu (np. cPanel → Cron Jobs) zamiast pozwolić runnerowi
+  zarządzać crontabem konta SSH.
+
+Wymaga, żeby na serwerze były dostępne `mysqldump`, `gzip`, `find`, `xargs` i `crontab` (jeśli
+`register_cron` jest włączone) — na hostingu współdzielonym (cPanel/DirectAdmin) to standard,
+ale warto zweryfikować przez `php deploy.php --dry-run`, a docelowo pierwszym prawdziwym
+deployem i ręcznym sprawdzeniem `crontab -l` na serwerze.
 
 ## Migracje
 
@@ -111,6 +150,10 @@ Opcjonalnie:
 - `DEPLOY_BRANCH=main`
 - `DEPLOY_RUN_MIGRATIONS=true`
 - `DEPLOY_MAINTENANCE_ENABLED=true`
+- `DEPLOY_DB_BACKUP_ENABLED=false` - wylacza backup bazy (domyslnie wlaczony).
+- `DEPLOY_DB_BACKUP_RETENTION_DAYS=14`
+- `DEPLOY_DB_BACKUP_CRON="0 3 * * *"`
+- `DEPLOY_DB_BACKUP_REGISTER_CRON=false` - jesli wolisz reczna konfiguracje crona w panelu hostingu.
 
 ## Bezpieczne przechowywanie `.env`
 
