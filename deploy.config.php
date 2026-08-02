@@ -20,7 +20,6 @@ return [
 
     'github_actions' => [
         'enabled' => filter_var(getenv('DEPLOY_GITHUB_ACTIONS_ENABLED') ?: false, FILTER_VALIDATE_BOOL),
-        'branch' => 'main',
     ],
 
     'maintenance' => [

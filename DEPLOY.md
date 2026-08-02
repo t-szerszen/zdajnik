@@ -22,6 +22,8 @@ Najwazniejsze ustawienia sa w `deploy.config.php`:
 - `maintenance.enabled` oraz komendy maintenance - domyslnie wylaczone, bo aplikacja nie ma wbudowanego trybu maintenance.
 - `env.path` - sciezka do produkcyjnego `.env`, domyslnie `.env` w katalogu aplikacji.
 - `backup` - ustawienia archiwum aplikacji przed deployem.
+- `db_backup` - kopie zapasowe bazy danych (dump przy deployu + codzienny cron) - patrz sekcja "Kopie zapasowe bazy danych" nizej.
+- `commands.frontend.build_locally` - czy CSS budowac lokalnie i wyslac przez scp (domyslnie tak) czy zdalnie na serwerze - patrz krok 13 w "Co robi deploy".
 - `logs.dir` - lokalny katalog logow deployu.
 
 Wartosci mozna nadpisywac zmiennymi srodowiskowymi, np.:
@@ -54,18 +56,20 @@ Runner wykonuje kroki w tej kolejnosci:
 2. Laczy sie z serwerem przez SSH.
 3. Przechodzi do katalogu aplikacji.
 4. Opcjonalnie wlacza maintenance mode.
-5. Sprawdza, czy istnieje produkcyjny `.env`.
-6. Tworzy backup aplikacji.
-7. Tworzy dump bazy danych (opcjonalnie) i rejestruje/odswieza codzienny cron do backupu bazy (opcjonalnie) - patrz "Kopie zapasowe bazy danych" nizej.
-8. Wykonuje `git fetch --prune origin`.
-9. Przelacza sie na galaz produkcyjna.
-10. Wykonuje `git pull --ff-only origin <branch>`.
-11. Uruchamia `composer install`, jesli istnieje `composer.json`.
-12. Buduje CSS (`npm ci && npm run build:css`) i wysyla gotowy plik przez `scp`, jesli istnieje `package.json` - domyslnie **lokalnie** (na maszynie odpalajacej `deploy.php`, w CI to runner GitHub Actions), nie na serwerze. Powod: npm-owy `sass` (dart-sass) nie publikuje binarek dla FreeBSD, wiec na hostingach typu mydevil zdalne budowanie CSS po prostu sie wywala (odpala jakis inny, systemowy `sass`). Steruje tym `commands.frontend.build_locally` w `deploy.config.php` - ustaw `false`, jesli Twoj hosting ma dzialajacy `sass` i wolisz budowac zdalnie jak dawniej.
-13. Opcjonalnie uruchamia migracje.
-14. Opcjonalnie czysci cache i ustawia uprawnienia.
-15. Opcjonalnie wylacza maintenance mode.
-16. Zapisuje log deployu.
+5. Opcjonalnie uruchamia niestandardowe komendy z `commands.pre_deploy` (pusta lista domyslnie).
+6. Sprawdza, czy istnieje produkcyjny `.env`.
+7. Tworzy backup aplikacji.
+8. Tworzy dump bazy danych (opcjonalnie) i rejestruje/odswieza codzienny cron do backupu bazy (opcjonalnie) - patrz "Kopie zapasowe bazy danych" nizej.
+9. Wykonuje `git fetch --prune origin`.
+10. Przelacza sie na galaz produkcyjna.
+11. Wykonuje `git pull --ff-only origin <branch>`.
+12. Uruchamia `composer install`, jesli istnieje `composer.json`.
+13. Buduje CSS (`npm ci && npm run build:css`) i wysyla gotowy plik przez `scp`, jesli istnieje `package.json` - domyslnie **lokalnie** (na maszynie odpalajacej `deploy.php`, w CI to runner GitHub Actions), nie na serwerze. Powod: npm-owy `sass` (dart-sass) nie publikuje binarek dla FreeBSD, wiec na hostingach typu mydevil zdalne budowanie CSS po prostu sie wywala (odpala jakis inny, systemowy `sass`). Steruje tym `commands.frontend.build_locally` w `deploy.config.php` - ustaw `false`, jesli Twoj hosting ma dzialajacy `sass` i wolisz budowac zdalnie jak dawniej.
+14. Opcjonalnie uruchamia migracje.
+15. Opcjonalnie czysci cache i ustawia uprawnienia.
+16. Opcjonalnie uruchamia niestandardowe komendy z `commands.post_deploy` (pusta lista domyslnie).
+17. Opcjonalnie wylacza maintenance mode.
+18. Zapisuje log deployu (logowane jest w praktyce na biezaco przez caly przebieg, nie tylko na koncu).
 
 Deploy zatrzymuje sie przy pierwszym bledzie.
 
@@ -99,12 +103,11 @@ Zmienne środowiskowe (opcjonalne, wszystkie mają sensowne domyślne wartości)
 - `DEPLOY_DB_BACKUP_RETENTION_DAYS` — domyślnie `14`.
 - `DEPLOY_DB_BACKUP_CRON` — domyślnie `0 3 * * *`.
 - `DEPLOY_DB_BACKUP_REGISTER_CRON` — domyślnie włączone; ustaw na `false`, jeśli wolisz sam
-  skonfigurować cron w panelu hostingu (np. cPanel → Cron Jobs) zamiast pozwolić runnerowi
-  zarządzać crontabem konta SSH.
+  skonfigurować cron w panelu hostingu zamiast pozwolić runnerowi zarządzać crontabem konta SSH.
 
 Wymaga, żeby na serwerze były dostępne `mysqldump`, `gzip`, `find`, `xargs` i `crontab` (jeśli
-`register_cron` jest włączone) — na hostingu współdzielonym (cPanel/DirectAdmin) to standard,
-ale warto zweryfikować przez `php deploy.php --dry-run`, a docelowo pierwszym prawdziwym
+`register_cron` jest włączone) — na produkcyjnym hostingu (mydevil.net, FreeBSD) to sprawdzone
+i działające, ale na innym hostingu warto zweryfikować przez `php deploy.php --dry-run`, a docelowo pierwszym prawdziwym
 deployem i ręcznym sprawdzeniem `crontab -l` na serwerze.
 
 ## Migracje
@@ -196,9 +199,17 @@ cd /sciezka/do/aplikacji
 git checkout main
 git reset --hard <poprzedni_commit>
 composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
-npm ci && npm run build:css
 ```
 
-3. Jesli problem dotyczy plikow, mozesz rozpakowac ostatni backup z katalogu `backup.dir`.
+3. Zbuduj CSS **lokalnie** (NIE na serwerze — dart-sass nie ma binarek dla FreeBSD, na mydevil
+   `npm run build:css` uruchomione zdalnie sie wywali, patrz krok 13 w "Co robi deploy") i wyslij
+   gotowy plik:
+
+```bash
+npm ci && npm run build:css
+scp public/scss/main.css user@host:/sciezka/do/aplikacji/public/scss/main.css
+```
+
+4. Jesli problem dotyczy plikow, mozesz rozpakowac ostatni backup z katalogu `backup.dir`.
 
 Uwaga: rollback bazy danych zalezy od konkretnej migracji. Przed wlaczeniem automatycznych migracji na produkcji upewnij sie, ze masz kopie bazy i znasz procedure cofania zmian.
