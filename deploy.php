@@ -591,9 +591,16 @@ final class Deployer
         }
 
         $ssh[] = $this->config['ssh']['user'] . '@' . $this->config['ssh']['host'];
-        $ssh[] = 'bash';
-        $ssh[] = '-lc';
-        $ssh[] = $remoteCommand;
+
+        // WAZNE: 'bash', '-lc' i komenda MUSZA byc JEDNYM elementem tablicy, nie trzema
+        // osobnymi. OpenSSH skleja koncowe argumenty spacjami BEZ ponownego cytowania,
+        // wiec przy trzech osobnych elementach zdalna powloka parsuje sklejony string od
+        // nowa i gubi oryginalne cudzyslowy z $remoteCommand (np. printf dostaje pusty
+        // format i pada z "usage: printf [-v var] format [arguments]"). Budujemy wiec
+        // cala zdalna inwokacje jako jeden, samodzielnie poprawnie zacytowany string -
+        // wtedy jedyne cytowanie ktore SSH/lokalna powloka moze zdjac to to na zewnatrz
+        // (escapeshellarg w commandForShell), a wnetrze (remoteQuote) dociera nietkniete.
+        $ssh[] = 'bash -lc ' . $this->remoteQuote($remoteCommand);
 
         return $ssh;
     }
