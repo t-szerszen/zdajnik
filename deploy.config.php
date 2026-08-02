@@ -72,9 +72,21 @@ return [
 
         'frontend' => [
             'enabled' => 'auto',
+            // dart-sass (npm "sass") nie publikuje binarek dla FreeBSD - na hostingach typu
+            // mydevil `npm run build:css` uruchomione zdalnie się wywala (odpala jakiś inny,
+            // systemowy "sass"). Budujemy więc CSS lokalnie (na maszynie odpalającej deploy.php
+            // - w CI to Linux/macOS) i wysyłamy gotowy plik przez scp zamiast budować zdalnie.
+            'build_locally' => true,
+            'local_build_command' => 'npm ci && npm run build:css',
+            'compiled_files' => ['public/scss/main.css'],
+            // Zostawione dla build_locally=false / innych hostingów, gdzie zdalny sass działa.
             'command' => 'npm ci && npm run build:css',
         ],
 
+        // UWAGA: db/migrations/20260218120000_seed.sql zawiera dane testowe/placeholder
+        // (TRUNCATE + fałszywe pytania) - NIE nadaje się do uruchomienia tu automatycznie.
+        // Zanim włączysz to na produkcji, upewnij się że narzędzie migracyjne pomija ten plik
+        // (tak jak ręczna procedura opisana w DEPLOY.md), inaczej nadpisze prawdziwą bazę pytań.
         'migrations' => [
             'enabled' => filter_var(getenv('DEPLOY_RUN_MIGRATIONS') ?: false, FILTER_VALIDATE_BOOL),
             'command' => 'dbmate --migrations-dir db/migrations up',

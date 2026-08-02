@@ -44,7 +44,7 @@ final class Deployer
             }
 
             foreach ($steps as $step) {
-                $this->runRemoteStep($step['name'], $step['command']);
+                $this->runStep($step);
             }
 
             if ($this->maintenanceEnabled) {
@@ -166,10 +166,31 @@ final class Deployer
         }
 
         if ($this->commandEnabled($this->config['commands']['frontend']['enabled'], 'package.json')) {
-            $steps[] = [
-                'name' => 'Build frontend assets',
-                'command' => $this->config['commands']['frontend']['command'],
-            ];
+            if (!empty($this->config['commands']['frontend']['build_locally'])) {
+                // dart-sass (npm "sass") nie ma binarek dla FreeBSD, wiec na hostingach typu
+                // mydevil budowanie CSS zdalnie po prostu sie wywala. Budujemy lokalnie
+                // (na maszynie ktora odpala deploy.php - w CI to runner Linux/macOS) i
+                // wysylamy gotowy plik przez scp, zamiast odpalac npm/sass na serwerze.
+                $steps[] = [
+                    'type' => 'local',
+                    'name' => 'Build frontend assets (lokalnie)',
+                    'local_command' => ['bash', '-lc', $this->config['commands']['frontend']['local_build_command']],
+                ];
+
+                foreach ($this->config['commands']['frontend']['compiled_files'] as $file) {
+                    $steps[] = [
+                        'type' => 'upload',
+                        'name' => 'Wyslanie zbudowanego pliku: ' . $file,
+                        'local_path' => $file,
+                        'remote_path' => $file,
+                    ];
+                }
+            } else {
+                $steps[] = [
+                    'name' => 'Build frontend assets',
+                    'command' => $this->config['commands']['frontend']['command'],
+                ];
+            }
         }
 
         if ($this->config['commands']['migrations']['enabled']) {
@@ -314,6 +335,12 @@ final class Deployer
     {
         $commands = array_column($steps, 'command');
 
+        foreach ($steps as $step) {
+            if (($step['type'] ?? 'remote') === 'local') {
+                $commands[] = $this->commandForLog($step['local_command']);
+            }
+        }
+
         if ($this->config['maintenance']['enabled']) {
             $commands[] = $this->config['maintenance']['enable_command'];
             $commands[] = $this->config['maintenance']['disable_command'];
@@ -387,11 +414,26 @@ final class Deployer
         foreach ($steps as $index => $step) {
             $this->line(($index + 1) . '. ' . $step['name']);
             if ($this->options['dry_run']) {
-                $this->line('   ' . $step['command']);
+                $this->line('   ' . $this->describeStepCommand($step));
             }
         }
 
         $this->line('');
+    }
+
+    private function describeStepCommand(array $step): string
+    {
+        $type = $step['type'] ?? 'remote';
+
+        if ($type === 'local') {
+            return '[lokalnie] ' . $this->commandForLog($step['local_command']);
+        }
+
+        if ($type === 'upload') {
+            return '[upload] ' . $step['local_path'] . ' -> ' . $step['remote_path'];
+        }
+
+        return $step['command'];
     }
 
     private function confirmIfNeeded(): void
@@ -406,6 +448,58 @@ final class Deployer
         if ($answer !== 'deploy') {
             throw new DeployFailed('Confirmation was not provided.');
         }
+    }
+
+    /**
+     * Rozsyla krok do wlasciwego wykonawcy w zaleznosci od 'type':
+     * - 'remote' (domyslny): komenda wykonywana przez SSH na serwerze.
+     * - 'local': komenda wykonywana lokalnie (np. na runnerze CI, gdzie dart-sass dziala,
+     *   w przeciwienstwie do FreeBSD na mydevil - stad budowanie CSS lokalnie zamiast zdalnie).
+     * - 'upload': lokalny plik wyslany przez scp do katalogu aplikacji na serwerze.
+     */
+    private function runStep(array $step): void
+    {
+        $type = $step['type'] ?? 'remote';
+
+        if ($type === 'local') {
+            $this->runLocalStep($step['name'], $step['local_command']);
+            return;
+        }
+
+        if ($type === 'upload') {
+            $this->runLocalStep($step['name'], $this->scpCommand($step['local_path'], $step['remote_path']));
+            return;
+        }
+
+        $this->runRemoteStep($step['name'], $step['command']);
+    }
+
+    private function scpCommand(string $localPath, string $remotePath): array
+    {
+        $scp = [
+            'scp',
+            '-P',
+            (string) $this->config['ssh']['port'],
+            '-o',
+            'BatchMode=yes',
+            '-o',
+            'StrictHostKeyChecking=' . $this->config['ssh']['strict_host_key_checking'],
+        ];
+
+        if (!$this->blank($this->config['ssh']['key_path'])) {
+            $scp[] = '-i';
+            $scp[] = $this->config['ssh']['key_path'];
+        }
+
+        // Uwaga: bez remoteQuote() tutaj - ten argument i tak przejdzie przez escapeshellarg()
+        // w commandForShell(), wiec dodatkowe cudzyslowy trafilyby do scp jako literalne znaki
+        // w nazwie pliku zamiast zostac zdjete przez powloke.
+        $remoteAppPath = rtrim($this->config['app']['path'], '/') . '/' . ltrim($remotePath, '/');
+
+        $scp[] = __DIR__ . '/' . ltrim($localPath, '/');
+        $scp[] = $this->config['ssh']['user'] . '@' . $this->config['ssh']['host'] . ':' . $remoteAppPath;
+
+        return $scp;
     }
 
     private function runRemoteStep(string $name, string $command): void

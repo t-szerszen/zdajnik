@@ -61,7 +61,7 @@ Runner wykonuje kroki w tej kolejnosci:
 9. Przelacza sie na galaz produkcyjna.
 10. Wykonuje `git pull --ff-only origin <branch>`.
 11. Uruchamia `composer install`, jesli istnieje `composer.json`.
-12. Uruchamia `npm ci && npm run build:css`, jesli istnieje `package.json`.
+12. Buduje CSS (`npm ci && npm run build:css`) i wysyla gotowy plik przez `scp`, jesli istnieje `package.json` - domyslnie **lokalnie** (na maszynie odpalajacej `deploy.php`, w CI to runner GitHub Actions), nie na serwerze. Powod: npm-owy `sass` (dart-sass) nie publikuje binarek dla FreeBSD, wiec na hostingach typu mydevil zdalne budowanie CSS po prostu sie wywala (odpala jakis inny, systemowy `sass`). Steruje tym `commands.frontend.build_locally` w `deploy.config.php` - ustaw `false`, jesli Twoj hosting ma dzialajacy `sass` i wolisz budowac zdalnie jak dawniej.
 13. Opcjonalnie uruchamia migracje.
 14. Opcjonalnie czysci cache i ustawia uprawnienia.
 15. Opcjonalnie wylacza maintenance mode.
@@ -125,6 +125,14 @@ Albo ustaw w `deploy.config.php`:
     'command' => 'dbmate --migrations-dir db/migrations up',
 ],
 ```
+
+**Zanim to włączysz:** `db/migrations/20260218120000_seed.sql` zawiera dane testowe/placeholder
+(`TRUNCATE` realnych tabel z pytaniami + wstawienie fałszywych "błędna odpowiedź numer X") - to
+plik do lokalnego seedowania dev bazy, nie do uruchamiania na produkcji. `dbmate` nie ma opcji
+pomijania pojedynczego pliku migracji, więc trzeba to rozwiązać zanim automatyczne migracje
+dotkną prawdziwej bazy - np. usuwając/przenosząc `seed.sql` poza `db/migrations/` albo
+weryfikując ręcznie każdy pierwszy przebieg. Przy pierwszym stawianiu produkcji migracje zostały
+uruchomione ręcznie, z pominięciem tego pliku (patrz historia deployu / notatki z wdrożenia).
 
 ## GitHub Actions
 
