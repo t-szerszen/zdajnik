@@ -7,3 +7,7 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
 </IfModule>
+
+# Wybor wersji PHP na hostingu mydevil (kilka wersji dostepnych rownoczesnie na koncie).
+# Jesli wdrazasz gdzie indziej i host inaczej wybiera wersje PHP, ta linia jest zbedna.
+AddType application/x-httpd-php82 .php
