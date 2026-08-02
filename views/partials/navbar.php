@@ -195,11 +195,6 @@ use App\Models\User;
               </a>
             </li>
             <li class="dropdown__item">
-              <a href="<?= url('moje-notatki') ?>" class="dropdown__link">
-                <i class="dropdown__icon fas fa-note-sticky"></i> Moje notatki
-              </a>
-            </li>
-            <li class="dropdown__item">
               <a href="<?= url('ustawienia') ?>" class="dropdown__link">
                 <i class="dropdown__icon fas fa-cog"></i> Ustawienia
               </a>
