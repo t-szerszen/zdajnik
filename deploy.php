@@ -328,7 +328,12 @@ final class Deployer
         $cronCommand = str_replace('%', '\\%', $cronCommand);
         $cronLine = $schedule . ' ' . $cronCommand . ' # ' . $marker;
 
-        return '(crontab -l 2>/dev/null | grep -Fv ' . $this->remoteQuote($marker) . '; echo ' . $this->remoteQuote($cronLine) . ') | crontab -';
+        // "|| true" po grep: przy pierwszym uruchomieniu crontab -l jest pusty, a grep -Fv
+        // na pustym wejsciu zwraca kod 1 ("brak dopasowan"), co pod set -e (odziedziczonym
+        // w tym podshellu z runRemoteStep) przerywaloby cala sekwencje PRZED dojsciem do
+        // echo - w efekcie nic nie trafialoby do "crontab -" i krok padalby bez zadnego
+        // widocznego komunikatu bledu (odkryte na pierwszym prawdziwym deployu w CI).
+        return '(crontab -l 2>/dev/null | grep -Fv ' . $this->remoteQuote($marker) . ' || true; echo ' . $this->remoteQuote($cronLine) . ') | crontab -';
     }
 
     private function validateCommands(array $steps): void
