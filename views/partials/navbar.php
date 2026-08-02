@@ -34,7 +34,8 @@ use App\Models\User;
   <!-- Sekcja 1: Logo i link do strony głównej -->
   <div class="main-nav__logo">
     <a href="<?= url() ?>" aria-label="Strona główna Zdajnik">
-      <img src="<?= url('images/company/zdajnik.svg') ?>" alt="Zdajnik" class="logo">
+      <img src="<?= url('images/company/zdajnik.svg') ?>" alt="Zdajnik" class="logo logo--light">
+      <img src="<?= url('images/company/zdajnik-dark.svg') ?>" alt="Zdajnik" class="logo logo--dark">
     </a>
   </div>
 
@@ -65,7 +66,8 @@ use App\Models\User;
     <div class="main-nav__drawer-header">
       <div class="main-nav__logo">
         <a href="<?= url() ?>">
-          <img src="<?= url('images/company/zdajnik.svg') ?>" alt="Zdajnik" class="logo">
+          <img src="<?= url('images/company/zdajnik.svg') ?>" alt="Zdajnik" class="logo logo--light">
+          <img src="<?= url('images/company/zdajnik-dark.svg') ?>" alt="Zdajnik" class="logo logo--dark">
         </a>
       </div>
     </div>

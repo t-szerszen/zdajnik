@@ -109,4 +109,10 @@ foreach ($jsFiles as $jsFile) {
   }
 }
 ?>
-<script type="module" src="<?= url('js/main.js?v=' . $jsVersion) ?>"></script>
+<!-- Ścieżka celowo względna (nie url()/BASE_URL): przeglądarka pobiera <script type="module">
+     zawsze w trybie CORS, więc gdyby BASE_URL wskazywał na inny host niż ten, z którego
+     faktycznie serwowana jest strona (np. lokalnie: BASE_URL=localhost, a wejście przez
+     domenę OrbStacka .local), moduł zostałby zablokowany przez przeglądarkę i cały JS
+     na stronie by nie działał, dopóki nawigacja (np. po zalogowaniu) nie sprowadziłaby
+     z powrotem na domenę z BASE_URL. -->
+<script type="module" src="/js/main.js?v=<?= $jsVersion ?>"></script>

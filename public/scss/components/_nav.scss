@@ -98,6 +98,22 @@
         transform: scale(1.08);
       }
     }
+
+    // Wariant "nik" w kolorze navy (#0d1b3d) zlewa się z ciemnym tłem w trybie dark
+    // (plik SVG ma kolory zaszyte na sztywno, więc podmieniamy cały <img> zamiast fill).
+    .logo--dark {
+      display: none;
+    }
+
+    html.dark & {
+      .logo--light {
+        display: none;
+      }
+
+      .logo--dark {
+        display: block;
+      }
+    }
   }
 
   &__hamburger {

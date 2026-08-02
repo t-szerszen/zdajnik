@@ -55,6 +55,14 @@ function initFeatureModal() {
 
   if (!modal || !dialog || !title || !text || !icon || !cards.length) return;
 
+  // Modal (position: fixed, z-index: --z-modal) jest w znaczniku zagnieżdżony wewnątrz
+  // .hero-section/.home-page, które mają `isolation: isolate` (dla dekoracyjnego tła).
+  // To tworzy lokalny kontekst stackowania, w którym wysoki z-index modala jest
+  // porównywany tylko z rodzeństwem wewnątrz tej sekcji - w efekcie sticky .main-nav
+  // (z-index: --z-nav) renderuje się NAD modalem zamiast pod jego przyciemnionym tłem.
+  // Przeniesienie modala bezpośrednio pod <body> wyprowadza go poza te konteksty.
+  document.body.appendChild(modal);
+
   let activeTrigger = null;
 
   const close = () => {
