@@ -16,7 +16,7 @@
  */
 $pageTitle = $exam['title_one_question'];
 $pageDescription = $exam['desc_one_question'];
-$canonicalUrl = 'https://www.zdajnik.pl/jedno-pytanie/' . htmlspecialchars($examCode);
+$canonicalUrl = url('jedno-pytanie/' . $examCode);
 $extraScripts = [
   'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
   'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js'
@@ -166,16 +166,18 @@ $extraScripts = [
 
     <!-- Główna treść (Main Content), gdzie dynamicznie ładowane jest pytanie -->
     <section class="quiz-page-layout__main-content">
-      <!-- Session/Pool Progress Bar -->
-      <div id="quiz-progress-bar" class="quiz-progress hidden" style="margin-bottom: 2rem;">
-        <div class="quiz-progress__header">
-          <span class="quiz-progress__label">Udzielone odpowiedzi: <strong id="progress-counts">0 / 0</strong></span>
-          <span class="quiz-progress__percentage" id="progress-percent">0%</span>
+      <!-- Session/Pool Progress Bar - tylko dla zalogowanych (dla gości podgląd jest ograniczony) -->
+      <?php if ($isUserLoggedIn): ?>
+        <div id="quiz-progress-bar" class="quiz-progress hidden" style="margin-bottom: 2rem;">
+          <div class="quiz-progress__header">
+            <span class="quiz-progress__label">Udzielone odpowiedzi: <strong id="progress-counts">0 / 0</strong></span>
+            <span class="quiz-progress__percentage" id="progress-percent">0%</span>
+          </div>
+          <div class="quiz-progress__bar">
+            <div class="quiz-progress__fill" id="progress-fill" style="width: 0%;"></div>
+          </div>
         </div>
-        <div class="quiz-progress__bar">
-          <div class="quiz-progress__fill" id="progress-fill" style="width: 0%;"></div>
-        </div>
-      </div>
+      <?php endif; ?>
 
       <!-- 
         Kontener na pytanie.

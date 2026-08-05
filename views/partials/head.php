@@ -40,7 +40,7 @@
                  co poprawia spójność wizualną marki i postrzeganie strony.
   -->
   <meta name="theme-color" content="#10B981">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
 
   <!-- ================================================================== -->
   <!-- 2. Kluczowe Tagi SEO (Tytuł, Opis, Kanoniczny URL) -->
@@ -197,15 +197,24 @@
   <script>
     (function () {
       try {
-        // Sprawdź zapisany motyw w localStorage
+        // Sprawdź zapisany motyw w localStorage - ma priorytet nad ustawieniem systemowym,
+        // bo to świadomy wybór użytkownika dokonany np. przełącznikiem w stopce.
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
           document.documentElement.classList.add('dark');
-        } else if (savedTheme === 'light') {
-          document.documentElement.classList.remove('dark');
+          return;
         }
+        if (savedTheme === 'light') {
+          document.documentElement.classList.remove('dark');
+          return;
+        }
+
+        // Brak zapisanego wyboru (np. pierwsza wizyta, tryb gościa) - użyj motywu
+        // ustawionego na urządzeniu użytkownika, żeby strona od razu wyglądała spójnie.
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle('dark', prefersDark);
       } catch (e) {
-        // W razie problemów z localStorage, nic nie rób
+        // W razie problemów z localStorage/matchMedia, nic nie rób
       }
     })();
   </script>
