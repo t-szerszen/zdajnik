@@ -7,7 +7,7 @@ Ten projekt nie uzywa Laravela. Deploy opiera sie na prostym runnerze PHP (`depl
 - PHP: autoload przez Composer, zaleznosci w `composer.json`.
 - Frontend: SCSS budowany komenda `npm run build:css`.
 - Publiczny katalog aplikacji: `public/`, z front controllerem `public/index.php`.
-- Migracje: pliki SQL w stylu dbmate w `db/migrations/`, ale bez lokalnego wrappera w `composer.json`.
+- Migracje: pliki SQL w stylu dbmate w `db/migrations/` (tylko schemat), ale bez lokalnego wrappera w `composer.json`. Seed danych pytań (dev) to osobny `db/seed.sql`, nieodpalany przez migracje.
 - Plik srodowiskowy: `.env`, ignorowany przez Git i nie powinien byc nadpisywany deployem.
 - Uploady uzytkownikow: `public/images/questions/uploads`, runner deployu nie usuwa tego katalogu.
 
@@ -114,7 +114,22 @@ deployem i ręcznym sprawdzeniem `crontab -l` na serwerze.
 
 Repo ma migracje SQL w `db/migrations`, ale sam projekt nie zawiera komendy migracyjnej w Composerze. Dlatego krok migracji jest domyslnie wylaczony.
 
-Po zainstalowaniu `dbmate` na produkcji mozesz wlaczyc migracje:
+Zrzut/seed lokalnej bazy pytań mieszka w `db/seed.sql` (poza `db/migrations/`) - to zwykły plik
+SQL do (od)tworzenia lokalnej/dev bazy (`mysql ... < db/seed.sql`), nie migracja dbmate. Dzięki
+temu `db/migrations/` zawiera wyłącznie migracje schematu i - w teorii - jest bezpieczne do
+odpalania automatycznie na produkcji.
+
+**W praktyce `DEPLOY_RUN_MIGRATIONS` nadal nie jest gotowe do włączenia na stałe** - `dbmate` nie
+ma oficjalnego builda dla FreeBSD (tylko linux/macos/windows, zob. release assets projektu), więc
+domyślna komenda w `deploy.config.php` (`dbmate --migrations-dir db/migrations up`) na
+produkcyjnym hostingu (mydevil.net, FreeBSD) kończy się `command not found` - krok failuje i
+zatrzymuje cały deploy (bezpiecznie, zanim cokolwiek ruszy w bazie, ale i tak blokuje release).
+Dopóki to nie zostanie rozwiązane (np. inny runner migracji dla FreeBSD, albo linux binary przez
+warstwę kompatybilności, jeśli hosting ją udostępnia), migracje na produkcji uruchamia się ręcznie
+przez SSH: `mysql -h $DB_HOST -u $DB_USER -p $DB_NAME < db/migrations/<plik>.sql`, z danymi
+połączenia czytanymi z `.env` tak jak w sekcji "Kopie zapasowe bazy danych" wyżej.
+
+Docelowo, po rozwiązaniu problemu z `dbmate` na FreeBSD, można włączyć automatyczne migracje:
 
 ```bash
 DEPLOY_RUN_MIGRATIONS=true php deploy.php
@@ -128,15 +143,6 @@ Albo ustaw w `deploy.config.php`:
     'command' => 'dbmate --migrations-dir db/migrations up',
 ],
 ```
-
-**Zanim to włączysz:** `db/migrations/20260805120000_seed.sql` zawiera pełny zrzut (`TRUNCATE`
-realnych tabel z pytaniami + `INSERT` ze stałymi `id`) bazy pytań z lokalnego kontenera dev w
-momencie wygenerowania - to plik do (od)tworzenia lokalnej/dev bazy, nie do uruchamiania na
-produkcji: nadpisałby realne dane produkcyjne starszym zrzutem z dev i nadpisał ich `id`. `dbmate`
-nie ma opcji pomijania pojedynczego pliku migracji, więc trzeba to rozwiązać zanim automatyczne
-migracje dotkną prawdziwej bazy - np. usuwając/przenosząc `seed.sql` poza `db/migrations/` albo
-weryfikując ręcznie każdy pierwszy przebieg. Przy pierwszym stawianiu produkcji migracje zostały
-uruchomione ręcznie, z pominięciem tego pliku (patrz historia deployu / notatki z wdrożenia).
 
 ## GitHub Actions
 

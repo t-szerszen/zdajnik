@@ -82,10 +82,11 @@ return [
             'command' => 'npm ci && npm run build:css',
         ],
 
-        // UWAGA: db/migrations/20260805120000_seed.sql zawiera pełny zrzut bazy pytań z dev
-        // (TRUNCATE + INSERT ze stałymi id) - NIE nadaje się do uruchomienia tu automatycznie.
-        // Zanim włączysz to na produkcji, upewnij się że narzędzie migracyjne pomija ten plik
-        // (tak jak ręczna procedura opisana w DEPLOY.md), inaczej nadpisze prawdziwą bazę pytań.
+        // UWAGA: dbmate nie ma oficjalnego builda dla FreeBSD (produkcja: mydevil.net) - ta
+        // komenda dziś kończy się "command not found" na serwerze i zatrzymuje deploy (zanim
+        // cokolwiek ruszy w bazie, ale i tak blokuje release). Nie zostawiać 'enabled' => true /
+        // DEPLOY_RUN_MIGRATIONS=true na stałe, dopóki to nie zostanie rozwiązane - patrz sekcja
+        // "Migracje" w DEPLOY.md.
         'migrations' => [
             'enabled' => filter_var(getenv('DEPLOY_RUN_MIGRATIONS') ?: false, FILTER_VALIDATE_BOOL),
             'command' => 'dbmate --migrations-dir db/migrations up',

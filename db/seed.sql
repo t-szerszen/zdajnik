@@ -1,4 +1,6 @@
--- migrate:up
+-- Zrzut lokalnej bazy pytań (dev), do (od)tworzenia lokalnej bazy: `mysql ... < db/seed.sql`.
+-- NIE jest to plik dbmate - świadomie poza db/migrations/, żeby automatyczne migracje na
+-- deployu nigdy go nie uruchomiły. Patrz sekcja "Migracje" w DEPLOY.md.
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE user_progress;
 TRUNCATE TABLE attempt_answers;
@@ -15669,5 +15671,3 @@ INSERT INTO `answers` (`id`, `question_version_id`, `answer_text`, `answer_order
 INSERT INTO `answers` (`id`, `question_version_id`, `answer_text`, `answer_order`, `is_correct`, `is_active`, `deleted_at`, `created_at`, `updated_at`) VALUES (17032,4258,'Całkowite pominięcie tego aspektu podczas planowania harmonogramu',4,0,1,NULL,'2026-08-02 20:34:54','2026-08-02 20:34:54');
 
 COMMIT;
-
--- migrate:down
