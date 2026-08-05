@@ -563,6 +563,7 @@ class AdminController extends BaseController
       'exam_id' => trim((string) ($_GET['exam_id'] ?? '')),
       'topic_id' => trim((string) ($_GET['topic_id'] ?? '')),
       'status' => trim((string) ($_GET['status'] ?? '')),
+      'difficulty' => trim((string) ($_GET['difficulty'] ?? '')),
     ];
     $sort = (string) ($_GET['sort'] ?? 'id');
     $dir = (string) ($_GET['dir'] ?? 'desc');
@@ -597,6 +598,8 @@ class AdminController extends BaseController
     $this->renderQuestionForm('create', [
       'exam_type_id' => $examId,
       'topic_id' => $topicId,
+      'source' => '',
+      'difficulty' => 'medium',
       'question_text' => '',
       'explanation' => '',
       'is_active' => 1,
@@ -675,6 +678,8 @@ class AdminController extends BaseController
       'id' => $questionId,
       'exam_type_id' => (int) ($question['exam_type_id'] ?? 0),
       'topic_id' => (int) ($question['topic_id'] ?? 0),
+      'source' => (string) ($question['source'] ?? ''),
+      'difficulty' => (string) ($question['difficulty'] ?? 'medium'),
       'question_text' => (string) ($currentVersion['question_text'] ?? ''),
       'explanation' => (string) ($currentVersion['explanation'] ?? ''),
       'is_active' => (int) ($question['is_active'] ?? 1),
@@ -1300,6 +1305,8 @@ class AdminController extends BaseController
     return [
       'exam_type_id' => (int) ($input['exam_type_id'] ?? 0),
       'topic_id' => (int) ($input['topic_id'] ?? 0),
+      'source' => trim((string) ($input['source'] ?? '')),
+      'difficulty' => (string) ($input['difficulty'] ?? 'medium'),
       'question_text' => trim((string) ($input['question_text'] ?? '')),
       'explanation' => trim((string) ($input['explanation'] ?? '')),
       'is_active' => (int) (($input['is_active'] ?? 1) ? 1 : 0),

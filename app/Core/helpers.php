@@ -38,6 +38,42 @@ if (!function_exists('slugify')) {
   }
 }
 
+if (!function_exists('question_difficulty_label')) {
+  /**
+   * Zwraca etykietę PL dla poziomu trudności pytania (questions.difficulty).
+   *
+   * @param string|null $difficulty Wartość enum('easy','medium','hard').
+   * @return string Etykieta do wyświetlenia lub pusty string dla nieznanej wartości.
+   */
+  function question_difficulty_label(?string $difficulty): string
+  {
+    return match ($difficulty) {
+      'easy' => 'Łatwe',
+      'medium' => 'Średnie',
+      'hard' => 'Trudne',
+      default => '',
+    };
+  }
+}
+
+if (!function_exists('question_difficulty_badge_class')) {
+  /**
+   * Zwraca modyfikator klasy .badge dopasowany do poziomu trudności pytania.
+   *
+   * @param string|null $difficulty Wartość enum('easy','medium','hard').
+   * @return string Klasa BEM (np. "badge--success") lub "badge--secondary" jako fallback.
+   */
+  function question_difficulty_badge_class(?string $difficulty): string
+  {
+    return match ($difficulty) {
+      'easy' => 'badge--success',
+      'medium' => 'badge--warning',
+      'hard' => 'badge--danger',
+      default => 'badge--secondary',
+    };
+  }
+}
+
 if (!function_exists('csrf_token')) {
   function csrf_token(): string
   {

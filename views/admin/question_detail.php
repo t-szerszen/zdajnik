@@ -66,6 +66,15 @@ $hasQualityWarning = count($answers) < 2 || $correctAnswersCount === 0;
             </div>
 
             <div class="stats-card admin-tile admin-tile--static">
+              <div class="admin-tile__icon"><i class="fas fa-gauge-high"></i></div>
+              <div class="admin-tile__content">
+                <span class="admin-tile__label">Poziom trudności</span>
+                <strong class="admin-tile__value"><?= htmlspecialchars(question_difficulty_label($question['difficulty'] ?? null) ?: 'Brak') ?></strong>
+                <span class="admin-tile__meta"><?= htmlspecialchars((string) ($question['source'] ?? '') !== '' ? (string) $question['source'] : 'Brak źródła') ?></span>
+              </div>
+            </div>
+
+            <div class="stats-card admin-tile admin-tile--static">
               <div class="admin-tile__icon"><i class="fas fa-image"></i></div>
               <div class="admin-tile__content">
                 <span class="admin-tile__label">Obrazek</span>

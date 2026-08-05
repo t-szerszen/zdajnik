@@ -30,6 +30,7 @@
  */
 
 import { escapeHTML } from '../utils/sanitize.js';
+import { renderDifficultyBadge } from '../utils/difficulty.js';
 import ExplanationToggler from '../components/ExplanationToggler.js';
 
 class UIHandler {
@@ -100,6 +101,7 @@ class UIHandler {
         <div class="quiz-card__header">
           <div class="quiz-card__header-left">
             <div class="quiz-card__id">ID: ${question.question_id}</div>
+            ${renderDifficultyBadge(question.difficulty)}
           </div>
           <div class="quiz-card__header-actions">
             ${saveBtnHTML}

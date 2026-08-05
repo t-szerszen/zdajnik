@@ -53,6 +53,8 @@ class AdminQuestionService
               q.id,
               q.exam_type_id,
               q.topic_id,
+              q.source,
+              q.difficulty,
               q.is_active,
               q.created_at as question_created_at,
               q.updated_at as question_updated_at,
@@ -140,6 +142,8 @@ class AdminQuestionService
                       q.id,
                       q.exam_type_id,
                       q.topic_id,
+                      q.source,
+                      q.difficulty,
                       q.is_active,
                       q.created_at as question_created_at,
                       q.updated_at as question_updated_at,
@@ -245,11 +249,13 @@ class AdminQuestionService
     }
 
     try {
-      $questionSql = "INSERT INTO questions (exam_type_id, topic_id, is_active, created_at, updated_at)
-                      VALUES (?, ?, ?, NOW(), NOW())";
+      $questionSql = "INSERT INTO questions (exam_type_id, topic_id, source, difficulty, is_active, created_at, updated_at)
+                      VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
       if (!$db->execute($questionSql, [
         (int) $data['exam_type_id'],
         (int) $data['topic_id'],
+        $data['source'] !== '' ? $data['source'] : null,
+        $data['difficulty'],
         (int) $data['is_active'],
       ])) {
         $db->rollBack();
@@ -341,11 +347,13 @@ class AdminQuestionService
 
     try {
       $updateQuestionSql = "UPDATE questions
-                            SET exam_type_id = ?, topic_id = ?, is_active = ?, updated_at = NOW()
+                            SET exam_type_id = ?, topic_id = ?, source = ?, difficulty = ?, is_active = ?, updated_at = NOW()
                             WHERE id = ? AND deleted_at IS NULL";
       if (!$db->execute($updateQuestionSql, [
         (int) $data['exam_type_id'],
         (int) $data['topic_id'],
+        $data['source'] !== '' ? $data['source'] : null,
+        $data['difficulty'],
         (int) $data['is_active'],
         $questionId,
       ])) {
@@ -700,6 +708,8 @@ class AdminQuestionService
     $data = [
       'exam_type_id' => (int) ($input['exam_type_id'] ?? ($current['exam_type_id'] ?? 0)),
       'topic_id' => (int) ($input['topic_id'] ?? ($current['topic_id'] ?? 0)),
+      'source' => trim((string) ($input['source'] ?? ($current['source'] ?? ''))),
+      'difficulty' => (string) ($input['difficulty'] ?? ($current['difficulty'] ?? 'medium')),
       'question_text' => trim((string) ($input['question_text'] ?? ($current['current_version']['question_text'] ?? ''))),
       'explanation' => trim((string) ($input['explanation'] ?? ($current['current_version']['explanation'] ?? ''))),
       'is_active' => (int) (($input['is_active'] ?? ($current['is_active'] ?? 1)) ? 1 : 0),
@@ -709,6 +719,14 @@ class AdminQuestionService
 
     $errors = [];
     $answers = [];
+
+    if (mb_strlen($data['source']) > 255) {
+      $errors['source'] = 'Źródło nie może przekraczać 255 znaków.';
+    }
+
+    if (!in_array($data['difficulty'], ['easy', 'medium', 'hard'], true)) {
+      $errors['difficulty'] = 'Nieprawidłowy poziom trudności.';
+    }
 
     if ($data['exam_type_id'] <= 0) {
       $errors['exam_type_id'] = 'Wybierz egzamin.';
@@ -889,6 +907,11 @@ class AdminQuestionService
       }
     }
 
+    if (!empty($filters['difficulty']) && in_array($filters['difficulty'], ['easy', 'medium', 'hard'], true)) {
+      $where .= ' AND q.difficulty = ?';
+      $params[] = (string) $filters['difficulty'];
+    }
+
     if (!empty($filters['query'])) {
       $query = trim((string) $filters['query']);
       $like = '%' . $query . '%';
@@ -921,6 +944,8 @@ class AdminQuestionService
     return [
       'exam_type_id' => (int) $data['exam_type_id'],
       'topic_id' => (int) $data['topic_id'],
+      'source' => $data['source'],
+      'difficulty' => $data['difficulty'],
       'question_text' => $data['question_text'],
       'explanation' => $data['explanation'],
       'image_name' => $imagePath,
@@ -946,6 +971,8 @@ class AdminQuestionService
     return [
       'exam_type_id' => (int) ($question['exam_type_id'] ?? 0),
       'topic_id' => (int) ($question['topic_id'] ?? 0),
+      'source' => trim((string) ($question['source'] ?? '')),
+      'difficulty' => (string) ($question['difficulty'] ?? 'medium'),
       'question_text' => trim((string) ($currentVersion['question_text'] ?? '')),
       'explanation' => trim((string) ($currentVersion['explanation'] ?? '')),
       'image_name' => $currentVersion['image_name'] ?? null,
@@ -969,6 +996,8 @@ class AdminQuestionService
     return [
       'exam_type_id' => (int) $data['exam_type_id'],
       'topic_id' => (int) $data['topic_id'],
+      'source' => trim((string) $data['source']),
+      'difficulty' => (string) $data['difficulty'],
       'question_text' => trim((string) $data['question_text']),
       'explanation' => trim((string) $data['explanation']),
       'image_name' => $imagePath,

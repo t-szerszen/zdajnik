@@ -538,9 +538,11 @@ class StatisticsService
                                 qv.question_id,
                                 qv.question_text,
                                 qv.explanation,
-                                qv.image_name
+                                qv.image_name,
+                                q.difficulty
                              FROM attempt_answers aa
                              JOIN question_versions qv ON aa.question_version_id = qv.id
+                             JOIN questions q ON qv.question_id = q.id
                              WHERE aa.attempt_id = ?
                              GROUP BY qv.id, aa.attempt_id, aa.question_version_id, aa.position, aa.answered_at
                              ORDER BY aa.position ASC, aa.answered_at ASC";
@@ -575,7 +577,7 @@ class StatisticsService
   public function getQuestionDetails(int $questionId, ?int $userId = null): ?array
   {
     // 1. Pobierz wersję pytania
-    $sqlQ = "SELECT q.id, qv.question_text, qv.explanation, qv.image_name, qv.id as version_id, et.code as exam_code
+    $sqlQ = "SELECT q.id, q.difficulty, qv.question_text, qv.explanation, qv.image_name, qv.id as version_id, et.code as exam_code
 		         FROM questions q
 		         JOIN question_versions qv ON q.id = qv.question_id
                  JOIN exam_types et ON q.exam_type_id = et.id

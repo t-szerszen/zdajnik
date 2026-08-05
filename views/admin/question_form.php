@@ -115,6 +115,21 @@ foreach ($answers as $idx => $answer) {
                   </select>
                 </label>
 
+                <?php $selectedDifficulty = (string) ($question['difficulty'] ?? 'medium'); ?>
+                <label class="admin-field">
+                  <span>Poziom trudności</span>
+                  <select name="difficulty">
+                    <option value="easy" <?= $selectedDifficulty === 'easy' ? 'selected' : '' ?>>Łatwe</option>
+                    <option value="medium" <?= $selectedDifficulty === 'medium' ? 'selected' : '' ?>>Średnie</option>
+                    <option value="hard" <?= $selectedDifficulty === 'hard' ? 'selected' : '' ?>>Trudne</option>
+                  </select>
+                </label>
+
+                <label class="admin-field">
+                  <span>Źródło</span>
+                  <input type="text" name="source" maxlength="255" placeholder="np. Opracowane na podstawie informatora CKE 2019" value="<?= htmlspecialchars((string) ($question['source'] ?? '')) ?>">
+                </label>
+
                 <label class="admin-field">
                   <span>Obrazek</span>
                   <input type="file" name="image" accept="image/jpeg,image/png,image/webp">

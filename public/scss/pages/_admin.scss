@@ -943,8 +943,8 @@
 .admin-table--questions {
   .admin-table__head,
   .admin-table__row {
-    grid-template-columns: 52px 165px minmax(250px, 1fr) 85px 100px 78px 140px 215px;
-    min-width: 1210px;
+    grid-template-columns: 52px 165px minmax(250px, 1fr) 85px 100px 100px 78px 140px 215px;
+    min-width: 1310px;
   }
 }
 

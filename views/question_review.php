@@ -70,6 +70,9 @@ $extraSchemas = [
             <div class="quiz-card__header-left">
               <h2 class="quiz-card__question-number">Pytanie <span class="quiz-card__id">ID:
                   <?= $question['id'] ?></span></h2>
+              <?php if (!empty($question['difficulty']) && question_difficulty_label($question['difficulty']) !== ''): ?>
+                <span class="badge <?= question_difficulty_badge_class($question['difficulty']) ?>"><?= question_difficulty_label($question['difficulty']) ?></span>
+              <?php endif; ?>
             </div>
             <div class="quiz-card__header-actions">
               <span class="status-badge status-badge--success"><i class="fas fa-eye"></i> Tryb przeglądu</span>

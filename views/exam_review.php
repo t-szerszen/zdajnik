@@ -111,6 +111,9 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
                 <div class="quiz-card__header-left">
                   <h2 class="quiz-card__question-number">Pytanie <?= $index + 1 ?> <span class="quiz-card__id">ID:
                       <?= $question['question_id'] ?></span></h2>
+                  <?php if (!empty($question['difficulty']) && question_difficulty_label($question['difficulty']) !== ''): ?>
+                    <span class="badge <?= question_difficulty_badge_class($question['difficulty']) ?>"><?= question_difficulty_label($question['difficulty']) ?></span>
+                  <?php endif; ?>
                 </div>
                 <div class="quiz-card__header-actions">
                   <?php if (!empty($question['was_skipped'])): ?>

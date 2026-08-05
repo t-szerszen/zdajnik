@@ -32,6 +32,9 @@ $filters = $filters ?? [];
                 <?php if (!empty($q['topic_name'])): ?>
                   <span class="badge badge--secondary"><?= htmlspecialchars($q['topic_name']) ?></span>
                 <?php endif; ?>
+                <?php if (!empty($q['difficulty']) && question_difficulty_label($q['difficulty']) !== ''): ?>
+                  <span class="badge <?= question_difficulty_badge_class($q['difficulty']) ?>"><?= question_difficulty_label($q['difficulty']) ?></span>
+                <?php endif; ?>
                 <span class="search-result-card__id">ID: <?= $q['question_id'] ?></span>
               </div>
             </div>

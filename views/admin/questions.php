@@ -15,6 +15,7 @@ $buildUrl = static function (array $overrides = []) use ($filters, $sort, $dir):
     'exam_id' => $filters['exam_id'] ?? '',
     'topic_id' => $filters['topic_id'] ?? '',
     'status' => $filters['status'] ?? '',
+    'difficulty' => $filters['difficulty'] ?? '',
     'sort' => $sort,
     'dir' => $dir,
     'page' => 1,
@@ -50,6 +51,7 @@ $date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotim
               <label class="admin-field"><span>Egzamin</span><select name="exam_id"><option value="">Wszystkie</option><?php foreach ($exams as $exam): ?><option value="<?= (int) $exam['id'] ?>" <?= (string) ($filters['exam_id'] ?? '') === (string) $exam['id'] ? 'selected' : '' ?>><?= htmlspecialchars($exam['code'] . ' - ' . $exam['name']) ?></option><?php endforeach; ?></select></label>
               <label class="admin-field"><span>Temat</span><select name="topic_id"><option value="">Wszystkie</option><?php foreach ($topics as $topic): ?><option value="<?= (int) $topic['id'] ?>" <?= (string) ($filters['topic_id'] ?? '') === (string) $topic['id'] ? 'selected' : '' ?>><?= htmlspecialchars($topic['exam_code'] . ' - ' . $topic['name']) ?></option><?php endforeach; ?></select></label>
               <label class="admin-field"><span>Status</span><select name="status"><option value="">Wszystkie</option><option value="active" <?= ($filters['status'] ?? '') === 'active' ? 'selected' : '' ?>>Aktywne</option><option value="inactive" <?= ($filters['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>Nieaktywne</option></select></label>
+              <label class="admin-field"><span>Trudność</span><select name="difficulty"><option value="">Wszystkie</option><option value="easy" <?= ($filters['difficulty'] ?? '') === 'easy' ? 'selected' : '' ?>>Łatwe</option><option value="medium" <?= ($filters['difficulty'] ?? '') === 'medium' ? 'selected' : '' ?>>Średnie</option><option value="hard" <?= ($filters['difficulty'] ?? '') === 'hard' ? 'selected' : '' ?>>Trudne</option></select></label>
               <label class="admin-field"><span>Sortowanie</span><select name="sort"><option value="id" <?= $sort === 'id' ? 'selected' : '' ?>>ID</option><option value="exam" <?= $sort === 'exam' ? 'selected' : '' ?>>Egzamin</option><option value="created_at" <?= $sort === 'created_at' ? 'selected' : '' ?>>Utworzenie</option><option value="updated_at" <?= $sort === 'updated_at' ? 'selected' : '' ?>>Edycja</option></select></label>
               <label class="admin-field"><span>Kolejność</span><select name="dir"><option value="desc" <?= $dir === 'desc' ? 'selected' : '' ?>>Malejąco</option><option value="asc" <?= $dir === 'asc' ? 'selected' : '' ?>>Rosnąco</option></select></label>
               <div class="admin-toolbar__actions"><button class="btn btn--primary" type="submit">Filtruj</button><a class="btn btn--secondary" href="<?= url('admin/pytania') ?>">Wyczyść</a></div>
@@ -62,7 +64,7 @@ $date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotim
               <span class="badge badge--secondary">Wyniki: <?= (int) ($pagination['total'] ?? 0) ?></span>
             </div>
             <div class="admin-table admin-table--questions">
-              <div class="admin-table__head"><span>ID</span><span>Egzamin / temat</span><span>Treść</span><span>Jakość</span><span>Status</span><span>Obrazek</span><span>Aktualizacja</span><span>Akcje</span></div>
+              <div class="admin-table__head"><span>ID</span><span>Egzamin / temat</span><span>Treść</span><span>Jakość</span><span>Trudność</span><span>Status</span><span>Obrazek</span><span>Aktualizacja</span><span>Akcje</span></div>
               <?php if (empty($questions)): ?>
                 <div class="admin-empty">Nie znaleziono pytań.</div>
               <?php else: ?>
@@ -73,6 +75,7 @@ $date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotim
                     <div class="admin-table__cell admin-truncate" data-label="Egzamin / temat"><strong><?= htmlspecialchars((string) ($question['exam_code'] ?? '')) ?></strong><small title="<?= htmlspecialchars((string) ($question['topic_name'] ?? 'Brak tematu')) ?>"><?= htmlspecialchars((string) ($question['topic_name'] ?? 'Brak tematu')) ?></small></div>
                     <div class="admin-table__cell admin-clamp" data-label="Treść" title="<?= htmlspecialchars((string) ($question['question_text'] ?? '')) ?>"><?= htmlspecialchars((string) ($question['question_text'] ?? 'Brak treści')) ?></div>
                     <div class="admin-table__cell" data-label="Jakość"><strong><?= (int) ($question['answers_count'] ?? 0) ?> odp.</strong><small>Poprawne: <?= (int) ($question['correct_answers_count'] ?? 0) ?></small></div>
+                    <div class="admin-table__cell" data-label="Trudność"><span class="badge <?= question_difficulty_badge_class($question['difficulty'] ?? null) ?>"><?= htmlspecialchars(question_difficulty_label($question['difficulty'] ?? null) ?: '—') ?></span></div>
                     <div class="admin-table__cell" data-label="Status"><span class="admin-status admin-status--<?= $isActive ? 'success' : 'danger' ?>"><?= $isActive ? 'Aktywne' : 'Nieaktywne' ?></span></div>
                     <div class="admin-table__cell" data-label="Obrazek"><span class="admin-status admin-status--neutral"><?= !empty($question['image_name']) ? 'Tak' : 'Nie' ?></span></div>
                     <div class="admin-table__cell" data-label="Aktualizacja"><?= $date($question['question_updated_at'] ?? $question['version_updated_at'] ?? null) ?></div>
