@@ -20,6 +20,9 @@ use App\Core\Database;
  */
 class DynamicDataService
 {
+  /** @var string[] Kody kwalifikacji z gotową bazą pytań, dostępne dla użytkowników w trybach nauki i wyszukiwarce */
+  public const AVAILABLE_EXAM_CODES = ['INF.03', 'INF.04'];
+
   /** @var Database Instancja połączenia z bazą danych */
   private Database $db;
 
@@ -33,13 +36,31 @@ class DynamicDataService
 
   /**
    * Pobiera listę wszystkich dostępnych typów egzaminów z bazy danych.
-   * 
+   *
    * @return array Tablica asocjacyjna [id, code].
    */
   public function getExams(): array
   {
     $sql = "SELECT id, code FROM exam_types";
     return $this->db->fetchAll($sql) ?? [];
+  }
+
+  /**
+   * Pobiera listę typów egzaminów, których baza pytań jest udostępniona
+   * użytkownikom (patrz self::AVAILABLE_EXAM_CODES).
+   *
+   * Używane wszędzie tam, gdzie użytkownik może dotrzeć do pytań bezpośrednio
+   * (np. wyszukiwarka), aby kwalifikacje "Wkrótce" nie były wybieralne ani
+   * przeszukiwalne, mimo że nadal figurują w bazie.
+   *
+   * @return array Tablica asocjacyjna [id, code].
+   */
+  public function getSearchableExams(): array
+  {
+    return array_values(array_filter(
+      $this->getExams(),
+      static fn(array $exam): bool => in_array(strtoupper($exam['code']), self::AVAILABLE_EXAM_CODES, true)
+    ));
   }
 
   /**

@@ -123,7 +123,7 @@ class SearchController extends BaseController
 
     // Pełne renderowanie strony przy klasycznym wejściu/odświeżeniu
     $this->renderView('search', [
-      'exams' => $this->dynamicData->getExams(),
+      'exams' => $this->dynamicData->getSearchableExams(),
       'categories' => $filters['exam_id'] ? $this->dynamicData->getCategoriesForExam((int) $filters['exam_id']) : [],
       'filters' => $filters,
       'results' => $results,

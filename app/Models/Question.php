@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Core\Database;
+use App\Services\DynamicDataService;
 
 /**
  * Model Pytania (Question) - Serce Bazy Pytań.
@@ -43,13 +44,14 @@ class Question
    */
   private function getBaseSelectionSql(): string
   {
-    return "SELECT 
-                    q.id as question_id, 
-                    qv.id as question_version_id, 
-                    q.topic_id, 
-                    qv.question_text, 
-                    qv.image_name, 
-                    qv.explanation 
+    return "SELECT
+                    q.id as question_id,
+                    qv.id as question_version_id,
+                    q.topic_id,
+                    q.difficulty,
+                    qv.question_text,
+                    qv.image_name,
+                    qv.explanation
                 FROM questions q
                 JOIN question_versions qv ON q.id = qv.question_id";
   }
@@ -321,6 +323,11 @@ class Question
     $where = "q.is_active = 1 AND qv.is_active = 1 AND q.deleted_at IS NULL ";
     $params = [];
 
+    // Wyszukiwarka nie może udostępniać pytań z kwalifikacji zablokowanych w trybach nauki
+    $availableCodesPlaceholders = $this->buildInClausePlaceholders(DynamicDataService::AVAILABLE_EXAM_CODES);
+    $where .= " AND q.exam_type_id IN (SELECT id FROM exam_types WHERE code IN ($availableCodesPlaceholders)) ";
+    $params = array_merge($params, DynamicDataService::AVAILABLE_EXAM_CODES);
+
     if (!empty($filters['exam_id'])) {
       $where .= " AND q.exam_type_id = ? ";
       $params[] = (int) $filters['exam_id'];
@@ -379,12 +386,13 @@ class Question
   {
     [$where, $params] = $this->buildSearchWhereClause($filters);
 
-    $sql = "SELECT 
-                q.id as question_id, 
-                qv.id as question_version_id, 
-                q.topic_id, 
-                qv.question_text, 
-                qv.image_name, 
+    $sql = "SELECT
+                q.id as question_id,
+                qv.id as question_version_id,
+                q.topic_id,
+                q.difficulty,
+                qv.question_text,
+                qv.image_name,
                 qv.explanation,
                 et.code as exam_code,
                 t.name as topic_name
