@@ -1,4 +1,5 @@
 <?php
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Operacyjny panel administracyjny Zdajnik.';
 $overview = $overview ?? [];

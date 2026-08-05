@@ -4,6 +4,7 @@
  * @description Zarządzanie Biblioteką Arkuszy: lista arkuszy z filtrami oraz tematy arkuszy.
  */
 
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Arkusze | Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Zarządzanie biblioteką arkuszy Zdajnik.';
 $sheets = $sheets ?? [];

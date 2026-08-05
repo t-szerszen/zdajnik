@@ -4,6 +4,7 @@
  * @description Formularz tworzenia i edycji arkusza (Biblioteka Arkuszy).
  */
 
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Arkusz | Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Formularz zarządzania arkuszem w panelu CMS Zdajnik.';
 $mode = $mode ?? 'create';

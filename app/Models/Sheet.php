@@ -106,6 +106,25 @@ class Sheet
    * @param int $sheetId ID arkusza.
    * @return array|false Dane arkusza lub false, gdy nie istnieje / jest nieaktywny.
    */
+  /**
+   * Pobiera wszystkie aktywne arkusze na potrzeby mapy witryny.
+   *
+   * @return array Tablica [id, exam_code, updated_at] posortowana po kwalifikacji i ID.
+   */
+  public function getAllActiveForSitemap(): array
+  {
+    $sql = "SELECT s.id, e.code AS exam_code, s.updated_at
+            FROM sheets s
+            JOIN sheet_topics t ON t.id = s.sheet_topic_id
+            JOIN exam_types e ON e.id = t.exam_type_id
+            WHERE s.is_active = 1 AND s.deleted_at IS NULL
+              AND t.is_active = 1 AND t.deleted_at IS NULL
+              AND e.is_active = 1 AND e.deleted_at IS NULL
+            ORDER BY e.code ASC, s.id ASC";
+
+    return $this->db->fetchAll($sql);
+  }
+
   public function findActiveById(int $sheetId): array|false
   {
     $sql = "SELECT s.id, s.sheet_topic_id, s.title, s.description, s.difficulty,

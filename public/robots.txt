@@ -1,5 +1,4 @@
 # robots.txt dla Zdajnik
-# TODO: Jeśli sitemap ma inny adres, podmień URL poniżej.
 
 User-agent: *
 Allow: /
@@ -10,9 +9,24 @@ Disallow: /logowanie
 Disallow: /rejestracja
 Disallow: /wyloguj
 Disallow: /reset-hasla
-Disallow: /reset-email
-Disallow: /ustawienia
-Disallow: /verify
-Disallow: /verify-email
 
+# Ścieżki wymagające zalogowania
+Disallow: /ustawienia
+Disallow: /historia
+Disallow: /statystyki
+Disallow: /moje-notatki
+Disallow: /admin
+
+# Adresy jednorazowe z tokenami w query stringu
+Disallow: /weryfikacja
+Disallow: /autoryzacja-email
+Disallow: /zmiana-email
+Disallow: /nowe-haslo
+
+# UWAGA: /test-pytanie celowo NIE jest tu blokowane. Widok ma tag noindex
+# i canonical na /pytania/... — blokada w robots.txt uniemożliwiłaby robotom
+# odczytanie tych tagów i stary adres mógłby zostać w indeksie.
+
+# Mapa witryny generowana dynamicznie przez App\Controllers\SitemapController
+# (adres bez zmian, ale nie odpowiada mu już żaden plik w public/).
 Sitemap: https://www.zdajnik.pl/sitemap.xml

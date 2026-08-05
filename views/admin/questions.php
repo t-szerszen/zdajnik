@@ -1,4 +1,5 @@
 <?php
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Pytania | Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Zarządzanie pytaniami Zdajnik.';
 $questions = $questions ?? [];

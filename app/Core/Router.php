@@ -107,6 +107,10 @@ class Router
    */
   private function addRoute(string $method, string $path, string $handler): void
   {
+    // Escapowanie kropek w części literalnej ścieżki (np. 'sitemap.xml'),
+    // żeby nie działały jak regexowy "dowolny znak"
+    $path = str_replace('.', '\.', $path);
+
     // Zamiana tagów {parametrycznych} na wzorceRegex
     $regexPath = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<$1>[^/]+)', $path);
 
@@ -260,6 +264,14 @@ class Router
     $this->get('arkusze/{code}', 'SheetController@listByExam');
     $this->get('arkusze/{code}/{sheetId}', 'SheetController@show');
     $this->get('moje-notatki', 'SheetController@myNotes');
+
+    // --- PUBLICZNA BAZA PYTAŃ (strony indeksowalne, renderowane serwerowo) ---
+    $this->get('pytania', 'QuestionController@index');
+    $this->get('pytania/{code}', 'QuestionController@listByExam');
+    $this->get('pytania/{code}/{slugId}', 'QuestionController@show');
+
+    // Mapa witryny generowana dynamicznie (brak statycznego pliku w public/)
+    $this->get('sitemap.xml', 'SitemapController@index');
 
     // --- MODUŁY NAUKI I QUIZY (WEB INTERFACE) ---
     $this->get('jedno-pytanie/{code}', 'QuizPageController@showOneQuestionPage');

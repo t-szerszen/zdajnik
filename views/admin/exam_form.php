@@ -4,6 +4,7 @@
  * @description Formularz tworzenia i edycji egzaminu.
  */
 
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Egzamin | Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Formularz zarządzania egzaminem w panelu CMS Zdajnik.';
 $mode = $mode ?? 'create';

@@ -16,6 +16,7 @@
 /**
  * Konfiguracja komponentu head
  */
+$noIndex = true;
 $pageTitle = 'Statystyki Twojej Nauki | Zdajnik';
 $pageDescription = 'Śledź swoje postępy, analizuj wyniki i obserwuj swoją drogę do sukcesu w Zdajnik.';
 

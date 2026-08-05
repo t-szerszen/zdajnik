@@ -18,6 +18,12 @@
 $pageTitle = 'Pytanie ID: ' . $question['id'] . ' | Zdajnik';
 $pageDescription = mb_strimwidth(strip_tags($question['question_text']), 0, 155, '...');
 
+// Ten widok to kontekstowy podgląd dla zalogowanych (powrót do statystyk/historii),
+// a nie strona docelowa dla wyszukiwarek — publiczną, indeksowalną wersją tej samej
+// treści jest /pytania/{kod}/{slug}-{id}.
+$noIndex = true;
+$canonicalUrl = question_url($question);
+
 // Schema.org dla pytania (Quiz/Question)
 $extraSchemas = [
   [

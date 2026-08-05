@@ -64,8 +64,51 @@ class DynamicDataService
   }
 
   /**
+   * Pobiera udostępnione kwalifikacje wraz ze znacznikiem ostatniej modyfikacji.
+   *
+   * Używane przez generator mapy witryny - w odróżnieniu od getSearchableExams()
+   * dokłada `updated_at`, który trafia do znacznika <lastmod>.
+   *
+   * @return array Tablica [id, code, name, updated_at].
+   */
+  public function getSearchableExamsWithTimestamps(): array
+  {
+    $placeholders = implode(',', array_fill(0, count(self::AVAILABLE_EXAM_CODES), '?'));
+
+    $sql = "SELECT id, code, name, updated_at
+            FROM exam_types
+            WHERE is_active = 1 AND deleted_at IS NULL AND code IN ($placeholders)
+            ORDER BY code ASC";
+
+    return $this->db->fetchAll($sql, self::AVAILABLE_EXAM_CODES);
+  }
+
+  /**
+   * Rozwiązuje segment adresu URL na kod kwalifikacji (np. "inf03" => "INF.03").
+   *
+   * Dopasowanie odbywa się wyłącznie w obrębie kwalifikacji z gotową bazą pytań
+   * (self::AVAILABLE_EXAM_CODES), dzięki czemu publiczne strony pytań nigdy nie
+   * wystawią treści z kwalifikacji oznaczonej jako "Wkrótce".
+   *
+   * @param string $segment Segment adresu URL.
+   * @return string|null Kod kwalifikacji lub null, gdy segment nie pasuje do żadnej dostępnej.
+   */
+  public static function getExamCodeByUrlSegment(string $segment): ?string
+  {
+    $segment = strtolower(trim($segment));
+
+    foreach (self::AVAILABLE_EXAM_CODES as $code) {
+      if (exam_code_to_url($code) === $segment) {
+        return $code;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Pobiera unikalny identyfikator egzaminu na podstawie jego kodu tekstowego.
-   * 
+   *
    * @param string $code Kod kwalifikacji (np. 'INF.03').
    * @return int|null ID egzaminu lub null w przypadku braku dopasowania.
    */

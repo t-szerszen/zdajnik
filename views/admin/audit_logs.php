@@ -1,4 +1,5 @@
 <?php
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Audyt administracji | Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Dziennik operacji administracyjnych.';
 $filters = $filters ?? [];

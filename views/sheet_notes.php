@@ -32,6 +32,7 @@ $difficultyGroup = static function (int $level): string {
   return 'hard';
 };
 
+$noIndex = true;
 $pageTitle = 'Moje notatki | Biblioteka Arkuszy | Zdajnik';
 $pageDescription = 'Twoje notatki do arkuszy — oceny trudności i opisy problemów w jednym miejscu.';
 ?>

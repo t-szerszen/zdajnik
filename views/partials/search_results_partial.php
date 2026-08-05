@@ -46,13 +46,10 @@ $filters = $filters ?? [];
           </div>
           <div class="search-result-card__footer">
             <?php
-            $reviewParams = [
-              'source' => 'search',
-              'query' => $filters['query'] ?? '',
-              'exam_id' => $filters['exam_id'] ?? '',
-              'topic_id' => $filters['topic_id'] ?? ''
-            ];
-            $reviewLink = url('test-pytanie/' . $q['question_id']) . '?' . http_build_query($reviewParams);
+            // Wyszukiwarka kieruje na publiczną, kanoniczną stronę pytania — dzięki temu
+            // wyniki wyszukiwania budują linkowanie wewnętrzne zamiast mnożyć warianty
+            // adresu /test-pytanie z parametrami kontekstu.
+            $reviewLink = question_url($q);
             ?>
             <a href="<?= $reviewLink ?>" class="btn btn--secondary btn--sm">
               <span>Pokaż</span> <i class="fas fa-arrow-right"></i>

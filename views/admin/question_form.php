@@ -4,6 +4,7 @@
  * @description Formularz tworzenia i edycji pytania.
  */
 
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Pytanie | Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Formularz zarządzania pytaniem w panelu CMS Zdajnik.';
 $mode = $mode ?? 'create';

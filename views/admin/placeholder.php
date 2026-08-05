@@ -4,6 +4,7 @@
  * @description Widok zastępczy dla modułów CMS przygotowanych na kolejne etapy.
  */
 
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Sekcja panelu CMS.';
 $title = $title ?? 'Sekcja';

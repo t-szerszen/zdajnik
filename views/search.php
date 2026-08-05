@@ -18,6 +18,20 @@
 $pageTitle = 'Wyszukiwarka Pytań | Zdajnik';
 $pageDescription = 'Znajdź pytanie po treści lub numerze (ID) w bazie egzaminacyjnej INF.03, INF.02 i INF.04.';
 
+// Kanoniczna jest wyłącznie czysta wyszukiwarka — każda kombinacja filtrów
+// i numerów stron prowadzi do tej samej strony docelowej
+$canonicalUrl = url('search');
+
+// Wyniki filtrowania to treść generowana pod zapytanie użytkownika, a nie
+// samodzielna strona docelowa: indeksowana jest tylko "goła" wyszukiwarka.
+// Robot nadal podąża za linkami (follow), więc trafia stąd na strony pytań.
+$hasActiveFilters = !empty($_GET['query']) || !empty($_GET['exam_id']) || !empty($_GET['topic_id']);
+$isPaginated = isset($_GET['page']) && (int) $_GET['page'] > 1;
+
+if ($hasActiveFilters || $isPaginated) {
+  $noIndex = true;
+}
+
 // Dane z kontrolera
 $exams = $exams ?? [];
 $categories = $categories ?? [];

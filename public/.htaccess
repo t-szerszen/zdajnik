@@ -1,11 +1,106 @@
+# =============================================================================
+# 1. Przekierowania kanoniczne + front controller
+# =============================================================================
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
-    
+
+    # -------------------------------------------------------------------------
+    # Kanoniczny adres: https://www.zdajnik.pl
+    #
+    # Warunek na HTTP_HOST jest KLUCZOWY - bez niego lokalny dev (BASE_URL=
+    # http://localhost:8080 w .env) dostawałby 301 na produkcję, a przeglądarka
+    # cache'uje 301 na stałe, więc localhost byłby zepsuty także po cofnięciu
+    # tej zmiany. Reguły odpalają się wyłącznie na domenie produkcyjnej.
+    # -------------------------------------------------------------------------
+
+    # 1a. Wymuszenie HTTPS.
+    # X-Forwarded-Proto zabezpiecza przed pętlą, gdyby SSL było kiedyś
+    # terminowane wyżej (proxy/CDN) - wtedy %{HTTPS} jest "off" mimo że
+    # użytkownik przyszedł po https, a sam warunek %{HTTPS} zapętliłby redirect.
+    RewriteCond %{HTTP_HOST} zdajnik\.pl$ [NC]
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteRule ^ https://www.zdajnik.pl%{REQUEST_URI} [L,R=301]
+
+    # 1b. Wymuszenie www.
+    RewriteCond %{HTTP_HOST} zdajnik\.pl$ [NC]
+    RewriteCond %{HTTP_HOST} !^www\. [NC]
+    RewriteRule ^ https://www.zdajnik.pl%{REQUEST_URI} [L,R=301]
+
     # Jeśli plik nie istnieje fizycznie, przekieruj na index.php
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+</IfModule>
+
+# =============================================================================
+# 2. Cache statyki (mod_expires)
+# =============================================================================
+# Roczny cache jest bezpieczny, bo adresy zasobów są wersjonowane znacznikiem
+# filemtime(): main.css?v=... (head.php) oraz main.js?v=... (footer.php), a
+# main.js przepisuje swój parametr ?v= na wszystkie dynamiczne importy modułów
+# (modulePath() w main.js). Zmiana pliku = zmiana adresu = ominięcie cache'a.
+#
+# HTML celowo NIE jest tu wymieniony (brak ExpiresDefault) - strony są dynamiczne.
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Style i skrypty
+    ExpiresByType text/css                 "access plus 1 year"
+    ExpiresByType application/javascript   "access plus 1 year"
+    ExpiresByType text/javascript          "access plus 1 year"
+
+    # Obrazy
+    ExpiresByType image/png                "access plus 1 year"
+    ExpiresByType image/jpeg               "access plus 1 year"
+    ExpiresByType image/gif                "access plus 1 year"
+    ExpiresByType image/webp               "access plus 1 year"
+    ExpiresByType image/svg+xml            "access plus 1 year"
+    ExpiresByType image/x-icon             "access plus 1 year"
+    ExpiresByType image/vnd.microsoft.icon "access plus 1 year"
+
+    # Fonty (na wypadek self-hostingu - dziś fonty idą z Google Fonts)
+    ExpiresByType font/woff                "access plus 1 year"
+    ExpiresByType font/woff2               "access plus 1 year"
+    ExpiresByType font/ttf                 "access plus 1 year"
+    ExpiresByType application/font-woff    "access plus 1 year"
+    ExpiresByType application/font-woff2   "access plus 1 year"
+
+    # WYJĄTEK: Service Worker.
+    # sw.js jest serwowany jako application/javascript, więc złapałaby go reguła
+    # powyżej. Jego adres NIE jest wersjonowany (rejestracja twardo na '/sw.js'),
+    # a roczny cache uwięziłby użytkowników na starej wersji SW i zablokował
+    # wypuszczanie poprawek do warstwy offline.
+    <Files "sw.js">
+        ExpiresActive Off
+    </Files>
+
+    # WYJĄTEK: manifest PWA - zmiana ikon/nazwy aplikacji musi dochodzić szybko.
+    <Files "site.webmanifest">
+        ExpiresActive Off
+    </Files>
+</IfModule>
+
+# Twarde wyłączenie cache'a dla Service Workera także wtedy, gdy mod_expires
+# jest niedostępny lub gdy pośredniczy proxy.
+<IfModule mod_headers.c>
+    <Files "sw.js">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+    </Files>
+</IfModule>
+
+# =============================================================================
+# 3. Kompresja (mod_deflate)
+# =============================================================================
+# application/xml obejmuje dynamiczny /sitemap.xml - przy obecnej bazie pytań
+# to spadek z ~287 KB do ~41 KB na pobranie mapy przez robota.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/xml
 </IfModule>
 
 # Wybor wersji PHP na hostingu mydevil (kilka wersji dostepnych rownoczesnie na koncie).

@@ -4,6 +4,7 @@
  * @description Roboczy dashboard analityki produktowej dla administratorów.
  */
 
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Analityka | Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Dane produktowe, edukacyjne i operacyjne Zdajnik.';
 $analytics = $analytics ?? [];

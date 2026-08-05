@@ -4,6 +4,7 @@
  * @description Szczegóły egzaminu i lista przypisanych pytań.
  */
 
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Egzamin | Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Szczegóły egzaminu w panelu CMS Zdajnik.';
 $exam = $exam ?? [];

@@ -14,6 +14,7 @@
 /**
  * Widok pełnej historii (egzaminy, błędy, krytyczne)
  */
+$noIndex = true;
 $pageTitle = ($title ?? 'Historia') . ' | Zdajnik';
 ?>
 <!DOCTYPE html>

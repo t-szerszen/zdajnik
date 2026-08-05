@@ -52,6 +52,7 @@
     <div class="footer__groups">
       <nav class="footer__group" aria-label="Linki w stopce">
         <h6 class="footer__heading">Informacje</h6>
+        <a href="<?= url('pytania') ?>" class="footer__link">Baza pytań</a>
         <a href="<?= url('o-projekcie') ?>" class="footer__link">O projekcie</a>
         <a href="<?= url('kontakt') ?>" class="footer__link">Kontakt</a>
         <a href="<?= url('polityka-prywatnosci') ?>" class="footer__link">Polityka prywatności</a>

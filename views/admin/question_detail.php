@@ -4,6 +4,7 @@
  * @description Szczegóły pytania z wersjonowaniem.
  */
 
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Pytanie | Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Szczegóły pytania w panelu CMS Zdajnik.';
 $question = $question ?? [];

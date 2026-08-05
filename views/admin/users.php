@@ -1,4 +1,5 @@
 <?php
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Użytkownicy | Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Zarządzanie użytkownikami Zdajnik.';
 $users = $users ?? [];

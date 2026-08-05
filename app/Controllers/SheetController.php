@@ -39,14 +39,32 @@ class SheetController extends BaseController
   }
 
   /**
-   * Tymczasowe zabezpieczenie: Biblioteka Arkuszy nie jest jeszcze udostępniona
-   * użytkownikom (funkcja w przygotowaniu), więc każde publiczne żądanie
-   * jest przekierowywane na stronę główną.
+   * Informuje, czy Biblioteka Arkuszy jest już udostępniona użytkownikom.
+   *
+   * Jedno źródło prawdy o statusie tej sekcji - korzysta z niej zarówno
+   * strażnik dostępu poniżej, jak i generator mapy witryny, żeby nie zgłaszać
+   * wyszukiwarkom adresów, które dziś tylko przekierowują na stronę główną.
+   *
+   * @return bool True, gdy sekcja jest publiczna.
+   */
+  public static function isLibraryPublic(): bool
+  {
+    return false;
+  }
+
+  /**
+   * Tymczasowe zabezpieczenie: dopóki Biblioteka Arkuszy nie jest udostępniona
+   * (funkcja w przygotowaniu), każde publiczne żądanie jest przekierowywane
+   * na stronę główną.
    *
    * @return void
    */
   private function checkAvailability(): void
   {
+    if (self::isLibraryPublic()) {
+      return;
+    }
+
     header('Location: ' . url('/'));
     exit();
   }

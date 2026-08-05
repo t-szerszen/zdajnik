@@ -5,6 +5,7 @@
  * Szczegóły użytkownika w panelu CMS.
  */
 
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Użytkownik | Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Szczegóły użytkownika w panelu CMS Zdajnik.';
 $user = $user ?? [];

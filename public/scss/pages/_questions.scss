@@ -1,0 +1,429 @@
+/**
+ * @file _questions.scss
+ * @author Tobiasz Szerszeń
+ * @group pages
+ *
+ * @description
+ * Style publicznej bazy pytań (/pytania): hub kwalifikacji, stronicowany listing,
+ * strona pojedynczego pytania oraz bloki linkowania wewnętrznego (podobne pytania,
+ * nawigacja liniowa). Karta pytania i warianty odpowiedzi korzystają z klas
+ * .quiz-card zdefiniowanych w _review.scss — tutaj wyłącznie to, co specyficzne
+ * dla stron indeksowalnych.
+ */
+
+@use '../core/mixins' as *;
+
+// =============================================================================
+// Układ strony
+// =============================================================================
+.questions-page {
+  @include section-spacing(var(--space-10), var(--space-6));
+
+  &__container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+
+    &--narrow {
+      max-width: 760px;
+    }
+  }
+
+  &__lead {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  &__toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+}
+
+// =============================================================================
+// Okruszki nawigacyjne
+// =============================================================================
+.breadcrumbs {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-6) 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+
+  a {
+    color: var(--text-muted);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+  }
+
+  &__separator {
+    opacity: 0.5;
+  }
+
+  &__current {
+    color: var(--text);
+    @include text-truncate(1);
+    max-width: 22rem;
+  }
+}
+
+// =============================================================================
+// Hub kwalifikacji
+// =============================================================================
+.questions-hub {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.questions-hub-card {
+  @include card-surface(var(--space-5) var(--space-6), var(--radius-lg), var(--shadow-sm));
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: rgba(var(--accent-rgb), 0.35);
+    box-shadow: var(--shadow-accent-md);
+    transform: translateY(-2px);
+
+    .questions-hub-card__arrow {
+      transform: translateX(3px);
+    }
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    background: rgba(var(--accent-rgb), 0.1);
+    color: var(--accent);
+    font-size: var(--font-size-lg);
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__code {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+  }
+
+  &__name {
+    margin: var(--space-1) 0 0;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    @include text-truncate(1);
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-shrink: 0;
+  }
+
+  &__arrow {
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+  }
+}
+
+// =============================================================================
+// Listing pytań
+// =============================================================================
+.questions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+
+  &__item {
+    margin: 0;
+  }
+}
+
+.question-card {
+  @include card-surface(var(--space-4) var(--space-5), var(--radius-lg), var(--shadow-sm));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: rgba(var(--accent-rgb), 0.35);
+    box-shadow: var(--shadow-accent-md);
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  &__title {
+    margin: 0;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+
+    a {
+      color: var(--text);
+      text-decoration: none;
+
+      &:hover {
+        color: var(--accent);
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// =============================================================================
+// Paginacja
+// =============================================================================
+.questions-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+
+  &__pages {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+  }
+
+  &__page {
+    @include min-size-touch();
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+
+    &:hover {
+      background: rgba(var(--accent-rgb), 0.1);
+      color: var(--accent);
+    }
+
+    &--current {
+      background: var(--accent);
+      color: var(--accent-contrast);
+      font-weight: var(--font-weight-bold);
+
+      &:hover {
+        background: var(--accent);
+        color: var(--accent-contrast);
+      }
+    }
+  }
+
+  &__gap {
+    color: var(--text-muted);
+    padding: 0 var(--space-1);
+  }
+}
+
+// =============================================================================
+// Strona pojedynczego pytania
+// =============================================================================
+.question-detail {
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  &__id {
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+  }
+
+  // H1 niesie treść pytania, więc typografię bierze z .quiz-card__question-text,
+  // a nie z domyślnej skali nagłówków
+  &__title {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.6;
+  }
+
+  &__subtitle {
+    margin: var(--space-5) 0 var(--space-2);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  &__answers {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__correct-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin-left: auto;
+    flex-shrink: 0;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    color: var(--success);
+    white-space: nowrap;
+  }
+
+  // Wyjaśnienie jest rozwinięte na starcie (bez JS) — nadpisuje zwinięty
+  // stan .quiz-card__explanation z trybu przeglądu
+  &__explanation {
+    display: block;
+    max-height: none;
+    opacity: 1;
+    overflow: visible;
+    margin-top: var(--space-5);
+  }
+
+  &__source {
+    margin: var(--space-4) 0 0;
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+  }
+}
+
+// =============================================================================
+// Linkowanie wewnętrzne
+// =============================================================================
+.questions-cta {
+  @include card-surface(var(--space-5) var(--space-6), var(--radius-lg), var(--shadow-sm));
+  text-align: center;
+
+  &__title {
+    margin: 0 0 var(--space-2);
+    font-size: var(--font-size-lg);
+  }
+
+  &__text {
+    margin: 0 0 var(--space-4);
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+}
+
+.question-similar {
+  @include card-surface(var(--space-5) var(--space-6), var(--radius-lg), var(--shadow-sm));
+
+  &__title {
+    margin: 0 0 var(--space-3);
+    font-size: var(--font-size-base);
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__item a {
+    color: var(--text);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+
+    &:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+  }
+}
+
+.question-adjacent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+
+  &__link {
+    @include card-surface(var(--space-4) var(--space-5), var(--radius-lg), var(--shadow-sm));
+    flex: 1 1 240px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-color: rgba(var(--accent-rgb), 0.35);
+    }
+
+    &--next {
+      text-align: right;
+    }
+  }
+
+  &__label {
+    color: var(--accent);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+  }
+
+  &__text {
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    @include text-truncate(2);
+  }
+}

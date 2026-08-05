@@ -24,7 +24,13 @@
   <!-- 1. Podstawowa konfiguracja i metadane -->
   <!-- ================================================================== -->
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!--
+    @property viewport
+    @description Bez maximum-scale/user-scalable - blokowanie zoomu łamie
+                 WCAG 1.4.4 (Resize text) i uniemożliwia powiększenie treści
+                 osobom słabowidzącym.
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 

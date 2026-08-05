@@ -1,4 +1,5 @@
 <?php
+$noIndex = true;
 $pageTitle = $pageTitle ?? 'Egzaminy | Panel administracyjny | Zdajnik';
 $pageDescription = $pageDescription ?? 'Zarządzanie egzaminami Zdajnik.';
 $exams = $exams ?? [];

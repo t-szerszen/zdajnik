@@ -46,6 +46,26 @@ class Answer
   }
 
   /**
+   * Pobiera odpowiedzi w stałej kolejności na potrzeby publicznych stron pytań.
+   *
+   * W odróżnieniu od getAnswersByVersionId() nie losuje kolejności i pomija
+   * odpowiedzi usunięte miękko - strona indeksowalna musi wyglądać tak samo
+   * przy każdym przejściu robota.
+   *
+   * @param int $questionVersionId Unikalny identyfikator wersji pytania.
+   * @return array Odpowiedzi posortowane wg answer_order.
+   */
+  public function getPublicAnswersByVersionId(int $questionVersionId): array
+  {
+    $sql = "SELECT id, answer_text, answer_order, is_correct
+            FROM answers
+            WHERE question_version_id = ? AND is_active = 1 AND deleted_at IS NULL
+            ORDER BY answer_order ASC, id ASC;";
+
+    return $this->db->fetchAll($sql, [$questionVersionId]);
+  }
+
+  /**
    * Pobiera definicję poprawnej odpowiedzi dla danej wersji pytania.
    *
    * @param int $versionId ID wersji pytania.
