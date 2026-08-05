@@ -29,4 +29,4 @@ Disallow: /nowe-haslo
 
 # Mapa witryny generowana dynamicznie przez App\Controllers\SitemapController
 # (adres bez zmian, ale nie odpowiada mu już żaden plik w public/).
-Sitemap: https://www.zdajnik.pl/sitemap.xml
+Sitemap: https://zdajnik.pl/sitemap.xml
