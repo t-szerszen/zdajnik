@@ -129,11 +129,12 @@ Albo ustaw w `deploy.config.php`:
 ],
 ```
 
-**Zanim to włączysz:** `db/migrations/20260218120000_seed.sql` zawiera dane testowe/placeholder
-(`TRUNCATE` realnych tabel z pytaniami + wstawienie fałszywych "błędna odpowiedź numer X") - to
-plik do lokalnego seedowania dev bazy, nie do uruchamiania na produkcji. `dbmate` nie ma opcji
-pomijania pojedynczego pliku migracji, więc trzeba to rozwiązać zanim automatyczne migracje
-dotkną prawdziwej bazy - np. usuwając/przenosząc `seed.sql` poza `db/migrations/` albo
+**Zanim to włączysz:** `db/migrations/20260805120000_seed.sql` zawiera pełny zrzut (`TRUNCATE`
+realnych tabel z pytaniami + `INSERT` ze stałymi `id`) bazy pytań z lokalnego kontenera dev w
+momencie wygenerowania - to plik do (od)tworzenia lokalnej/dev bazy, nie do uruchamiania na
+produkcji: nadpisałby realne dane produkcyjne starszym zrzutem z dev i nadpisał ich `id`. `dbmate`
+nie ma opcji pomijania pojedynczego pliku migracji, więc trzeba to rozwiązać zanim automatyczne
+migracje dotkną prawdziwej bazy - np. usuwając/przenosząc `seed.sql` poza `db/migrations/` albo
 weryfikując ręcznie każdy pierwszy przebieg. Przy pierwszym stawianiu produkcji migracje zostały
 uruchomione ręcznie, z pominięciem tego pliku (patrz historia deployu / notatki z wdrożenia).
 

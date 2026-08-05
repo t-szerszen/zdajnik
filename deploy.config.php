@@ -82,8 +82,8 @@ return [
             'command' => 'npm ci && npm run build:css',
         ],
 
-        // UWAGA: db/migrations/20260218120000_seed.sql zawiera dane testowe/placeholder
-        // (TRUNCATE + fałszywe pytania) - NIE nadaje się do uruchomienia tu automatycznie.
+        // UWAGA: db/migrations/20260805120000_seed.sql zawiera pełny zrzut bazy pytań z dev
+        // (TRUNCATE + INSERT ze stałymi id) - NIE nadaje się do uruchomienia tu automatycznie.
         // Zanim włączysz to na produkcji, upewnij się że narzędzie migracyjne pomija ten plik
         // (tak jak ręczna procedura opisana w DEPLOY.md), inaczej nadpisze prawdziwą bazę pytań.
         'migrations' => [
