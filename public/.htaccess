@@ -6,27 +6,13 @@
     RewriteBase /
 
     # -------------------------------------------------------------------------
-    # Kanoniczny adres: https://www.zdajnik.pl
+    # BRAK przekierowań kanonicznych na poziomie .htaccess - i tak ma pozostać.
     #
-    # Warunek na HTTP_HOST jest KLUCZOWY - bez niego lokalny dev (BASE_URL=
-    # http://localhost:8080 w .env) dostawałby 301 na produkcję, a przeglądarka
-    # cache'uje 301 na stałe, więc localhost byłby zepsuty także po cofnięciu
-    # tej zmiany. Reguły odpalają się wyłącznie na domenie produkcyjnej.
+    # Przed Apache stoi nginx hostingu (mydevil), który sam kanonikalizuje ruch
+    # na https://zdajnik.pl (BEZ www). Reguła wymuszająca www w tym pliku tworzy
+    # nieskończoną pętlę: nginx www -> bez www, .htaccess bez www -> www.
+    # Kanonikalizacja hosta należy tu do warstwy hostingu, nie do aplikacji.
     # -------------------------------------------------------------------------
-
-    # 1a. Wymuszenie HTTPS.
-    # X-Forwarded-Proto zabezpiecza przed pętlą, gdyby SSL było kiedyś
-    # terminowane wyżej (proxy/CDN) - wtedy %{HTTPS} jest "off" mimo że
-    # użytkownik przyszedł po https, a sam warunek %{HTTPS} zapętliłby redirect.
-    RewriteCond %{HTTP_HOST} zdajnik\.pl$ [NC]
-    RewriteCond %{HTTPS} off
-    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
-    RewriteRule ^ https://www.zdajnik.pl%{REQUEST_URI} [L,R=301]
-
-    # 1b. Wymuszenie www.
-    RewriteCond %{HTTP_HOST} zdajnik\.pl$ [NC]
-    RewriteCond %{HTTP_HOST} !^www\. [NC]
-    RewriteRule ^ https://www.zdajnik.pl%{REQUEST_URI} [L,R=301]
 
     # Jeśli plik nie istnieje fizycznie, przekieruj na index.php
     RewriteCond %{REQUEST_FILENAME} !-f
