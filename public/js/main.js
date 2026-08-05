@@ -227,15 +227,18 @@ async function initGlobalModules() {
     { initNavbarHandler },
     { initThemeSwitcher },
     { initPasswordToggles },
+    { registerServiceWorker },
   ] = await Promise.all([
     import(modulePath('./components/NavbarHandler.js')),
     import(modulePath('./components/ThemeSwitcher.js')),
     import(modulePath('./components/show-password-toggle.js')),
+    import(modulePath('./modules/ServiceWorkerRegistration.js')),
   ]);
 
   initNavbarHandler();
   initThemeSwitcher();
   initPasswordToggles();
+  registerServiceWorker();
 }
 
 onReady(() => {

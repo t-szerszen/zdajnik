@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10B981">
+  <title>Brak połączenia - Zdajnik</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      font-family: -apple-system, 'Segoe UI', Roboto, Outfit, sans-serif;
+      background: #F5F7FA;
+      color: #0d1b3d;
+      text-align: center;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #0b1110;
+        color: #f5f7fa;
+      }
+
+      .card {
+        background: #121a18 !important;
+        border-color: rgba(148, 163, 184, 0.18) !important;
+      }
+
+      .muted {
+        color: #94a3b8 !important;
+      }
+    }
+
+    .card {
+      max-width: 420px;
+      padding: 2.5rem 2rem;
+      border-radius: 24px;
+      background: #ffffff;
+      border: 1px solid rgba(13, 27, 61, 0.08);
+      box-shadow: 0 20px 45px rgba(13, 27, 61, 0.08);
+    }
+
+    .icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.25rem;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.1);
+      color: #10B981;
+      font-size: 1.75rem;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin: 0 0 0.6rem;
+    }
+
+    p {
+      margin: 0 0 1.5rem;
+      line-height: 1.55;
+    }
+
+    .muted {
+      color: #52645f;
+      font-size: 0.9rem;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.75rem 1.75rem;
+      border-radius: 100px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #0d1b3d;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.45);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="icon">&#128268;</div>
+    <h1>Brak połączenia z internetem</h1>
+    <p>Nie udało się połączyć z Zdajnik.pl. Sprawdź swoje połączenie i spróbuj ponownie - część wcześniej
+      odwiedzonych stron może być dostępna po powrocie sieci.</p>
+    <button onclick="window.location.reload()">Spróbuj ponownie</button>
+    <p class="muted" style="margin-top: 1.25rem;">Zdajnik</p>
+  </div>
+</body>
+
+</html>

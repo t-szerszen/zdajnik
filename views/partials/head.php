@@ -124,6 +124,20 @@
   -->
   <link rel="apple-touch-icon" sizes="180x180" href="<?= url('images/company/apple-touch-icon.png') ?>">
 
+  <!--
+    @property apple-mobile-web-app-*
+    @description Gdy strona jest dodana do ekranu głównego na iOS/iPadOS,
+                 te tagi wyłączają domyślny chrome Safari (adresówka, przyciski)
+                 i otwierają aplikację w trybie standalone, z własnym tytułem
+                 na ekranie głównym. Android/Chrome honoruje w tym celu manifest
+                 (display: standalone) - poniższe jest odpowiednikiem dla Safari,
+                 który tego pola manifestu nie respektuje.
+  -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Zdajnik">
+
   <link rel="stylesheet"
     href="<?= url('scss/main.css?v=' . filemtime($_SERVER['DOCUMENT_ROOT'] . '/scss/main.css')) ?>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
