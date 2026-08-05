@@ -120,6 +120,40 @@ class DynamicDataService
   }
 
   /**
+   * Odwrotność getExamIdByCode() - potrzebna wyłącznie do przekierowania
+   * starych adresów /search?exam_id=N (numeryczne ID) na kanoniczny
+   * /pytania/{code}.
+   *
+   * @param int $id ID kwalifikacji.
+   * @return string|null Kod kwalifikacji lub null, gdy ID nie istnieje.
+   */
+  public function getExamCodeById(int $id): ?string
+  {
+    $sql = "SELECT code FROM exam_types WHERE id = ? LIMIT 1";
+    $result = $this->db->fetch($sql, [$id]);
+    return $result['code'] ?? null;
+  }
+
+  /**
+   * Rozwiązuje segment adresu URL (np. "inf03") na pełne dane kwalifikacji
+   * dopuszczonej do publikacji - łączy getExamCodeByUrlSegment() z
+   * getExamDetails() w jednym wywołaniu. Używane przez QuestionController
+   * i SearchController.
+   *
+   * @param string $urlCode Segment adresu URL.
+   * @return array|null Dane kwalifikacji lub null, gdy nieznany/niedostępny.
+   */
+  public function resolveExamByUrlCode(string $urlCode): ?array
+  {
+    $examCode = self::getExamCodeByUrlSegment($urlCode);
+    if ($examCode === null) {
+      return null;
+    }
+
+    return $this->getExamDetails($examCode);
+  }
+
+  /**
    * Pobiera rozszerzone detale egzaminu wraz z metadanymi SEO.
    *
    * Metoda łączy surowe dane z bazy danych z predefiniowaną mapą treści (Content Map) 

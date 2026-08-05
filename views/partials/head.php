@@ -185,8 +185,10 @@
 
   <?php if (isset($extraSchemas) && is_array($extraSchemas)): ?>
     <?php foreach ($extraSchemas as $schema): ?>
+      <!-- JSON_HEX_TAG: treść pytań bywa fragmentem kodu, a niezakodowane "</script>" -->
+      <!-- w danych zamknęłoby ten blok i wypuściło resztę jako HTML -->
       <script type="application/ld+json">
-            <?= json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
+            <?= json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?>
           </script>
     <?php endforeach; ?>
   <?php endif; ?>

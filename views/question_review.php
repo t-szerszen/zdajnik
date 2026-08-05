@@ -16,7 +16,7 @@
  * Konfiguracja komponentu head
  */
 $pageTitle = 'Pytanie ID: ' . $question['id'] . ' | Zdajnik';
-$pageDescription = mb_strimwidth(strip_tags($question['question_text']), 0, 155, '...');
+$pageDescription = question_excerpt((string) $question['question_text'], 155);
 
 // Ten widok to kontekstowy podgląd dla zalogowanych (powrót do statystyk/historii),
 // a nie strona docelowa dla wyszukiwarek — publiczną, indeksowalną wersją tej samej
@@ -33,12 +33,12 @@ $extraSchemas = [
     "hasPart" => [
       [
         "@type" => "Question",
-        "name" => strip_tags($question['question_text']),
+        "name" => question_plain_text((string) $question['question_text']),
         "eduQuestionType" => "Multiple choice",
         "suggestedAnswer" => array_map(function ($a) {
           return [
             "@type" => "Answer",
-            "text" => strip_tags($a['answer_text'])
+            "text" => question_plain_text((string) $a['answer_text'])
           ];
         }, $question['answers'])
       ]
@@ -76,6 +76,9 @@ $extraSchemas = [
             <div class="quiz-card__header-left">
               <h2 class="quiz-card__question-number">Pytanie <span class="quiz-card__id">ID:
                   <?= $question['id'] ?></span></h2>
+              <?php if (!empty($question['topic_name'])): ?>
+                <span class="badge badge--secondary"><?= htmlspecialchars($question['topic_name']) ?></span>
+              <?php endif; ?>
               <?php if (!empty($question['difficulty']) && question_difficulty_label($question['difficulty']) !== ''): ?>
                 <span class="badge <?= question_difficulty_badge_class($question['difficulty']) ?>"><?= question_difficulty_label($question['difficulty']) ?></span>
               <?php endif; ?>
@@ -91,10 +94,18 @@ $extraSchemas = [
             </div>
           </div>
 
-          <div class="quiz-card__content">
-            <p class="quiz-card__question-text">
-              <?= nl2br(htmlspecialchars($question['question_text'])) ?>
+          <?php if (!empty($question['source'])): ?>
+            <p class="quiz-card__source">
+              <i class="fas fa-book" aria-hidden="true"></i> Źródło: <?= htmlspecialchars((string) $question['source']) ?>
             </p>
+          <?php endif; ?>
+
+          <div class="quiz-card__content">
+            <!-- <div>, nie <p>: markdown pytania renderuje bloki (akapity, kod), -->
+            <!-- tak samo jak wersja kliencka w UiHandler.js -->
+            <div class="quiz-card__question-text">
+              <?= render_question_markdown((string) $question['question_text']) ?>
+            </div>
             <?php if (!empty($question['image_name'])): ?>
               <div class="quiz-card__image-container">
                 <img src="<?= url('images/questions/' . $question['image_name']) ?>" alt="Ilustracja do pytania"
@@ -116,7 +127,7 @@ $extraSchemas = [
                   <?= $letter ?>
                 </span>
                 <span class="quiz-card__answer-text">
-                  <?= nl2br(htmlspecialchars($answer['answer_text'])) ?>
+                  <?= render_question_markdown((string) $answer['answer_text']) ?>
                 </span>
               </div>
               <?php
@@ -136,7 +147,7 @@ $extraSchemas = [
                   <i class="fas fa-magic"></i> Wyjaśnienie
                 </div>
                 <div class="explanation-inner">
-                  <?= nl2br(htmlspecialchars($question['explanation'])) ?>
+                  <?= render_question_markdown((string) $question['explanation']) ?>
                 </div>
               </div>
               <?php

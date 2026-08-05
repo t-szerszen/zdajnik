@@ -49,10 +49,16 @@ async function initHomePage() {
   init();
 }
 
-async function initSearchPage() {
-  if (!has('.search-page')) return;
-  const { initSearchPage: init } = await import(modulePath('./features/search/SearchHandler.js'));
-  init();
+async function initQuestionsListPage() {
+  if (!has('.questions-page__results[data-filterable]')) return;
+  const { default: FilterableList } = await import(modulePath('./utils/FilterableList.js'));
+  new FilterableList({
+    formSelector: '.questions-filters',
+    resultsSelector: '.questions-page__results',
+    debouncedFieldSelectors: ['#q'],
+    immediateFieldSelectors: ['#temat'],
+    pageParam: 'strona',
+  }).init();
 }
 
 async function initReviewPage() {
@@ -203,7 +209,7 @@ async function initAdminAnalytics() {
 async function initPageModules() {
   const results = await Promise.allSettled([
     initHomePage(),
-    initSearchPage(),
+    initQuestionsListPage(),
     initReviewPage(),
     initSingleQuestionPage(),
     initPersonalizedTestPage(),

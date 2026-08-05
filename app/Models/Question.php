@@ -49,11 +49,14 @@ class Question
                     qv.id as question_version_id,
                     q.topic_id,
                     q.difficulty,
+                    q.source,
+                    t.name as topic_name,
                     qv.question_text,
                     qv.image_name,
                     qv.explanation
                 FROM questions q
-                JOIN question_versions qv ON q.id = qv.question_id";
+                JOIN question_versions qv ON q.id = qv.question_id
+                JOIN topics t ON q.topic_id = t.id";
   }
 
   /**
@@ -312,113 +315,12 @@ class Question
     return implode(',', array_fill(0, count($ids), '?'));
   }
 
-  /**
-   * Buduje warunki WHERE i wiązania parametrów dla wyszukiwarki pytań.
-   * 
-   * @param array $filters Tablica filtrów (exam_id, topic_id, query).
-   * @return array Tablica [string $where, array $params].
-   */
-  private function buildSearchWhereClause(array $filters): array
-  {
-    $where = "q.is_active = 1 AND qv.is_active = 1 AND q.deleted_at IS NULL ";
-    $params = [];
-
-    // Wyszukiwarka nie może udostępniać pytań z kwalifikacji zablokowanych w trybach nauki
-    $availableCodesPlaceholders = $this->buildInClausePlaceholders(DynamicDataService::AVAILABLE_EXAM_CODES);
-    $where .= " AND q.exam_type_id IN (SELECT id FROM exam_types WHERE code IN ($availableCodesPlaceholders)) ";
-    $params = array_merge($params, DynamicDataService::AVAILABLE_EXAM_CODES);
-
-    if (!empty($filters['exam_id'])) {
-      $where .= " AND q.exam_type_id = ? ";
-      $params[] = (int) $filters['exam_id'];
-    }
-
-    if (!empty($filters['topic_id'])) {
-      $where .= " AND q.topic_id = ? ";
-      $params[] = (int) $filters['topic_id'];
-    }
-
-    if (!empty($filters['query'])) {
-      $query = trim($filters['query']);
-
-      // Jeśli zapytanie jest liczbą, traktujemy je jako wyszukiwanie po konkretnym ID pytania
-      if (is_numeric($query)) {
-        $where .= " AND q.id = ? ";
-        $params[] = (int) $query;
-      } elseif (mb_strlen($query) >= 3) {
-        $where .= " AND (qv.question_text LIKE ? OR qv.explanation LIKE ?) ";
-        $params[] = "%$query%";
-        $params[] = "%$query%";
-      }
-    }
-
-    return [$where, $params];
-  }
-
-  /**
-   * Oblicza całkowitą liczbę pytań pasujących do filtrów (na potrzeby paginacji).
-   * 
-   * @param array $filters Filtry wyszukiwania.
-   * @return int Total count.
-   */
-  public function countSearchQuestions(array $filters): int
-  {
-    [$where, $params] = $this->buildSearchWhereClause($filters);
-
-    $sql = "SELECT COUNT(*) as total
-            FROM questions q
-            JOIN question_versions qv ON q.id = qv.question_id
-            WHERE $where";
-
-    $result = $this->db->fetch($sql, $params);
-    return (int) ($result['total'] ?? 0);
-  }
-
-  /**
-   * Implementuje zaawansowane wyszukiwanie pytań z paginacją i dołączaniem nazw kategorii.
-   * 
-   * @param array $filters Filtry wyszukiwania.
-   * @param int $page Numer strony.
-   * @param int $limit Liczba rekordów na stronę.
-   * @return array
-   */
-  public function searchQuestions(array $filters, int $page = 1, int $limit = 25): array
-  {
-    [$where, $params] = $this->buildSearchWhereClause($filters);
-
-    $sql = "SELECT
-                q.id as question_id,
-                qv.id as question_version_id,
-                q.topic_id,
-                q.difficulty,
-                qv.question_text,
-                qv.image_name,
-                qv.explanation,
-                et.code as exam_code,
-                t.name as topic_name
-            FROM questions q
-            JOIN question_versions qv ON q.id = qv.question_id
-            JOIN exam_types et ON q.exam_type_id = et.id
-            JOIN topics t ON q.topic_id = t.id
-            WHERE $where ";
-
-    $sql .= " ORDER BY q.id DESC ";
-
-    // Kalkulacja offsetu dla SQL LIMIT
-    $offset = ($page - 1) * $limit;
-    if ($offset < 0) {
-      $offset = 0;
-    }
-
-    $sql .= " LIMIT " . (int) $limit . " OFFSET " . (int) $offset;
-
-    return $this->db->fetchAll($sql, $params);
-  }
-
   // --- PUBLICZNA BAZA PYTAŃ (strony indeksowalne /pytania/...) ---
 
   /**
-   * Buduje warunek WHERE dla treści dopuszczonej do publicznego wyświetlania.
+   * Buduje warunek WHERE dla treści dopuszczonej do publicznego wyświetlania,
+   * opcjonalnie zawężony o filtr tematu i/lub tekstu/ID (listing z filtrami,
+   * wyszukiwanie międzykwalifikacyjne).
    *
    * Jedno miejsce egzekwujące komplet bramek:
    * - pytanie i wersja aktywne oraz nieusunięte (miękko),
@@ -426,9 +328,10 @@ class Question
    *   zduplikowałyby wiersz, a więc i adres URL z tą samą treścią,
    * - wyłącznie kwalifikacje z gotową bazą pytań (AVAILABLE_EXAM_CODES).
    *
+   * @param array $filters Opcjonalne filtry: topic_id, query.
    * @return array Tablica [string $where, array $params].
    */
-  private function getPublicScopeSql(): array
+  private function getPublicScopeSql(array $filters = []): array
   {
     $placeholders = $this->buildInClausePlaceholders(DynamicDataService::AVAILABLE_EXAM_CODES);
 
@@ -439,8 +342,28 @@ class Question
                   WHERE v.question_id = q.id AND v.is_active = 1 AND v.deleted_at IS NULL
               )
               AND q.exam_type_id IN (SELECT id FROM exam_types WHERE code IN ($placeholders))";
+    $params = DynamicDataService::AVAILABLE_EXAM_CODES;
 
-    return [$where, DynamicDataService::AVAILABLE_EXAM_CODES];
+    if (!empty($filters['topic_id'])) {
+      $where .= " AND q.topic_id = ?";
+      $params[] = (int) $filters['topic_id'];
+    }
+
+    if (!empty($filters['query'])) {
+      $query = trim((string) $filters['query']);
+
+      // Jeśli zapytanie jest liczbą, traktujemy je jako wyszukiwanie po konkretnym ID pytania
+      if (is_numeric($query)) {
+        $where .= " AND q.id = ?";
+        $params[] = (int) $query;
+      } elseif (mb_strlen($query) >= 3) {
+        $where .= " AND (qv.question_text LIKE ? OR qv.explanation LIKE ?)";
+        $params[] = "%$query%";
+        $params[] = "%$query%";
+      }
+    }
+
+    return [$where, $params];
   }
 
   /**
@@ -487,14 +410,16 @@ class Question
   }
 
   /**
-   * Zlicza publicznie dostępne pytania danej kwalifikacji (paginacja listingu).
+   * Zlicza publicznie dostępne pytania danej kwalifikacji (paginacja listingu),
+   * opcjonalnie zawężone filtrem tematu i/lub tekstu/ID.
    *
    * @param int $examTypeId ID kwalifikacji.
+   * @param array $filters Opcjonalne filtry: topic_id, query.
    * @return int Liczba pytań.
    */
-  public function countPublicByExam(int $examTypeId): int
+  public function countPublicByExam(int $examTypeId, array $filters = []): int
   {
-    [$where, $params] = $this->getPublicScopeSql();
+    [$where, $params] = $this->getPublicScopeSql($filters);
     $params[] = $examTypeId;
 
     $sql = "SELECT COUNT(*) AS total
@@ -507,7 +432,8 @@ class Question
   }
 
   /**
-   * Pobiera stronę listingu pytań danej kwalifikacji.
+   * Pobiera stronę listingu pytań danej kwalifikacji, opcjonalnie zawężoną
+   * filtrem tematu i/lub tekstu/ID.
    *
    * Sortowanie po ID rosnąco jest celowe - losowa kolejność przestawiałaby
    * pytania między stronami przy każdym przejściu robota indeksującego.
@@ -515,17 +441,44 @@ class Question
    * @param int $examTypeId ID kwalifikacji.
    * @param int $limit Liczba pytań na stronę.
    * @param int $offset Przesunięcie.
+   * @param array $filters Opcjonalne filtry: topic_id, query.
    * @return array Lista pytań.
    */
-  public function getPublicPageByExam(int $examTypeId, int $limit, int $offset): array
+  public function getPublicPageByExam(int $examTypeId, int $limit, int $offset, array $filters = []): array
   {
-    [$where, $params] = $this->getPublicScopeSql();
+    [$where, $params] = $this->getPublicScopeSql($filters);
     $params[] = $examTypeId;
 
     $sql = $this->getPublicSelectionSql() . "
             WHERE $where AND q.exam_type_id = ?
             ORDER BY q.id ASC
             LIMIT " . (int) $limit . " OFFSET " . max(0, (int) $offset);
+
+    return $this->db->fetchAll($sql, $params);
+  }
+
+  /**
+   * Wyszukiwanie pytań po treści/ID BEZ zawężenia do jednej kwalifikacji.
+   * Używane wyłącznie przez lekki punkt wejścia /search, zanim użytkownik
+   * wybierze konkretną kwalifikację do przeglądania.
+   *
+   * @param string $query Fraza lub numer ID pytania.
+   * @param int $limit Maksymalna liczba wyników.
+   * @return array Lista pytań (z exam_code/topic_name z getPublicSelectionSql()).
+   */
+  public function searchAcrossExams(string $query, int $limit = 10): array
+  {
+    $trimmed = trim($query);
+    if ($trimmed === '' || (!is_numeric($trimmed) && mb_strlen($trimmed) < 3)) {
+      return [];
+    }
+
+    [$where, $params] = $this->getPublicScopeSql(['query' => $trimmed]);
+
+    $sql = $this->getPublicSelectionSql() . "
+            WHERE $where
+            ORDER BY q.id DESC
+            LIMIT " . (int) $limit;
 
     return $this->db->fetchAll($sql, $params);
   }

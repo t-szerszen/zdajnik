@@ -577,10 +577,11 @@ class StatisticsService
   public function getQuestionDetails(int $questionId, ?int $userId = null): ?array
   {
     // 1. Pobierz wersję pytania
-    $sqlQ = "SELECT q.id, q.difficulty, qv.question_text, qv.explanation, qv.image_name, qv.id as version_id, et.code as exam_code
+    $sqlQ = "SELECT q.id, q.difficulty, q.source, t.name as topic_name, qv.question_text, qv.explanation, qv.image_name, qv.id as version_id, et.code as exam_code
 		         FROM questions q
 		         JOIN question_versions qv ON q.id = qv.question_id
                  JOIN exam_types et ON q.exam_type_id = et.id
+                 JOIN topics t ON q.topic_id = t.id
 		         WHERE q.id = ? AND q.is_active = 1 AND qv.is_active = 1
 		         LIMIT 1";
     $question = $this->db->fetch($sqlQ, [$questionId]);

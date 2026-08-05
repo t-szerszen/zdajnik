@@ -23,7 +23,7 @@
 
 import api from './ApiClient.js';
 import { escapeHTML } from '../utils/sanitize.js';
-import { renderDifficultyBadge } from '../utils/difficulty.js';
+import { renderQuestionBadgesHTML, renderQuestionSourceHTML } from '../utils/questionCard.js';
 import ExplanationToggler from '../components/ExplanationToggler.js';
 import saveToggle from '../components/SaveToggleHandler.js';
 
@@ -185,7 +185,7 @@ export class TestRunner {
 
     questions.forEach((qData, index) => {
       // Pobieramy dane z nowymi kluczami
-      const { question_id, question_version_id, question_text, image_name, difficulty } = qData.question;
+      const { question_id, question_version_id, question_text, image_name } = qData.question;
       const answers = qData.answers;
       let answersHTML = '';
 
@@ -223,8 +223,7 @@ export class TestRunner {
           <div class="quiz-card__header">
             <div class="quiz-card__header-left">
               <span class="quiz-card__question-number">Pytanie ${index + 1} / ${questions.length}</span>
-              <span class="quiz-card__id">ID: ${question_id}</span>
-              ${renderDifficultyBadge(difficulty)}
+              ${renderQuestionBadgesHTML(qData.question)}
             </div>
             <div class="quiz-card__header-actions">
            ${window.zdajnikAppState.isUserLoggedIn ? `
@@ -234,6 +233,7 @@ export class TestRunner {
            ` : ''}
            </div>
          </div>
+        ${renderQuestionSourceHTML(qData.question.source)}
         <div class="quiz-card__content">
           <div class="quiz-card__question-text">${questionHTML}</div>
           ${imageHTML}
@@ -392,7 +392,7 @@ export class TestRunner {
     this.resultsDetailsContainer.innerHTML = '';
 
     this.questionsData.forEach((qData, index) => {
-      const { question_id, question_version_id, question_text, image_name, explanation, difficulty } = qData.question;
+      const { question_id, question_version_id, question_text, image_name, explanation } = qData.question;
       const userAnswerId = userAnswers[question_version_id]; // Odczyt z mapy
       const answers = qData.answers;
 
@@ -447,8 +447,7 @@ export class TestRunner {
           <div class="quiz-card__header">
               <div class="quiz-card__header-left">
                 <span class="quiz-card__question-number">Pytanie ${index + 1}</span>
-                <span class="quiz-card__id">ID: ${question_id}</span>
-                ${renderDifficultyBadge(difficulty)}
+                ${renderQuestionBadgesHTML(qData.question)}
               </div>
               <div class="quiz-card__header-actions">
                ${window.zdajnikAppState.isUserLoggedIn ? `
@@ -459,6 +458,7 @@ export class TestRunner {
                ${badgeHTML}
              </div>
          </div>
+        ${renderQuestionSourceHTML(qData.question.source)}
         <div class="quiz-card__content">
           <div class="quiz-card__question-text">${questionHTML}</div>
           ${image_name ? `<div class="quiz-card__image-container"><img src="${window.zdajnikAppState.baseUrl}/images/questions/${escapeHTML(image_name)}" class="quiz-card__image"></div>` : ''}

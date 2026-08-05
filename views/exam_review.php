@@ -135,9 +135,11 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
               </div>
 
               <div class="quiz-card__content">
-                <p class="quiz-card__question-text">
-                  <?= nl2br(htmlspecialchars($question['question_text'])) ?>
-                </p>
+                <!-- <div>, nie <p>: markdown pytania renderuje bloki (akapity, kod), -->
+                <!-- tak samo jak wersja kliencka w UiHandler.js -->
+                <div class="quiz-card__question-text">
+                  <?= render_question_markdown((string) $question['question_text']) ?>
+                </div>
                 <?php if (!empty($question['image_name'])): ?>
                   <div class="quiz-card__image-container">
                     <img src="<?= url('images/questions/' . $question['image_name']) ?>" alt="Ilustracja do pytania"
@@ -170,7 +172,7 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
                       <?= $letter ?>
                     </span>
                     <span class="quiz-card__answer-text">
-                      <?= nl2br(htmlspecialchars($answer['answer_text'])) ?>
+                      <?= render_question_markdown((string) $answer['answer_text']) ?>
                     </span>
                   </div>
                   <?php
@@ -190,7 +192,7 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
                       <i class="fas fa-magic"></i> Wyjaśnienie
                     </div>
                     <div class="explanation-inner">
-                      <?= nl2br(htmlspecialchars($question['explanation'])) ?>
+                      <?= render_question_markdown((string) $question['explanation']) ?>
                     </div>
                   </div>
                   <?php

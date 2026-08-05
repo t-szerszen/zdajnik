@@ -31,6 +31,16 @@
     }
   }
 
+  // Fragment renderowany przez questions_list_results_partial.php (lead +
+  // lista + paginacja) - własny flex-gap, bo jako pojedyncze opakowanie
+  // (przez AJAX podmieniane w całości) nie korzysta już z gap rodzica
+  // .questions-page__container między swoimi dziećmi.
+  &__results {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
   &__lead {
     margin: 0;
     color: var(--text-muted);
@@ -49,6 +59,28 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
+  }
+}
+
+// =============================================================================
+// Pasek filtrów listingu (temat + treść/ID) — pola korzystają wprost ze
+// współdzielonego .search-form__* (patrz components/_form-card.scss),
+// tutaj tylko układ kontenera.
+// =============================================================================
+.questions-filters {
+  @include card-surface(var(--space-5) var(--space-6), var(--radius-lg), var(--shadow-sm));
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4) var(--space-6);
+  align-items: end;
+
+  @include media-down(md) {
+    grid-template-columns: 1fr;
+  }
+
+  &__reset {
+    grid-column: 1 / -1;
+    justify-self: start;
   }
 }
 
@@ -270,18 +302,6 @@
 // Strona pojedynczego pytania
 // =============================================================================
 .question-detail {
-  &__badges {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-2);
-  }
-
-  &__id {
-    color: var(--text-muted);
-    font-size: var(--font-size-xs);
-  }
-
   // H1 niesie treść pytania, więc typografię bierze z .quiz-card__question-text,
   // a nie z domyślnej skali nagłówków
   &__title {
@@ -306,32 +326,26 @@
     padding: 0;
   }
 
-  &__correct-flag {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    margin-left: auto;
-    flex-shrink: 0;
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    color: var(--success);
-    white-space: nowrap;
-  }
-
-  // Wyjaśnienie jest rozwinięte na starcie (bez JS) — nadpisuje zwinięty
-  // stan .quiz-card__explanation z trybu przeglądu
+  // Wyjaśnienie jest rozwinięte na starcie (bez JS). Selektor musi pobić
+  // specyficzność ".review-page .quiz-card__explanation" (tryb zwiniętego
+  // przeglądu z JS-owym togglem) - stąd dodatkowy element "body" w selektorze,
+  // mimo że ta strona współdzieli z nim samo tło/layout (klasa .review-page),
+  // a nie logikę zwijania.
   &__explanation {
-    display: block;
-    max-height: none;
-    opacity: 1;
-    overflow: visible;
     margin-top: var(--space-5);
-  }
 
-  &__source {
-    margin: var(--space-4) 0 0;
-    color: var(--text-muted);
-    font-size: var(--font-size-xs);
+    body.review-page & {
+      display: block;
+      max-height: none;
+      opacity: 1;
+      overflow: visible;
+      padding: 1.5rem;
+
+      .explanation-title,
+      .explanation-inner {
+        opacity: 1;
+      }
+    }
   }
 }
 

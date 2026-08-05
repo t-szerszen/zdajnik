@@ -32,6 +32,10 @@ $questionText = (string) ($question['question_text'] ?? '');
 $explanation = (string) ($question['explanation'] ?? '');
 $headline = question_excerpt($questionText, 110);
 
+// Treść pytania w markdownie rozbita na nagłówek (<h1>) i ewentualne dalsze
+// bloki (kod, listy), których nie wolno zagnieżdżać w nagłówku.
+$questionParts = render_question_markdown_heading($questionText);
+
 // Rozdzielenie wariantów na potrzeby danych strukturalnych: Google oczekuje
 // poprawnej odpowiedzi w acceptedAnswer, a wyłącznie dystraktorów w suggestedAnswer.
 $correctAnswers = [];
@@ -98,6 +102,14 @@ $extraSchemas = [
 <body class="review-page">
   <?php include 'partials/navbar.php'; ?>
 
+  <header class="page-header">
+    <div class="page-header__content">
+      <h1 class="page-header__title"><span class="text-gradient">Podgląd</span> pytania</h1>
+      <p class="page-header__text">Pojedyncze pytanie z bazy egzaminacyjnej wraz z poprawną odpowiedzią i
+        wyjaśnieniem. Przeglądaj bez logowania, a gdy będziesz gotowy, sprawdź się w pełnym teście próbnym.</p>
+    </div>
+  </header>
+
   <main class="main-content-wrapper">
     <nav class="breadcrumbs" aria-label="Ścieżka nawigacji">
       <a href="<?= url('/') ?>">Strona główna</a>
@@ -115,23 +127,34 @@ $extraSchemas = [
         <article class="quiz-card question-detail">
           <div class="quiz-card__header">
             <div class="quiz-card__header-left">
-              <div class="question-detail__badges">
-                <a href="<?= url('pytania/' . $examUrlCode) ?>" class="badge badge--accent"><?= htmlspecialchars($examCode) ?></a>
-                <?php if ($topicName !== ''): ?>
-                  <span class="badge badge--secondary"><?= htmlspecialchars($topicName) ?></span>
-                <?php endif; ?>
-                <?php if (question_difficulty_label($question['difficulty'] ?? null) !== ''): ?>
-                  <span class="badge <?= question_difficulty_badge_class($question['difficulty']) ?>">
-                    <?= question_difficulty_label($question['difficulty']) ?>
-                  </span>
-                <?php endif; ?>
-                <span class="question-detail__id">ID: <?= (int) $question['question_id'] ?></span>
-              </div>
+              <span class="quiz-card__id">ID: <?= (int) $question['question_id'] ?></span>
+              <?php if ($topicName !== ''): ?>
+                <span class="badge badge--secondary"><?= htmlspecialchars($topicName) ?></span>
+              <?php endif; ?>
+              <?php if (question_difficulty_label($question['difficulty'] ?? null) !== ''): ?>
+                <span class="badge <?= question_difficulty_badge_class($question['difficulty']) ?>">
+                  <?= question_difficulty_label($question['difficulty']) ?>
+                </span>
+              <?php endif; ?>
+            </div>
+            <div class="quiz-card__header-actions">
+              <a href="<?= url('pytania/' . $examUrlCode) ?>" class="badge badge--accent"><?= htmlspecialchars($examCode) ?></a>
             </div>
           </div>
 
+          <?php if (!empty($question['source'])): ?>
+            <p class="quiz-card__source">
+              <i class="fas fa-book" aria-hidden="true"></i> Źródło: <?= htmlspecialchars((string) $question['source']) ?>
+            </p>
+          <?php endif; ?>
+
           <div class="quiz-card__content">
-            <h1 class="question-detail__title"><?= nl2br(htmlspecialchars($questionText)) ?></h1>
+            <h1 class="question-detail__title">
+              <?= $questionParts['heading'] !== '' ? $questionParts['heading'] : htmlspecialchars($headline) ?>
+            </h1>
+            <?php if ($questionParts['rest'] !== ''): ?>
+              <div class="quiz-card__question-text"><?= $questionParts['rest'] ?></div>
+            <?php endif; ?>
 
             <?php if (!empty($question['image_name'])): ?>
               <div class="quiz-card__image-container">
@@ -149,13 +172,8 @@ $extraSchemas = [
               <li class="quiz-card__answer <?= $isCorrect ? 'quiz-card__answer--correct' : '' ?>">
                 <span class="quiz-card__answer-prefix"><?= chr(65 + $index) ?></span>
                 <span class="quiz-card__answer-text">
-                  <?= nl2br(htmlspecialchars((string) $answer['answer_text'])) ?>
+                  <?= render_question_markdown((string) $answer['answer_text']) ?>
                 </span>
-                <?php if ($isCorrect): ?>
-                  <span class="question-detail__correct-flag">
-                    <i class="fas fa-check" aria-hidden="true"></i> Poprawna odpowiedź
-                  </span>
-                <?php endif; ?>
               </li>
             <?php endforeach; ?>
           </ol>
@@ -166,16 +184,9 @@ $extraSchemas = [
                 <i class="fas fa-lightbulb" aria-hidden="true"></i> Wyjaśnienie
               </h2>
               <div class="explanation-inner">
-                <?= nl2br(htmlspecialchars($explanation)) ?>
+                <?= render_question_markdown($explanation) ?>
               </div>
             </section>
-          <?php endif; ?>
-
-          <?php if (!empty($question['source'])): ?>
-            <p class="question-detail__source">
-              <i class="fas fa-book" aria-hidden="true"></i>
-              Źródło: <?= htmlspecialchars((string) $question['source']) ?>
-            </p>
           <?php endif; ?>
         </article>
 

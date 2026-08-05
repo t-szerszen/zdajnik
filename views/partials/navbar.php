@@ -111,6 +111,11 @@ use App\Models\User;
                   <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
                 </a>
               </li>
+              <li class="dropdown__item">
+                <a href="<?= url('pytania/inf03') ?>" class="dropdown__link">
+                  <i class="dropdown__icon fas fa-database"></i> Baza pytań
+                </a>
+              </li>
             </ul>
           </li>
           <li class="dropdown__item dropdown dropdown--nested">
@@ -133,6 +138,11 @@ use App\Models\User;
               <li class="dropdown__item">
                 <a href="<?= url('test/INF.04') ?>" class="dropdown__link">
                   <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
+                </a>
+              </li>
+              <li class="dropdown__item">
+                <a href="<?= url('pytania/inf04') ?>" class="dropdown__link">
+                  <i class="dropdown__icon fas fa-database"></i> Baza pytań
                 </a>
               </li>
             </ul>

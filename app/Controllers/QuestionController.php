@@ -81,7 +81,7 @@ class QuestionController extends BaseController
    */
   public function listByExam(string $code): void
   {
-    $exam = $this->resolveExam($code);
+    $exam = $this->dynamicData->resolveExamByUrlCode($code);
 
     if (!$exam) {
       $this->notFound('Kwalifikacja nie została znaleziona.');
@@ -89,7 +89,14 @@ class QuestionController extends BaseController
     }
 
     $examTypeId = (int) $exam['id'];
-    $totalCount = $this->questionModel->countPublicByExam($examTypeId);
+
+    $filters = [
+      'topic_id' => !empty($_GET['temat']) ? (int) $_GET['temat'] : null,
+      'query' => isset($_GET['q']) && trim((string) $_GET['q']) !== '' ? trim((string) $_GET['q']) : null,
+    ];
+    $hasActiveFilters = !empty($filters['topic_id']) || !empty($filters['query']);
+
+    $totalCount = $this->questionModel->countPublicByExam($examTypeId, $filters);
     $totalPages = max(1, (int) ceil($totalCount / self::QUESTIONS_PER_PAGE));
 
     $page = isset($_GET['strona']) ? max(1, (int) $_GET['strona']) : 1;
@@ -100,15 +107,67 @@ class QuestionController extends BaseController
     $questions = $this->questionModel->getPublicPageByExam(
       $examTypeId,
       self::QUESTIONS_PER_PAGE,
-      ($page - 1) * self::QUESTIONS_PER_PAGE
+      ($page - 1) * self::QUESTIONS_PER_PAGE,
+      $filters
     );
 
-    // Adres kanoniczny wskazuje na bieżącą stronę wraz z numerem (self-canonical),
-    // dzięki czemu kolejne strony listingu nie są traktowane jak duplikat strony 1.
-    $canonicalUrl = url('pytania/' . exam_code_to_url($exam['code']));
-    if ($page > 1) {
-      $canonicalUrl .= '?strona=' . $page;
+    $topics = $this->dynamicData->getCategoriesForExam($examTypeId);
+
+    if ($page === 1 && $hasActiveFilters) {
+      try {
+        $this->getAnalyticsService()->trackSearchPerformed(
+          $this->currentUser?->getId(),
+          $examTypeId,
+          $filters['topic_id'],
+          $filters['query'],
+          $totalCount,
+          'questions_list'
+        );
+      } catch (\Throwable $e) {
+        // Wyszukiwanie nie może zależeć od dostępności analityki.
+      }
     }
+
+    $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+      && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+    if ($isAjax) {
+      ob_start();
+      $this->renderPartial('questions_list_results_partial', [
+        'exam' => $exam,
+        'examUrlCode' => exam_code_to_url($exam['code']),
+        'questions' => $questions,
+        'filters' => $filters,
+        'page' => $page,
+        'totalPages' => $totalPages,
+        'totalCount' => $totalCount,
+      ]);
+      $html = ob_get_clean();
+
+      header('Content-Type: application/json');
+      echo json_encode([
+        'status' => 'success',
+        'html' => $html,
+        'count' => count($questions),
+        'totalCount' => $totalCount,
+        'totalPages' => $totalPages,
+        'page' => $page,
+      ]);
+      exit;
+    }
+
+    // Adres kanoniczny wskazuje na bieżącą stronę wraz z filtrami (self-canonical);
+    // strony z aktywnym filtrem lub numerem > 1 dostają noindex (jak dawny /search).
+    $queryParams = array_filter([
+      'temat' => $filters['topic_id'],
+      'q' => $filters['query'],
+      'strona' => $page > 1 ? $page : null,
+    ]);
+    $canonicalUrl = url('pytania/' . exam_code_to_url($exam['code']));
+    if ($queryParams) {
+      $canonicalUrl .= '?' . http_build_query($queryParams);
+    }
+    $noIndex = $hasActiveFilters || $page > 1;
 
     $pageSuffix = $page > 1 ? ' — strona ' . $page . ' z ' . $totalPages : '';
 
@@ -117,7 +176,10 @@ class QuestionController extends BaseController
       'pageDescription' => 'Pełna lista pytań z kwalifikacji ' . $exam['code'] . ' (' . $totalCount . ' pytań) '
         . 'wraz z poprawnymi odpowiedziami i wyjaśnieniami' . ($page > 1 ? ' — strona ' . $page . '.' : '.'),
       'canonicalUrl' => $canonicalUrl,
+      'noIndex' => $noIndex,
       'exam' => $exam,
+      'topics' => $topics,
+      'filters' => $filters,
       'questions' => $questions,
       'page' => $page,
       'totalPages' => $totalPages,
@@ -134,7 +196,7 @@ class QuestionController extends BaseController
    */
   public function show(string $code, string $slugId): void
   {
-    $exam = $this->resolveExam($code);
+    $exam = $this->dynamicData->resolveExamByUrlCode($code);
 
     if (!$exam) {
       $this->notFound('Kwalifikacja nie została znaleziona.');
@@ -194,23 +256,6 @@ class QuestionController extends BaseController
   }
 
   /**
-   * Rozwiązuje segment adresu na dane kwalifikacji dopuszczonej do publikacji.
-   *
-   * @param string $urlCode Segment adresu (np. "inf03").
-   * @return array|null Dane kwalifikacji lub null.
-   */
-  private function resolveExam(string $urlCode): ?array
-  {
-    $examCode = DynamicDataService::getExamCodeByUrlSegment($urlCode);
-
-    if ($examCode === null) {
-      return null;
-    }
-
-    return $this->dynamicData->getExamDetails($examCode);
-  }
-
-  /**
    * Wyciąga ID pytania z segmentu "slug-id".
    *
    * @param string $slugId Segment adresu URL.
@@ -239,5 +284,21 @@ class QuestionController extends BaseController
     http_response_code(404);
     $errorController = new ErrorController();
     $errorController->showError(404, $message);
+  }
+
+  /**
+   * Renderuje tylko fragment HTML bez głównego layoutu aplikacji.
+   *
+   * Używane przez mechanizm AJAX filtrowania listingu, żeby zaktualizować
+   * samą listę wyników i paginację bez przeładowania nawigacji/stopki.
+   *
+   * @param string $partialName Nazwa pliku widoku partial (bez rozszerzenia .php).
+   * @param array $data Dane wejściowe przekazywane do widoku.
+   * @return void
+   */
+  private function renderPartial(string $partialName, array $data = []): void
+  {
+    extract($data);
+    include __DIR__ . "/../../views/partials/{$partialName}.php";
   }
 }

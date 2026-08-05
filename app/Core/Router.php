@@ -295,7 +295,6 @@ class Router
     $this->post('api/analytics/event', 'ApiController@trackAnalyticsEventFromClient');
 
     // --- WYSZUKIWARKA I FILTRACJA ---
-    $this->get('search/topics', 'SearchController@getTopics');
     $this->get('search', 'SearchController@showSearch');
   }
 }

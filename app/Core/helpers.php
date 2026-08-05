@@ -38,15 +38,154 @@ if (!function_exists('slugify')) {
   }
 }
 
+if (!function_exists('question_markdown_converter')) {
+  /**
+   * Zwraca współdzieloną instancję konwertera markdownu dla treści pytań.
+   *
+   * Konfiguracja jest serwerowym odpowiednikiem tego, co po stronie klienta robi
+   * marked.js z opcjami { gfm: true, breaks: true } (zob. UiHandler.js /
+   * TestRunner.js) - dzięki temu to samo pytanie wygląda tak samo w trybie
+   * interaktywnego quizu i na statycznej stronie publicznej:
+   * - GithubFlavoredMarkdownExtension odpowiada opcji gfm: true,
+   * - soft_break => "<br />\n" odpowiada opcji breaks: true (pojedyncza nowa
+   *   linia daje <br>), więc widoki nie potrzebują już nl2br().
+   *
+   * Bezpieczeństwo zastępuje tu DOMPurify z wersji klienckiej: html_input
+   * ustawione na 'escape' powoduje, że surowy HTML z bazy nigdy nie trafia do
+   * wyjścia jako znaczniki (tylko jako tekst), a allow_unsafe_links wycina
+   * adresy typu javascript:. Konwerter nie emituje więc HTML-a pochodzącego
+   * z treści - osobny sanitizer (HTMLPurifier) byłby nadmiarowy.
+   *
+   * @return \League\CommonMark\MarkdownConverter Konwerter gotowy do użycia.
+   */
+  function question_markdown_converter(): \League\CommonMark\MarkdownConverter
+  {
+    // Budowa środowiska jest kosztowna, a w jednym żądaniu renderujemy wiele
+    // pytań i odpowiedzi - stąd pojedyncza instancja na cykl życia żądania.
+    static $converter = null;
+
+    if ($converter === null) {
+      $environment = new \League\CommonMark\Environment\Environment([
+        'html_input' => 'escape',
+        'allow_unsafe_links' => false,
+        'renderer' => ['soft_break' => "<br />\n"],
+      ]);
+      $environment->addExtension(new \League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension());
+      $environment->addExtension(new \League\CommonMark\Extension\GithubFlavoredMarkdownExtension());
+
+      $converter = new \League\CommonMark\MarkdownConverter($environment);
+    }
+
+    return $converter;
+  }
+}
+
+if (!function_exists('render_question_markdown')) {
+  /**
+   * Renderuje treść pytania, odpowiedzi lub wyjaśnienia jako bezpieczny HTML.
+   *
+   * Treści w bazie (question_versions.question_text, question_versions.explanation,
+   * answers.answer_text) są pisane w markdownie - najczęściej **pogrubienie**,
+   * fragmenty kodu w apostrofach oraz bloki kodu, rzadziej listy. Wynik jest
+   * gotowy do wypisania bez htmlspecialchars() i bez nl2br() - obydwa kroki
+   * realizuje już konwerter (zob. question_markdown_converter()).
+   *
+   * @param string $text Surowa treść w markdownie.
+   * @return string Bezpieczny HTML.
+   */
+  function render_question_markdown(string $text): string
+  {
+    if (trim($text) === '') {
+      return '';
+    }
+
+    return question_markdown_converter()->convert($text)->getContent();
+  }
+}
+
+if (!function_exists('render_question_markdown_heading')) {
+  /**
+   * Renderuje treść pytania z podziałem na część nagłówkową i resztę bloków.
+   *
+   * Potrzebne tam, gdzie treść pytania trafia do <h1> (publiczna strona pytania).
+   * Nagłówek przyjmuje wyłącznie treść liniową, a część pytań zawiera bloki kodu
+   * albo listy - wrzucenie ich do <h1> dałoby niepoprawny HTML na stronie, której
+   * jedynym celem jest dobra indeksacja. Pierwszy akapit trafia więc do nagłówka
+   * (bez otaczającego <p>), a pozostałe bloki renderowane są pod nim.
+   *
+   * @param string $text Surowa treść pytania w markdownie.
+   * @return array{heading: string, rest: string} Treść nagłówka i dalszych bloków.
+   */
+  function render_question_markdown_heading(string $text): array
+  {
+    $html = render_question_markdown($text);
+
+    // Najczęstszy przypadek: treść zaczyna się od zwykłego akapitu.
+    if (preg_match('/^\s*<p>(.*?)<\/p>\s*/s', $html, $matches) === 1) {
+      return [
+        'heading' => $matches[1],
+        'rest' => trim(substr($html, strlen($matches[0]))),
+      ];
+    }
+
+    // Pytania zaczynające się od bloku (np. od razu blok kodu) nie mają wiodącego
+    // akapitu - zamiast zostawiać nagłówek pusty (co zmuszało widok do wrzucenia
+    // tam surowego, obciętego podglądu CAŁEJ treści łącznie z kodem - patrz np.
+    // pytanie #2747), szukamy pierwszego akapitu GDZIEKOLWIEK w treści (zwykle
+    // zdania z poleceniem, które następuje po bloku kodu) i przenosimy właśnie
+    // jego do nagłówka, usuwając to konkretne wystąpienie z reszty, żeby się nie
+    // powielało.
+    if (preg_match('/<p>(.*?)<\/p>/s', $html, $matches, PREG_OFFSET_CAPTURE) === 1) {
+      $fullMatch = $matches[0][0];
+      $offset = $matches[0][1];
+      $rest = trim(substr($html, 0, $offset) . substr($html, $offset + strlen($fullMatch)));
+
+      return ['heading' => $matches[1][0], 'rest' => $rest];
+    }
+
+    // Treść w całości blokowa (np. sam kod/lista, bez żadnego zdania) - nie da
+    // się z niej wydobyć sensownego nagłówka, widok podstawia wtedy zwykły skrót.
+    return ['heading' => '', 'rest' => $html];
+  }
+}
+
+if (!function_exists('question_plain_text')) {
+  /**
+   * Spłaszcza treść pytania w markdownie do czystego tekstu.
+   *
+   * Potrzebne wszędzie tam, gdzie HTML byłby błędem: <title>, meta description,
+   * dane strukturalne JSON-LD, okruszki. Tekst jest najpierw renderowany tym
+   * samym konwerterem co widoki, a dopiero potem odzierany ze znaczników -
+   * dzięki temu składnia markdownu znika w całości (nie tylko **pogrubienie**),
+   * a fragmenty kodu przetrwają. Naiwne strip_tags() na surowym markdownie
+   * kasowałoby treść odpowiedzi takich jak `<html>`, bo wyglądają one dla
+   * niego jak znacznik HTML.
+   *
+   * @param string $text Surowa treść w markdownie.
+   * @return string Jednolinijkowy czysty tekst.
+   */
+  function question_plain_text(string $text): string
+  {
+    $html = render_question_markdown($text);
+
+    // Znaczniki blokowe i <br> muszą zostawić po sobie odstęp, inaczej
+    // strip_tags() skleiłby sąsiednie linie w jedno słowo.
+    $html = (string) preg_replace('/<(br|\/p|\/li|\/h[1-6]|\/pre|\/tr|\/td|\/th)\b[^>]*>/i', ' ', $html);
+
+    $plain = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+    return trim((string) preg_replace('/\s+/u', ' ', $plain));
+  }
+}
+
 if (!function_exists('question_excerpt')) {
   /**
    * Skraca treść pytania do jednej linii o zadanej długości.
    *
-   * Treści pytań bywają wieloliniowe i zawierają fragmenty kodu, więc przed
-   * użyciem w <title>, meta description czy okruszkach trzeba je spłaszczyć
-   * do pojedynczej linii i przyciąć. Usuwane są też markdownowe znaczniki
-   * pogrubienia (**tekst**), które w bazie występują w części wyjaśnień -
-   * w tytule strony wyglądałyby jak literówka.
+   * Treści pytań bywają wieloliniowe i zawierają markdown oraz fragmenty kodu,
+   * więc przed użyciem w <title>, meta description czy okruszkach trzeba je
+   * spłaszczyć do pojedynczej linii i przyciąć. Samo usuwanie składni markdownu
+   * realizuje question_plain_text().
    *
    * @param string $text Surowa treść pytania.
    * @param int $length Maksymalna długość wyniku (wraz z wielokropkiem).
@@ -54,14 +193,7 @@ if (!function_exists('question_excerpt')) {
    */
   function question_excerpt(string $text, int $length = 150): string
   {
-    $clean = strip_tags($text);
-
-    // Wyłącznie sparowane znaczniki - pojedyncza gwiazdka bywa częścią treści (np. SELECT *)
-    $clean = (string) preg_replace('/\*\*(.+?)\*\*/u', '$1', $clean);
-
-    $clean = trim((string) preg_replace('/\s+/u', ' ', $clean));
-
-    return mb_strimwidth($clean, 0, $length, '…');
+    return mb_strimwidth(question_plain_text($text), 0, $length, '…');
   }
 }
 

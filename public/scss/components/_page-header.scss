@@ -3,7 +3,13 @@
 .page-header {
   position: relative;
   z-index: 1;
-  margin-top: -6.5rem;
+  // Podciąga nagłówek pod przezroczysty navbar - -6.5rem to fallback (wysokość
+  // navbara dla gościa), ale realna wysokość navbara zależy od stanu (np. profil
+  // zalogowanego użytkownika jest wyższy niż przyciski "Zaloguj/Zarejestruj"
+  // na szerokich ekranach), więc NavbarHandler.js podmienia --dynamic-nav-height
+  // na faktyczny offsetHeight - bez tego zostawała szczelina między navbarem
+  // a nagłówkiem, przez którą prześwitywało zwykłe tło strony.
+  margin-top: calc(-1 * var(--dynamic-nav-height, 6.5rem));
   padding: 8.5rem 1.5rem 4.75rem;
   overflow: hidden;
   text-align: center;

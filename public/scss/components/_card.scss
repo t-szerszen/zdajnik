@@ -9,8 +9,7 @@
 .topic-card,
 .feature-card,
 .info-block,
-.topics-group,
-.search-result-card {
+.topics-group {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -80,7 +79,6 @@
 .feature-card,
 .topic-card,
 .topics-group,
-.info-block,
-.search-result-card {
+.info-block {
   min-width: 0;
 }

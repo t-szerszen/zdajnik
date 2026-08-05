@@ -21,17 +21,12 @@ $questions = $questions ?? [];
 $page = (int) ($page ?? 1);
 $totalPages = (int) ($totalPages ?? 1);
 $totalCount = (int) ($totalCount ?? 0);
+$topics = $topics ?? [];
+$filters = $filters ?? ['topic_id' => null, 'query' => null];
 
 $examCode = (string) ($exam['code'] ?? '');
 $examUrlCode = exam_code_to_url($examCode);
-
-/**
- * Buduje adres konkretnej strony listingu (strona 1 bez parametru — kanoniczna).
- */
-$pageUrl = static function (int $targetPage) use ($examUrlCode): string {
-  $base = url('pytania/' . $examUrlCode);
-  return $targetPage > 1 ? $base . '?strona=' . $targetPage : $base;
-};
+$hasActiveFilters = !empty($filters['topic_id']) || !empty($filters['query']);
 
 $extraSchemas = [
   [
@@ -105,81 +100,38 @@ $extraSchemas = [
           </div>
         </div>
 
-        <?php if (empty($questions)): ?>
-          <div class="empty-state">
-            <p><i class="fas fa-folder-open"></i> Brak pytań dla tej kwalifikacji.</p>
+        <form method="GET" action="<?= url('pytania/' . $examUrlCode) ?>" class="questions-filters" role="search"
+          aria-label="Filtruj pytania <?= htmlspecialchars($examCode) ?>">
+          <div class="search-form__field">
+            <label for="temat" class="search-form__label">Temat</label>
+            <select name="temat" id="temat" class="search-form__select">
+              <option value="">Wszystkie tematy</option>
+              <?php foreach ($topics as $topic): ?>
+                <option value="<?= (int) $topic['id'] ?>" <?= ((int) ($filters['topic_id'] ?? 0) === (int) $topic['id']) ? 'selected' : '' ?>>
+                  <?= htmlspecialchars((string) $topic['name']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
           </div>
-        <?php else: ?>
-          <p class="questions-page__lead">
-            Strona <strong><?= $page ?></strong> z <strong><?= $totalPages ?></strong>
-            · łącznie <strong><?= $totalCount ?></strong> pytań
-          </p>
-
-          <ol class="questions-list">
-            <?php foreach ($questions as $question): ?>
-              <li class="questions-list__item">
-                <article class="question-card">
-                  <div class="question-card__badges">
-                    <span class="badge badge--accent"><?= htmlspecialchars((string) $question['exam_code']) ?></span>
-                    <?php if (!empty($question['topic_name'])): ?>
-                      <span class="badge badge--secondary"><?= htmlspecialchars((string) $question['topic_name']) ?></span>
-                    <?php endif; ?>
-                    <?php if (question_difficulty_label($question['difficulty'] ?? null) !== ''): ?>
-                      <span class="badge <?= question_difficulty_badge_class($question['difficulty']) ?>">
-                        <?= question_difficulty_label($question['difficulty']) ?>
-                      </span>
-                    <?php endif; ?>
-                  </div>
-                  <h2 class="question-card__title">
-                    <a href="<?= question_url($question) ?>">
-                      <?= htmlspecialchars(question_excerpt((string) $question['question_text'], 160)) ?>
-                    </a>
-                  </h2>
-                </article>
-              </li>
-            <?php endforeach; ?>
-          </ol>
-
-          <?php if ($totalPages > 1): ?>
-            <nav class="questions-pagination" aria-label="Paginacja listy pytań">
-              <?php if ($page > 1): ?>
-                <a href="<?= $pageUrl($page - 1) ?>" class="btn btn--secondary btn--sm" rel="prev">
-                  <i class="fas fa-chevron-left"></i> Poprzednia
-                </a>
-              <?php endif; ?>
-
-              <?php
-              // Okno stron wokół bieżącej + zawsze pierwsza i ostatnia (linki dla robota)
-              $window = range(max(1, $page - 2), min($totalPages, $page + 2));
-              $pagesToShow = array_values(array_unique(array_merge([1], $window, [$totalPages])));
-              sort($pagesToShow);
-              $previousPage = 0;
-              ?>
-              <ul class="questions-pagination__pages">
-                <?php foreach ($pagesToShow as $pageNumber): ?>
-                  <?php if ($previousPage > 0 && $pageNumber > $previousPage + 1): ?>
-                    <li class="questions-pagination__gap" aria-hidden="true">…</li>
-                  <?php endif; ?>
-                  <li>
-                    <?php if ($pageNumber === $page): ?>
-                      <span class="questions-pagination__page questions-pagination__page--current"
-                        aria-current="page"><?= $pageNumber ?></span>
-                    <?php else: ?>
-                      <a href="<?= $pageUrl($pageNumber) ?>" class="questions-pagination__page"><?= $pageNumber ?></a>
-                    <?php endif; ?>
-                  </li>
-                  <?php $previousPage = $pageNumber; ?>
-                <?php endforeach; ?>
-              </ul>
-
-              <?php if ($page < $totalPages): ?>
-                <a href="<?= $pageUrl($page + 1) ?>" class="btn btn--secondary btn--sm" rel="next">
-                  Następna <i class="fas fa-chevron-right"></i>
-                </a>
-              <?php endif; ?>
-            </nav>
+          <div class="search-form__field search-form__field--full">
+            <label for="q" class="search-form__label">ID pytania lub treść (min. 3 znaki)</label>
+            <div class="search-form__input-wrapper">
+              <i class="fas fa-search search-form__input-icon"></i>
+              <input type="text" name="q" id="q" class="search-form__input" minlength="3" autocomplete="off"
+                placeholder="np. podzespoły komputerowe lub 402"
+                value="<?= htmlspecialchars($filters['query'] ?? '') ?>">
+            </div>
+          </div>
+          <?php if ($hasActiveFilters): ?>
+            <a href="<?= url('pytania/' . $examUrlCode) ?>" class="btn btn--secondary btn--sm questions-filters__reset">
+              <i class="fas fa-xmark"></i> Wyczyść filtry
+            </a>
           <?php endif; ?>
-        <?php endif; ?>
+        </form>
+
+        <div class="questions-page__results" data-filterable aria-live="polite" aria-busy="false">
+          <?php include __DIR__ . '/partials/questions_list_results_partial.php'; ?>
+        </div>
       </div>
     </section>
   </main>

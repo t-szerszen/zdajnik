@@ -16,6 +16,28 @@ export class NavbarHandler {
     if (this.toggleBtn && this.drawer) {
       this.init();
     }
+
+    // .page-header (jeśli jest na stronie) podciąga się pod to, co jest nad nim,
+    // zmienną CSS --dynamic-nav-height - ani navbar (np. profil zalogowanego
+    // użytkownika jest wyższy niż przyciski logowania na szerokich ekranach),
+    // ani okruszki nawigacyjne przed page-headerem (questions_hub.php,
+    // questions_list.php) nie mają stałej wysokości, więc trzeba je zmierzyć -
+    // inaczej zostaje szczelina, przez którą prześwituje zwykłe tło strony.
+    if (this.nav) {
+      this.syncNavHeight();
+      window.addEventListener('resize', () => this.syncNavHeight(), { passive: true });
+    }
+  }
+
+  syncNavHeight() {
+    let totalHeight = this.nav.offsetHeight;
+
+    const breadcrumbs = document.querySelector('.page-header')?.previousElementSibling;
+    if (breadcrumbs?.classList.contains('breadcrumbs')) {
+      totalHeight += breadcrumbs.offsetHeight;
+    }
+
+    document.documentElement.style.setProperty('--dynamic-nav-height', `${totalHeight}px`);
   }
 
   init() {

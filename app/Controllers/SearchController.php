@@ -8,11 +8,14 @@ use App\Services\DynamicDataService;
 /**
  * Kontroler Wyszukiwarki Pytań.
  *
- * Klasa odpowiada za logikę wyszukiwania i filtrowania bazy pytań egzaminacyjnych.
- * Obsługuje wyszukiwanie tekstowe, filtrowanie po typie egzaminu oraz kategorii tematycznej.
- * Wspiera zarówno tradycyjne renderowanie widoków, jak i dynamiczne ładowanie wyników przez AJAX.
+ * Lekki punkt wejścia do bazy pytań: wybór kwalifikacji (ewentualnie z
+ * wpisaną wcześniej frazą) prowadzi wprost do filtrowanego listingu
+ * /pytania/{kod}, gdzie mieszka już cała logika filtrowania/paginacji
+ * (patrz QuestionController::listByExam()). Ta klasa odpowiada wyłącznie
+ * za sam wybór kwalifikacji oraz krótkie wyszukiwanie międzykwalifikacyjne
+ * (po treści/ID), zanim użytkownik zdecyduje, której kwalifikacji szuka.
  *
- * @version 1.1.0
+ * @version 2.0.0
  * @author Tobiasz Szerszeń
  * @package App\Controllers
  */
@@ -39,146 +42,50 @@ class SearchController extends BaseController
   }
 
   /**
-   * Główny punkt wejściowy wyszukiwarki - wyświetla stronę i przetwarza parametry filtrów.
+   * Główny punkt wejściowy wyszukiwarki (/search).
    *
-   * Metoda wykonuje następujące kroki:
-   * 1. Inicjalizacja parametrów filtra z danych wejściowych GET.
-   * 2. Wyliczenie parametrów stronicowania (limit, offset, total pages).
-   * 3. Pobranie pasujących pytań z modelu danych (tylko gdy podano filtry).
-   * 4. Wykrycie typu żądania (AJAX vs Standard) i odpowiednie wyrenderowanie wyników.
+   * Stare adresy z numerycznym `exam_id` (poprzednia wersja wyszukiwarki)
+   * dostają 301 na kanoniczny, filtrowany listing /pytania/{kod}. W
+   * przeciwnym razie renderuje wybór kwalifikacji i - jeśli podano `q` -
+   * krótką listę wyników międzykwalifikacyjnych.
    *
    * @return void
    */
   public function showSearch(): void
   {
-    // KROK 1: Inicjalizacja parametrów filtra
-    $filters = [
-      'exam_id' => $_GET['exam_id'] ?? null,
-      'topic_id' => $_GET['topic_id'] ?? null,
-      'query' => $_GET['query'] ?? null
-    ];
+    // Kompatybilność wsteczna: stare zakładki/linki z wybraną kwalifikacją
+    // (numeryczne `exam_id`) przenosimy na kanoniczny adres nowego listingu.
+    if (!empty($_GET['exam_id'])) {
+      $examCode = $this->dynamicData->getExamCodeById((int) $_GET['exam_id']);
 
-    // KROK 2: Parametry stronicowania
-    $page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
-    $limit = 25;
+      // Stary parametr mógł wskazywać na kwalifikację bez gotowej, publicznej
+      // bazy pytań (np. "Wkrótce") - przekierowanie miałoby wtedy sens tylko
+      // do strony, która i tak zwróci 404, więc traktujemy to jak brak dopasowania.
+      if ($examCode !== null && in_array(strtoupper($examCode), DynamicDataService::AVAILABLE_EXAM_CODES, true)) {
+        $target = url('pytania/' . exam_code_to_url($examCode));
+        $params = array_filter([
+          'temat' => !empty($_GET['topic_id']) ? (int) $_GET['topic_id'] : null,
+          'q' => !empty($_GET['query']) ? trim((string) $_GET['query']) : null,
+        ]);
+        if ($params) {
+          $target .= '?' . http_build_query($params);
+        }
 
-    $results = [];
-    $totalCount = 0;
-    $totalPages = 1;
-
-    // KROK 3: Wykonanie wyszukiwania (walidacja obecności co najmniej jednego filtra)
-    if (!empty($filters['exam_id']) || !empty($filters['topic_id']) || !empty($filters['query'])) {
-      $totalCount = $this->questionModel->countSearchQuestions($filters);
-      $totalPages = max(1, (int) ceil($totalCount / $limit));
-
-      // Zabezpieczenie przed przejściem poza zakres
-      if ($page > $totalPages) {
-        $page = $totalPages;
-      }
-
-      $results = $this->questionModel->searchQuestions($filters, $page, $limit);
-    }
-
-    // KROK 4: Renderowanie wyniku (Wykrycie AJAX)
-    $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
-
-    if ($page === 1 && (!empty($filters['exam_id']) || !empty($filters['topic_id']) || !empty($filters['query']))) {
-      try {
-        $this->getAnalyticsService()->trackSearchPerformed(
-          $this->currentUser?->getId(),
-          !empty($filters['exam_id']) ? (int) $filters['exam_id'] : null,
-          !empty($filters['topic_id']) ? (int) $filters['topic_id'] : null,
-          is_string($filters['query']) ? $filters['query'] : null,
-          $totalCount,
-          $isAjax ? 'search_ajax' : 'search_page'
-        );
-      } catch (\Throwable $e) {
-        // Wyszukiwanie nie może zależeć od dostępności analityki.
+        header('Location: ' . $target, true, 301);
+        exit;
       }
     }
 
-    if ($isAjax) {
-      // Przygotowanie tylko fragmentu HTML dla żądania dynamicznego
-      ob_start();
-      $this->renderPartial('search_results_partial', [
-        'results' => $results,
-        'filters' => $filters,
-        'page' => $page,
-        'totalPages' => $totalPages,
-        'totalCount' => $totalCount
-      ]);
-      $html = ob_get_clean();
+    $query = trim((string) ($_GET['q'] ?? $_GET['query'] ?? ''));
 
-      header('Content-Type: application/json');
-      echo json_encode([
-        'status' => 'success',
-        'html' => $html,
-        'count' => count($results),
-        'totalCount' => $totalCount,
-        'totalPages' => $totalPages,
-        'page' => $page
-      ]);
-      exit;
-    }
-
-    // Pełne renderowanie strony przy klasycznym wejściu/odświeżeniu
     $this->renderView('search', [
+      'pageTitle' => 'Wyszukiwarka Pytań | Zdajnik',
+      'pageDescription' => 'Wybierz kwalifikację lub znajdź pytanie po treści/numerze (ID) w bazie egzaminacyjnej.',
+      'canonicalUrl' => url('search'),
+      'noIndex' => $query !== '',
       'exams' => $this->dynamicData->getSearchableExams(),
-      'categories' => $filters['exam_id'] ? $this->dynamicData->getCategoriesForExam((int) $filters['exam_id']) : [],
-      'filters' => $filters,
-      'results' => $results,
-      'page' => $page,
-      'totalPages' => $totalPages,
-      'totalCount' => $totalCount
+      'query' => $query,
+      'crossExamResults' => $query !== '' ? $this->questionModel->searchAcrossExams($query, 10) : [],
     ]);
-  }
-
-  /**
-   * Zwraca listę tematów dla wybranego egzaminu używaną przez dynamiczne filtry wyszukiwarki.
-   *
-   * @return void
-   */
-  public function getTopics(): void
-  {
-    $examId = isset($_GET['exam_id']) ? (int) $_GET['exam_id'] : 0;
-
-    header('Content-Type: application/json');
-
-    if ($examId <= 0) {
-      echo json_encode([
-        'status' => 'success',
-        'topics' => []
-      ]);
-      exit;
-    }
-
-    $topics = array_map(static function (array $topic): array {
-      return [
-        'id' => (int) $topic['id'],
-        'name' => (string) $topic['name']
-      ];
-    }, $this->dynamicData->getCategoriesForExam($examId));
-
-    echo json_encode([
-      'status' => 'success',
-      'topics' => $topics
-    ]);
-    exit;
-  }
-
-  /**
-   * Renderuje tylko fragment HTML bez głównego layoutu aplikacji.
-   *
-   * Używane głównie przez mechanizm AJAX do dynamicznej aktualizacji listy
-   * wyników bez przeładowywania całej nawigacji i stopki.
-   *
-   * @param string $partialName Nazwa pliku widoku partial (bez rozszerzenia .php).
-   * @param array $data Dane wejściowe przekazywane do widoku.
-   * @return void
-   */
-  private function renderPartial(string $partialName, array $data = []): void
-  {
-    extract($data);
-    include __DIR__ . "/../../views/partials/{$partialName}.php";
   }
 }
