@@ -5,10 +5,9 @@
  * Widok potwierdzenia weryfikacji po kliknięciu w link z e-maila.
  *
  * @variables
- * - $status (string)
  * - $message (string)
  *
- * @version 1.1.0
+ * @version 1.2.0
  * @author Tobiasz Szerszeń
  */
 
@@ -19,28 +18,29 @@ $noIndex = true;
 $noFollow = true;
 $pageTitle = 'Weryfikacja Konta | Zdajnik';
 $pageDescription = 'Proces weryfikacji konta w serwisie Zdajnik i jego wynik.';
-$canonicalUrl = 'https://www.zdajnik.pl/weryfikacja';
+$canonicalUrl = url('weryfikacja');
 
 /**
  * ========================================================================
  * Plik Widoku: Wynik Weryfikacji E-mail
  * ========================================================================
  *
- * @description Renderuje finalną stronę statusu po tym, jak użytkownik
- * kliknie link weryfikacyjny w swojej wiadomości e-mail. Widok ten
- * dynamicznie wyświetla jeden z dwóch wariantów (sukces lub błąd)
- * w zależności od wyniku procesu weryfikacji obsłużonego
- * w kontrolerze.
+ * @description Renderuje stronę błędu po tym, jak użytkownik kliknie link
+ * weryfikacyjny w swojej wiadomości e-mail.
+ *
+ * Widok obsługuje wyłącznie ścieżkę niepowodzenia (brak tokenu, token zły lub
+ * wygasły, błąd serwera) - jest renderowany tylko przez renderErrorView()
+ * w VerificationController. Udana weryfikacja od razu loguje użytkownika
+ * i przekierowuje go na stronę główną z komunikatem flash, więc nigdy tu
+ * nie trafia.
  *
  * @dependencies
  * - partials/head.php (head)
  * - main.css (Główne style)
  *
- * @state_variables 
- * - $status (string): Wynik weryfikacji przekazany z kontrolera.
- *   Oczekiwana wartość to 'success' lub jakakolwiek inna oznaczająca błąd.
- * - $message (string): Konkretny komunikat do wyświetlenia
- *   użytkownikowi, np. "Twoje konto jest aktywne." lub "Token weryfikacyjny wygasł.".
+ * @state_variables
+ * - $message (string): Konkretny komunikat o błędzie do wyświetlenia
+ *   użytkownikowi, np. "Token weryfikacyjny wygasł.".
  */
 ?>
 <!DOCTYPE html>
@@ -57,41 +57,19 @@ $canonicalUrl = 'https://www.zdajnik.pl/weryfikacja';
     -->
     <div class="form-card">
 
-      <!-- WARUNEK: SUKCES -->
-      <?php if ($status === 'success'): ?>
-
-        <div class="form-card__header">
-          <div class="form-card__icon-circle form-card__icon-circle--success">
-            <i class="fas fa-check-circle"></i>
-          </div>
-          <h1 class="form-card__title">Weryfikacja zakończona!</h1>
-          <p class="form-card__subtitle"><?= htmlspecialchars($message) ?></p>
+      <div class="form-card__header">
+        <div class="form-card__icon-circle form-card__icon-circle--error">
+          <i class="fas fa-times-circle"></i>
         </div>
+        <h1 class="form-card__title">Wystąpił błąd</h1>
+        <p class="form-card__subtitle"><?= htmlspecialchars($message) ?></p>
+      </div>
 
-        <div class="form-card__action-container">
-          <a href="<?= url('logowanie') ?>" class="btn btn--primary btn--full-width">
-            Przejdź do logowania <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
-
-        <!-- WARUNEK: BŁĄD -->
-      <?php else: ?>
-
-        <div class="form-card__header">
-          <div class="form-card__icon-circle form-card__icon-circle--error">
-            <i class="fas fa-times-circle"></i>
-          </div>
-          <h1 class="form-card__title">Wystąpił błąd</h1>
-          <p class="form-card__subtitle"><?= htmlspecialchars($message) ?></p>
-        </div>
-
-        <div class="form-card__action-container">
-          <a href="<?= url('/') ?>" class="back-link back-link--center">
-            <i class="fas fa-arrow-left"></i> Wróć na stronę główną
-          </a>
-        </div>
-
-      <?php endif; ?>
+      <div class="form-card__action-container">
+        <a href="<?= url('/') ?>" class="back-link back-link--center">
+          <i class="fas fa-arrow-left"></i> Wróć na stronę główną
+        </a>
+      </div>
 
     </div>
   </main>

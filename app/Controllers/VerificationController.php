@@ -145,7 +145,6 @@ class VerificationController extends BaseController
   private function renderErrorView(string $message): void
   {
     $this->renderView('verify', [
-      'status' => 'error',
       'message' => $message,
     ]);
   }
