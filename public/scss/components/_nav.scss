@@ -127,7 +127,7 @@
     cursor: pointer;
     padding: 0;
     z-index: var(--z-nav-toggle); // Podniesiony z-index ponad drawer
-    transition: all 0.3s ease;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
     @include media-down(1400px) {
       display: flex;
@@ -144,24 +144,40 @@
       height: 2.5px;
       background: var(--text); // Poprawione: używa zmiennej motywu
       border-radius: 10px;
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      transform-origin: left center;
+      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+        background-color 0.3s ease;
+      transform-origin: center;
     }
 
+    // Zamiast klasycznego "trzy kreski -> X" (skrajne obracają się w miejscu,
+    // środkowa ucieka na bok i zanika) - środkowa kreska skraca się do zera
+    // w miejscu (scaleX), a skrajne "zwierają się" na jej pozycji z lekkim
+    // przestrzeleniem (bounce easing). Całość dodatkowo przebarwia się na
+    // akcent, żeby stan otwarty był wyraźnie odczytywalny nie tylko z kształtu.
     &.is-active {
-      transform: scale(1.1);
+      transform: scale(1.05) rotate(90deg);
 
+      span {
+        background: var(--accent);
+      }
+
+      // Kontener (width 26px, height 20px) ma 3 kreski rozstawione
+      // "justify-content: space-around" -> każda zajmuje komórkę wysokości
+      // 20/3px i jest w niej centrowana, więc odległość środka skrajnej
+      // kreski od środka kontenera (gdzie "ląduje" po zejściu środkowej)
+      // to właśnie jedna taka komórka: 20/3 ≈ 6.67px.
       span:nth-child(1) {
-        transform: rotate(45deg) translate(2px, -2px);
+        transform: translateY(6.67px) rotate(45deg);
+        transition-delay: 0.03s;
       }
 
       span:nth-child(2) {
-        opacity: 0;
-        transform: translateX(10px);
+        transform: scaleX(0);
       }
 
       span:nth-child(3) {
-        transform: rotate(-45deg) translate(2px, 2px);
+        transform: translateY(-6.67px) rotate(-45deg);
+        transition-delay: 0.03s;
       }
     }
   }
@@ -170,26 +186,41 @@
     @include media-down(1400px) {
       position: fixed;
       top: 0;
-      right: 0;
-      width: 85%; // Nieco węższy dla lepszego wyglądu
-      max-width: 340px;
+      right: max(1rem, env(safe-area-inset-right)); // Oddech od prawej krawędzi ekranu (panel nie ma "przyklejać się" do brzegu telefonu)
+      width: min(85%, 340px); // Nieco węższy dla lepszego wyglądu
       height: 100vh;
       background: var(--surface); // Poprawione: używa zmiennej motywu (nie biały #fff)
       padding: 0;
       box-shadow: -10px 0 40px rgba(0, 0, 0, 0.1);
-      transform: translateX(110%); // Poprawione: całkowite ukrycie (brak 'slivera')
-      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: var(--z-drawer);
       display: flex;
       flex-direction: column;
       overflow-y: auto;
 
+      // Zamiast płaskiego "wjazdu" całej szerokości z prawej (translateX(110%)
+      // -> 0, ten sam ruch co w praktycznie każdym mobilnym menu) - panel
+      // "wyskakuje" z rogu, skąd faktycznie wizualnie pochodzi (od przycisku
+      // hamburgera/X w prawym górnym rogu): lekko przesunięty, zmniejszony i
+      // przezroczysty, z transform-origin w tym samym rogu, na lekko
+      // "przestrzelającym" easingu (bounce) - subtelny efekt "pop", nie slide.
+      transform-origin: top right;
+      transform: translateX(12px) scale(0.94);
+      opacity: 0;
+      visibility: hidden;
+      transition: transform 0.48s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0s linear 0.48s;
+
       &.is-active {
-        transform: translateX(0);
+        transform: translateX(0) scale(1);
+        opacity: 1;
+        visibility: visible;
+        transition: transform 0.48s cubic-bezier(0.34, 1.56, 0.64, 1),
+          opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
         .main-nav__item {
           opacity: 1;
-          transform: translateY(0);
+          transform: translateY(0) scale(1);
         }
       }
     }
@@ -245,8 +276,9 @@
     @include media-down(1400px) {
       width: 100%;
       opacity: 0;
-      transform: translateY(15px);
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(15px) scale(0.96);
+      transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
       @for $i from 1 through 15 {
         &:nth-child(#{$i}) {
@@ -424,6 +456,39 @@
   }
 }
 
+// Overlay pod mobilnym drawerem (.nav-overlay w navbar.php, poza <nav>) -
+// przygasza i lekko rozmywa treść strony pod panelem, żeby "pop" drawera
+// (patrz .main-nav__drawer) czytał się jako jedna, spójna warstwa,
+// a nie panel wisiący nad niezmienionym tłem. Kliknięcie w overlay zamyka
+// menu (obsługa w NavbarHandler.js).
+.nav-overlay {
+  display: none;
+
+  @include media-down(1400px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-drawer) - 1);
+    background: rgba(var(--color-navy-rgb), 0.4);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0s linear 0.4s;
+
+    &.is-active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  }
+}
+
 // Dropdown Modernization
 .dropdown {
   position: relative;
@@ -538,7 +603,12 @@
       box-shadow: none;
       border-radius: 0;
       padding: 0 0 0 1.75rem;
-      min-width: 100%;
+      // Szerokość musi uwzględniać margin-left poniżej, inaczej (przez
+      // min-width:100% + width:max-content z reguły bazowej) panel wychodzi
+      // poza prawą krawędź drawera o wartość tego marginesu - stąd wcześniej
+      // strzałki rozwijania (INF.03/INF.04) "uciekały" pod prawy brzeg ekranu.
+      width: calc(100% - 2.15rem);
+      min-width: 0;
       margin: 0;
       border-left: 2px solid var(--border);
       margin-left: 2.15rem;
@@ -590,6 +660,7 @@
       // Drugi poziom akordeonu na mobile - mniejszy wcięcie niż pierwszy,
       // żeby trzy poziomy zagnieżdżenia nie "wyjadały" szerokości drawera.
       @include media-down(1400px) {
+        width: calc(100% - 1.5rem);
         margin-left: 1.5rem;
       }
     }
@@ -894,5 +965,21 @@
     &:active {
       transform: scale(0.95);
     }
+  }
+}
+
+// Animacja otwierania/zamykania mobilnego menu (drawer, hamburger->X, overlay,
+// stagger pozycji) - wyłącznie transform/opacity (bez animowania layoutu), ale
+// dla użytkowników z prefers-reduced-motion pomijamy ruch całkowicie: stany
+// zmieniają się od razu, bez transition/animation.
+@media (prefers-reduced-motion: reduce) {
+
+  .main-nav__hamburger,
+  .main-nav__hamburger span,
+  .main-nav__drawer,
+  .main-nav__item,
+  .nav-overlay {
+    transition: none !important;
+    animation: none !important;
   }
 }
