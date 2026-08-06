@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Core\Database;
+use App\Services\Concerns\AdminBulkActionTrait;
+use App\Services\Concerns\AdminListQueryTrait;
+use RuntimeException;
 
 /**
  * Serwis danych modułu użytkowników panelu admina.
@@ -14,6 +17,9 @@ use App\Core\Database;
  */
 class AdminUserService
 {
+  use AdminListQueryTrait;
+  use AdminBulkActionTrait;
+
   private Database $db;
 
   public function __construct()
@@ -40,36 +46,21 @@ class AdminUserService
       'last_activity' => 'managed_users.last_activity',
     ];
 
-    $sortColumn = $allowedSort[$sortBy] ?? 'managed_users.id';
-    $sortDir = strtoupper($sortDir) === 'ASC' ? 'ASC' : 'DESC';
-    $page = max(1, $page);
-    $perPage = max(1, $perPage);
-    $offset = max(0, ($page - 1) * $perPage);
+    [$sortColumn, $sortDir] = $this->resolveSort($allowedSort, $sortBy, 'managed_users.id', $sortDir);
 
     [$whereSql, $params] = $this->buildFilterSql($filters);
 
     $baseSql = $this->getManagedUsersBaseSql();
-    $sql = "SELECT *
+    $itemsSql = "SELECT *
             FROM ($baseSql) managed_users
             WHERE 1=1 $whereSql
-            ORDER BY $sortColumn $sortDir, managed_users.id DESC
-            LIMIT " . (int) $perPage . " OFFSET " . (int) $offset;
-
-    $items = $this->db->fetchAll($sql, $params);
+            ORDER BY $sortColumn $sortDir, managed_users.id DESC";
 
     $countSql = "SELECT COUNT(*) as total
                  FROM ($baseSql) managed_users
                  WHERE 1=1 $whereSql";
-    $countResult = $this->db->fetch($countSql, $params);
-    $total = (int) ($countResult['total'] ?? 0);
 
-    return [
-      'items' => $items,
-      'total' => $total,
-      'page' => $page,
-      'perPage' => $perPage,
-      'totalPages' => max(1, (int) ceil($total / $perPage)),
-    ];
+    return $this->paginate($itemsSql, $countSql, $params, $page, $perPage);
   }
 
   /**
@@ -297,6 +288,75 @@ class AdminUserService
   }
 
   /**
+   * Akcja zbiorcza na kontach z zachowaniem zabezpieczeń domenowych
+   * (własne konto, ostatni aktywny admin, idempotencja) i audytem per rekord.
+   *
+   * @param array<int, int> $ids
+   * @return array{succeeded: array<int, int>, failed: array<int|string, string>}
+   */
+  public function bulkUserAction(array $ids, string $action, int $currentAdminId, AdminAuditService $auditService): array
+  {
+    return $this->applyBulkAction($ids, function (int $userId) use ($action, $currentAdminId, $auditService): ?string {
+      $user = $this->getUserById($userId);
+      if (!$user || !empty($user['deleted_at'])) {
+        return 'Konto nie istnieje.';
+      }
+
+      if ($action === 'deactivate') {
+        if ($userId === $currentAdminId) {
+          return 'Nie można zdezaktywować własnego konta.';
+        }
+        if (
+          ($user['role'] ?? 'user') === 'admin'
+          && (int) ($user['is_active'] ?? 0) === 1
+          && $this->countActiveAdmins() <= 1
+        ) {
+          return 'Ostatni aktywny administrator.';
+        }
+      }
+
+      $alreadyApplied = ($action === 'verify' && (int) ($user['is_verified'] ?? 0) === 1)
+        || ($action === 'deactivate' && (int) ($user['is_active'] ?? 1) === 0)
+        || ($action === 'reactivate' && (int) ($user['is_active'] ?? 0) === 1);
+      if ($alreadyApplied) {
+        return 'Status już ustawiony.';
+      }
+
+      if ($action === 'verify') {
+        $changed = $this->verifyUser($userId);
+        $audited = $auditService->logUserVerified(
+          $currentAdminId,
+          $userId,
+          ['is_verified' => (int) ($user['is_verified'] ?? 0)],
+          ['is_verified' => 1]
+        );
+      } elseif ($action === 'deactivate') {
+        $changed = $this->deactivateUser($userId);
+        $audited = $auditService->logUserDeactivated(
+          $currentAdminId,
+          $userId,
+          ['is_active' => (int) ($user['is_active'] ?? 1)],
+          ['is_active' => 0]
+        );
+      } else {
+        $changed = $this->reactivateUser($userId);
+        $audited = $auditService->logUserReactivated(
+          $currentAdminId,
+          $userId,
+          ['is_active' => (int) ($user['is_active'] ?? 0)],
+          ['is_active' => 1]
+        );
+      }
+
+      if (!$changed || !$audited) {
+        throw new RuntimeException('Zapis zmiany statusu lub audytu nie powiódł się.');
+      }
+
+      return null;
+    });
+  }
+
+  /**
    * Buduje fragment WHERE dla wyszukiwania.
    *
    * @param array<string, mixed> $filters
@@ -321,7 +381,7 @@ class AdminUserService
       }
     }
 
-    if (!empty($filters['role']) && in_array($filters['role'], ['user', 'admin'], true)) {
+    if (!empty($filters['role']) && in_array($filters['role'], ['user', 'redaktor', 'admin'], true)) {
       $whereParts[] = 'managed_users.role = ?';
       $params[] = $filters['role'];
     }

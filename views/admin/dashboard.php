@@ -7,6 +7,7 @@ $attention = $attention ?? [];
 $recentAuditActions = $recentAuditActions ?? [];
 $recentUserActivity = $recentUserActivity ?? [];
 $auditActions = $auditActions ?? [];
+$isFullAdmin = $isFullAdmin ?? true;
 
 $date = static fn(?string $value): string => $value
   ? date('d.m.Y H:i', strtotime($value))
@@ -32,32 +33,37 @@ $actionLabel = static fn(string $action): string => $auditActions[$action] ?? $a
         <div class="admin-content">
           <?php include __DIR__ . '/partials/flash.php'; ?>
 
-          <div class="admin-kpi-grid">
-            <a class="admin-kpi" href="<?= url('admin/uzytkownicy?status=active') ?>">
-              <span class="admin-kpi__label">Aktywni użytkownicy</span>
-              <strong class="admin-kpi__value"><?= (int) ($overview['users_active'] ?? 0) ?></strong>
-            </a>
-            <a class="admin-kpi admin-kpi--warning" href="<?= url('admin/uzytkownicy?verified=0') ?>">
-              <span class="admin-kpi__label">Niezweryfikowani</span>
-              <strong class="admin-kpi__value"><?= (int) ($overview['users_unverified'] ?? 0) ?></strong>
-            </a>
-            <a class="admin-kpi" href="<?= url('admin/uzytkownicy?status=inactive') ?>">
-              <span class="admin-kpi__label">Dezaktywowani</span>
-              <strong class="admin-kpi__value"><?= (int) ($overview['users_inactive'] ?? 0) ?></strong>
-            </a>
-            <a class="admin-kpi" href="<?= url('admin/uzytkownicy?role=admin') ?>">
-              <span class="admin-kpi__label">Aktywni admini</span>
-              <strong class="admin-kpi__value"><?= (int) ($overview['admins'] ?? 0) ?></strong>
-            </a>
-            <a class="admin-kpi" href="<?= url('admin/egzaminy?status=active') ?>">
-              <span class="admin-kpi__label">Aktywne egzaminy</span>
-              <strong class="admin-kpi__value"><?= (int) ($overview['exams_active'] ?? 0) ?></strong>
-              <span class="admin-kpi__meta">Nieaktywne: <?= (int) ($overview['exams_inactive'] ?? 0) ?></span>
-            </a>
-            <a class="admin-kpi" href="<?= url('admin/pytania?status=active') ?>">
+          <div class="admin-kpi-grid" data-trends-endpoint="<?= url('admin/dashboard/trendy') ?>">
+            <?php if ($isFullAdmin): ?>
+              <a class="admin-kpi" href="<?= url('admin/uzytkownicy?status=active') ?>" data-sparkline-metric="newUsers">
+                <span class="admin-kpi__label">Aktywni użytkownicy</span>
+                <strong class="admin-kpi__value"><?= (int) ($overview['users_active'] ?? 0) ?></strong>
+                <canvas class="admin-kpi__sparkline" aria-hidden="true"></canvas>
+              </a>
+              <a class="admin-kpi admin-kpi--warning" href="<?= url('admin/uzytkownicy?verified=0') ?>">
+                <span class="admin-kpi__label">Niezweryfikowani</span>
+                <strong class="admin-kpi__value"><?= (int) ($overview['users_unverified'] ?? 0) ?></strong>
+              </a>
+              <a class="admin-kpi" href="<?= url('admin/uzytkownicy?status=inactive') ?>">
+                <span class="admin-kpi__label">Dezaktywowani</span>
+                <strong class="admin-kpi__value"><?= (int) ($overview['users_inactive'] ?? 0) ?></strong>
+              </a>
+              <a class="admin-kpi" href="<?= url('admin/uzytkownicy?role=admin') ?>">
+                <span class="admin-kpi__label">Aktywni admini</span>
+                <strong class="admin-kpi__value"><?= (int) ($overview['admins'] ?? 0) ?></strong>
+              </a>
+              <a class="admin-kpi" href="<?= url('admin/egzaminy?status=active') ?>" data-sparkline-metric="attempts">
+                <span class="admin-kpi__label">Aktywne egzaminy</span>
+                <strong class="admin-kpi__value"><?= (int) ($overview['exams_active'] ?? 0) ?></strong>
+                <span class="admin-kpi__meta">Nieaktywne: <?= (int) ($overview['exams_inactive'] ?? 0) ?></span>
+                <canvas class="admin-kpi__sparkline" aria-hidden="true"></canvas>
+              </a>
+            <?php endif; ?>
+            <a class="admin-kpi" href="<?= url('admin/pytania?status=active') ?>"<?= $isFullAdmin ? ' data-sparkline-metric="activity"' : '' ?>>
               <span class="admin-kpi__label">Aktywne pytania</span>
               <strong class="admin-kpi__value"><?= (int) ($overview['questions_active'] ?? 0) ?></strong>
               <span class="admin-kpi__meta">Nieaktywne: <?= (int) ($overview['questions_inactive'] ?? 0) ?></span>
+              <?php if ($isFullAdmin): ?><canvas class="admin-kpi__sparkline" aria-hidden="true"></canvas><?php endif; ?>
             </a>
           </div>
 
@@ -69,6 +75,7 @@ $actionLabel = static fn(string $action): string => $auditActions[$action] ?? $a
               </div>
             </div>
             <div class="admin-attention-grid">
+              <?php if ($isFullAdmin): ?>
               <div class="admin-attention">
                 <div class="admin-attention__header">
                   <strong>Niezweryfikowane konta</strong>
@@ -85,6 +92,8 @@ $actionLabel = static fn(string $action): string => $auditActions[$action] ?? $a
                   <?php endforeach; ?>
                 <?php endif; ?>
               </div>
+
+              <?php endif; ?>
 
               <div class="admin-attention">
                 <div class="admin-attention__header">
@@ -120,6 +129,7 @@ $actionLabel = static fn(string $action): string => $auditActions[$action] ?? $a
                 <?php endif; ?>
               </div>
 
+              <?php if ($isFullAdmin): ?>
               <div class="admin-attention">
                 <div class="admin-attention__header">
                   <strong>Błędy operacyjne w audycie</strong>
@@ -136,9 +146,11 @@ $actionLabel = static fn(string $action): string => $auditActions[$action] ?? $a
                   <?php endforeach; ?>
                 <?php endif; ?>
               </div>
+              <?php endif; ?>
             </div>
           </section>
 
+          <?php if ($isFullAdmin): ?>
           <div class="admin-section admin-section--two-col">
             <section class="stats-card">
               <div class="stats-card__header">
@@ -184,6 +196,7 @@ $actionLabel = static fn(string $action): string => $auditActions[$action] ?? $a
               </div>
             </section>
           </div>
+          <?php endif; ?>
         </div>
       </div>
     </section>

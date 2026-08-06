@@ -71,6 +71,9 @@
   -->
   <meta name="theme-color" content="#10B981">
   <meta name="color-scheme" content="light dark">
+  <?php if (isset($_SESSION['user'])): ?>
+    <meta name="csrf-token" content="<?= htmlspecialchars(csrf_token()) ?>">
+  <?php endif; ?>
 
   <!-- ================================================================== -->
   <!-- 2. Kluczowe Tagi SEO (Tytuł, Opis, Kanoniczny URL) -->
