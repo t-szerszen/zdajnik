@@ -70,6 +70,14 @@ $pageDescription = 'Przeczytaj politykę prywatności serwisu Zdajnik. Dowiedz s
                   komunikacji systemowej.</div>
               </li>
               <li>
+                <div class="legal-list__label">Logowanie przez Google</div>
+                <div class="legal-list__desc">W przypadku wyboru logowania za pośrednictwem konta Google, Serwis
+                  otrzymuje od Google adres e-mail oraz imię i nazwisko w zakresie niezbędnym do założenia i obsługi
+                  konta w Serwisie. Administrator nie ma dostępu do hasła Użytkownika do konta Google ani do innych
+                  danych poza wskazanym zakresem. Przetwarzanie danych przez Google podlega odrębnej polityce
+                  prywatności tego podmiotu.</div>
+              </li>
+              <li>
                 <div class="legal-list__label">Dane analityczne i postępy</div>
                 <div class="legal-list__desc">Historia udzielonych odpowiedzi, statystyki opanowania materiału, rejestr
                   błędów krytycznych oraz zbiór pytań zapisanych przez Użytkownika.</div>
