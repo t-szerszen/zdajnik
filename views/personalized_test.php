@@ -17,7 +17,7 @@
  */
 $pageTitle = $exam['title_personalized'];
 $pageDescription = $exam['desc_personalized'];
-$canonicalUrl = 'https://www.zdajnik.pl/personalizowany-test/' . htmlspecialchars($examCode);
+$canonicalUrl = url('personalizowany-test/' . $examCode);
 $extraScripts = [
   'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
   'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js'

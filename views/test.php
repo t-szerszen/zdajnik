@@ -17,7 +17,7 @@
  */
 $pageTitle = $exam['title_test'];
 $pageDescription = $exam['desc_test'];
-$canonicalUrl = 'https://www.zdajnik.pl/test/' . htmlspecialchars($examCode);
+$canonicalUrl = url('test/' . $examCode);
 $extraScripts = [
   'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
   'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js'

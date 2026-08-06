@@ -20,7 +20,7 @@ $noIndex = true;
 $noFollow = true;
 $pageTitle = 'Logowanie do Konta | Zdajnik';
 $pageDescription = 'Zaloguj się na swoje konto w Zdajnik, aby uzyskać dostęp do zapisanych wyników, statystyk i kontynuować naukę do egzaminu zawodowego.';
-$canonicalUrl = 'https://www.zdajnik.pl/logowanie';
+$canonicalUrl = url('logowanie');
 
 /**
  * ========================================================================

@@ -19,7 +19,7 @@ $noIndex = true;
 $noFollow = true;
 $pageTitle = 'Załóż Darmowe Konto i Śledź Postępy | Zdajnik';
 $pageDescription = 'Dołącz do Zdajnika i przygotuj się do egzaminu zawodowego. Załóż darmowe konto, aby śledzić postępy i korzystać z trybów nauki.';
-$canonicalUrl = 'https://www.zdajnik.pl/rejestracja';
+$canonicalUrl = url('rejestracja');
 
 /**
  * ========================================================================

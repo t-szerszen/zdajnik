@@ -17,7 +17,7 @@
  */
 $pageTitle = 'Zdajnik - nauka do egzaminów zawodowych INF.02, INF.03 i INF.04';
 $pageDescription = 'Przygotuj się do egzaminu zawodowego z Zdajnik. Rozwiązuj pytania egzaminacyjne, ucz się według tematów, rób egzaminy próbne i sprawdzaj swoje postępy.';
-$canonicalUrl = 'https://www.zdajnik.pl/';
+$canonicalUrl = url('/');
 
 // Dodajemy uporządkowane dane dla SEO (FAQ i Funkcje platformy)
 $extraSchemas = [

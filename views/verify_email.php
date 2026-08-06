@@ -18,7 +18,7 @@ $noIndex = true;
 $noFollow = true;
 $pageTitle = 'Autoryzacja adresu e-mail | Zdajnik';
 $pageDescription = 'Proces weryfikacji konta w serwisie Zdajnik.';
-$canonicalUrl = 'https://www.zdajnik.pl/autoryzacja-email';
+$canonicalUrl = url('autoryzacja-email');
 
 /**
  * ========================================================================

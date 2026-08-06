@@ -15,7 +15,7 @@ $noIndex = true;
 $noFollow = true;
 $pageTitle = 'Ustawienia Konta | Zdajnik';
 $pageDescription = 'Zarządzaj swoimi preferencjami i danymi konta w serwisie Zdajnik.';
-$canonicalUrl = 'https://www.zdajnik.pl/ustawienia';
+$canonicalUrl = url('ustawienia');
 
 // Sprawdzenie typu zalogowanego użytkownika dla logiki UI
 $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
