@@ -68,7 +68,7 @@ class Toast {
    * 7. Dodaje gotowe powiadomienie do kontenera w DOM.
    *
    * @param {string} message - Treść wiadomości do wyświetlenia.
-   * @param {string} [type='info'] - Typ powiadomienia ('info', 'success', 'error'),
+   * @param {string} [type='info'] - Typ powiadomienia ('info', 'success', 'error', 'warning'),
    * wpływa na styl i ikonę.
    * @param {number} [duration=5000] - Czas wyświetlania w milisekundach.
    */
@@ -94,36 +94,44 @@ class Toast {
     // Krok 3: Stwórz nowy element `toast` i wypełnij go treścią.
     const toast = document.createElement('div');
     toast.className = `toast toast--${type}`;
+    toast.style.setProperty('--toast-duration', `${duration}ms`);
 
     const icons = {
       info: 'fas fa-info-circle',
       success: 'fas fa-check-circle',
       error: 'fas fa-exclamation-circle',
+      warning: 'fas fa-triangle-exclamation',
     };
 
     toast.innerHTML = `
-            <i class="toast__icon ${icons[type] || icons.info}"></i>
-            <p class="toast__message">${message}</p>
-            <button type="button" class="toast__close">&times;</button>
+            <span class="toast__icon-wrap">
+                <i class="toast__icon ${icons[type] || icons.info}"></i>
+            </span>
+            <p class="toast__message"></p>
+            <button type="button" class="toast__close" aria-label="Zamknij powiadomienie">&times;</button>
+            <span class="toast__progress"></span>
         `;
+    toast.querySelector('.toast__message').textContent = message;
 
     // Krok 4: Dodaj powiadomienie do kontenera.
     this.container.appendChild(toast);
 
-    // Krok 5: Dodaj logikę zamykania.
+    // Krok 5: Dodaj logikę zamykania z animacją wyjścia.
+    let timeoutId;
+    const dismiss = () => {
+      if (toast.dataset.leaving) return;
+      toast.dataset.leaving = 'true';
+      clearTimeout(timeoutId);
+      toast.classList.add('toast--leaving');
+      toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    };
+
     // a) Po kliknięciu przycisku "x".
     const closeButton = toast.querySelector('.toast__close');
-    closeButton.addEventListener('click', () => toast.remove());
+    closeButton.addEventListener('click', dismiss);
 
     // b) Automatycznie po upływie określonego czasu.
-    setTimeout(() => {
-      // Sprawdzenie `toast.parentElement` to zabezpieczenie na wypadek,
-      // gdyby użytkownik zamknął powiadomienie ręcznie tuż przed
-      // wykonaniem się `setTimeout`. Zapobiega to błędowi.
-      if (toast.parentElement) {
-        toast.remove();
-      }
-    }, duration);
+    timeoutId = setTimeout(dismiss, duration);
   }
 }
 
