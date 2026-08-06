@@ -48,6 +48,12 @@ class HomeController extends BaseController
     // KROK: Pobranie struktury kwalifikacji i ich kategorii tematycznych
     $examsCategories = $this->loadExamsAndTopics();
 
+    // Osobne zdarzenie od ogólnego page_view — liczy wyłącznie odpalenia
+    // strony głównej (landing), nie wszystkie odsłony w aplikacji.
+    $this->trackAnalyticsEvent('entry', [
+      'source' => $this->isUserLoggedIn ? 'returning' : 'guest',
+    ]);
+
     // KROK: Wyświetlenie widoku startowego z dynamiczną listą egzaminów
     $this->renderView('home', [
       'examsCategories' => $examsCategories,

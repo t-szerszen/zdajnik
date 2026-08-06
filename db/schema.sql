@@ -421,7 +421,7 @@ CREATE TABLE `users` (
   `avatar_path` varchar(255) COLLATE utf8mb4_polish_ci DEFAULT NULL,
   `password_hash` char(255) COLLATE utf8mb4_polish_ci DEFAULT NULL,
   `is_verified` tinyint(1) DEFAULT '0',
-  `role` enum('user','admin') COLLATE utf8mb4_polish_ci DEFAULT 'user',
+  `role` enum('user','redaktor','admin') COLLATE utf8mb4_polish_ci DEFAULT 'user',
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `deleted_at` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -474,5 +474,6 @@ INSERT INTO `schema_migrations` (version) VALUES
   ('20260715193439'),
   ('20260719120000'),
   ('20260719150000'),
-  ('20260802220000');
+  ('20260802220000'),
+  ('20260806120000');
 UNLOCK TABLES;

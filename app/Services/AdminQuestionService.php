@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Core\Database;
+use App\Services\Concerns\AdminListQueryTrait;
 
 /**
  * Serwis zarządzania pytaniami w panelu admina.
@@ -17,6 +18,8 @@ use App\Core\Database;
  */
 class AdminQuestionService
 {
+  use AdminListQueryTrait;
+
   private Database $db;
   private AdminAuditService $auditService;
 
@@ -41,15 +44,11 @@ class AdminQuestionService
       'updated_at' => 'q.updated_at',
     ];
 
-    $sortColumn = $allowedSort[$sortBy] ?? 'q.id';
-    $sortDir = strtoupper($sortDir) === 'ASC' ? 'ASC' : 'DESC';
-    $page = max(1, $page);
-    $perPage = max(1, $perPage);
-    $offset = ($page - 1) * $perPage;
+    [$sortColumn, $sortDir] = $this->resolveSort($allowedSort, $sortBy, 'q.id', $sortDir);
 
     [$whereSql, $params] = $this->buildFilterSql($filters);
 
-    $sql = "SELECT
+    $itemsSql = "SELECT
               q.id,
               q.exam_type_id,
               q.topic_id,
@@ -96,10 +95,7 @@ class AdminQuestionService
               GROUP BY question_version_id
             ) answer_stats ON answer_stats.question_version_id = qv.id
             WHERE q.deleted_at IS NULL $whereSql
-            ORDER BY $sortColumn $sortDir, q.id DESC
-            LIMIT " . (int) $perPage . " OFFSET " . (int) $offset;
-
-    $items = $this->db->fetchAll($sql, $params);
+            ORDER BY $sortColumn $sortDir, q.id DESC";
 
     $countSql = "SELECT COUNT(*) as total
                  FROM questions q
@@ -119,16 +115,7 @@ class AdminQuestionService
                  LEFT JOIN question_versions qv ON qv.id = latest_version.id
                  WHERE q.deleted_at IS NULL $whereSql";
 
-    $countResult = $this->db->fetch($countSql, $params);
-    $total = (int) ($countResult['total'] ?? 0);
-
-    return [
-      'items' => $items,
-      'total' => $total,
-      'page' => $page,
-      'perPage' => $perPage,
-      'totalPages' => max(1, (int) ceil($total / $perPage)),
-    ];
+    return $this->paginate($itemsSql, $countSql, $params, $page, $perPage);
   }
 
   /**
@@ -522,6 +509,35 @@ class AdminQuestionService
       error_log('[AdminQuestionService] activateQuestion: ' . $e->getMessage());
       return ['success' => false, 'errors' => ['general' => 'Wystąpił nieoczekiwany błąd podczas aktywacji.']];
     }
+  }
+
+  /**
+   * Akcja zbiorcza na pytaniach. Deleguje do activateQuestion()/deactivateQuestion(),
+   * które same zarządzają transakcją i audytem — stąd zwykła pętla zamiast
+   * AdminBulkActionTrait (uniknięcie zagnieżdżonych transakcji).
+   *
+   * @param array<int, int> $ids
+   * @return array{succeeded: array<int, int>, failed: array<int, string>}
+   */
+  public function bulkQuestionAction(array $ids, string $action, int $adminUserId): array
+  {
+    $succeeded = [];
+    $failed = [];
+
+    foreach ($ids as $questionId) {
+      $questionId = (int) $questionId;
+      $result = $action === 'activate'
+        ? $this->activateQuestion($questionId, $adminUserId)
+        : $this->deactivateQuestion($questionId, $adminUserId);
+
+      if ($result['success'] ?? false) {
+        $succeeded[] = $questionId;
+      } else {
+        $failed[$questionId] = (string) ($result['errors']['general'] ?? 'Operacja nie powiodła się.');
+      }
+    }
+
+    return ['succeeded' => $succeeded, 'failed' => $failed];
   }
 
   /**

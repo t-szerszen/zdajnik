@@ -220,6 +220,7 @@ export class AdminAnalytics {
       this.metric('Nowi użytkownicy', kpis.newUsers, 'fa-user-plus'),
       this.metric('Aktywni użytkownicy', kpis.activeUsers, 'fa-users'),
       this.metric('Odsłony', kpis.pageViews, 'fa-eye'),
+      this.metric('Wejścia (strona główna)', kpis.entries, 'fa-door-open'),
       this.metric('Rozpoczęte testy', kpis.testsStarted, 'fa-play'),
       this.metric('Ukończone testy', kpis.testsCompleted, 'fa-flag-checkered'),
       this.metric('Completion rate', kpis.completionRate, 'fa-percent', 'percent'),
@@ -596,6 +597,7 @@ export class AdminAnalytics {
     const navy = styles.getPropertyValue('--color-navy').trim() || '#0d1b3d';
     const datasets = [
       ['Odsłony', daily.pageViews || [], navy],
+      ['Wejścia (strona główna)', daily.entries || [], '#8b5cf6'],
       ['Rejestracje', daily.registrations || [], '#f59e0b'],
       ['Logowania', daily.logins || [], accent],
       ['Starty testów', daily.testsStarted || [], accentHover],

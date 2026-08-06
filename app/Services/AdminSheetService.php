@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Core\Database;
+use App\Services\Concerns\AdminBulkActionTrait;
+use RuntimeException;
 
 /**
  * Serwis administracyjny Biblioteki Arkuszy.
@@ -18,6 +20,8 @@ use App\Core\Database;
  */
 class AdminSheetService
 {
+  use AdminBulkActionTrait;
+
   /** Maksymalny rozmiar pliku PDF w bajtach (15 MB). */
   private const MAX_PDF_BYTES = 15 * 1024 * 1024;
 
@@ -272,6 +276,43 @@ class AdminSheetService
   {
     $sql = "UPDATE sheets SET is_active = ? WHERE id = ? AND deleted_at IS NULL";
     return $this->db->execute($sql, [(int) $isActive, $sheetId]);
+  }
+
+  /**
+   * Akcja zbiorcza zmiany statusu arkuszy — zmiana i audyt w jednej transakcji per rekord.
+   *
+   * @param array<int, int> $ids
+   * @return array{succeeded: array<int, int>, failed: array<int|string, string>}
+   */
+  public function bulkSheetAction(array $ids, bool $isActive, int $adminUserId, AdminAuditService $auditService): array
+  {
+    return $this->applyBulkAction($ids, function (int $sheetId) use ($isActive, $adminUserId, $auditService): ?string {
+      $sheet = $this->getSheetById($sheetId);
+      if (!$sheet) {
+        return 'Arkusz nie istnieje.';
+      }
+
+      if ((int) ($sheet['is_active'] ?? 0) === (int) $isActive) {
+        return 'Status już ustawiony.';
+      }
+
+      if (!$this->setSheetActive($sheetId, $isActive)) {
+        throw new RuntimeException('Nie udało się zmienić statusu arkusza.');
+      }
+
+      if (!$auditService->logAction(
+        $adminUserId,
+        $isActive ? 'sheet_activated' : 'sheet_deactivated',
+        'sheet',
+        $sheetId,
+        ['is_active' => (int) $sheet['is_active']],
+        ['is_active' => (int) $isActive]
+      )) {
+        throw new RuntimeException('Nie udało się zapisać wpisu audytowego.');
+      }
+
+      return null;
+    });
   }
 
   // ---------------------------------------------------------------------------

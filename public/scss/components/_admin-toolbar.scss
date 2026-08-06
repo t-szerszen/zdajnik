@@ -1,0 +1,50 @@
+@use '../core/mixins' as *;
+
+.admin-toolbar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.85rem;
+  align-items: end;
+}
+
+.admin-toolbar__actions,
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-toolbar__actions {
+  min-height: 46px;
+}
+
+.admin-actions {
+  justify-content: flex-end;
+
+  form {
+    display: inline-flex;
+    margin: 0;
+  }
+
+  .btn {
+    white-space: normal;
+  }
+}
+
+@include media-down(md) {
+  .admin-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-toolbar__actions {
+    align-items: stretch;
+    flex-direction: column;
+
+    .btn,
+    form,
+    select {
+      width: 100%;
+    }
+  }
+}

@@ -46,11 +46,24 @@
 @use 'components/topic-selector';
 @use 'components/topics-section';
 @use 'components/page-header';
+@use 'components/admin-shell';
+@use 'components/admin-filters';
+@use 'components/admin-tile';
+@use 'components/admin-table';
+@use 'components/admin-forms';
+@use 'components/admin-pagination';
+@use 'components/admin-audit';
+@use 'components/admin-toolbar';
+@use 'components/admin-kpi';
+@use 'components/admin-attention';
+@use 'components/admin-status';
+@use 'components/admin-bulk-bar';
+@use 'components/admin-modal';
+@use 'components/admin-analytics';
 
 // =============================================================================
 // 3. STRONY (PAGES)
 // =============================================================================
-@use 'pages/admin';
 @use 'pages/about';
 @use 'pages/auth';
 @use 'pages/error';

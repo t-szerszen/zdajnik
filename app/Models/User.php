@@ -123,6 +123,32 @@ class User
     return $this->role === 'admin';
   }
 
+  /**
+   * Sprawdza, czy użytkownik ma rolę redaktora treści.
+   *
+   * @return bool
+   */
+  public function isRedaktor(): bool
+  {
+    return $this->role === 'redaktor';
+  }
+
+  /**
+   * Czy użytkownik może zarządzać treścią merytoryczną (pytania, arkusze).
+   *
+   * @return bool
+   */
+  public function canManageContent(): bool
+  {
+    return $this->isAdmin() || $this->isRedaktor();
+  }
+
+  /** @return string */
+  public function getRole(): string
+  {
+    return $this->role;
+  }
+
   /** @return bool */
   public function isVerified(): bool
   {
