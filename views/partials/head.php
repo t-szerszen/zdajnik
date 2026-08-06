@@ -75,16 +75,22 @@
   <!-- ================================================================== -->
   <!-- 2. Kluczowe Tagi SEO (Tytuł, Opis, Kanoniczny URL) -->
   <!-- ================================================================== -->
-  <title><?= htmlspecialchars($pageTitle ?? 'Zdajnik - Egzaminy Zawodowe INF.03') ?></title>
+  <?php
+  // Jeden, wspólny fallback dla title/description - używany też przez Open Graph i Twitter
+  // Cards niżej, żeby wszystkie trzy miejsca zawsze pokazywały ten sam tekst zamiast
+  // trzech różnych, niezależnie dryfujących wersji.
+  $pageTitle ??= 'Zdajnik - Nauka do Egzaminu Zawodowego';
+  $pageDescription ??= 'Pytania, testy i wyjaśnienia do egzaminu zawodowego INF.02, INF.03 i INF.04. Ucz się mądrze, nie na pamięć.';
+  ?>
+  <title><?= htmlspecialchars($pageTitle) ?></title>
 
-  <!-- 
+  <!--
     @property description
     @description Kluczowy dla SEO. To jest tekst, który Google najczęściej
                  pokazuje pod tytułem strony w wynikach wyszukiwania.
                  Powinien być zwięzły (ok. 155 znaków) i zachęcający.
   -->
-  <meta name="description"
-    content="<?= htmlspecialchars($pageDescription ?? 'Zdajnik to platforma edukacyjna z testami i materiałami do egzaminów zawodowych. Przygotuj się skutecznie do egzaminu INF.03.') ?>">
+  <meta name="description" content="<?= htmlspecialchars($pageDescription) ?>">
 
   <!-- 
     @property canonical
@@ -124,9 +130,8 @@
   <!-- 3. Podglądy w mediach społecznościowych (Open Graph & Twitter) -->
   <!-- ================================================================== -->
   <!-- Protokół Open Graph (Facebook, LinkedIn, Pinterest, etc.) -->
-  <meta property="og:title" content="<?= htmlspecialchars($pageTitle ?? 'Zdajnik - Egzaminy Zawodowe INF.03') ?>">
-  <meta property="og:description"
-    content="<?= htmlspecialchars($pageDescription ?? 'Zdobądź wiedzę i pewność przed egzaminem zawodowym.') ?>">
+  <meta property="og:title" content="<?= htmlspecialchars($pageTitle) ?>">
+  <meta property="og:description" content="<?= htmlspecialchars($pageDescription) ?>">
   <meta property="og:type" content="website">
   <meta property="og:url" content="<?= htmlspecialchars($canonicalUrl ?? url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
   <meta property="og:image" content="<?= url('images/company/zdajnik-og-1200x630.png') ?>">
@@ -138,9 +143,8 @@
 
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle ?? 'Zdajnik - Egzaminy Zawodowe INF.03') ?>">
-  <meta name="twitter:description"
-    content="<?= htmlspecialchars($pageDescription ?? 'Sprawdź darmowe testy i materiały edukacyjne.') ?>">
+  <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle) ?>">
+  <meta name="twitter:description" content="<?= htmlspecialchars($pageDescription) ?>">
   <meta name="twitter:site" content="@zdajnikpl">
   <meta name="twitter:image" content="<?= url('images/company/zdajnik-twitter-1200x600.png') ?>">
 
