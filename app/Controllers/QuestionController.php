@@ -231,7 +231,9 @@ class QuestionController extends BaseController
     $answers = $this->answerModel->getPublicAnswersByVersionId((int) $question['question_version_id']);
     $adjacent = $this->questionModel->getPrevNextPublic($questionId, (int) $exam['id']);
 
-    $excerpt = question_excerpt((string) $question['question_text'], 70);
+    // 40 znaków + stały sufiks " | INF.0X | Zdajnik" (19 znaków) mieści tytuł w ~60 znakach,
+    // żeby Google nie obcinał go w wynikach wyszukiwania (patrz question_excerpt() niżej dla opisu).
+    $excerpt = question_excerpt((string) $question['question_text'], 40);
     $description = question_excerpt((string) $question['question_text'], 150);
 
     // Bardzo krótkie pytania nie wypełniają snippetu - dopinamy kontekst z danych pytania
