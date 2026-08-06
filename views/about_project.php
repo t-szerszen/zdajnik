@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file about_project.php
  * @description Strona informacyjna o historii, twórcy i rozwoju projektu Zdajnik.
@@ -47,9 +48,9 @@ $trustItems = [
     'text' => 'Kolejne funkcje powstają z myślą o codziennej nauce i powtórkach.'
   ],
   [
-    'icon' => 'fa-location-dot',
-    'title' => 'Projekt rozwijany w Polsce',
-    'text' => 'Zdajnik jest tworzony dla uczniów polskich techników i szkół branżowych.'
+    'icon' => 'fa-face-smile',
+    'title' => 'Zero reklam',
+    'text' => 'Żadnych bannerów ani wyskakujących okienek rozpraszających Cię podczas nauki - liczy się tylko Twoja koncentracja.'
   ],
 ];
 ?>
@@ -65,21 +66,21 @@ $trustItems = [
       <div class="about-project__container about-project__hero-grid">
         <div class="about-project__hero-copy">
           <p class="about-project__eyebrow">O projekcie</p>
-          <h1>To samo pytanie <span class="text-gradient">dziesiąty raz</span>? Miało tak nie być.</h1>
+          <h1>Nie wiesz czego się <span class="text-gradient">uczyć</span>? Miało tak nie być.</h1>
           <p>
-            Zdajnik powstał z frustracji ucznia technikum, który szukał dobrego miejsca do nauki teorii przed
-            egzaminem zawodowym - i nie znalazł. Zamiast kolejnej bazy pytań rzucającej losowo, zbudowałem narzędzie,
+            Zdajnik powstał z frustracji ucznia technikum, który szukał dobrego miejsca do nauki przed
+            egzaminem zawodowym - i nie znalazł. Zamiast kolejnej bazy pytań rzucającej losowo pytania, zbudowałem narzędzie,
             które samo pilnuje Twojej nauki, żebyś w dniu egzaminu czuł/a pewność siebie, a nie stres i zgadywanie.
           </p>
-          <a href="<?= url('/') ?>" class="btn btn--primary btn--large">Przejdź do platformy</a>
+          <a href="<?= url('/') ?>" class="btn btn--primary btn--large">Zacznij się uczyć mądrzej</a>
         </div>
 
         <aside class="about-project__note" aria-label="Krótko o Zdajniku">
           <i class="fas fa-seedling"></i>
-          <h2>Nie kolejna baza pytań</h2>
+          <h2>Nauka, która pamięta za Ciebie</h2>
           <p>
-            Suchy zbiór pytań to za mało. Zdajnik wie, co już umiesz, a co wymaga powtórki - żebyś nie tracił/a
-            czasu i motywacji na pytania, które opanowałeś/aś dawno temu.
+            Zdajnik śledzi, co już opanowałeś/aś, a co wymaga powtórki, i sam układa dla Ciebie kolejność pytań -
+            żebyś każdą minutę nauki spędzał/a na tym, co faktycznie przybliża Cię do zdania.
           </p>
         </aside>
       </div>
@@ -95,12 +96,12 @@ $trustItems = [
         <div class="about-project__story-content">
           <p>
             Historia Zdajnika zaczyna się bardzo zwyczajnie - od zwykłej frustracji. Jako uczeń technikum
-            informatycznego szukałem sposobu, żeby solidnie przygotować się do części pisemnej egzaminu zawodowego.
+            informatycznego szukałem sposobu, żeby solidnie przygotować się do egzaminu zawodowego.
             Trafiałem na bazy pytań, ale każda miała ten sam problem: rzucała pytaniami losowo, bez żadnego pomysłu
             na to, jak się naprawdę uczyć.
           </p>
           <p>
-            Najgorsze było to, że w jednej sesji nauki potrafiłem zobaczyć to samo pytanie nawet dziesięć razy -
+            Najgorsze było to, że w jednej sesji nauki potrafiłem zobaczyć to samo pytanie kilka razy -
             mimo że dawno je opanowałem. Zamiast realnej nauki dostawałem czystą loterię. A z każdym powtórzonym,
             znanym już pytaniem traciłem chęci do nauki, zamiast je zyskiwać.
           </p>
@@ -167,8 +168,8 @@ $trustItems = [
 
         <div class="about-project__future-card">
           <p>
-            Zdajnik ma stopniowo rozwijać się o nowe kwalifikacje zawodowe, arkusze praktyczne, kursy przygotowawcze i
-            dodatkowe materiały edukacyjne.
+            To, co widzisz dzisiaj, to dopiero początek. Zdajnik ma z czasem objąć więcej niż jedną kwalifikację
+            i więcej niż jedną formę nauki.
           </p>
           <ul>
             <li>nowe kwalifikacje zawodowe,</li>
@@ -223,4 +224,5 @@ $trustItems = [
 
   <?php include 'partials/footer.php'; ?>
 </body>
+
 </html>
