@@ -187,21 +187,21 @@ class DynamicDataService
       ],
       'INF.02' => [
         'formatted_name' => 'INF.02',
-        'title_one_question' => 'INF.02 - Jedno pytanie - Szybka powtórka | Zdajnik',
-        'desc_one_question' => 'Szybka powtórka z INF.02. Jedno pytanie losowe.',
-        'title_test' => 'INF.02 - Egzamin próbny - Test Online | Zdajnik',
-        'desc_test' => 'Pełny egzamin próbny INF.02.',
-        'title_personalized' => 'INF.02 - Test Spersonalizowany | Zdajnik',
-        'desc_personalized' => 'Skonfiguruj swój test z INF.02.'
+        'title_one_question' => 'INF.02 - Jedno pytanie - Szybka Powtórka | Zdajnik',
+        'desc_one_question' => 'Masz chwilę przerwy? Wylosuj jedno pytanie o sieciach, systemach czy sprzęcie z bazy INF.02 i sprawdź się na szybko.',
+        'title_test' => 'INF.02 - Egzamin próbny - Test Online 40 Pytań | Zdajnik',
+        'desc_test' => 'Sprawdź się przed egzaminem INF.02 - pełny test próbny 40 pytań z sieci, systemów i sprzętu komputerowego.',
+        'title_personalized' => 'INF.02 - Stwórz swój własny test - Spersonalizowana Nauka | Zdajnik',
+        'desc_personalized' => 'Skup się na tym, co sprawia Ci trudność - sieci, Windows Server czy diagnostyka - i zbuduj test dopasowany do siebie.'
       ],
       'INF.04' => [
         'formatted_name' => 'INF.04',
-        'title_one_question' => 'INF.04 - Jedno pytanie - Trening | Zdajnik',
-        'desc_one_question' => 'Poćwicz z INF.04. Jedno pytanie losowe.',
-        'title_test' => 'INF.04 - Egzamin próbny - Test Online | Zdajnik',
-        'desc_test' => 'Pełny egzamin próbny INF.04.',
-        'title_personalized' => 'INF.04 - Test Spersonalizowany | Zdajnik',
-        'desc_personalized' => 'Skonfiguruj swój test z INF.04.'
+        'title_one_question' => 'INF.04 - Jedno pytanie - Szybki Trening | Zdajnik',
+        'desc_one_question' => 'Masz 5 minut? Wylosuj jedno pytanie z programowania i algorytmów na INF.04 i sprawdź, ile już umiesz.',
+        'title_test' => 'INF.04 - Egzamin próbny - Test Online 40 Pytań | Zdajnik',
+        'desc_test' => 'Sprawdź się przed egzaminem INF.04 - 40 pytań z programowania, algorytmów i OOP, dokładnie jak na prawdziwym teście.',
+        'title_personalized' => 'INF.04 - Stwórz swój własny test - Spersonalizowana Nauka | Zdajnik',
+        'desc_personalized' => 'Wybierz tematy, które sprawiają Ci najwięcej problemów - OOP, algorytmy czy testowanie - i zrób test skrojony pod siebie.'
       ]
     ];
 
