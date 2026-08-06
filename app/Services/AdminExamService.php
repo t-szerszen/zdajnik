@@ -251,6 +251,47 @@ class AdminExamService
   }
 
   /**
+   * Pobiera pojedynczy temat (kategorię) wraz z ID kwalifikacji, do której należy.
+   *
+   * @return array<string, mixed>|false
+   */
+  public function getTopicById(int $topicId): array|false
+  {
+    return $this->db->fetch(
+      "SELECT id, exam_type_id, name, description, is_active
+       FROM topics
+       WHERE id = ? AND deleted_at IS NULL
+       LIMIT 1",
+      [$topicId]
+    );
+  }
+
+  /**
+   * Sprawdza dostępność nazwy tematu w obrębie kwalifikacji (unikalność jak w bazie).
+   */
+  public function isTopicNameAvailable(string $name, int $examTypeId, ?int $excludeId = null): bool
+  {
+    $sql = "SELECT id FROM topics WHERE name = ? AND exam_type_id = ? AND deleted_at IS NULL";
+    $params = [$name, $examTypeId];
+    if ($excludeId !== null) {
+      $sql .= " AND id <> ?";
+      $params[] = $excludeId;
+    }
+    return $this->db->fetch($sql . " LIMIT 1", $params) === false;
+  }
+
+  /**
+   * Aktualizuje nazwę, opis i status tematu (kategorii pytań) w obrębie kwalifikacji.
+   */
+  public function updateTopic(int $topicId, string $name, string $description, bool $isActive): bool
+  {
+    $sql = "UPDATE topics
+            SET name = ?, description = ?, is_active = ?, updated_at = NOW()
+            WHERE id = ? AND deleted_at IS NULL";
+    return $this->db->execute($sql, [$name, $description, (int) $isActive, $topicId]);
+  }
+
+  /**
    * Buduje SQL dla filtrów listy egzaminów.
    *
    * @param array<string, mixed> $filters

@@ -206,6 +206,21 @@ async function initAdminAnalytics() {
   init();
 }
 
+async function initAdminTables() {
+  if (!has('[data-admin-table-root]')) return;
+
+  const { initAdminResourceTables } = await import(modulePath('./features/admin/AdminResourceTable.js'));
+  initAdminResourceTables();
+}
+
+async function initAdminSparklines() {
+  if (!has('[data-sparkline-metric]')) return;
+
+  await loadScriptOnce(CHART_JS_URL, 'Chart');
+  const { initDashboardSparklines } = await import(modulePath('./features/admin/DashboardSparklines.js'));
+  initDashboardSparklines();
+}
+
 async function initPageModules() {
   const results = await Promise.allSettled([
     initHomePage(),
@@ -219,6 +234,8 @@ async function initPageModules() {
     initCountdownButtons(),
     initStatisticsPage(),
     initAdminAnalytics(),
+    initAdminTables(),
+    initAdminSparklines(),
   ]);
 
   results.forEach((result) => {

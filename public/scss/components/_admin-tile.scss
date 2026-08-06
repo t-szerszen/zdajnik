@@ -1,0 +1,86 @@
+@use '../core/mixins' as *;
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+
+  @include media-down(xl) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include media-down(md) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-grid--compact {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-tile {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  text-decoration: none;
+  color: inherit;
+  min-height: 160px;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.admin-tile--static {
+  pointer-events: none;
+}
+
+.admin-tile--back {
+  background: var(--surface-subtle);
+}
+
+.admin-tile__icon {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  background: rgba(var(--accent-rgb), 0.12);
+  color: var(--accent);
+  font-size: 1.2rem;
+}
+
+.admin-tile__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-tile__label {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-tile__value {
+  font-size: 1.9rem;
+  line-height: 1.1;
+}
+
+.admin-tile__meta {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.admin-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-lead {
+  margin: 0;
+  line-height: 1.7;
+}

@@ -18,6 +18,7 @@ class AnalyticsService
 {
   private const EVENT_TYPES = [
     'page_view',
+    'entry',
     'login',
     'registration',
     'test_started',
@@ -104,6 +105,15 @@ class AnalyticsService
     } catch (\Throwable $e) {
       return false;
     }
+  }
+
+  /**
+   * Rejestruje wejście na stronę główną (landing), w odróżnieniu od ogólnego
+   * `page_view`, który liczy odsłony wszystkich stron aplikacji.
+   */
+  public function trackEntry(?int $userId, array $metadata = []): bool
+  {
+    return $this->trackEvent('entry', $userId, $metadata);
   }
 
   public function trackLogin(?User $user, ?array $request = null, array $metadata = []): bool
@@ -682,6 +692,7 @@ class AnalyticsService
       'newRegistrationsToday' => $this->countRegistrations($today, $filters),
       'loginsToday' => $this->countEvents('login', $today, $filters),
       'pageViewsToday' => $this->countEvents('page_view', $today, $filters),
+      'entriesToday' => $this->countEvents('entry', $today, $filters),
       'testsStartedToday' => $this->countEvents('test_started', $today, $filters),
       'testsCompletedToday' => $this->countAttempts($today, $filters),
       'questionsAnsweredToday' => $this->countEvents('question_answered', $today, $filters),
@@ -734,6 +745,7 @@ class AnalyticsService
     $labels = $this->buildBucketLabels($range);
     $maps = [
       'pageViews' => $this->getDailyCounts('page_view', $range, $filters),
+      'entries' => $this->getDailyCounts('entry', $range, $filters),
       'logins' => $this->getDailyCounts('login', $range, $filters),
       'registrations' => $this->getRegistrationTimeline($range, $filters),
       'testsStarted' => $this->getDailyCounts('test_started', $range, $filters),
@@ -936,6 +948,7 @@ class AnalyticsService
         'newUsers' => $this->countRegistrations($range, $filters),
         'activeUsers' => $this->countActiveUsers($range, $filters),
         'pageViews' => $this->countEvents('page_view', $range, $filters),
+        'entries' => $this->countEvents('entry', $range, $filters),
         'testsStarted' => $started,
         'testsCompleted' => $completed,
         'completionRate' => $this->percentage($completed, $started),

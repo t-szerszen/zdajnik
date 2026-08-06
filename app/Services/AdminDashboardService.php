@@ -47,6 +47,65 @@ class AdminDashboardService
   }
 
   /**
+   * Dzienne serie trendów dla sparklines na dashboardzie.
+   *
+   * Zwraca pełną siatkę dni (łącznie z zerami), żeby wykresy nie miały dziur.
+   *
+   * @return array<string, array<int, array{date: string, value: int}>>
+   */
+  public function getTrendSeries(int $days = 30): array
+  {
+    $days = max(7, min(90, $days));
+
+    return [
+      'newUsers' => $this->fetchDailySeries(
+        "SELECT DATE(created_at) as day, COUNT(*) as total
+         FROM users
+         WHERE deleted_at IS NULL AND created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+         GROUP BY DATE(created_at)",
+        $days
+      ),
+      'attempts' => $this->fetchDailySeries(
+        "SELECT DATE(started_at) as day, COUNT(*) as total
+         FROM attempts
+         WHERE started_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+         GROUP BY DATE(started_at)",
+        $days
+      ),
+      'activity' => $this->fetchDailySeries(
+        "SELECT DATE(event_date) as day, COUNT(*) as total
+         FROM analytics_events
+         WHERE event_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+         GROUP BY DATE(event_date)",
+        $days
+      ),
+    ];
+  }
+
+  /**
+   * Wykonuje zapytanie grupujące po dniu i uzupełnia brakujące dni zerami.
+   *
+   * @return array<int, array{date: string, value: int}>
+   */
+  private function fetchDailySeries(string $sql, int $days): array
+  {
+    $rows = $this->db->fetchAll($sql, [$days]);
+
+    $byDay = [];
+    foreach ($rows as $row) {
+      $byDay[(string) $row['day']] = (int) $row['total'];
+    }
+
+    $series = [];
+    for ($i = $days; $i >= 0; $i--) {
+      $day = date('Y-m-d', strtotime("-$i days"));
+      $series[] = ['date' => $day, 'value' => $byDay[$day] ?? 0];
+    }
+
+    return $series;
+  }
+
+  /**
    * @return array<string, array<int, array<string, mixed>>>
    */
   public function getAttentionItems(int $limit = 6): array

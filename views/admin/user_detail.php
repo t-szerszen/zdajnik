@@ -110,6 +110,7 @@ $date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotim
                     <span>Rola</span>
                     <select name="role">
                       <option value="user" <?= (($user['role'] ?? 'user') === 'user') ? 'selected' : '' ?>>Użytkownik</option>
+                      <option value="redaktor" <?= (($user['role'] ?? 'user') === 'redaktor') ? 'selected' : '' ?>>Redaktor</option>
                       <option value="admin" <?= (($user['role'] ?? 'user') === 'admin') ? 'selected' : '' ?>>Admin</option>
                     </select>
                   </label>

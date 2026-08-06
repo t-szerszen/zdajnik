@@ -114,19 +114,29 @@ $isActive = (int) ($exam['is_active'] ?? 0) === 1;
               </div>
               <span class="badge badge--secondary">Razem: <?= count($topics) ?></span>
             </div>
-            <div class="admin-topic-list">
-              <?php if (empty($topics)): ?>
-                <div class="admin-empty">Egzamin nie ma przypisanych tematów.</div>
-              <?php else: ?>
+            <?php if (empty($topics)): ?>
+              <div class="admin-empty">Egzamin nie ma przypisanych tematów.</div>
+            <?php else: ?>
+              <div class="admin-table admin-table--exam-topics">
+                <div class="admin-table__head"><span>Nazwa</span><span>Opis</span><span>Status</span><span>Pytania</span><span>Akcje</span></div>
                 <?php foreach ($topics as $topic): ?>
-                  <a class="admin-topic-list__row" href="<?= url('admin/pytania?exam_id=' . $examId . '&topic_id=' . (int) $topic['id']) ?>">
-                    <span class="admin-truncate"><strong><?= htmlspecialchars((string) $topic['name']) ?></strong></span>
-                    <span class="admin-status admin-status--<?= (int) ($topic['is_active'] ?? 0) === 1 ? 'success' : 'danger' ?>"><?= (int) ($topic['is_active'] ?? 0) === 1 ? 'Aktywny' : 'Nieaktywny' ?></span>
-                    <span><?= (int) ($topic['questions_count'] ?? 0) ?> pytań</span>
-                  </a>
+                  <?php $topicId = (int) $topic['id']; $formId = 'exam-topic-form-' . $topicId; ?>
+                  <div class="admin-table__row">
+                    <form id="<?= $formId ?>" method="POST" action="<?= url('admin/tematy/' . $topicId . '/edytuj') ?>"><?= csrf_field() ?></form>
+                    <div class="admin-table__cell" data-label="Nazwa"><input form="<?= $formId ?>" type="text" name="name" maxlength="200" value="<?= htmlspecialchars((string) $topic['name']) ?>" required></div>
+                    <div class="admin-table__cell" data-label="Opis"><input form="<?= $formId ?>" type="text" name="description" maxlength="2000" value="<?= htmlspecialchars((string) ($topic['description'] ?? '')) ?>" placeholder="Opis (opcjonalnie)"></div>
+                    <div class="admin-table__cell" data-label="Status">
+                      <select form="<?= $formId ?>" name="is_active">
+                        <option value="1" <?= (int) ($topic['is_active'] ?? 1) === 1 ? 'selected' : '' ?>>Aktywny</option>
+                        <option value="0" <?= (int) ($topic['is_active'] ?? 1) === 0 ? 'selected' : '' ?>>Nieaktywny</option>
+                      </select>
+                    </div>
+                    <div class="admin-table__cell" data-label="Pytania"><a href="<?= url('admin/pytania?exam_id=' . $examId . '&topic_id=' . $topicId) ?>"><?= (int) ($topic['questions_count'] ?? 0) ?> (aktywnych: <?= (int) ($topic['active_questions_count'] ?? 0) ?>)</a></div>
+                    <div class="admin-table__cell" data-label="Akcje"><div class="admin-actions"><button form="<?= $formId ?>" class="btn btn--secondary btn--sm" type="submit">Zapisz</button></div></div>
+                  </div>
                 <?php endforeach; ?>
-              <?php endif; ?>
-            </div>
+              </div>
+            <?php endif; ?>
           </div>
 
           <div class="stats-card">

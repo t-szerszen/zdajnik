@@ -23,7 +23,6 @@ $buildUrl = static function (array $overrides = []) use ($filters): string {
   ], $overrides), static fn($value) => $value !== null && $value !== '');
   return url('admin/arkusze') . '?' . http_build_query($params);
 };
-$date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotime($value)) : 'Brak';
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -40,7 +39,12 @@ $date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotim
     <section class="stats-page admin-dashboard">
       <div class="stats-page__container admin-shell">
         <?php $activeSection = 'sheets'; include __DIR__ . '/partials/navigation.php'; ?>
-        <div class="admin-content">
+        <div class="admin-content"
+          data-admin-table-root
+          data-endpoint="<?= url('admin/arkusze/api') ?>"
+          data-bulk-endpoint="<?= url('admin/arkusze/bulk') ?>"
+          data-page="<?= (int) ($pagination['page'] ?? 1) ?>"
+          data-total-pages="<?= (int) ($pagination['totalPages'] ?? 1) ?>">
           <?php include __DIR__ . '/partials/flash.php'; ?>
 
           <section class="stats-card">
@@ -48,53 +52,45 @@ $date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotim
               <div class="stats-card__title"><i class="fas fa-filter"></i><span>Filtry</span></div>
               <a href="<?= url('admin/arkusze/dodaj') ?>" class="btn btn--primary btn--sm">Dodaj arkusz</a>
             </div>
-            <form class="admin-toolbar" method="GET" action="<?= url('admin/arkusze') ?>">
+            <form class="admin-toolbar" method="GET" action="<?= url('admin/arkusze') ?>" data-admin-filter-form>
               <label class="admin-field admin-field--search"><span>Szukaj</span><input type="text" name="q" value="<?= htmlspecialchars((string) ($filters['query'] ?? '')) ?>" placeholder="ID, tytuł lub opis"></label>
               <label class="admin-field"><span>Kwalifikacja</span><select name="exam_id"><option value="">Wszystkie</option><?php foreach ($examTypes as $examType): ?><option value="<?= (int) $examType['id'] ?>" <?= (string) ($filters['exam_id'] ?? '') === (string) $examType['id'] ? 'selected' : '' ?>><?= htmlspecialchars((string) $examType['code']) ?></option><?php endforeach; ?></select></label>
               <label class="admin-field"><span>Temat</span><select name="topic_id"><option value="">Wszystkie</option><?php foreach ($sheetTopics as $topic): ?><option value="<?= (int) $topic['id'] ?>" <?= (string) ($filters['topic_id'] ?? '') === (string) $topic['id'] ? 'selected' : '' ?>><?= htmlspecialchars((string) $topic['exam_code'] . ' — ' . (string) $topic['name']) ?></option><?php endforeach; ?></select></label>
               <label class="admin-field"><span>Status</span><select name="status"><option value="">Wszystkie</option><option value="active" <?= ($filters['status'] ?? '') === 'active' ? 'selected' : '' ?>>Aktywne</option><option value="inactive" <?= ($filters['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>Nieaktywne</option></select></label>
-              <div class="admin-toolbar__actions"><button class="btn btn--primary" type="submit">Filtruj</button><a class="btn btn--secondary" href="<?= url('admin/arkusze') ?>">Wyczyść</a></div>
+              <div class="admin-toolbar__actions"><button class="btn btn--primary" type="submit">Filtruj</button><a class="btn btn--secondary" href="<?= url('admin/arkusze') ?>" data-admin-reset>Wyczyść</a><span class="admin-analytics__request-status hidden" data-admin-status><span class="admin-analytics__spinner"></span>Wczytywanie…</span></div>
             </form>
           </section>
 
           <section class="stats-card">
             <div class="stats-card__header">
               <div class="stats-card__title"><i class="fas fa-file-pdf"></i><span>Lista arkuszy</span></div>
-              <span class="badge badge--secondary">Wyniki: <?= (int) ($pagination['total'] ?? 0) ?></span>
+              <span class="badge badge--secondary" data-admin-total>Wyniki: <?= (int) ($pagination['total'] ?? 0) ?></span>
             </div>
             <div class="admin-table admin-table--sheets">
-              <div class="admin-table__head"><span>ID</span><span>Arkusz</span><span>Temat</span><span>Trudność</span><span>Pliki</span><span>Status</span><span>Aktualizacja</span><span>Akcje</span></div>
-              <?php if (empty($sheets)): ?>
-                <div class="admin-empty">Nie znaleziono arkuszy.</div>
-              <?php else: ?>
-                <?php foreach ($sheets as $sheet): ?>
-                  <?php $sheetId = (int) $sheet['id']; $isActive = (int) ($sheet['is_active'] ?? 0) === 1; ?>
-                  <div class="admin-table__row">
-                    <div class="admin-table__cell admin-table__cell--id" data-label="ID"><?= $sheetId ?></div>
-                    <div class="admin-table__cell admin-truncate" data-label="Arkusz" title="<?= htmlspecialchars((string) ($sheet['title'] ?? '')) ?>"><strong><?= htmlspecialchars((string) ($sheet['title'] ?? '')) ?></strong><small><?= htmlspecialchars((string) ($sheet['description'] ?: 'Brak opisu')) ?></small></div>
-                    <div class="admin-table__cell" data-label="Temat"><strong><?= htmlspecialchars((string) ($sheet['exam_code'] ?? '')) ?></strong><small><?= htmlspecialchars((string) ($sheet['topic_name'] ?? '')) ?></small></div>
-                    <div class="admin-table__cell" data-label="Trudność"><strong><?= (int) $sheet['difficulty'] ?>/10</strong></div>
-                    <div class="admin-table__cell" data-label="Pliki"><span class="badge badge--accent">PDF</span> <?= !empty($sheet['zip_path']) ? '<span class="badge badge--secondary">ZIP</span>' : '' ?><?= !empty($sheet['resources_path']) ? ' <span class="badge badge--secondary">Zasoby</span>' : '' ?><?= !empty($sheet['thumbnail_path']) ? ' <span class="badge badge--secondary">Miniat.</span>' : '' ?></div>
-                    <div class="admin-table__cell" data-label="Status"><span class="admin-status admin-status--<?= $isActive ? 'success' : 'danger' ?>"><?= $isActive ? 'Aktywny' : 'Nieaktywny' ?></span></div>
-                    <div class="admin-table__cell" data-label="Aktualizacja"><?= $date($sheet['updated_at'] ?? null) ?></div>
-                    <div class="admin-table__cell" data-label="Akcje">
-                      <div class="admin-actions">
-                        <a class="btn btn--secondary btn--sm" href="<?= url('arkusze/' . rawurlencode((string) ($sheet['exam_code'] ?? '')) . '/' . $sheetId) ?>">Podgląd</a>
-                        <a class="btn btn--secondary btn--sm" href="<?= url('admin/arkusze/' . $sheetId . '/edytuj') ?>">Edytuj</a>
-                        <?php if ($isActive): ?>
-                          <form method="POST" action="<?= url('admin/arkusze/' . $sheetId . '/dezaktywuj') ?>"><?= csrf_field() ?><button class="btn btn--danger btn--sm" type="submit" onclick="return confirm('Na pewno dezaktywować ten arkusz?')">Dezaktywuj</button></form>
-                        <?php else: ?>
-                          <form method="POST" action="<?= url('admin/arkusze/' . $sheetId . '/aktywuj') ?>"><?= csrf_field() ?><button class="btn btn--primary btn--sm" type="submit">Aktywuj</button></form>
-                        <?php endif; ?>
-                      </div>
-                    </div>
-                  </div>
-                <?php endforeach; ?>
+              <div class="admin-table__head"><span><input type="checkbox" data-check-all aria-label="Zaznacz wszystkie na stronie"></span><span>ID</span><span>Arkusz</span><span>Temat</span><span>Trudność</span><span>Pliki</span><span>Status</span><span>Aktualizacja</span><span>Akcje</span></div>
+              <div class="admin-table__body" data-admin-rows>
+                <?php include __DIR__ . '/partials/sheets_rows.php'; ?>
+              </div>
+            </div>
+
+            <div class="admin-bulk-bar" data-admin-bulk-bar>
+              <span class="admin-bulk-bar__info">Zaznaczono: <strong data-bulk-count>0</strong></span>
+              <div class="admin-bulk-bar__actions">
+                <button type="button" class="btn btn--primary btn--sm" data-bulk-action="activate" data-confirm="Aktywować zaznaczone arkusze?" data-confirm-title="Aktywacja zbiorcza">Aktywuj</button>
+                <button type="button" class="btn btn--danger btn--sm" data-bulk-action="deactivate" data-confirm="Zdezaktywować zaznaczone arkusze?" data-confirm-title="Dezaktywacja zbiorcza" data-confirm-tone="danger">Dezaktywuj</button>
+                <button type="button" class="btn btn--secondary btn--sm" data-bulk-clear>Odznacz wszystko</button>
+              </div>
+            </div>
+
+            <div class="admin-pagination" data-admin-pagination>
+              <?php if (($pagination['totalPages'] ?? 1) > 1): ?>
+                <span class="admin-pagination__status">Strona <?= (int) $pagination['page'] ?> / <?= (int) $pagination['totalPages'] ?></span>
+                <div class="admin-actions">
+                  <?php if ($pagination['page'] > 1): ?><a class="btn btn--secondary btn--sm" href="<?= htmlspecialchars($buildUrl(['page' => $pagination['page'] - 1])) ?>">Poprzednia</a><?php endif; ?>
+                  <?php if ($pagination['page'] < $pagination['totalPages']): ?><a class="btn btn--secondary btn--sm" href="<?= htmlspecialchars($buildUrl(['page' => $pagination['page'] + 1])) ?>">Następna</a><?php endif; ?>
+                </div>
               <?php endif; ?>
             </div>
-            <?php if (($pagination['totalPages'] ?? 1) > 1): ?>
-              <div class="admin-pagination"><span class="admin-pagination__status">Strona <?= (int) $pagination['page'] ?> / <?= (int) $pagination['totalPages'] ?></span><div class="admin-actions"><?php if ($pagination['page'] > 1): ?><a class="btn btn--secondary btn--sm" href="<?= htmlspecialchars($buildUrl(['page' => $pagination['page'] - 1])) ?>">Poprzednia</a><?php endif; ?><?php if ($pagination['page'] < $pagination['totalPages']): ?><a class="btn btn--secondary btn--sm" href="<?= htmlspecialchars($buildUrl(['page' => $pagination['page'] + 1])) ?>">Następna</a><?php endif; ?></div></div>
-            <?php endif; ?>
           </section>
 
           <section class="stats-card">
