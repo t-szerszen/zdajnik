@@ -20,6 +20,36 @@
 ?>
 
 <head>
+  <!--
+    @property theme-init
+    @description Musi być pierwszą rzeczą w <head>, przed jakimkolwiek CSS/meta -
+                 to jedyny sposób, żeby klasa `dark` na <html> była ustawiona
+                 zanim przeglądarka cokolwiek wyrenderuje. Umieszczenie tego niżej
+                 (np. po arkuszach stylów) zostawia okno na błysk złego motywu
+                 przy pierwszym wejściu na stronę.
+  -->
+  <script>
+    (function () {
+      try {
+        // Sprawdź zapisany motyw w localStorage - ma priorytet nad ustawieniem systemowym,
+        // bo to świadomy wybór użytkownika dokonany np. przełącznikiem w stopce.
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else if (savedTheme === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          // Brak zapisanego wyboru (np. pierwsza wizyta, tryb gościa) - użyj motywu
+          // ustawionego na urządzeniu użytkownika, żeby strona od razu wyglądała spójnie.
+          const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.classList.toggle('dark', prefersDark);
+        }
+      } catch (e) {
+        // W razie problemów z localStorage/matchMedia, nic nie rób
+      }
+    })();
+  </script>
+
   <!-- ================================================================== -->
   <!-- 1. Podstawowa konfiguracja i metadane -->
   <!-- ================================================================== -->
@@ -192,32 +222,6 @@
           </script>
     <?php endforeach; ?>
   <?php endif; ?>
-
-
-  <script>
-    (function () {
-      try {
-        // Sprawdź zapisany motyw w localStorage - ma priorytet nad ustawieniem systemowym,
-        // bo to świadomy wybór użytkownika dokonany np. przełącznikiem w stopce.
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-          document.documentElement.classList.add('dark');
-          return;
-        }
-        if (savedTheme === 'light') {
-          document.documentElement.classList.remove('dark');
-          return;
-        }
-
-        // Brak zapisanego wyboru (np. pierwsza wizyta, tryb gościa) - użyj motywu
-        // ustawionego na urządzeniu użytkownika, żeby strona od razu wyglądała spójnie.
-        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.classList.toggle('dark', prefersDark);
-      } catch (e) {
-        // W razie problemów z localStorage/matchMedia, nic nie rób
-      }
-    })();
-  </script>
 
   <!-- ================================================================== -->
   <!-- 6. Opcjonalne skrypty JavaScript dla konkretnych widoków -->
