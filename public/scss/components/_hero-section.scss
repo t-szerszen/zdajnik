@@ -12,6 +12,18 @@
   }
 }
 
+// Bez opacity - .hero-section__title jest elementem LCP, a opacity: 0 na starcie
+// opóźnia moment, w którym przeglądarka liczy Largest Contentful Paint.
+@keyframes hero-title-rise {
+  from {
+    transform: translateY(26px);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
 .hero-section {
   position: relative;
   min-height: min(860px, calc(100vh - 1rem));
@@ -102,10 +114,9 @@
     font-weight: 900;
     line-height: 0.98;
     letter-spacing: 0;
-    opacity: 0;
-    // To jest element LCP - animacja wejścia zostaje, ale znacznie krótsza
-    // (0.32s zamiast 0.72s) i bez opóźnienia, żeby nie dokładać czasu do LCP.
-    animation: hero-fade-up 0.32s var(--ease-emphasized) forwards;
+    // To jest element LCP - widoczny od pierwszej klatki (brak opacity: 0),
+    // animuje się tylko przez transform, żeby nie opóźniać renderu LCP.
+    animation: hero-title-rise 0.32s var(--ease-emphasized) forwards;
   }
 
   &__title-accent {
@@ -425,8 +436,13 @@ html.dark {
   .hero-section__subtitle,
   .hero-section__cta-group,
   .hero-feature-grid {
-    opacity: 1;
     animation: none;
+  }
+
+  .hero-section__subtitle,
+  .hero-section__cta-group,
+  .hero-feature-grid {
+    opacity: 1;
   }
 
   .hero-feature-card {
