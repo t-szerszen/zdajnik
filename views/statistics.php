@@ -150,7 +150,7 @@ foreach ($categories as $cat) {
             <?php if (empty($topicStats)): ?>
               <div class="stats-card__empty stats-card__empty--compact">
                 <p>Rozpocznij naukę, aby zobaczyć postęp.</p>
-                <a href="<?= url('jedno-pytanie/' . $selectedCategoryCode) ?>" class="btn btn--primary btn--sm"
+                <a href="<?= url('jedno-pytanie/' . exam_code_to_url($selectedCategoryCode)) ?>" class="btn btn--primary btn--sm"
                   >Wybierz temat</a>
               </div>
               <?php
@@ -209,7 +209,7 @@ foreach ($categories as $cat) {
                 <p>Twój wykres skuteczności jest jeszcze pusty.</p>
                 <p class="stats-card__empty-hint">Rozwiąż pierwszy
                   egzamin, aby wygenerować Twój trend!</p>
-                <a href="<?= url('test/' . $selectedCategoryCode) ?>" class="btn btn--primary"
+                <a href="<?= url('test/' . exam_code_to_url($selectedCategoryCode)) ?>" class="btn btn--primary"
                   >Rozpocznij test</a>
               </div>
               <?php
@@ -506,7 +506,7 @@ foreach ($categories as $cat) {
               <?php if (empty($recentExams['items'])): ?>
                 <li class="stats-card__empty">Nie masz jeszcze żadnych zapisanych egzaminów. Czas to zmienić!</li>
                 <li class="stats-card__action">
-                  <a href="<?= url('test/' . $selectedCategoryCode) ?>" class="btn btn--primary">Podejdź do arkusza</a>
+                  <a href="<?= url('test/' . exam_code_to_url($selectedCategoryCode)) ?>" class="btn btn--primary">Podejdź do arkusza</a>
                 </li>
                 <?php
               else: ?>

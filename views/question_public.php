@@ -195,13 +195,13 @@ $extraSchemas = [
           <p class="questions-cta__text">Rozwiąż pełny test próbny <?= htmlspecialchars($examCode) ?> albo wylosuj
             pojedyncze pytanie na szybką powtórkę.</p>
           <div class="questions-cta__actions">
-            <a href="<?= url('test/' . rawurlencode($examCode)) ?>" class="btn btn--primary btn--sm">
+            <a href="<?= url('test/' . exam_code_to_url($examCode)) ?>" class="btn btn--primary btn--sm">
               <i class="fas fa-file-pen"></i> Test próbny <?= htmlspecialchars($examCode) ?>
             </a>
-            <a href="<?= url('jedno-pytanie/' . rawurlencode($examCode)) ?>" class="btn btn--secondary btn--sm">
+            <a href="<?= url('jedno-pytanie/' . exam_code_to_url($examCode)) ?>" class="btn btn--secondary btn--sm">
               <i class="fas fa-bolt"></i> Jedno pytanie
             </a>
-            <a href="<?= url('personalizowany-test/' . rawurlencode($examCode)) ?>" class="btn btn--secondary btn--sm">
+            <a href="<?= url('personalizowany-test/' . exam_code_to_url($examCode)) ?>" class="btn btn--secondary btn--sm">
               <i class="fas fa-sliders"></i> Własny test
             </a>
           </div>

@@ -97,7 +97,7 @@ $extraSchemas = [
             <p class="questions-cta__text">Rozwiąż pełny test próbny albo wylosuj jedno pytanie na szybką powtórkę.</p>
             <div class="questions-cta__actions">
               <?php foreach ($exams as $exam): ?>
-                <a href="<?= url('test/' . rawurlencode((string) $exam['exam_code'])) ?>" class="btn btn--primary btn--sm">
+                <a href="<?= url('test/' . exam_code_to_url((string) $exam['exam_code'])) ?>" class="btn btn--primary btn--sm">
                   <i class="fas fa-file-pen"></i> Test próbny <?= htmlspecialchars((string) $exam['exam_code']) ?>
                 </a>
               <?php endforeach; ?>

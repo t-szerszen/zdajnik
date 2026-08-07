@@ -88,6 +88,23 @@ class QuestionController extends BaseController
       return;
     }
 
+    // Niekanoniczny wariant segmentu (np. "INF03", "inf.03") - 301 na znormalizowaną
+    // formę, zachowując aktywne filtry/stronę z query stringa. "url" trzeba pominąć -
+    // to wewnętrzny parametr, którym .htaccess przekazuje ścieżkę do routera (QSA),
+    // nie faktyczny parametr wpisany przez użytkownika.
+    $canonicalSegment = exam_code_to_url((string) $exam['code']);
+    if ($code !== $canonicalSegment) {
+      $queryParams = $_GET;
+      unset($queryParams['url']);
+
+      $redirectUrl = url('pytania/' . $canonicalSegment);
+      if ($queryParams) {
+        $redirectUrl .= '?' . http_build_query($queryParams);
+      }
+      header('Location: ' . $redirectUrl, true, 301);
+      exit;
+    }
+
     $examTypeId = (int) $exam['id'];
 
     $filters = [
@@ -222,8 +239,12 @@ class QuestionController extends BaseController
     // przestaje być kanoniczny - kierujemy na aktualny, zachowując moc linków.
     $canonicalUrl = question_url($question);
     $expectedSlugId = question_slug((string) $question['question_text']) . '-' . $questionId;
+    $canonicalSegment = exam_code_to_url((string) $exam['code']);
 
-    if ($slugId !== $expectedSlugId) {
+    // Przekierowanie obejmuje zarówno przestarzały slug (treść pytania się zmieniła),
+    // jak i niekanoniczny segment kwalifikacji (np. "INF03" zamiast "inf03") - oba
+    // przypadki mają ten sam, poprawny cel: question_url($question).
+    if ($code !== $canonicalSegment || $slugId !== $expectedSlugId) {
       header('Location: ' . $canonicalUrl, true, 301);
       exit;
     }

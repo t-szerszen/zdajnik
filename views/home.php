@@ -223,7 +223,7 @@ $extraSchemas = [
       <h2 class="section-title">Wybierz kwalifikację i zacznij ćwiczyć</h2>
       <p class="section-subtitle">Dostępne są kwalifikacje INF.03 i INF.04. Kolejne działy będziemy dodawać stopniowo.</p>
       <div class="exams-grid">
-        <a href="<?= url('test/INF.03') ?>" class="exam-card">
+        <a href="<?= url('test/inf03') ?>" class="exam-card">
           <img src="<?= url('images/exams/inf03-programowanie-webowe-800.webp') ?>"
             srcset="<?= url('images/exams/inf03-programowanie-webowe-400.webp') ?> 400w, <?= url('images/exams/inf03-programowanie-webowe-800.webp') ?> 800w, <?= url('images/exams/inf03-programowanie-webowe.webp') ?> 900w"
             sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 400px"
@@ -253,7 +253,7 @@ $extraSchemas = [
             </p>
           </div>
         </a>
-        <a href="<?= url('test/INF.04') ?>" class="exam-card">
+        <a href="<?= url('test/inf04') ?>" class="exam-card">
           <img src="<?= url('images/exams/inf04-aplikacje-800.webp') ?>"
             srcset="<?= url('images/exams/inf04-aplikacje-400.webp') ?> 400w, <?= url('images/exams/inf04-aplikacje-800.webp') ?> 800w, <?= url('images/exams/inf04-aplikacje.webp') ?> 900w"
             sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 400px"

@@ -91,10 +91,10 @@ $extraSchemas = [
             <i class="fas fa-arrow-left"></i> Wszystkie kwalifikacje
           </a>
           <div class="questions-page__toolbar-actions">
-            <a href="<?= url('test/' . rawurlencode($examCode)) ?>" class="btn btn--primary btn--sm">
+            <a href="<?= url('test/' . exam_code_to_url($examCode)) ?>" class="btn btn--primary btn--sm">
               <i class="fas fa-file-pen"></i> Test próbny
             </a>
-            <a href="<?= url('jedno-pytanie/' . rawurlencode($examCode)) ?>" class="btn btn--secondary btn--sm">
+            <a href="<?= url('jedno-pytanie/' . exam_code_to_url($examCode)) ?>" class="btn btn--secondary btn--sm">
               <i class="fas fa-bolt"></i> Jedno pytanie
             </a>
           </div>

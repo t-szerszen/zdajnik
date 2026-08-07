@@ -47,7 +47,7 @@ $pageDescription = 'Arkusze praktyczne do egzaminów zawodowych INF — wybierz 
             <?php foreach ($exams as $exam): ?>
               <?php $sheetsCount = (int) ($exam['sheets_count'] ?? 0); ?>
               <?php if ($sheetsCount > 0): ?>
-                <a href="<?= url('arkusze/' . rawurlencode((string) $exam['code'])) ?>" class="sheets-hub-card">
+                <a href="<?= url('arkusze/' . exam_code_to_url((string) $exam['code'])) ?>" class="sheets-hub-card">
                   <div class="sheets-hub-card__icon"><i class="fas fa-file-pdf"></i></div>
                   <div class="sheets-hub-card__content">
                     <h2 class="sheets-hub-card__code"><?= htmlspecialchars((string) $exam['code']) ?></h2>

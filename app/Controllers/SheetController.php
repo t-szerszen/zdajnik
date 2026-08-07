@@ -95,14 +95,22 @@ class SheetController extends BaseController
   {
     $this->checkAvailability();
 
-    $exam = $this->dynamicData->getExamDetails($code);
+    $canonicalCode = $this->dynamicData->resolveAnyExamCodeByUrlSegment($code);
 
-    if (!$exam) {
+    if ($canonicalCode === null) {
       http_response_code(404);
       $errorController = new ErrorController();
       $errorController->showError(404, 'Kwalifikacja nie została znaleziona.');
       return;
     }
+
+    $canonicalSegment = exam_code_to_url($canonicalCode);
+    if ($code !== $canonicalSegment) {
+      header('Location: ' . url('arkusze/' . $canonicalSegment), true, 301);
+      exit;
+    }
+
+    $exam = $this->dynamicData->getExamDetails($canonicalCode);
 
     $userId = $this->isUserLoggedIn ? $this->currentUser->getId() : null;
 
@@ -125,14 +133,21 @@ class SheetController extends BaseController
   {
     $this->checkAvailability();
 
+    $canonicalCode = $this->dynamicData->resolveAnyExamCodeByUrlSegment($code);
     $sheet = ctype_digit($sheetId) ? $this->sheetModel->findActiveById((int) $sheetId) : false;
 
     // Arkusz musi istnieć i należeć do kwalifikacji wskazanej w adresie
-    if (!$sheet || strcasecmp((string) $sheet['exam_code'], $code) !== 0) {
+    if ($canonicalCode === null || !$sheet || strcasecmp((string) $sheet['exam_code'], $canonicalCode) !== 0) {
       http_response_code(404);
       $errorController = new ErrorController();
       $errorController->showError(404, 'Arkusz nie został znaleziony.');
       return;
+    }
+
+    $canonicalSegment = exam_code_to_url($canonicalCode);
+    if ($code !== $canonicalSegment) {
+      header('Location: ' . url('arkusze/' . $canonicalSegment . '/' . $sheetId), true, 301);
+      exit;
     }
 
     $note = null;

@@ -117,7 +117,7 @@ $pageDescription = 'Twoje notatki do arkuszy — oceny trudności i opisy proble
                       <span class="badge badge--secondary"><?= htmlspecialchars((string) $noteRow['topic_name']) ?></span>
                     </div>
                     <a class="sheet-note-card__title"
-                      href="<?= url('arkusze/' . rawurlencode($noteExamCode) . '/' . (int) $noteRow['sheet_id']) ?>">
+                      href="<?= url('arkusze/' . exam_code_to_url($noteExamCode) . '/' . (int) $noteRow['sheet_id']) ?>">
                       <?= htmlspecialchars((string) $noteRow['sheet_title']) ?>
                     </a>
                   </div>
@@ -150,7 +150,7 @@ $pageDescription = 'Twoje notatki do arkuszy — oceny trudności i opisy proble
                 <div class="sheet-note-card__footer">
                   <span class="sheet-note-card__date"><i class="far fa-clock"></i> Aktualizacja:
                     <?= date('d.m.Y H:i', strtotime((string) $noteRow['updated_at'])) ?></span>
-                  <a href="<?= url('arkusze/' . rawurlencode($noteExamCode) . '/' . (int) $noteRow['sheet_id']) ?>"
+                  <a href="<?= url('arkusze/' . exam_code_to_url($noteExamCode) . '/' . (int) $noteRow['sheet_id']) ?>"
                     class="btn btn--secondary btn--sm">Otwórz arkusz</a>
                 </div>
               </li>

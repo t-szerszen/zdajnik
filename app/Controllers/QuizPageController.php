@@ -31,17 +31,25 @@ class QuizPageController extends BaseController
   }
 
   /**
-   * Strażnik dostępności egzaminów.
+   * Strażnik dostępności egzaminów i normalizator adresu URL.
    *
    * Tymczasowe zabezpieczenie blokujące dostęp do kwalifikacji, których baza
-   * pytań jest wciąż w przygotowaniu (obecnie INF.02).
+   * pytań jest wciąż w przygotowaniu (obecnie INF.02). Dodatkowo rozwiązuje
+   * dowolny wariant zapisu segmentu URL (INF.03, inf.03, Inf03, ...) do
+   * kanonicznego kodu z bazy i - jeśli wejściowy segment nie był już w
+   * znormalizowanej formie (bez separatora, małe litery) - przekierowuje
+   * 301 na kanoniczny adres zamiast renderować treść pod wieloma wariantami
+   * tego samego URL-a.
    *
-   * @param string $code Kod kwalifikacji (np. INF.02, INF.03, INF.04).
-   * @return void
+   * @param string $code Surowy segment adresu URL (kod kwalifikacji w dowolnym zapisie).
+   * @param string $routePrefix Prefiks trasy tej strony (np. "test", "jedno-pytanie").
+   * @return string Kanoniczny kod kwalifikacji z bazy (np. "INF.03").
    */
-  private function checkAvailability(string $code): void
+  private function checkAvailability(string $code, string $routePrefix): string
   {
-    if (!in_array(strtoupper($code), DynamicDataService::AVAILABLE_EXAM_CODES, true)) {
+    $canonicalCode = DynamicDataService::getExamCodeByUrlSegment($code);
+
+    if ($canonicalCode === null) {
       $this->getAnalyticsService()->trackValidationError(
         $this->currentUser?->getId(),
         'quiz_page',
@@ -51,6 +59,14 @@ class QuizPageController extends BaseController
       header("Location: /?message=" . urlencode("Ten egzamin będzie dostępny wkrótce!"));
       exit;
     }
+
+    $canonicalSegment = exam_code_to_url($canonicalCode);
+    if ($code !== $canonicalSegment) {
+      header('Location: ' . url($routePrefix . '/' . $canonicalSegment), true, 301);
+      exit;
+    }
+
+    return $canonicalCode;
   }
 
   /**
@@ -67,11 +83,11 @@ class QuizPageController extends BaseController
    */
   public function showOneQuestionPage(string $code): void
   {
-    // KROK 1: Walidacja dostępności
-    $this->checkAvailability($code);
+    // KROK 1: Walidacja dostępności i normalizacja URL-a
+    $examCode = $this->checkAvailability($code, 'jedno-pytanie');
 
     // KROK 2: Pobranie metadanych egzaminu
-    $exam = $this->dynamicData->getExamDetails($code);
+    $exam = $this->dynamicData->getExamDetails($examCode);
 
     if ($exam) {
       // KROK 3: Pobranie kategorii tematycznych
@@ -80,7 +96,7 @@ class QuizPageController extends BaseController
       // KROK 4: Renderowanie widoku
       $this->renderView('one_question', [
         'exam' => $exam,
-        'examCode' => $code,
+        'examCode' => $examCode,
         'categories' => $categories
       ]);
     } else {
@@ -90,7 +106,7 @@ class QuizPageController extends BaseController
         'exam_not_found'
       );
       http_response_code(404);
-      echo "Egzamin o kodzie $code nie istnieje.";
+      echo "Egzamin o kodzie $examCode nie istnieje.";
     }
   }
 
@@ -108,9 +124,9 @@ class QuizPageController extends BaseController
    */
   public function showPersonalizedTestPage(string $code): void
   {
-    // KROK 1: Walidacja i pobranie danych podstawowych
-    $this->checkAvailability($code);
-    $exam = $this->dynamicData->getExamDetails($code);
+    // KROK 1: Walidacja, normalizacja URL-a i pobranie danych podstawowych
+    $examCode = $this->checkAvailability($code, 'personalizowany-test');
+    $exam = $this->dynamicData->getExamDetails($examCode);
 
     if (!$exam) {
       $this->getAnalyticsService()->trackValidationError(
@@ -119,13 +135,13 @@ class QuizPageController extends BaseController
         'exam_not_found'
       );
       http_response_code(404);
-      echo "Egzamin o kodzie $code nie istnieje.";
+      echo "Egzamin o kodzie $examCode nie istnieje.";
       return;
     }
 
     $data = [
       'exam' => $exam,
-      'examCode' => $code,
+      'examCode' => $examCode,
       'selectedSubjectId' => null
     ];
 
@@ -149,13 +165,13 @@ class QuizPageController extends BaseController
    */
   public function showTestPage(string $code): void
   {
-    $this->checkAvailability($code);
-    $exam = $this->dynamicData->getExamDetails($code);
+    $examCode = $this->checkAvailability($code, 'test');
+    $exam = $this->dynamicData->getExamDetails($examCode);
 
     if ($exam) {
       $this->renderView('test', [
         'exam' => $exam,
-        'examCode' => $code
+        'examCode' => $examCode
       ]);
     } else {
       $this->getAnalyticsService()->trackValidationError(
@@ -164,7 +180,7 @@ class QuizPageController extends BaseController
         'exam_not_found'
       );
       http_response_code(404);
-      echo "Egzamin o kodzie $code nie istnieje.";
+      echo "Egzamin o kodzie $examCode nie istnieje.";
     }
   }
 }

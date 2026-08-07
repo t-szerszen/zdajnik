@@ -28,7 +28,7 @@ $date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotim
       <div class="admin-table__cell" data-label="Aktualizacja"><?= $date($sheet['updated_at'] ?? null) ?></div>
       <div class="admin-table__cell" data-label="Akcje">
         <div class="admin-actions">
-          <a class="btn btn--secondary btn--sm" href="<?= url('arkusze/' . rawurlencode((string) ($sheet['exam_code'] ?? '')) . '/' . $sheetId) ?>">Podgląd</a>
+          <a class="btn btn--secondary btn--sm" href="<?= url('arkusze/' . exam_code_to_url((string) ($sheet['exam_code'] ?? '')) . '/' . $sheetId) ?>">Podgląd</a>
           <a class="btn btn--secondary btn--sm" href="<?= url('admin/arkusze/' . $sheetId . '/edytuj') ?>">Edytuj</a>
           <?php if ($isActive): ?>
             <form method="POST" action="<?= url('admin/arkusze/' . $sheetId . '/dezaktywuj') ?>" data-ajax data-confirm="Na pewno dezaktywować ten arkusz?" data-confirm-title="Dezaktywacja arkusza" data-confirm-label="Dezaktywuj" data-confirm-tone="danger"><?= csrf_field() ?><button class="btn btn--danger btn--sm" type="submit">Dezaktywuj</button></form>

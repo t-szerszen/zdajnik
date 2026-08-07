@@ -73,7 +73,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Zdajnik';
             <?php
             $premiumParam = ($type === 'critical') ? 'toImprove' : (($type === 'saved') ? 'saved' : 'lastMistakes');
             ?>
-            <a href="<?= url('jedno-pytanie/' . $selectedCategoryCode . '?premium=' . $premiumParam . '&selectAll=true#select-all-codes') ?>"
+            <a href="<?= url('jedno-pytanie/' . exam_code_to_url($selectedCategoryCode) . '?premium=' . $premiumParam . '&selectAll=true#select-all-codes') ?>"
               class="btn btn--primary btn--sm">
               <i class="fas fa-play"></i> Ćwicz wszystkie (
               <?= count($items) ?>)

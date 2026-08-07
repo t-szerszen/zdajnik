@@ -53,7 +53,7 @@ $pageDescription = $pageDescription ?? 'Szczegóły arkusza w Bibliotece Arkuszy
     <section class="sheets-page sheet-detail">
       <div class="sheets-page__container">
 
-        <a href="<?= url('arkusze/' . rawurlencode($examCode)) ?>" class="back-link">
+        <a href="<?= url('arkusze/' . exam_code_to_url($examCode)) ?>" class="back-link">
           <i class="fas fa-arrow-left"></i> Wróć do arkuszy <?= htmlspecialchars($examCode) ?>
         </a>
 

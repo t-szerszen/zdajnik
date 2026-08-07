@@ -115,7 +115,7 @@ $pageDescription = $pageDescription ?? ('Arkusze praktyczne ' . $examCode . ' z 
                     ?>
                     <li class="sheets-topic__item" data-sheet-item data-topic-id="<?= (int) $topic['id'] ?>"
                       data-difficulty-group="<?= $difficultyGroup ?>">
-                      <a href="<?= url('arkusze/' . rawurlencode($examCode) . '/' . (int) $sheet['id']) ?>" class="sheet-card">
+                      <a href="<?= url('arkusze/' . exam_code_to_url($examCode) . '/' . (int) $sheet['id']) ?>" class="sheet-card">
                         <?php if (!empty($sheet['thumbnail_path'])): ?>
                           <img class="sheet-card__thumb"
                             src="<?= url('files/sheets/' . rawurlencode((string) $sheet['thumbnail_path'])) ?>"

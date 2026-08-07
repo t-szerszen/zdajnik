@@ -76,7 +76,7 @@ use App\Models\User;
 
       <!-- TEORIA: kwalifikacje -> tryby nauki teoretycznej -->
       <li class="main-nav__item dropdown">
-        <a href="<?= url('jedno-pytanie/INF.04') ?>" class="main-nav__link">
+        <a href="<?= url('jedno-pytanie/inf04') ?>" class="main-nav__link">
           <i class="main-nav__icon fas fa-book"></i>
           <span>Teoria</span>
           <i class="dropdown__arrow fas fa-chevron-down"></i>
@@ -90,24 +90,24 @@ use App\Models\User;
             </span>
           </li>
           <li class="dropdown__item dropdown dropdown--nested">
-            <a href="<?= url('jedno-pytanie/INF.03') ?>" class="dropdown__link dropdown__link--trigger">
+            <a href="<?= url('jedno-pytanie/inf03') ?>" class="dropdown__link dropdown__link--trigger">
               <i class="dropdown__icon fas fa-laptop-code"></i>
               <span>INF.03</span>
               <i class="dropdown__arrow dropdown__arrow--nested fas fa-chevron-right"></i>
             </a>
             <ul class="dropdown__menu dropdown__menu--nested">
               <li class="dropdown__item">
-                <a href="<?= url('jedno-pytanie/INF.03') ?>" class="dropdown__link">
+                <a href="<?= url('jedno-pytanie/inf03') ?>" class="dropdown__link">
                   <i class="dropdown__icon fas fa-question-circle"></i> Jedno Pytanie
                 </a>
               </li>
               <li class="dropdown__item">
-                <a href="<?= url('personalizowany-test/INF.03') ?>" class="dropdown__link">
+                <a href="<?= url('personalizowany-test/inf03') ?>" class="dropdown__link">
                   <i class="dropdown__icon fas fa-sliders-h"></i> Spersonalizowany Test
                 </a>
               </li>
               <li class="dropdown__item">
-                <a href="<?= url('test/INF.03') ?>" class="dropdown__link">
+                <a href="<?= url('test/inf03') ?>" class="dropdown__link">
                   <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
                 </a>
               </li>
@@ -119,24 +119,24 @@ use App\Models\User;
             </ul>
           </li>
           <li class="dropdown__item dropdown dropdown--nested">
-            <a href="<?= url('jedno-pytanie/INF.04') ?>" class="dropdown__link dropdown__link--trigger">
+            <a href="<?= url('jedno-pytanie/inf04') ?>" class="dropdown__link dropdown__link--trigger">
               <i class="dropdown__icon fas fa-code"></i>
               <span>INF.04</span>
               <i class="dropdown__arrow dropdown__arrow--nested fas fa-chevron-right"></i>
             </a>
             <ul class="dropdown__menu dropdown__menu--nested">
               <li class="dropdown__item">
-                <a href="<?= url('jedno-pytanie/INF.04') ?>" class="dropdown__link">
+                <a href="<?= url('jedno-pytanie/inf04') ?>" class="dropdown__link">
                   <i class="dropdown__icon fas fa-question-circle"></i> Jedno Pytanie
                 </a>
               </li>
               <li class="dropdown__item">
-                <a href="<?= url('personalizowany-test/INF.04') ?>" class="dropdown__link">
+                <a href="<?= url('personalizowany-test/inf04') ?>" class="dropdown__link">
                   <i class="dropdown__icon fas fa-sliders-h"></i> Spersonalizowany Test
                 </a>
               </li>
               <li class="dropdown__item">
-                <a href="<?= url('test/INF.04') ?>" class="dropdown__link">
+                <a href="<?= url('test/inf04') ?>" class="dropdown__link">
                   <i class="dropdown__icon fas fa-file-alt"></i> Egzamin próbny
                 </a>
               </li>

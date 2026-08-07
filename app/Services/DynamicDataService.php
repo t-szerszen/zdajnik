@@ -84,22 +84,51 @@ class DynamicDataService
   }
 
   /**
-   * Rozwiązuje segment adresu URL na kod kwalifikacji (np. "inf03" => "INF.03").
+   * Rozwiązuje segment adresu URL na kod kwalifikacji (np. "inf03", "INF.03",
+   * "inf-03" => "INF.03").
    *
-   * Dopasowanie odbywa się wyłącznie w obrębie kwalifikacji z gotową bazą pytań
+   * Segment jest normalizowany tą samą funkcją co kody kandydatów
+   * (exam_code_to_url() - usuwa wszystko poza literami/cyframi i obniża
+   * wielkość liter), dzięki czemu dopasowuje dowolny wariant zapisu, nie
+   * tylko już-kanoniczną formę bez separatora. Dopasowanie odbywa się
+   * wyłącznie w obrębie kwalifikacji z gotową bazą pytań
    * (self::AVAILABLE_EXAM_CODES), dzięki czemu publiczne strony pytań nigdy nie
    * wystawią treści z kwalifikacji oznaczonej jako "Wkrótce".
    *
-   * @param string $segment Segment adresu URL.
-   * @return string|null Kod kwalifikacji lub null, gdy segment nie pasuje do żadnej dostępnej.
+   * @param string $segment Segment adresu URL (dowolny wariant zapisu).
+   * @return string|null Kanoniczny kod kwalifikacji z bazy lub null, gdy segment nie pasuje do żadnej dostępnej.
    */
   public static function getExamCodeByUrlSegment(string $segment): ?string
   {
-    $segment = strtolower(trim($segment));
+    $segment = exam_code_to_url($segment);
 
     foreach (self::AVAILABLE_EXAM_CODES as $code) {
       if (exam_code_to_url($code) === $segment) {
         return $code;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Rozwiązuje segment adresu URL na kod kwalifikacji, bez ograniczenia do
+   * self::AVAILABLE_EXAM_CODES - przeszukuje wszystkie kwalifikacje w bazie.
+   *
+   * Odpowiednik getExamCodeByUrlSegment() dla miejsc, gdzie dostępność nie
+   * jest jeszcze rozstrzygnięta osobną logiką (np. Biblioteka Arkuszy, która
+   * w przyszłości może objąć również kwalifikacje spoza listy "gotowych").
+   *
+   * @param string $segment Segment adresu URL (dowolny wariant zapisu).
+   * @return string|null Kanoniczny kod kwalifikacji z bazy lub null, gdy segment nie pasuje do żadnej.
+   */
+  public function resolveAnyExamCodeByUrlSegment(string $segment): ?string
+  {
+    $segment = exam_code_to_url($segment);
+
+    foreach ($this->getExams() as $exam) {
+      if (exam_code_to_url((string) $exam['code']) === $segment) {
+        return (string) $exam['code'];
       }
     }
 

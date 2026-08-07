@@ -124,7 +124,7 @@ class SitemapController extends BaseController
   private function collectExamPages(): void
   {
     foreach ($this->dynamicData->getSearchableExamsWithTimestamps() as $exam) {
-      $code = rawurlencode((string) $exam['code']);
+      $code = exam_code_to_url((string) $exam['code']);
       $lastmod = $this->formatLastmod((string) ($exam['updated_at'] ?? ''));
 
       $this->addUrl(url('test/' . $code), $lastmod);
@@ -205,11 +205,11 @@ class SitemapController extends BaseController
       $lastmod = $this->formatLastmod((string) ($sheet['updated_at'] ?? ''));
 
       if (!isset($listedExams[$examCode])) {
-        $this->addUrl(url('arkusze/' . rawurlencode($examCode)));
+        $this->addUrl(url('arkusze/' . exam_code_to_url($examCode)));
         $listedExams[$examCode] = true;
       }
 
-      $this->addUrl(url('arkusze/' . rawurlencode($examCode) . '/' . (int) $sheet['id']), $lastmod);
+      $this->addUrl(url('arkusze/' . exam_code_to_url($examCode) . '/' . (int) $sheet['id']), $lastmod);
     }
   }
 

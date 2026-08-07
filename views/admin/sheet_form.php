@@ -54,7 +54,7 @@ $title = $isEdit ? 'Edycja arkusza' : 'Dodawanie arkusza';
               </div>
               <div class="stats-card__header-actions">
                 <?php if ($isEdit && $sheetId > 0 && !empty($sheet['exam_code'])): ?>
-                  <a href="<?= url('arkusze/' . rawurlencode((string) $sheet['exam_code']) . '/' . $sheetId) ?>" class="btn btn--secondary btn--sm">Podgląd</a>
+                  <a href="<?= url('arkusze/' . exam_code_to_url((string) $sheet['exam_code']) . '/' . $sheetId) ?>" class="btn btn--secondary btn--sm">Podgląd</a>
                 <?php endif; ?>
               </div>
             </div>
