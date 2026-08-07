@@ -43,10 +43,8 @@ foreach ($categories as $cat) {
   }
 }
 
-// Dodajemy Chart.js oraz nasz komponent
-$extraScripts = [
-  'https://cdn.jsdelivr.net/npm/chart.js'
-];
+// Chart.js jest już doładowywany leniwie przez loadScriptOnce() w main.js
+// (patrz initStatisticsPage) - blokujący <script> w <head> byłby zbędny.
 ?>
 <!DOCTYPE html>
 <html lang="pl">
