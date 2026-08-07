@@ -98,7 +98,14 @@
   &__link {
     display: inline-flex;
     align-items: center;
+    // Reset domyślnego wyglądu przeglądarki, gdy klasa jest użyta na <button>
+    // (np. "Ustawienia cookies" - reotwiera baner, więc musi być przyciskiem, nie linkiem)
+    padding: 0;
     color: var(--footer-muted);
+    font: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
     font-size: 0.95rem;
     line-height: 1.4;
     text-decoration: none;

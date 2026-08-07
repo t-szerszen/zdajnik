@@ -121,11 +121,21 @@ $pageDescription = 'Przeczytaj politykę prywatności serwisu Zdajnik. Dowiedz s
                 <div class="legal-list__desc">Umożliwiające zapamiętanie preferencji interfejsu, takich jak wybrany
                   schemat kolorystyczny (tryb jasny/ciemny).</div>
               </li>
+              <li>
+                <div class="legal-list__label">Pliki analityczne (Google Analytics, Microsoft Clarity)</div>
+                <div class="legal-list__desc">Pozwalają analizować ruch w Serwisie i sposób korzystania z jego funkcji,
+                  w tym poprzez nagrywanie sesji i mapy ciepła (dostawcy: Google Ireland Limited oraz Microsoft
+                  Ireland Operations Limited). W przeciwieństwie do powyższych kategorii nie są niezbędne do działania
+                  Serwisu, dlatego są ładowane wyłącznie po wyrażeniu zgody w banerze wyświetlanym przy pierwszej
+                  wizycie. Zgodę można w każdej chwili wycofać lub zmienić przyciskiem „Ustawienia cookies" w stopce
+                  Serwisu.</div>
+              </li>
             </ul>
             <div class="legal-note">
               <i class="fas fa-info-circle"></i>
               <span>Użytkownik ma możliwość ograniczenia lub wyłączenia obsługi plików cookies w ustawieniach
-                przeglądarki, jednak może to skutkować nieprawidłowym działaniem kluczowych funkcji Serwisu.</span>
+                przeglądarki, jednak może to skutkować nieprawidłowym działaniem kluczowych funkcji Serwisu. Zgoda na
+                pliki analityczne nie jest wymagana do korzystania z Serwisu.</span>
             </div>
           </div>
         </section>

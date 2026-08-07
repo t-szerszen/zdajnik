@@ -243,6 +243,7 @@
   <link rel="modulepreload" href="/js/components/ThemeSwitcher.js?v=<?= $jsPreloadVersion ?>">
   <link rel="modulepreload" href="/js/components/show-password-toggle.js?v=<?= $jsPreloadVersion ?>">
   <link rel="modulepreload" href="/js/modules/ServiceWorkerRegistration.js?v=<?= $jsPreloadVersion ?>">
+  <link rel="modulepreload" href="/js/components/CookieConsent.js?v=<?= $jsPreloadVersion ?>">
 
   <!-- ================================================================== -->
   <!-- 5. Uporządkowane dane (Structured Data - Schema.org) - ZAAWANSOWANE SEO -->
@@ -296,4 +297,14 @@
       <script src="<?= htmlspecialchars($scriptUrl) ?>" defer></script>
     <?php endforeach; ?>
   <?php endif; ?>
+
+  <!-- ================================================================== -->
+  <!-- 7. Analityka (Google Analytics, Microsoft Clarity) -->
+  <!-- @description Celowo NIE ładowana tutaj bezwarunkowo - to cookies
+       nie-niezbędne (RODO / Prawo telekomunikacyjne), więc ładowanie jest
+       warunkowe, sterowane banerem zgody: patrz
+       views/partials/cookie_banner.php (markup) i
+       public/js/components/CookieConsent.js (logika + faktyczne wstrzyknięcie
+       tagów gtag.js / clarity.ms dopiero po kliknięciu "Akceptuj"). -->
+  <!-- ================================================================== -->
 </head>

@@ -56,6 +56,7 @@
         <a href="<?= url('o-projekcie') ?>" class="footer__link">O projekcie</a>
         <a href="<?= url('kontakt') ?>" class="footer__link">Kontakt</a>
         <a href="<?= url('polityka-prywatnosci') ?>" class="footer__link">Polityka prywatności</a>
+        <button type="button" class="footer__link" data-cookie-manage>Ustawienia cookies</button>
       </nav>
 
       <div class="footer__group footer__contact">
@@ -99,17 +100,9 @@
 </footer>
 <!-- Koniec Komponentu Stopki -->
 
-<?php
-$jsVersion = filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/main.js');
-$jsFiles = new RecursiveIteratorIterator(
-  new RecursiveDirectoryIterator($_SERVER['DOCUMENT_ROOT'] . '/js', FilesystemIterator::SKIP_DOTS)
-);
-foreach ($jsFiles as $jsFile) {
-  if ($jsFile->isFile() && $jsFile->getExtension() === 'js') {
-    $jsVersion = max($jsVersion, $jsFile->getMTime());
-  }
-}
-?>
+<?php include 'cookie_banner.php'; ?>
+
+<?php $jsVersion = js_assets_version(); ?>
 <!-- Ścieżka celowo względna (nie url()/BASE_URL): przeglądarka pobiera <script type="module">
      zawsze w trybie CORS, więc gdyby BASE_URL wskazywał na inny host niż ten, z którego
      faktycznie serwowana jest strona (np. lokalnie: BASE_URL=localhost, a wejście przez
