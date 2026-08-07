@@ -12,10 +12,9 @@ export class NavbarHandler {
     this.nav = document.querySelector('.main-nav');
     this.body = document.body;
     this.lastScrollY = window.scrollY || 0;
-
-    if (this.toggleBtn && this.drawer) {
-      this.init();
-    }
+    this.lastNavHeight = null;
+    this.scrollTicking = false;
+    this.resizeTicking = false;
 
     // .page-header (jeśli jest na stronie) podciąga się pod to, co jest nad nim,
     // zmienną CSS --dynamic-nav-height - ani navbar (np. profil zalogowanego
@@ -23,10 +22,36 @@ export class NavbarHandler {
     // ani okruszki nawigacyjne przed page-headerem (questions_hub.php,
     // questions_list.php) nie mają stałej wysokości, więc trzeba je zmierzyć -
     // inaczej zostaje szczelina, przez którą prześwituje zwykłe tło strony.
+    //
+    // Odczyt musi nastąpić PRZED init() (który przez handleScroll() dopisuje
+    // klasy is-scrolled/is-hidden zmieniające box navbara) - inaczej odczyt
+    // offsetHeight tuż po zmianie klas wymusza synchroniczny reflow.
     if (this.nav) {
       this.syncNavHeight();
-      window.addEventListener('resize', () => this.syncNavHeight(), { passive: true });
     }
+
+    if (this.toggleBtn && this.drawer) {
+      this.init();
+    }
+
+    window.addEventListener('resize', () => this.handleResize(), { passive: true });
+  }
+
+  handleResize() {
+    if (this.resizeTicking) return;
+    this.resizeTicking = true;
+
+    requestAnimationFrame(() => {
+      if (this.nav) {
+        this.syncNavHeight();
+      }
+
+      if (this.drawer && window.innerWidth > 992 && this.drawer.classList.contains('is-active')) {
+        this.closeMenu();
+      }
+
+      this.resizeTicking = false;
+    });
   }
 
   syncNavHeight() {
@@ -37,6 +62,8 @@ export class NavbarHandler {
       totalHeight += breadcrumbs.offsetHeight;
     }
 
+    if (totalHeight === this.lastNavHeight) return;
+    this.lastNavHeight = totalHeight;
     document.documentElement.style.setProperty('--dynamic-nav-height', `${totalHeight}px`);
   }
 
@@ -108,18 +135,23 @@ export class NavbarHandler {
       });
     });
 
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 992 && this.drawer.classList.contains('is-active')) {
-        this.closeMenu();
-      }
-    });
-
     // Obsługa scrolla - efekt przezroczystości na górze
-    this.nav = document.querySelector('.main-nav');
+    // (this.nav jest już ustawione w konstruktorze; zamknięcie drawera na
+    // resize obsługuje teraz wspólny handleResize() z konstruktora)
     if (this.nav) {
       this.handleScroll(); // Inicjalne sprawdzenie
-      window.addEventListener('scroll', () => this.handleScroll(), { passive: true });
+      window.addEventListener('scroll', () => this.requestScrollUpdate(), { passive: true });
     }
+  }
+
+  requestScrollUpdate() {
+    if (this.scrollTicking) return;
+    this.scrollTicking = true;
+
+    requestAnimationFrame(() => {
+      this.handleScroll();
+      this.scrollTicking = false;
+    });
   }
 
   handleScroll() {
