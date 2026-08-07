@@ -224,7 +224,9 @@ $extraSchemas = [
       <p class="section-subtitle">Dostępne są kwalifikacje INF.03 i INF.04. Kolejne działy będziemy dodawać stopniowo.</p>
       <div class="exams-grid">
         <a href="<?= url('test/INF.03') ?>" class="exam-card">
-          <img src="<?= url('images/exams/inf03-programowanie-webowe.webp') ?>"
+          <img src="<?= url('images/exams/inf03-programowanie-webowe-800.webp') ?>"
+            srcset="<?= url('images/exams/inf03-programowanie-webowe-400.webp') ?> 400w, <?= url('images/exams/inf03-programowanie-webowe-800.webp') ?> 800w, <?= url('images/exams/inf03-programowanie-webowe.webp') ?> 900w"
+            sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 400px"
             alt="Praca przy komputerze i nauka programowania webowego INF.03" class="exam-card__background"
             width="900" height="600" loading="lazy">
           <div class="exam-card__overlay"></div>
@@ -237,7 +239,9 @@ $extraSchemas = [
         </a>
         <!-- Karta nieaktywna, z modyfikatorem BEM `--disabled` -->
         <a href="#" class="exam-card exam-card--disabled" onclick="return false;">
-          <img src="<?= url('images/exams/inf02-systemy-i-sieci.webp') ?>"
+          <img src="<?= url('images/exams/inf02-systemy-i-sieci-800.webp') ?>"
+            srcset="<?= url('images/exams/inf02-systemy-i-sieci-400.webp') ?> 400w, <?= url('images/exams/inf02-systemy-i-sieci-800.webp') ?> 800w, <?= url('images/exams/inf02-systemy-i-sieci.webp') ?> 900w"
+            sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 400px"
             alt="Systemy i sieci komputerowe - przygotowanie do INF.02" class="exam-card__background"
             width="900" height="600" loading="lazy">
           <div class="exam-card__overlay"></div>
@@ -250,7 +254,9 @@ $extraSchemas = [
           </div>
         </a>
         <a href="<?= url('test/INF.04') ?>" class="exam-card">
-          <img src="<?= url('images/exams/inf04-aplikacje.webp') ?>"
+          <img src="<?= url('images/exams/inf04-aplikacje-800.webp') ?>"
+            srcset="<?= url('images/exams/inf04-aplikacje-400.webp') ?> 400w, <?= url('images/exams/inf04-aplikacje-800.webp') ?> 800w, <?= url('images/exams/inf04-aplikacje.webp') ?> 900w"
+            sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 400px"
             alt="Pisanie kodu i projektowanie aplikacji mobilnych INF.04" class="exam-card__background"
             width="900" height="577" loading="lazy">
           <div class="exam-card__overlay"></div>
