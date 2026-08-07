@@ -303,6 +303,39 @@ if (!function_exists('question_difficulty_badge_class')) {
   }
 }
 
+if (!function_exists('js_assets_version')) {
+  /**
+   * Zwraca wspólny numer wersji (cache-busting) dla całego drzewa public/js/.
+   *
+   * Zmienia się, gdy zmieni się mtime dowolnego pliku .js - main.js oraz
+   * dynamicznie importowane moduły dzielą więc jeden numer wersji, co jest
+   * konieczne, żeby modulepreload w <head> (head.php) trafiał w te same URL-e
+   * co import() w main.js (który dokleja tę samą wartość jako query string
+   * do każdego dynamicznego importu - patrz CACHE_QUERY w public/js/main.js).
+   *
+   * @return int Znacznik czasu (mtime) najnowszego pliku .js.
+   */
+  function js_assets_version(): int
+  {
+    static $version = null;
+
+    if ($version === null) {
+      $version = filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/main.js');
+
+      $jsFiles = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($_SERVER['DOCUMENT_ROOT'] . '/js', FilesystemIterator::SKIP_DOTS)
+      );
+      foreach ($jsFiles as $jsFile) {
+        if ($jsFile->isFile() && $jsFile->getExtension() === 'js') {
+          $version = max($version, $jsFile->getMTime());
+        }
+      }
+    }
+
+    return $version;
+  }
+}
+
 if (!function_exists('csrf_token')) {
   function csrf_token(): string
   {

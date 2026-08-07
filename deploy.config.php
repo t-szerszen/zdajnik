@@ -77,7 +77,7 @@ return [
             // - w CI to Linux/macOS) i wysyłamy gotowy plik przez scp zamiast budować zdalnie.
             'build_locally' => true,
             'local_build_command' => 'npm ci && npm run build:css',
-            'compiled_files' => ['public/scss/main.css'],
+            'compiled_files' => ['public/scss/main.css', 'public/scss/critical.css'],
             // Zostawione dla build_locally=false / innych hostingów, gdzie zdalny sass działa.
             'command' => 'npm ci && npm run build:css',
         ],

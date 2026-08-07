@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file head.php
  * @description
@@ -29,7 +30,7 @@
                  przy pierwszym wejściu na stronę.
   -->
   <script>
-    (function () {
+    (function() {
       try {
         // Sprawdź zapisany motyw w localStorage - ma priorytet nad ustawieniem systemowym,
         // bo to świadomy wybór użytkownika dokonany np. przełącznikiem w stopce.
@@ -181,22 +182,67 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Zdajnik">
 
-  <link rel="stylesheet"
-    href="<?= url('scss/main.css?v=' . filemtime($_SERVER['DOCUMENT_ROOT'] . '/scss/main.css')) ?>">
+  <?php
+  // @property critical CSS
+  // @description Style potrzebne dla treści widocznej bez scrollowania (hero,
+  // nawigacja, pierwsze karty) wklejone inline, żeby uniknąć render-blocking
+  // main.css - reszta stylów dochodzi asynchronicznie (preload + onload swap).
+  // Fallback na klasyczny blokujący <link> gdy critical.css nie istnieje
+  // (np. zapomniany krok w deployu) - strona ma wtedy nadal komplet stylów,
+  // tylko bez korzyści z async loadingu.
+  $criticalCssPath = $_SERVER['DOCUMENT_ROOT'] . '/scss/critical.css';
+  $mainCssUrl = url('scss/main.css?v=' . filemtime($_SERVER['DOCUMENT_ROOT'] . '/scss/main.css'));
+  $criticalCss = is_file($criticalCssPath) ? file_get_contents($criticalCssPath) : false;
+  ?>
+  <?php if ($criticalCss !== false): ?>
+    <style>
+      <?= $criticalCss ?>
+    </style>
+    <link rel="preload" as="style" href="<?= $mainCssUrl ?>" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+      <link rel="stylesheet" href="<?= $mainCssUrl ?>">
+    </noscript>
+  <?php else: ?>
+    <link rel="stylesheet" href="<?= $mainCssUrl ?>">
+  <?php endif; ?>
   <!--
     @property font-awesome loading
-    @description Arkusz ikon ładowany asynchronicznie (media="print" -> "all" po onload),
+    @description Self-hostowany (public/fonts/fontawesome/, tylko style solid +
+                 regular - brands wycięte, patrz views/settings.php). Arkusz
+                 ładowany asynchronicznie (media="print" -> "all" po onload),
                  żeby nie blokował pierwszego renderu strony. <noscript> to fallback
                  na wypadek wyłączonego JS, gdzie trik z media nigdy się nie przełączy.
   -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  <?php $faVersion = filemtime($_SERVER['DOCUMENT_ROOT'] . '/fonts/fontawesome/fa.css'); ?>
+  <link rel="stylesheet" href="<?= url('fonts/fontawesome/fa.css?v=' . $faVersion) ?>"
     media="print" onload="this.media='all'">
   <noscript>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="<?= url('fonts/fontawesome/fa.css?v=' . $faVersion) ?>">
   </noscript>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!--
+    @property font Outfit
+    @description Self-hostowany (public/fonts/outfit/, @font-face w
+                 core/_fonts.scss) - brak zależności od fonts.googleapis.com /
+                 fonts.gstatic.com. Preload tylko dla wag 400/700, żeby nie
+                 blokować renderu ładowaniem wszystkich pięciu wariantów naraz.
+  -->
+  <link rel="preload" as="font" type="font/woff2" href="<?= url('fonts/outfit/outfit-latin.woff2') ?>" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="<?= url('fonts/outfit/outfit-latin-ext.woff2') ?>" crossorigin>
+
+  <!--
+    @property modulepreload dla globalnych modułów JS
+    @description main.js (footer.php) dynamicznie import()-uje te 4 moduły od razu
+                 po starcie na każdej stronie - modulepreload pozwala przeglądarce
+                 zacząć je pobierać równolegle z main.js, zamiast dopiero po jego
+                 sparsowaniu (oszczędza jeden RTT). Ścieżki względne i wersja (?v=)
+                 muszą być identyczne z tym, co main.js doklei przez CACHE_QUERY -
+                 stąd współdzielony js_assets_version() zamiast osobnego wyliczenia.
+  -->
+  <?php $jsPreloadVersion = js_assets_version(); ?>
+  <link rel="modulepreload" href="/js/components/NavbarHandler.js?v=<?= $jsPreloadVersion ?>">
+  <link rel="modulepreload" href="/js/components/ThemeSwitcher.js?v=<?= $jsPreloadVersion ?>">
+  <link rel="modulepreload" href="/js/components/show-password-toggle.js?v=<?= $jsPreloadVersion ?>">
+  <link rel="modulepreload" href="/js/modules/ServiceWorkerRegistration.js?v=<?= $jsPreloadVersion ?>">
 
   <!-- ================================================================== -->
   <!-- 5. Uporządkowane dane (Structured Data - Schema.org) - ZAAWANSOWANE SEO -->
@@ -235,8 +281,8 @@
       <!-- JSON_HEX_TAG: treść pytań bywa fragmentem kodu, a niezakodowane "</script>" -->
       <!-- w danych zamknęłoby ten blok i wypuściło resztę jako HTML -->
       <script type="application/ld+json">
-            <?= json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?>
-          </script>
+        <?= json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?>
+      </script>
     <?php endforeach; ?>
   <?php endif; ?>
 
@@ -245,7 +291,9 @@
   <!-- ================================================================== -->
   <?php if (isset($extraScripts) && is_array($extraScripts)): ?>
     <?php foreach ($extraScripts as $scriptUrl): ?>
-      <script src="<?= htmlspecialchars($scriptUrl) ?>"></script>
+      <!-- defer: nie blokuje parsera, wykonuje się przed DOMContentLoaded (a więc
+           przed main.js), więc globale (marked, DOMPurify, Chart) są gotowe na czas -->
+      <script src="<?= htmlspecialchars($scriptUrl) ?>" defer></script>
     <?php endforeach; ?>
   <?php endif; ?>
 </head>

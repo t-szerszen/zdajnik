@@ -214,7 +214,7 @@ composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 
 ```bash
 npm ci && npm run build:css
-scp public/scss/main.css user@host:/sciezka/do/aplikacji/public/scss/main.css
+scp public/scss/main.css public/scss/critical.css user@host:/sciezka/do/aplikacji/public/scss/
 ```
 
 4. Jesli problem dotyczy plikow, mozesz rozpakowac ostatni backup z katalogu `backup.dir`.

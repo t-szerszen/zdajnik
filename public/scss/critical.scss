@@ -1,0 +1,31 @@
+/**
+ * @file critical.scss
+ * @author Tobiasz Szerszeń
+ * @group main
+ *
+ * @description
+ * Critical CSS - podzbiór main.scss ze stylami potrzebnymi dla treści widocznej
+ * bez scrollowania (hero, nawigacja, pierwsze karty egzaminów) na stronie głównej.
+ * Wklejany inline w <head> (patrz views/partials/head.php), żeby uniknąć
+ * render-blocking main.css. Reszta main.css ładowana asynchronicznie
+ * (preload + onload swap) - patrz komentarz w head.php.
+ *
+ * WAŻNE: każdy selektor tu obecny MUSI pozostać w main.scss (nie usuwać stąd
+ * bez usunięcia analogicznej reguły z main.scss) - main.css nadal jest
+ * ładowany dla reszty strony i musi zawierać komplet stylów. Duplikacja
+ * selektorów między critical.css i main.css jest świadoma i nieszkodliwa
+ * (druga deklaracja tej samej reguły tylko nadpisuje identyczną wartość).
+ */
+
+@use 'core/variables';
+@use 'core/fonts';
+@use 'core/animations';
+@use 'core/mixins';
+@use 'core/base';
+@use 'core/typography';
+@use 'components/nav';
+@use 'components/button';
+@use 'components/hero-section';
+@use 'components/exam-card';
+@use 'components/section';
+@use 'components/page-header';

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Zdajnik Application",
   "scripts": {
-    "build:css": "sass public/scss/main.scss public/scss/main.css --no-source-map --style=compressed"
+    "build:css": "sass public/scss/main.scss:public/scss/main.css public/scss/critical.scss:public/scss/critical.css --no-source-map --style=compressed"
   },
   "dependencies": {
     "sass": "^1.70.0"
