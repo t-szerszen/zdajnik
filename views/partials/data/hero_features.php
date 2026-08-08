@@ -12,20 +12,20 @@ return [
   [
     'icon' => 'fas fa-database',
     'title' => 'Baza pytań',
-    'description' => 'Setki pytań prosto z arkuszy egzaminacyjnych, poukładane według kwalifikacji i działów.',
-    'details' => 'Pytania są pogrupowane po kwalifikacji (na start INF.03 i INF.04) i po dziale tematycznym, więc możesz ćwiczyć całą kwalifikację naraz albo wejść tylko w temat, który akurat macie na lekcji lub idzie Ci najsłabiej.',
+    'description' => 'Setki pytań prosto z arkuszy egzaminacyjnych i wymagań CKE, poukładane według kwalifikacji i działów.',
+    'details' => 'Pytania są pogrupowane po kwalifikacji i po dziale tematycznym, więc możesz ćwiczyć całą kwalifikację naraz albo wejść tylko w temat, który akurat Cię interesuje lub idzie Ci najsłabiej.',
   ],
   [
     'icon' => 'fas fa-circle-question',
     'title' => 'Wyjaśnienia do pytań',
-    'description' => 'Po odpowiedzi widzisz nie tylko "źle", ale i dlaczego dana opcja jest poprawna.',
-    'details' => 'Zamiast zgadywać za drugim razem, od razu wiesz, co przeoczyłeś/aś. Świetnie się to sprawdza przy pytaniach, które wracają jako Twoje częste błędy.',
+    'description' => 'Po odpowiedzi widzisz nie tylko "źle", ale i "dlaczego?".',
+    'details' => 'Zamiast zgadywać za drugim razem, od razu wiesz, co przeoczyłeś/aś. Świetnie się to sprawdza przy pytaniach, które wracają jako Twoje częste błędy. Ponadto nie musisz samemu googlować wyjaśnienia do pytania.',
   ],
   [
     'icon' => 'fas fa-filter',
     'title' => 'Filtry nauki',
     'description' => '5 trybów, które same dobierają Ci pytania: nieodkryte, słabe punkty, powtórki, ostatnie błędy lub zapisane.',
-    'details' => 'Włączasz jeden filtr naraz - np. "Słabe punkty" pokaże pytania, w których wypadasz poniżej 60%, a "Ostatnie błędy" wróci do tego, co ostatnio zawaliłeś/aś. Dwa z nich odblokują się dopiero po 100 rozwiązanych pytaniach, bo dopiero wtedy system wie, co naprawdę Ci nie idzie.',
+    'details' => 'Włączasz jeden filtr naraz - np. "Słabe punkty" pokaże pytania, w których wypadasz poniżej 60%, a "Ostatnie błędy" wróci do tego, co ostatnio zawaliłeś/aś. Wszystko po to by zmaksymalizować efekty Twojej nauki.',
   ],
   [
     'icon' => 'fas fa-bookmark',
@@ -49,7 +49,7 @@ return [
     'icon' => 'fas fa-magnifying-glass',
     'title' => 'Wyszukiwarka pytań',
     'description' => 'Pamiętasz fragment pytania albo jego ID? Wpisz go i od razu je znajdziesz.',
-    'details' => 'Szukasz po treści, numerze ID, kwalifikacji albo temacie. Przydaje się, gdy nauczyciel wspomniał o konkretnym pytaniu, a Ty nie zdążyłeś/aś go zapisać na platformie.',
+    'details' => 'Szukasz po treści, numerze ID, kwalifikacji albo temacie. Przydaje się gdy kojarzysz dane pytanie, ale pamiętasz skrawek jego treści.',
   ],
   [
     'icon' => 'fas fa-file-lines',
