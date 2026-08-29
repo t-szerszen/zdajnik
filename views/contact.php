@@ -110,6 +110,12 @@ $formData = $formData ?? [];
           required><?= htmlspecialchars((string) ($formData['message'] ?? '')) ?></textarea>
       </div>
 
+      <?php if (!empty($_ENV['TURNSTILE_SITE_KEY'])): ?>
+      <div class="form-card__group" style="display: flex; justify-content: center; margin-top: 20px;">
+        <div class="cf-turnstile" data-sitekey="<?= htmlspecialchars($_ENV['TURNSTILE_SITE_KEY']) ?>" data-theme="auto" data-language="pl"></div>
+      </div>
+      <?php endif; ?>
+
       <div class="form-card__action-container">
         <button type="submit" class="btn btn--primary btn--full">
           <i class="fas fa-paper-plane"></i>
@@ -128,5 +134,9 @@ $formData = $formData ?? [];
   </main>
 
   <?php include 'partials/footer.php'; ?>
+  
+  <?php if (!empty($_ENV['TURNSTILE_SITE_KEY'])): ?>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <?php endif; ?>
 </body>
 </html>

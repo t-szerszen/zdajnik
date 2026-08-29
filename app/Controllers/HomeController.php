@@ -117,6 +117,42 @@ class HomeController extends BaseController
     if (!$this->csrfService->validate($_POST['csrf_token'] ?? null)) {
       $this->redirectContact('error', ['Sesja formularza wygasła. Odśwież stronę i spróbuj ponownie.'], $formData);
     }
+    
+    // Walidacja Cloudflare Turnstile (jeśli skonfigurowane w .env)
+    if (!empty($_ENV['TURNSTILE_SECRET_KEY'])) {
+      $turnstileToken = $_POST['cf-turnstile-response'] ?? '';
+      if (empty($turnstileToken)) {
+        $this->redirectContact('error', ['Proszę potwierdzić, że nie jesteś robotem.'], $formData);
+      }
+      
+      $verifyUrl = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+      $data = [
+        'secret' => $_ENV['TURNSTILE_SECRET_KEY'],
+        'response' => $turnstileToken,
+        'remoteip' => $_SERVER['REMOTE_ADDR'] ?? ''
+      ];
+      
+      $options = [
+        'http' => [
+          'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+          'method' => 'POST',
+          'content' => http_build_query($data)
+        ]
+      ];
+      $context = stream_context_create($options);
+      
+      // Wyłączamy ostrzeżenia, aby ewentualny błąd połączenia nie przerwał skryptu
+      $result = @file_get_contents($verifyUrl, false, $context);
+      
+      if ($result === false) {
+        $this->redirectContact('error', ['Błąd komunikacji z serwerem weryfikacji. Spróbuj ponownie później.'], $formData);
+      }
+      
+      $responseData = json_decode($result, true);
+      if (!$responseData || empty($responseData['success'])) {
+        $this->redirectContact('error', ['Weryfikacja antyspamowa nie powiodła się. Odśwież stronę i spróbuj ponownie.'], $formData);
+      }
+    }
 
     if (!empty(trim((string) ($_POST['website'] ?? '')))) {
       $this->redirectContact('success', 'Dziękuję za wiadomość. Odpowiem tak szybko, jak będzie to możliwe.');
