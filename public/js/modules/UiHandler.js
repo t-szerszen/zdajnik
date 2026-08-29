@@ -188,7 +188,7 @@ class UIHandler {
       emptyBtn.disabled = true;
       emptyBtn.style.opacity = '0.6';
       emptyBtn.style.cursor = 'not-allowed';
-      emptyBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Brak wyjaśnienia';
+      emptyBtn.innerHTML = '<i class="fas fa-tools"></i> Wyjaśnienie w trakcie opracowywania';
       btnContainer.appendChild(emptyBtn);
     }
 
