@@ -364,8 +364,11 @@ $extraSchemas = [
             </h3>
             <?php if (!$isSoon): ?>
               <div class="topics-grid">
-                <?php foreach ($categories as $category): ?>
-                  <a href="<?= url("jedno-pytanie/{$examCode}?subject[]=" . $category['id']) ?>" class="topic-card">
+                <?php 
+                  $canonicalExamCode = exam_code_to_url((string) $examCode);
+                  foreach ($categories as $category): 
+                ?>
+                  <a href="<?= url("jedno-pytanie/{$canonicalExamCode}?subject[]=" . $category['id']) ?>" class="topic-card">
                     <?= htmlspecialchars($category['name']) ?>
                   </a>
                 <?php endforeach; ?>

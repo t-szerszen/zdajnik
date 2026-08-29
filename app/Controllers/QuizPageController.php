@@ -62,7 +62,15 @@ class QuizPageController extends BaseController
 
     $canonicalSegment = exam_code_to_url($canonicalCode);
     if ($code !== $canonicalSegment) {
-      header('Location: ' . url($routePrefix . '/' . $canonicalSegment), true, 301);
+      $queryParams = $_GET;
+      unset($queryParams['url']);
+      
+      $redirectUrl = url($routePrefix . '/' . $canonicalSegment);
+      if ($queryParams) {
+        $redirectUrl .= '?' . http_build_query($queryParams);
+      }
+      
+      header('Location: ' . $redirectUrl, true, 301);
       exit;
     }
 
