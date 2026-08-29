@@ -172,10 +172,46 @@ class SettingsController extends BaseController
    *
    * @return void
    */
+  public function showConfirmDeletion(): void
+  {
+    $token = $_GET['token'] ?? '';
+    $tokenRecord = $this->tokenService->getTokenRecord($token);
+
+    if (!$tokenRecord || $tokenRecord['type'] !== 'account_deletion') {
+      $this->redirectWithFlash('error', ['Link weryfikacyjny wygasł lub jest nieprawidłowy.'], 'profile');
+      return;
+    }
+
+    $this->renderView('confirm_action', [
+      'actionTitle' => 'Potwierdź usunięcie konta',
+      'actionMessage' => 'Czy na pewno chcesz bezpowrotnie usunąć swoje konto? Od momentu potwierdzenia masz 30 dni na anulowanie tej operacji.',
+      'actionUrl' => url('potwierdz-usuniecie'),
+      'token' => $token,
+      'btnLabel' => 'Tak, usuń moje konto',
+      'btnClass' => 'btn--danger'
+    ]);
+  }
+
+  /**
+   * Finalizuje proces usuwania konta na podstawie tokenu email.
+   * 
+   * Metoda wykonuje następujące kroki:
+   * 1. Walidacja poprawności i typu tokenu.
+   * 2. Oznaczenie konta jako przeznaczone do usunięcia (Soft Delete).
+   * 3. Sprzątanie zużytego tokenu.
+   * 4. Zakończenie sesji użytkownika.
+   *
+   * @return void
+   */
   public function confirmDeletion(): void
   {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !(new \App\Services\CsrfService())->validate($_POST['csrf_token'] ?? null)) {
+      $this->redirectWithFlash('error', ['Sesja wygasła. Spróbuj ponownie.'], 'profile');
+      return;
+    }
+
     // KROK 1: Pobranie rekordu tokenu i walidacja jego typu
-    $token = $_GET['token'] ?? '';
+    $token = $_POST['token'] ?? '';
     $tokenRecord = $this->tokenService->getTokenRecord($token);
 
     if (!$tokenRecord || $tokenRecord['type'] !== 'account_deletion') {
@@ -185,6 +221,7 @@ class SettingsController extends BaseController
         'invalid_or_expired_token'
       );
       $this->redirectWithFlash('error', ['Link weryfikacyjny wygasł lub jest nieprawidłowy.'], 'profile');
+      return;
     }
 
     $userId = $tokenRecord['user_id'];
@@ -519,10 +556,47 @@ class SettingsController extends BaseController
    *
    * @return void
    */
+  public function showConfirmProgressAnonymization(): void
+  {
+    $token = $_GET['token'] ?? '';
+    $tokenRecord = $this->tokenService->getTokenRecord($token);
+
+    if (!$tokenRecord || $tokenRecord['type'] !== 'progress_anonymization') {
+      $this->redirectWithFlash('error', ['Link weryfikacyjny wygasł lub jest nieprawidłowy.'], 'profile');
+      return;
+    }
+
+    $this->renderView('confirm_action', [
+      'actionTitle' => 'Potwierdź wyzerowanie postępu',
+      'actionMessage' => 'Czy na pewno chcesz bezpowrotnie usunąć cały swój postęp z wybranego egzaminu? Ta operacja jest nieodwracalna.',
+      'actionUrl' => url('potwierdz-anonimizacje'),
+      'token' => $token,
+      'btnLabel' => 'Tak, wyzeruj mój postęp',
+      'btnClass' => 'btn--danger'
+    ]);
+  }
+
+  /**
+   * Finalizuje proces wyzerowania postępu nauki na podstawie tokenu email.
+   *
+   * Metoda wykonuje następujące kroki:
+   * 1. Walidacja tokenu i pobranie danych operacyjnych (typ egzaminu).
+   * 2. Analiza liczby udzielonych odpowiedzi w celu wyboru strategii (usunięcie vs anonimizacja).
+   * 3. Przetworzenie historii prób egzaminacyjnych w bazie danych zgodnie z wybraną strategią.
+   * 4. Całkowite usunięcie powiązania (relacji) użytkownika z indywidualnymi pytaniami.
+   * 5. Sprzątanie tokenów bezpieczeństwa i powrót do panelu ustawień.
+   *
+   * @return void
+   */
   public function confirmProgressAnonymization(): void
   {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !(new \App\Services\CsrfService())->validate($_POST['csrf_token'] ?? null)) {
+      $this->redirectWithFlash('error', ['Sesja wygasła. Spróbuj ponownie.'], 'profile');
+      return;
+    }
+
     // KROK 1: Pobranie i walidacja tokenu weryfikacyjnego
-    $token = $_GET['token'] ?? '';
+    $token = $_POST['token'] ?? '';
     $tokenRecord = $this->tokenService->getTokenRecord($token);
 
     if (!$tokenRecord || $tokenRecord['type'] !== 'progress_anonymization') {

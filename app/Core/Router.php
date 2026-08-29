@@ -268,8 +268,10 @@ class Router
     $this->get('ustawienia/{action}', 'SettingsController@index');
     $this->post('ustawienia/{action}', 'SettingsController@handleAction');
     $this->post('usun-konto', 'SettingsController@handleAccountDeletion');
-    $this->get('potwierdz-usuniecie', 'SettingsController@confirmDeletion');
-    $this->get('potwierdz-anonimizacje', 'SettingsController@confirmProgressAnonymization');
+    $this->get('potwierdz-usuniecie', 'SettingsController@showConfirmDeletion');
+    $this->post('potwierdz-usuniecie', 'SettingsController@confirmDeletion');
+    $this->get('potwierdz-anonimizacje', 'SettingsController@showConfirmProgressAnonymization');
+    $this->post('potwierdz-anonimizacje', 'SettingsController@confirmProgressAnonymization');
     $this->get('zmiana-email', 'SettingsController@showVerifyEmailForm');
     $this->post('zmiana-email', 'SettingsController@handleVerifyEmailRequest');
 
