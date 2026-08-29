@@ -51,8 +51,7 @@ class ReviewController extends BaseController
 
     // KROK 2: Weryfikacja istnienia pytania
     if (!$question) {
-      http_response_code(404);
-      echo "Pytanie nie zostało znalezione.";
+      (new \App\Controllers\ErrorController())->showError(404, "Pytanie nie zostało znalezione.");
       return;
     }
 
@@ -113,8 +112,7 @@ class ReviewController extends BaseController
 
     // KROK 3: Weryfikacja danych i uprawnień
     if (!$reviewData) {
-      http_response_code(404);
-      echo "Próba nie została znaleziona lub nie masz do niej dostępu.";
+      (new \App\Controllers\ErrorController())->showError(404, "Próba nie została znaleziona lub nie masz do niej dostępu.");
       return;
     }
 

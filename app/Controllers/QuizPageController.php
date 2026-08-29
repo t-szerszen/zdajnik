@@ -113,8 +113,7 @@ class QuizPageController extends BaseController
         'one_question_page',
         'exam_not_found'
       );
-      http_response_code(404);
-      echo "Egzamin o kodzie $examCode nie istnieje.";
+      (new \App\Controllers\ErrorController())->showError(404, "Kwalifikacja $examCode jest niedostępna lub nie istnieje.");
     }
   }
 
@@ -142,8 +141,7 @@ class QuizPageController extends BaseController
         'personalized_test_page',
         'exam_not_found'
       );
-      http_response_code(404);
-      echo "Egzamin o kodzie $examCode nie istnieje.";
+      (new \App\Controllers\ErrorController())->showError(404, "Kwalifikacja $examCode jest niedostępna lub nie istnieje.");
       return;
     }
 
@@ -187,8 +185,7 @@ class QuizPageController extends BaseController
         'full_test_page',
         'exam_not_found'
       );
-      http_response_code(404);
-      echo "Egzamin o kodzie $examCode nie istnieje.";
+      (new \App\Controllers\ErrorController())->showError(404, "Kwalifikacja $examCode jest niedostępna lub nie istnieje.");
     }
   }
 }
