@@ -495,46 +495,58 @@ export class TestRunner {
     const btnContainer = document.createElement('div');
     btnContainer.className = 'quiz-card__button-container';
 
-    const explContainer = document.createElement('div');
-    // UID dla togglera
-    const explId = 'expl-' + Math.random().toString(36).substr(2, 9);
-    explContainer.id = explId;
-    explContainer.className = 'quiz-card__explanation';
+    if (explanation && explanation.trim() !== '') {
+      const explContainer = document.createElement('div');
+      // UID dla togglera
+      const explId = 'expl-' + Math.random().toString(36).substr(2, 9);
+      explContainer.id = explId;
+      explContainer.className = 'quiz-card__explanation';
 
-    const explanationHTML = DOMPurify.sanitize(marked.parse(explanation || ''));
-    explContainer.innerHTML = `
-        <div class="explanation-title">
-            <i class="fas fa-magic"></i> Wyjaśnienie
-        </div>
-        <div class="explanation-inner">
-            ${explanationHTML}
-        </div>
-    `;
+      const explanationHTML = DOMPurify.sanitize(marked.parse(explanation || ''));
+      explContainer.innerHTML = `
+          <div class="explanation-title">
+              <i class="fas fa-lightbulb"></i> Wyjaśnienie
+          </div>
+          <div class="explanation-inner">
+              ${explanationHTML}
+          </div>
+      `;
 
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'btn btn--secondary btn--small toggle-explanation-btn';
-    button.innerHTML = '<i class="fas fa-lightbulb"></i> Pokaż wyjaśnienie';
-    button.dataset.target = explId;
-    Object.entries({
-      examId: analyticsContext.examId,
-      questionId: analyticsContext.questionId,
-      topicId: analyticsContext.topicId,
-      testType: analyticsContext.testType,
-      source: analyticsContext.source,
-      isCorrect: analyticsContext.isCorrect,
-    }).forEach(([key, value]) => {
-      if (value !== null && value !== undefined && value !== '') {
-        button.dataset[key] = String(value);
-      }
-    });
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn btn--secondary btn--small toggle-explanation-btn';
+      button.innerHTML = '<i class="fas fa-lightbulb"></i> Pokaż wyjaśnienie';
+      button.dataset.target = explId;
+      Object.entries({
+        examId: analyticsContext.examId,
+        questionId: analyticsContext.questionId,
+        topicId: analyticsContext.topicId,
+        testType: analyticsContext.testType,
+        source: analyticsContext.source,
+        isCorrect: analyticsContext.isCorrect,
+      }).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          button.dataset[key] = String(value);
+        }
+      });
 
-    // Używamy helpera do obsługi logiki
-    ExplanationToggler.attach(button, explContainer);
+      // Używamy helpera do obsługi logiki
+      ExplanationToggler.attach(button, explContainer);
 
-    btnContainer.appendChild(button);
-    actionsContainer.appendChild(btnContainer);
-    actionsContainer.appendChild(explContainer);
+      btnContainer.appendChild(button);
+      actionsContainer.appendChild(btnContainer);
+      actionsContainer.appendChild(explContainer);
+    } else {
+      const emptyBtn = document.createElement('button');
+      emptyBtn.type = 'button';
+      emptyBtn.className = 'btn btn--secondary btn--small';
+      emptyBtn.disabled = true;
+      emptyBtn.style.opacity = '0.6';
+      emptyBtn.style.cursor = 'not-allowed';
+      emptyBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Brak wyjaśnienia';
+      btnContainer.appendChild(emptyBtn);
+      actionsContainer.appendChild(btnContainer);
+    }
   }
 
   /**

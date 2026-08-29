@@ -181,6 +181,15 @@ class UIHandler {
         <div class="explanation-inner">${explanationHTML}</div>
       `;
       btnContainer.appendChild(explBtn);
+    } else {
+      const emptyBtn = document.createElement('button');
+      emptyBtn.type = 'button';
+      emptyBtn.className = 'btn btn--secondary btn--small';
+      emptyBtn.disabled = true;
+      emptyBtn.style.opacity = '0.6';
+      emptyBtn.style.cursor = 'not-allowed';
+      emptyBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Brak wyjaśnienia';
+      btnContainer.appendChild(emptyBtn);
     }
 
     // Przycisk "Następne"
