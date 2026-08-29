@@ -21,7 +21,7 @@ use App\Core\Database;
 class DynamicDataService
 {
   /** @var string[] Kody kwalifikacji z gotową bazą pytań, dostępne dla użytkowników w trybach nauki i wyszukiwarce */
-  public const AVAILABLE_EXAM_CODES = ['INF.03', 'INF.04'];
+  public const AVAILABLE_EXAM_CODES = ['INF.02', 'INF.03', 'INF.04'];
 
   /** @var Database Instancja połączenia z bazą danych */
   private Database $db;
