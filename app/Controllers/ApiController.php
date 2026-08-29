@@ -99,10 +99,35 @@ class ApiController extends BaseController
         'single_question_module',
         'empty_pool'
       );
+      
+      $specialFilter = $_GET['premium_option'] ?? null;
+      $message = 'Brak pytań w wybranych kategoriach.';
+      
+      switch ($specialFilter) {
+        case 'toDiscover':
+            $message = 'Gratulacje! Przerobiłeś już wszystkie dostępne pytania w tej sekcji.';
+            break;
+        case 'toImprove':
+            $message = 'Świetna robota! Nie masz obecnie żadnych słabych punktów w wybranych kategoriach.';
+            break;
+        case 'toRemind':
+            $message = 'Na ten moment nie masz żadnych pytań do powtórki. Wróć tu później!';
+            break;
+        case 'lastMistakes':
+            $message = 'Świetnie! Nie popełniłeś ostatnio żadnych błędów w tych kategoriach.';
+            break;
+        case 'saved':
+            $message = 'Nie masz jeszcze żadnych zapisanych pytań w wybranych kategoriach.';
+            break;
+        default:
+            $message = 'Gratulacje! Przerobiłeś już wszystkie dostępne pytania w tej sekcji.';
+            break;
+      }
+      
       $this->sendJsonResponse([
         'success' => true,
         'status' => 'no_questions_left',
-        'message' => 'Gratulacje! Przerobiłeś już wszystkie dostępne pytania w tej sekcji.',
+        'message' => $message,
       ]);
       return;
     }
@@ -174,10 +199,37 @@ class ApiController extends BaseController
         'insufficient_pool',
         count($questions)
       );
+      
+      $message = 'Baza posiada zbyt mało pytań spełniających Twoje kryteria filtrowania.';
+      
+      if (count($questions) === 0) {
+        $specialFilter = $_GET['premium_option'] ?? null;
+        switch ($specialFilter) {
+          case 'toDiscover':
+              $message = 'Gratulacje! Przerobiłeś już wszystkie dostępne pytania w tych kategoriach.';
+              break;
+          case 'toImprove':
+              $message = 'Świetna robota! Nie masz obecnie żadnych słabych punktów w tych kategoriach.';
+              break;
+          case 'toRemind':
+              $message = 'Na ten moment nie masz żadnych pytań do powtórki. Wróć tu później!';
+              break;
+          case 'lastMistakes':
+              $message = 'Świetnie! Nie popełniłeś ostatnio żadnych błędów w tych kategoriach.';
+              break;
+          case 'saved':
+              $message = 'Nie masz jeszcze żadnych zapisanych pytań w wybranych kategoriach.';
+              break;
+          default:
+              $message = 'Brak pytań w wybranych kategoriach.';
+              break;
+        }
+      }
+      
       $this->sendJsonResponse([
         'success' => true,
         'status' => 'no_questions_left',
-        'message' => 'Baza posiada zbyt mało pytań spełniających Twoje kryteria filtrowania.',
+        'message' => $message,
       ]);
       return;
     }
