@@ -93,8 +93,8 @@ $extraSchemas = [
   [
     "@context" => "https://schema.org",
     "@type" => "Service",
-    "name" => "Baza pytań INF.02 - Uzupelnianie!",
-    "description" => "Trwają intensywne prace nad uzupełnieniem pełnej bazy pytań egzaminacyjnych dla kwalifikacji INF.02.",
+    "name" => "Baza pytań INF.02",
+    "description" => "Pełna baza pytań egzaminacyjnych dla kwalifikacji INF.02.",
     "provider" => [
       "@type" => "Organization",
       "name" => "Zdajnik",
@@ -237,8 +237,7 @@ $extraSchemas = [
             </p>
           </div>
         </a>
-        <!-- Karta nieaktywna, z modyfikatorem BEM `--disabled` -->
-        <a href="#" class="exam-card exam-card--disabled" onclick="return false;">
+        <a href="<?= url('test/inf02') ?>" class="exam-card">
           <img src="<?= url('images/exams/inf02-systemy-i-sieci-800.webp') ?>"
             srcset="<?= url('images/exams/inf02-systemy-i-sieci-400.webp') ?> 400w, <?= url('images/exams/inf02-systemy-i-sieci-800.webp') ?> 800w, <?= url('images/exams/inf02-systemy-i-sieci.webp') ?> 900w"
             sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 400px"
@@ -248,8 +247,7 @@ $extraSchemas = [
           <div class="exam-card__content">
             <h3 class="exam-card__title">INF.02 (dawniej EE.08)</h3>
             <p class="exam-card__subtitle">
-              Sprzęt, systemy i sieci<br>
-              <span class="soon-badge soon-badge--block">Wkrótce!</span>
+              Sprzęt, systemy i sieci
             </p>
           </div>
         </a>
@@ -354,7 +352,7 @@ $extraSchemas = [
         ];
         foreach ($examsCategories as $examCode => $categories):
           $icon = $icons[$examCode] ?? 'fas fa-laptop-code';
-          $isSoon = $examCode === 'INF.02';
+          $isSoon = false;
           ?>
           <div class="topics-group">
             <h3 class="topics-group__subheading">
