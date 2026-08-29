@@ -94,7 +94,6 @@ $formData = $formData ?? [];
           id="category"
           name="category"
           class="form-card__input"
-          style="appearance: auto; padding-right: 15px; cursor: pointer; color: var(--text-color); background-color: var(--bg-color);"
           required>
           <option value="" disabled <?= empty($formData['category']) ? 'selected' : '' ?>>Wybierz kategorię...</option>
           <option value="Zgłoszenie błędu" <?= ($formData['category'] ?? '') === 'Zgłoszenie błędu' ? 'selected' : '' ?>>Zgłoszenie błędu na platformie</option>
