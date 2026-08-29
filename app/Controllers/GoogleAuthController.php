@@ -61,6 +61,10 @@ class GoogleAuthController extends BaseController
    */
   public function redirectToGoogle(): void
   {
+    $state = bin2hex(random_bytes(16));
+    $_SESSION['google_oauth_state'] = $state;
+    $this->googleClient->setState($state);
+    
     $authUrl = $this->googleClient->createAuthUrl();
     header('Location: ' . filter_var($authUrl, FILTER_SANITIZE_URL));
     exit();
@@ -93,6 +97,15 @@ class GoogleAuthController extends BaseController
       header('Location: ' . url('logowanie'));
       exit();
     }
+    
+    // KROK 1.5: Walidacja tokena State (Ochrona przed CSRF)
+    if (empty($_GET['state']) || empty($_SESSION['google_oauth_state']) || $_GET['state'] !== $_SESSION['google_oauth_state']) {
+      $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Błąd walidacji żądania (CSRF). Spróbuj zalogować się ponownie.'];
+      unset($_SESSION['google_oauth_state']);
+      header('Location: ' . url('logowanie'));
+      exit();
+    }
+    unset($_SESSION['google_oauth_state']);
 
     try {
       // KROK 2: Wymiana kodu na Token Dostępu

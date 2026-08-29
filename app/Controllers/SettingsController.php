@@ -82,6 +82,10 @@ class SettingsController extends BaseController
       $this->index();
       return;
     }
+    
+    if (!(new \App\Services\CsrfService())->validate($_POST['csrf_token'] ?? null)) {
+      $this->redirectWithFlash('error', ['Sesja wygasła lub żądanie jest nieprawidłowe (Błąd CSRF).'], 'profile');
+    }
 
     match ($action) {
       'change_name' => $this->processNameChange(),
@@ -104,6 +108,15 @@ class SettingsController extends BaseController
    */
   public function handleAccountDeletion(): void
   {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      $this->index();
+      return;
+    }
+    
+    if (!(new \App\Services\CsrfService())->validate($_POST['csrf_token'] ?? null)) {
+      $this->redirectWithFlash('error', ['Sesja wygasła lub żądanie jest nieprawidłowe (Błąd CSRF).'], 'profile');
+    }
+
     $password = $_POST['password'] ?? '';
     $isGoogleUser = ($this->currentUser->getAuthProvider() === 'google');
 

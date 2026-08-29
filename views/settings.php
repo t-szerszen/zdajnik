@@ -146,7 +146,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
           <i class="fas fa-chevron-down settings-card__icon"></i>
         </div>
         <div class="settings-card__content">
-          <form method="POST" action="<?= url('ustawienia/change_name') ?>">
+          <form method="POST" action="<?= url('ustawienia/change_name') ?>"> <?= csrf_field() ?>
             <input type="hidden" name="form_type" value="change_name">
 
             <div class="form-card__grid-2">
@@ -224,7 +224,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
               <i class="fas fa-info-circle"></i>
               Po przejściu procesu zmiany adresu e-mail, konto zostanie automatycznie zweryfikowane.
             </div>
-            <form method="POST" action="<?= url('ustawienia/change_email') ?>">
+            <form method="POST" action="<?= url('ustawienia/change_email') ?>"> <?= csrf_field() ?>
               <input type="hidden" name="form_type" value="change_email">
               <div class="form-card__group">
                 <label for="new_email" class="form-card__label">Nowy adres e-mail</label>
@@ -281,7 +281,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
                 <li>Znak specjalny</li>
               </ul>
             </div>
-            <form method="POST" action="<?= url('ustawienia/change_password') ?>">
+            <form method="POST" action="<?= url('ustawienia/change_password') ?>"> <?= csrf_field() ?>
               <input type="hidden" name="form_type" value="change_password">
               <div class="form-card__group">
                 <label for="current_password" class="form-card__label">Obecne hasło</label>
@@ -337,7 +337,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
             <strong>Uwaga:</strong> Postęp we wskazanym egzaminie zostanie trwale wyzerowany. Anonimowe dane
             statystyczne z Twoich prób pozostaną w systemie w celach analitycznych.
           </div>
-          <form method="POST" action="<?= url('ustawienia/anonymize_progress') ?>">
+          <form method="POST" action="<?= url('ustawienia/anonymize_progress') ?>"> <?= csrf_field() ?>
             <input type="hidden" name="form_type" value="anonymize_progress">
 
             <div class="form-card__group">
@@ -395,7 +395,7 @@ $isGoogleUser = ($currentUser->getAuthProvider() === 'google');
             <strong>Uwaga:</strong> Usunięcie konta spowoduje bezpowrotną utratę wszystkich postępów w nauce oraz
             statystyk egzaminacyjnych.
           </div>
-          <form method="POST" action="<?= url('usun-konto') ?>">
+          <form method="POST" action="<?= url('usun-konto') ?>"> <?= csrf_field() ?>
             <?php if (!$isGoogleUser): ?>
               <div class="form-card__group">
                 <label for="password_for_delete" class="form-card__label">Potwierdź hasłem, aby usunąć konto</label>
