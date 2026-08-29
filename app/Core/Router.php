@@ -74,24 +74,29 @@ class Router
    */
   public function handleRequest(): void
   {
-    // KROK 1: Przygotowanie danych wejściowych z zapytania
-    $uri = trim($_GET['url'] ?? '', '/');
-    $method = $_SERVER['REQUEST_METHOD'];
+    try {
+      // KROK 1: Przygotowanie danych wejściowych z zapytania
+      $uri = trim($_GET['url'] ?? '', '/');
+      $method = $_SERVER['REQUEST_METHOD'];
 
-    // KROK 2: Analiza zarejestrowanych tras w poszukiwaniu wzorca
-    foreach ($this->routes[$method] ?? [] as $pattern => $handler) {
-      if (preg_match($pattern, $uri, $matches)) {
-        // KROK 3: Ekstrakcja parametrów nazwanych z mapy Regex (np. code=INF.04)
-        $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+      // KROK 2: Analiza zarejestrowanych tras w poszukiwaniu wzorca
+      foreach ($this->routes[$method] ?? [] as $pattern => $handler) {
+        if (preg_match($pattern, $uri, $matches)) {
+          // KROK 3: Ekstrakcja parametrów nazwanych z mapy Regex (np. code=INF.04)
+          $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
 
-        // KROK 4: Finalizacja żądania w wybranym kontrolerze
-        $this->dispatch($handler, $params);
-        return;
+          // KROK 4: Finalizacja żądania w wybranym kontrolerze
+          $this->dispatch($handler, $params);
+          return;
+        }
       }
-    }
 
-    // KROK 5: Protokół błędu dla nieznanego adresu
-    $this->abort(404);
+      // KROK 5: Protokół błędu dla nieznanego adresu
+      $this->abort(404);
+    } catch (\Throwable $e) {
+      error_log('[Router Error] Nieobsłużony wyjątek: ' . $e->getMessage() . ' w ' . $e->getFile() . ':' . $e->getLine());
+      $this->abort(500, 'Wystąpił nieoczekiwany błąd serwera.');
+    }
   }
 
   /**

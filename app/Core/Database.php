@@ -56,7 +56,15 @@ class Database
       $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
       error_log('[DB Error] Błąd połączenia: ' . $e->getMessage());
-      die('Wystąpił krytyczny błąd połączenia z bazą danych. Prosimy spróbować później.');
+      
+      try {
+        (new \App\Controllers\ErrorController())->showError(500, 'Wystąpił krytyczny błąd połączenia z bazą danych. Trwają prace nad naprawą, prosimy spróbować później.');
+      } catch (\Throwable $fallbackEx) {
+        // Zabezpieczenie na wypadek, gdyby sam ErrorController zawiódł (np. brak plików widoku)
+        http_response_code(500);
+        die('Wystąpił krytyczny błąd połączenia z bazą danych. Prosimy spróbować później.');
+      }
+      exit;
     }
   }
 
