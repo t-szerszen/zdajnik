@@ -110,6 +110,7 @@ class HomeController extends BaseController
     $formData = [
       'name' => trim((string) ($_POST['name'] ?? '')),
       'email' => trim((string) ($_POST['email'] ?? '')),
+      'category' => trim((string) ($_POST['category'] ?? '')),
       'subject' => trim((string) ($_POST['subject'] ?? '')),
       'message' => trim((string) ($_POST['message'] ?? ''))
     ];
@@ -219,6 +220,11 @@ class HomeController extends BaseController
 
     if (!filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
       $errors[] = 'Podaj poprawny adres e-mail.';
+    }
+    
+    $allowedCategories = ['Zgłoszenie błędu', 'Problem z kontem', 'Współpraca', 'Sugestia rozwoju', 'Inne'];
+    if (empty($formData['category']) || !in_array($formData['category'], $allowedCategories, true)) {
+      $errors[] = 'Wybierz poprawną kategorię wiadomości.';
     }
 
     if (mb_strlen($formData['subject']) < 3 || mb_strlen($formData['subject']) > 120) {

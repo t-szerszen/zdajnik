@@ -181,10 +181,12 @@ class Mailer
    */
   public function sendContactNotificationEmail(array $formData): bool
   {
-    $subject = 'Kontakt Zdajnik: ' . str_replace(["\r", "\n"], ' ', $formData['subject']);
+    $categoryPrefix = !empty($formData['category']) ? '[' . $formData['category'] . '] ' : '';
+    $subject = $categoryPrefix . 'Kontakt Zdajnik: ' . str_replace(["\r", "\n"], ' ', $formData['subject']);
     $safeMessage = nl2br($this->e($formData['message']));
 
     $body = $this->dataRows([
+      'Kategoria' => $formData['category'] ?? 'Nie wybrano',
       'Imię / nazwa' => $formData['name'],
       'E-mail' => $formData['email'],
       'Temat' => $formData['subject'],
@@ -206,6 +208,7 @@ class Mailer
       $subject,
       $html,
       "Nowa wiadomość z formularza kontaktowego Zdajnik\n\n"
+        . "Kategoria: " . ($formData['category'] ?? 'Nie wybrano') . "\n"
         . "Imię / nazwa: {$formData['name']}\n"
         . "E-mail: {$formData['email']}\n"
         . "Temat: {$formData['subject']}\n\n"

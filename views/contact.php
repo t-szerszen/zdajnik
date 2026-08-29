@@ -89,14 +89,31 @@ $formData = $formData ?? [];
       </div>
 
       <div class="form-card__group">
-        <label for="subject" class="form-card__label">Temat</label>
+        <label for="category" class="form-card__label">Kategoria wiadomości <span class="required">*</span></label>
+        <select
+          id="category"
+          name="category"
+          class="form-card__input"
+          style="appearance: auto; padding-right: 15px; cursor: pointer; color: var(--text-color); background-color: var(--bg-color);"
+          required>
+          <option value="" disabled <?= empty($formData['category']) ? 'selected' : '' ?>>Wybierz kategorię...</option>
+          <option value="Zgłoszenie błędu" <?= ($formData['category'] ?? '') === 'Zgłoszenie błędu' ? 'selected' : '' ?>>Zgłoszenie błędu na platformie</option>
+          <option value="Problem z kontem" <?= ($formData['category'] ?? '') === 'Problem z kontem' ? 'selected' : '' ?>>Problem techniczny z kontem</option>
+          <option value="Współpraca" <?= ($formData['category'] ?? '') === 'Współpraca' ? 'selected' : '' ?>>Współpraca / Biznes</option>
+          <option value="Sugestia rozwoju" <?= ($formData['category'] ?? '') === 'Sugestia rozwoju' ? 'selected' : '' ?>>Sugestia / Pomysł na rozwój platformy</option>
+          <option value="Inne" <?= ($formData['category'] ?? '') === 'Inne' ? 'selected' : '' ?>>Inne</option>
+        </select>
+      </div>
+
+      <div class="form-card__group">
+        <label for="subject" class="form-card__label">Krótki temat <span class="required">*</span></label>
         <input
           type="text"
           id="subject"
           name="subject"
           class="form-card__input"
           value="<?= htmlspecialchars((string) ($formData['subject'] ?? '')) ?>"
-          placeholder="Czego dotyczy wiadomość?"
+          placeholder="np. Pytanie nr 45 z INF.03 nie ładuje obrazka"
           required>
       </div>
 
