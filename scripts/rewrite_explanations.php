@@ -79,17 +79,18 @@ foreach ($batches as $batchIndex => $batch) {
     $prompt = "Jesteś doświadczonym programistą i mentorem dla uczniów technikum przygotowujących się do egzaminu INF.04. 
 Przeredaguj poniższe wyjaśnienia do pytań.
 Wytyczne STYLU:
-1. Budź zaufanie, bądź jak doświadczony starszy kolega po fachu (ale bez przesady, unikaj kiczowatych żartów czy potocznych słówek typu 'ziomek'). Pełen profesjonalizm, ale podany lekkim tonem.
-2. Zrozumiale 'na chłopski rozum' - jasno i wprost. Nie używaj suchego, encyklopedycznego żargonu.
-3. BARDZO ZWIĘŹLE. Uczniowie nienawidzą 'ścian tekstu'. Wyjaśnienie ma mieć maksymalnie 2-3 krótkie zdania. Od razu do sedna.
-4. Uczeń po przeczytaniu ma pomyśleć: 'Aha! No jasne'.
-Oto tablica JSON z danymi. Zwróć WYŁĄCZNIE tablicę JSON, w której dla każdego 'id' przypiszesz nowo sformułowane wyjaśnienie pod kluczem 'new_exp'. Żadnego formatowania markdown, tylko czysty kod JSON.
+1. Budź zaufanie, bądź jak doświadczony starszy kolega po fachu. Pełen profesjonalizm, ale podany przystępnym, życiowym tonem. Żadnych kiczowatych żartów.
+2. Zrozumiale 'na chłopski rozum' - celnie i do brzegu. Unikaj suchego, encyklopedycznego żargonu, jednak nie zaniżaj poziomu wiedzy technicznej.
+3. DŁUGOŚĆ I FORMAT: Pisz do pełnego wyczerpania zagadnienia. Uczeń musi pojąć 'dlaczego' tak jest. Nie stosuj limitu 2-3 zdań, jeśli temat wymaga szerszego omówienia, jednak pamiętaj by unikać 'ściany tekstu'. Dziel tekst na krótkie, przystępne akapity. 
+4. WAŻNE: Nie używaj formatowania Markdown (żadnych pogrubień, gwiazdek, backticków). Zwróć czysty tekst.
+
+Oto tablica JSON z danymi. Zwróć WYŁĄCZNIE tablicę JSON, w której dla każdego 'id' przypiszesz nowo sformułowane wyjaśnienie pod kluczem 'new_exp'. Żadnego formatowania bloków kodu, tylko czysty kod JSON.
 
 Dane wejściowe:
 " . json_encode($inputData, JSON_UNESCAPED_UNICODE);
 
     // Call Gemini API
-    $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=' . $apiKey;
+    $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=' . $apiKey;
     
     $postData = [
         "contents" => [
