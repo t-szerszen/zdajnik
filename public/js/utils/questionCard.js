@@ -21,10 +21,13 @@ import { renderDifficultyBadge } from './difficulty.js';
  * @param {object} question - Dane pytania (question_id, topic_name, difficulty).
  * @returns {string} HTML etykiet do wstawienia w `.quiz-card__header-left`.
  */
-export function renderQuestionBadgesHTML(question) {
-  const topicBadge = question.topic_name
-    ? `<span class="badge badge--secondary">${escapeHTML(question.topic_name)}</span>`
-    : '';
+export function renderQuestionBadgesHTML(question, showTopic = false) {
+  let topicBadge = '';
+  if (question.topic_name) {
+    topicBadge = showTopic
+      ? `<span class="badge badge--secondary badge--topic">${escapeHTML(question.topic_name)}</span>`
+      : `<span class="badge badge--secondary badge--topic" style="display: none;">${escapeHTML(question.topic_name)}</span>`;
+  }
 
   return `
     <span class="quiz-card__id">ID: ${question.question_id}</span>

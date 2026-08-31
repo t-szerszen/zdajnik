@@ -447,7 +447,7 @@ export class TestRunner {
           <div class="quiz-card__header">
               <div class="quiz-card__header-left">
                 <span class="quiz-card__question-number">Pytanie ${index + 1}</span>
-                ${renderQuestionBadgesHTML(qData.question)}
+                ${renderQuestionBadgesHTML(qData.question, true)}
               </div>
               <div class="quiz-card__header-actions">
                ${window.zdajnikAppState.isUserLoggedIn ? `
@@ -467,18 +467,16 @@ export class TestRunner {
         <div class="quiz-card__actions"></div>
       `;
 
-      if (explanation && explanation.trim()) {
-        this.renderExplanationResult(card, explanation, {
-          examId: qData.question.exam_type_id,
-          questionId: question_id,
-          topicId: qData.question.topic_id,
-          testType: this.isFullExam ? 'full_exam' : 'personalized',
-          source: 'test_results',
-          isCorrect: userAnswerId === null || userAnswerId === undefined
-            ? null
-            : Boolean(isUserCorrectHeader),
-        });
-      }
+      this.renderExplanationResult(card, explanation, {
+        examId: qData.question.exam_type_id,
+        questionId: question_id,
+        topicId: qData.question.topic_id,
+        testType: this.isFullExam ? 'full_exam' : 'personalized',
+        source: 'test_results',
+        isCorrect: userAnswerId === null || userAnswerId === undefined
+          ? null
+          : Boolean(isUserCorrectHeader),
+      });
 
       this.resultsDetailsContainer.appendChild(card);
     });

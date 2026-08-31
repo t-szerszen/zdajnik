@@ -146,6 +146,11 @@ class UIHandler {
         label.classList.add('quiz-card__answer--incorrect');
       }
     });
+
+    const topicBadge = document.querySelector('.badge--topic');
+    if (topicBadge) {
+      topicBadge.style.display = '';
+    }
   }
 
   // Metoda renderActionButtons
