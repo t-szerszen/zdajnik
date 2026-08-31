@@ -49,7 +49,7 @@ class SheetController extends BaseController
    */
   public static function isLibraryPublic(): bool
   {
-    return false;
+    return true;
   }
 
   /**

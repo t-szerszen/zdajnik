@@ -55,7 +55,6 @@ return [
     'icon' => 'fas fa-file-lines',
     'title' => 'Arkusze praktyczne',
     'description' => 'Zadania praktyczne do samodzielnego rozwiązania przy komputerze - w stylu części praktycznej egzaminu.',
-    'status' => 'Wkrótce',
   ],
   [
     'icon' => 'fas fa-graduation-cap',

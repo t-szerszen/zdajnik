@@ -172,15 +172,14 @@ use App\Models\User;
         </ul>
       </li>
 
-      <!-- PRAKTYKA: Biblioteka Arkuszy — funkcja jeszcze niedostępna dla użytkowników -->
+      <!-- PRAKTYKA: Biblioteka Arkuszy -->
       <li class="main-nav__item dropdown">
-        <span class="main-nav__link main-nav__link--disabled" aria-disabled="true">
+        <a href="<?= url('arkusze') ?>" class="main-nav__link">
           <i class="main-nav__icon fas fa-tools"></i>
           <div class="main-nav__link-content">
             <span>Praktyka</span>
-            <span class="badge badge--soon">Wkrótce</span>
           </div>
-        </span>
+        </a>
       </li>
 
       <li class="main-nav__item dropdown">
