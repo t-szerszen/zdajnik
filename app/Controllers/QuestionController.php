@@ -64,8 +64,8 @@ class QuestionController extends BaseController
     $totalQuestions = array_sum(array_column($exams, 'questions_count'));
 
     $this->renderView('questions_hub', [
-      'pageTitle' => 'Baza pytań egzaminacyjnych INF.03 i INF.04 | Zdajnik',
-      'pageDescription' => 'Przeglądaj ' . $totalQuestions . ' pytań z egzaminów zawodowych INF.03 i INF.04 — '
+      'pageTitle' => 'Baza pytań egzaminacyjnych INF.02, INF.03 i INF.04 | Zdajnik',
+      'pageDescription' => 'Przeglądaj ' . $totalQuestions . ' pytań z egzaminów zawodowych INF.02, INF.03 i INF.04 — '
         . 'każde z pełną treścią, wariantami odpowiedzi, poprawnym rozwiązaniem i wyjaśnieniem.',
       'canonicalUrl' => url('pytania'),
       'exams' => $exams,

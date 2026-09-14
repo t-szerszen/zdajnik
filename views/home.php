@@ -221,7 +221,7 @@ $extraSchemas = [
     -->
     <section class="exams-section" id="egzaminy">
       <h2 class="section-title">Wybierz kwalifikację i zacznij ćwiczyć</h2>
-      <p class="section-subtitle">Dostępne są kwalifikacje INF.03 i INF.04. Kolejne działy będziemy dodawać stopniowo.</p>
+      <p class="section-subtitle">Dostępne są kwalifikacje INF.02, INF.03 i INF.04. Kolejne działy będziemy dodawać stopniowo.</p>
       <div class="exams-grid">
         <a href="<?= url('test/inf03') ?>" class="exam-card">
           <img src="<?= url('images/exams/inf03-programowanie-webowe-800.webp') ?>"
