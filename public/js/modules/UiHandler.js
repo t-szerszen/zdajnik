@@ -121,6 +121,20 @@ class UIHandler {
   }
 
   /**
+   * Dopisuje do etykiety odpowiedzi tekst czytany tylko przez czytniki ekranu.
+   * Ikona poprawna/błędna jest pseudo-elementem CSS, którego czytniki nie odczytują.
+   *
+   * @param {HTMLElement} label
+   * @param {string} text
+   */
+  appendScreenReaderNote(label, text) {
+    const note = document.createElement('span');
+    note.className = 'visually-hidden';
+    note.textContent = ` (${text})`;
+    label.appendChild(note);
+  }
+
+  /**
    * Wyświetla wizualny feedback dla odpowiedzi (koloruje na zielono/czerwono).
    *
    * @param {boolean} isCorrect - Czy odpowiedź użytkownika była poprawna.
@@ -139,11 +153,13 @@ class UIHandler {
       // 2a. Zawsze oznacz poprawną odpowiedź na zielono.
       if (radioInput.value == correctAnswerId) {
         label.classList.add('quiz-card__answer--correct');
+        this.appendScreenReaderNote(label, 'Poprawna odpowiedź');
       }
 
       // 2b. Jeśli użytkownik odpowiedział błędnie, oznacz jego wybór na czerwono.
       if (!isCorrect && radioInput.value == userAnswerId) {
         label.classList.add('quiz-card__answer--incorrect');
+        this.appendScreenReaderNote(label, 'Twoja odpowiedź, błędna');
       }
     });
 

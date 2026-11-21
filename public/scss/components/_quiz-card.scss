@@ -1,4 +1,5 @@
 @use '../core/variables' as *;
+@use '../core/mixins' as *;
 
 // Komponent .quiz-card, który zawiera pytanie, odpowiedzi i akcje
 .quiz-card {
@@ -204,8 +205,16 @@
     font-weight: 600;
     font-size: 0.95rem; // Nieco mniejsza czcionka
 
+    // Radio ukryte wizualnie, ale nie przez display: none - musi zostać
+    // w kolejności tabulacji i w drzewie dostępności (obsługa klawiaturą
+    // i czytnikami ekranu). Fokus pokazujemy na całej etykiecie.
     input[type='radio'] {
-      display: none;
+      @include visually-hidden;
+    }
+
+    &:has(input:focus-visible) {
+      outline: 3px solid var(--accent);
+      outline-offset: 2px;
     }
 
     &-prefix {

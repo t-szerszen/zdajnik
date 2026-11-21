@@ -71,6 +71,7 @@ export class SingleQuestionPage {
     // Krok 2: Użyj delegacji zdarzeń do obsługi kliknięć wewnątrz kontenera quizu.
     // Jest to wydajniejsze niż dodawanie wielu listenerów do dynamicznych elementów.
     this.quizContainer.addEventListener('click', this.handleInteraction.bind(this));
+    this.quizContainer.addEventListener('keydown', this.handleAnswerKeydown.bind(this));
 
     // Krok 3: Sprawdź URL pod kątem autostartu
     this.handleAutoStart();
@@ -195,6 +196,28 @@ export class SingleQuestionPage {
       // Krok 3: Jeśli wszystko się zgadza, przekaż kontrolę do metody sprawdzającej.
       this.checkSelectedAnswer(clickedLabel);
     }
+  }
+
+  /**
+   * Strzałki w grupie radio domyślnie zaznaczają kolejną odpowiedź (i wywołują
+   * click), co w tym trybie od razu by ją sprawdzało. Przenosimy więc tylko
+   * fokus - wybór następuje Spacją, jak przy zwykłym polu radio.
+   *
+   * @param {KeyboardEvent} event
+   */
+  handleAnswerKeydown(event) {
+    const keys = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+    const step = keys[event.key];
+    if (!step || !(event.target instanceof HTMLInputElement) || event.target.type !== 'radio') return;
+
+    const radios = Array.from(
+      event.target.closest('.quiz-card__answers')?.querySelectorAll('input[type="radio"]') || []
+    );
+    const index = radios.indexOf(event.target);
+    if (index === -1) return;
+
+    event.preventDefault();
+    radios[(index + step + radios.length) % radios.length].focus();
   }
 
   /**
