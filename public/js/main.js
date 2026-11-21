@@ -245,26 +245,33 @@ async function initPageModules() {
   });
 }
 
+/**
+ * Inicjalizuje moduły obecne na każdej stronie.
+ *
+ * Każdy moduł jest ładowany i uruchamiany niezależnie: błąd jednego z nich
+ * (np. wyjątek SecurityError przy dostępie do localStorage / Service Workera
+ * w przeglądarce blokującej ciasteczka) nie może zatrzymać pozostałych.
+ * Wcześniej wszystkie importy szły przez jedno Promise.all, a inicjalizacje
+ * jedna po drugiej - wyjątek wcześniejszego modułu wyłączał np. przełącznik motywu.
+ */
 async function initGlobalModules() {
-  const [
-    { initNavbarHandler },
-    { initThemeSwitcher },
-    { initPasswordToggles },
-    { registerServiceWorker },
-    { initCookieConsent },
-  ] = await Promise.all([
-    import(modulePath('./components/NavbarHandler.js')),
-    import(modulePath('./components/ThemeSwitcher.js')),
-    import(modulePath('./components/show-password-toggle.js')),
-    import(modulePath('./modules/ServiceWorkerRegistration.js')),
-    import(modulePath('./components/CookieConsent.js')),
-  ]);
+  const modules = [
+    ['NavbarHandler', './components/NavbarHandler.js', (m) => m.initNavbarHandler()],
+    ['ThemeSwitcher', './components/ThemeSwitcher.js', (m) => m.initThemeSwitcher()],
+    ['PasswordToggles', './components/show-password-toggle.js', (m) => m.initPasswordToggles()],
+    ['ServiceWorker', './modules/ServiceWorkerRegistration.js', (m) => m.registerServiceWorker()],
+    ['CookieConsent', './components/CookieConsent.js', (m) => m.initCookieConsent()],
+  ];
 
-  initNavbarHandler();
-  initThemeSwitcher();
-  initPasswordToggles();
-  registerServiceWorker();
-  initCookieConsent();
+  const results = await Promise.allSettled(
+    modules.map(async ([, path, init]) => init(await import(modulePath(path))))
+  );
+
+  results.forEach((result, index) => {
+    if (result.status === 'rejected') {
+      console.error(`Zdajnik: błąd inicjalizacji modułu ${modules[index][0]}`, result.reason);
+    }
+  });
 }
 
 /**
