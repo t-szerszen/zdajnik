@@ -55,6 +55,8 @@ export class TestRunner {
     this.timerInterval = null;
     this.timeSpent = 0;
     this.isTestInProgress = false;
+    // Blokada ponownego zakończenia (podwójne kliknięcie, kliknięcie w chwili końca czasu).
+    this.isFinishing = false;
     this.exitTracked = false;
     this.answerSelections = new Map();
     this.pendingSaveToggles = new Set();
@@ -249,6 +251,10 @@ export class TestRunner {
   }
 
   async finishTest() {
+    if (this.isFinishing) return;
+    this.isFinishing = true;
+    if (this.finishBtn) this.finishBtn.disabled = true;
+
     this.isTestInProgress = false;
     this.stopTimer();
     window.removeEventListener('beforeunload', this.handleBeforeUnload);
