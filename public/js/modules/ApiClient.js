@@ -38,6 +38,9 @@
  * @author Tobiasz Szerszeń
  */
 
+/** Klucz localStorage dla podejść, których nie udało się wysłać. */
+const PENDING_ATTEMPTS_KEY = 'zdajnik_pending_attempts';
+
 class ApiClient {
   /**
    * @constructs ApiClient
@@ -80,7 +83,7 @@ class ApiClient {
       // Krok 5: Jeśli wystąpił błąd sieciowy (np. brak internetu), zaloguj go
       // i zwróć generyczny, przyjazny dla użytkownika komunikat.
       console.error(`Błąd sieci dla endpointu ${endpoint}:`, error);
-      return { success: false, error: 'Błąd połączenia. Sprawdź swoje połączenie z internetem.' };
+      return { success: false, networkError: true, error: 'Błąd połączenia. Sprawdź swoje połączenie z internetem.' };
     }
   }
 
@@ -151,6 +154,96 @@ class ApiClient {
     };
     // Zmieniamy endpoint na /save-attempt
     return this._request('/save-attempt', options);
+  }
+
+  /**
+   * Zapisuje podejście z ponowieniami, a przy braku sieci odkłada je do kolejki.
+   *
+   * Ponawiamy tylko błędy sieciowe - błąd zwrócony przez serwer (np. walidacja)
+   * nie zniknie po ponowieniu. Podejście, którego nie udało się wysłać, trafia do
+   * localStorage i jest wysyłane przy następnym wejściu na stronę albo po
+   * powrocie połączenia (zob. flushPendingAttempts()).
+   *
+   * @param {object} attemptData - Dane podejścia (jak w saveAttempt).
+   * @returns {Promise<{success: boolean, queued?: boolean, error?: string}>}
+   */
+  async saveAttemptWithRetry(attemptData) {
+    const delays = [0, 1000, 3000];
+    let result = { success: false };
+
+    for (const delay of delays) {
+      if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+      result = await this.saveAttempt(attemptData);
+      if (result.success || !result.networkError) return result;
+    }
+
+    const queued = this._queuePendingAttempt(attemptData);
+    return { ...result, queued };
+  }
+
+  /**
+   * Wysyła podejścia odłożone w kolejce. Bezpieczne do wielokrotnego wywołania.
+   *
+   * @returns {Promise<number>} Liczba pomyślnie zapisanych podejść.
+   */
+  async flushPendingAttempts() {
+    if (this._isFlushing) return 0;
+    this._isFlushing = true;
+
+    let saved = 0;
+    try {
+      const pending = this._readPendingAttempts();
+      const stillPending = [];
+
+      for (const attempt of pending) {
+        const result = await this.saveAttempt(attempt);
+        if (result.success) {
+          saved++;
+        } else if (result.networkError) {
+          stillPending.push(attempt);
+        }
+        // Błąd serwera (np. walidacja) - porzucamy, ponowienie nic nie da.
+      }
+
+      this._writePendingAttempts(stillPending);
+    } finally {
+      this._isFlushing = false;
+    }
+
+    return saved;
+  }
+
+  /** @private */
+  _readPendingAttempts() {
+    try {
+      const raw = localStorage.getItem(PENDING_ATTEMPTS_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /** @private */
+  _writePendingAttempts(attempts) {
+    try {
+      if (attempts.length === 0) {
+        localStorage.removeItem(PENDING_ATTEMPTS_KEY);
+      } else {
+        localStorage.setItem(PENDING_ATTEMPTS_KEY, JSON.stringify(attempts));
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /** @private */
+  _queuePendingAttempt(attemptData) {
+    const pending = this._readPendingAttempts();
+    // Limit, żeby kolejka nie rosła bez końca przy długim braku sieci.
+    pending.push(attemptData);
+    return this._writePendingAttempts(pending.slice(-10));
   }
 
   /**

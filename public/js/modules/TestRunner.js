@@ -26,6 +26,7 @@ import { escapeHTML } from '../utils/sanitize.js';
 import { renderQuestionBadgesHTML, renderQuestionSourceHTML } from '../utils/questionCard.js';
 import ExplanationToggler from '../components/ExplanationToggler.js';
 import saveToggle from '../components/SaveToggleHandler.js';
+import Toast from '../components/Toast.js';
 
 export class TestRunner {
   /**
@@ -306,7 +307,16 @@ export class TestRunner {
         topicIds: Array.from(topicIdsInTest),
         answers: answersDetails
       };
-      await api.saveAttempt(attemptPayload);
+      const saveResult = await api.saveAttemptWithRetry(attemptPayload);
+      if (!saveResult.success) {
+        Toast.show(
+          saveResult.queued
+            ? 'Nie udało się zapisać wyniku - brak połączenia. Zapiszemy go automatycznie, gdy wrócisz online.'
+            : 'Nie udało się zapisać wyniku w statystykach. Spróbuj ponownie później.',
+          'error',
+          10000
+        );
+      }
     }
 
     if (this.pendingSaveToggles.size > 0) {

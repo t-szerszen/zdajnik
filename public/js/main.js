@@ -267,7 +267,41 @@ async function initGlobalModules() {
   initCookieConsent();
 }
 
+/**
+ * Wysyła wyniki egzaminów, których nie udało się zapisać z powodu braku sieci
+ * (kolejka w localStorage, zob. ApiClient.saveAttemptWithRetry()).
+ */
+async function initPendingAttemptsSync() {
+  if (!window.zdajnikAppState?.isUserLoggedIn) return;
+
+  let hasPending = false;
+  try {
+    hasPending = Boolean(localStorage.getItem('zdajnik_pending_attempts'));
+  } catch (e) {
+    return;
+  }
+  if (!hasPending) return;
+
+  const [{ default: api }, { default: Toast }] = await Promise.all([
+    import(modulePath('./modules/ApiClient.js')),
+    import(modulePath('./components/Toast.js')),
+  ]);
+
+  const flush = async () => {
+    const saved = await api.flushPendingAttempts();
+    if (saved > 0) {
+      Toast.show(saved === 1 ? 'Zapisano zaległy wynik egzaminu.' : `Zapisano zaległe wyniki egzaminów: ${saved}.`, 'success');
+    }
+  };
+
+  window.addEventListener('online', flush);
+  await flush();
+}
+
 onReady(() => {
+  initPendingAttemptsSync().catch((error) => {
+    console.error('Zdajnik: błąd synchronizacji zaległych wyników', error);
+  });
   initGlobalModules().catch((error) => {
     console.error('Zdajnik: błąd inicjalizacji modułów globalnych', error);
   });
