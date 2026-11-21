@@ -65,37 +65,24 @@ class VerificationController extends BaseController
       return;
     }
 
-    $tokenRecord = $this->tokenService->getTokenRecord($token);
+    // Tylko tokeny aktywacji konta - zmiana e-maila wymaga kodu OTP
+    // i jest obsługiwana w SettingsController::handleVerifyEmailRequest().
+    $tokenRecord = $this->tokenService->getTokenRecord($token, 'email_verify');
     if (!$tokenRecord) {
       $this->getAnalyticsService()->trackValidationError(null, 'email_verification', 'invalid_or_expired_token');
       $this->renderErrorView('Podany token jest nieprawidłowy, został już wykorzystany lub wygasł.');
       return;
     }
 
-    $success = false;
-    $userId = $tokenRecord['user_id'];
-    $tokenType = $tokenRecord['type'];
+    $userId = (int) $tokenRecord['user_id'];
 
-    // KROK 2: Identyfikacja typu operacji (aktywacja vs zmiana e-maila)
-    // KROK 3: Wykonanie odpowiedniej akcji w modelu użytkownika
-    switch ($tokenType) {
-      case 'email_verify':
-        $success = $this->userModel->verifyUser($userId);
-        break;
-
-      case 'email_change':
-        $newEmail = $tokenRecord['token_data'];
-        $success = $this->userModel->updateAndVerifyEmail($userId, $newEmail);
-        break;
-    }
+    // KROK 2-3: Aktywacja konta
+    $success = $this->userModel->verifyUser($userId);
 
     if ($success) {
       // KROK 4: Sprzątanie zużytych tokenów (bezpieczeństwo One-Time Token)
-      $this->tokenService->deleteTokensForUserByType($userId, $tokenType);
-      $this->getAnalyticsService()->trackEmailVerified(
-        (int) $userId,
-        $tokenType === 'email_change' ? 'email_change_link' : 'registration_verification'
-      );
+      $this->tokenService->deleteTokensForUserByType($userId, 'email_verify');
+      $this->getAnalyticsService()->trackEmailVerified($userId, 'registration_verification');
 
       // KROK 5: Automatyczne logowanie użytkownika po pomyślnej weryfikacji
       $user = $this->userModel->getUserById($userId);

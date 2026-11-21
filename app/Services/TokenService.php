@@ -104,15 +104,31 @@ class TokenService
    *
    * Metoda automatycznie odrzuca tokeny, które przekroczyły swój czas ważności.
    *
-   * @param string $token Surowa wartość tokena (np. pobrana z adresu URL).
-   * @return array|null Tablica z danymi rekordu lub null w przypadku braku/wygasnięcia.
+   * Podanie $expectedType jest zalecane: bez niego token jednego procesu
+   * (np. zmiany e-maila) dałoby się użyć w innym (np. aktywacji konta).
+   *
+   * @param string|null $token Surowa wartość tokena (np. pobrana z adresu URL).
+   * @param string|null $expectedType Wymagany typ tokena (np. 'email_verify').
+   * @return array|null Tablica z danymi rekordu lub null w przypadku braku/wygasnięcia/złego typu.
    */
-  public function getTokenRecord(string $token): ?array
+  public function getTokenRecord(?string $token, ?string $expectedType = null): ?array
   {
+    if ($token === null || $token === '') {
+      return null;
+    }
+
     // Pobieramy tylko tokeny, które nie wygasły
     $sql = 'SELECT * FROM user_tokens WHERE token = ? AND expires_at > NOW()';
     $result = $this->db->fetch($sql, [$token]);
 
-    return $result ?: null;
+    if (!$result) {
+      return null;
+    }
+
+    if ($expectedType !== null && $result['type'] !== $expectedType) {
+      return null;
+    }
+
+    return $result;
   }
 }

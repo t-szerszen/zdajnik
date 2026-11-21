@@ -128,7 +128,7 @@ class PasswordResetController extends BaseController
   public function showNewPasswordForm(): void
   {
     $token = $_GET['token'] ?? null;
-    $tokenRecord = $this->tokenService->getTokenRecord($token);
+    $tokenRecord = $this->tokenService->getTokenRecord($token, 'password_reset');
 
     // Walidacja poprawności i daty wygaśnięcia tokenu
     if (!$token || !$tokenRecord || strtotime($tokenRecord['expires_at']) < time()) {
@@ -160,7 +160,7 @@ class PasswordResetController extends BaseController
   {
     // KROK 1: Walidacja tokenu weryfikacyjnego
     $token = $_POST['token'] ?? null;
-    $tokenRecord = $this->tokenService->getTokenRecord($token);
+    $tokenRecord = $this->tokenService->getTokenRecord($token, 'password_reset');
 
     if (!$tokenRecord) {
       $this->getAnalyticsService()->trackValidationError(null, 'password_reset', 'expired_session');

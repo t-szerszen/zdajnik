@@ -408,9 +408,9 @@ class SettingsController extends BaseController
   public function showVerifyEmailForm(): void
   {
     $token = $_GET['token'] ?? null;
-    $tokenRecord = $this->tokenService->getTokenRecord($token);
+    $tokenRecord = $this->tokenService->getTokenRecord($token, 'email_change');
 
-    if (!$token || !$tokenRecord) {
+    if (!$tokenRecord || (int) $tokenRecord['user_id'] !== $this->currentUser->getId()) {
       $this->redirectWithFlash('error', ['Link weryfikacyjny wygasł lub jest nieprawidłowy.'], 'email');
     }
 
@@ -427,9 +427,11 @@ class SettingsController extends BaseController
     $token = $_POST['token'] ?? null;
     $authCode = $_POST['auth_code'] ?? '';
 
-    $tokenRecord = $this->tokenService->getTokenRecord($token);
+    $tokenRecord = $this->tokenService->getTokenRecord($token, 'email_change');
 
-    if (!$tokenRecord) {
+    // Token musi należeć do zalogowanego użytkownika - inaczej cudzy token
+    // pozwoliłby przypisać do swojego konta adres z cudzego żądania.
+    if (!$tokenRecord || (int) $tokenRecord['user_id'] !== $this->currentUser->getId()) {
       $this->getAnalyticsService()->trackValidationError(
         $this->currentUser->getId(),
         'settings_email',
