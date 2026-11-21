@@ -693,11 +693,18 @@ export class TestRunner {
   runTimer() {
     if (this.timerInterval) clearInterval(this.timerInterval);
 
-    this.timerInterval = setInterval(() => {
-      this.timeSpent++;
-      this.timeLeft--;
+    // Czas liczymy od zegara systemowego, a nie zliczając ticki setInterval:
+    // w uśpionej karcie / na zablokowanym telefonie przeglądarka spowalnia
+    // interwały, przez co egzamin trwałby dłużej niż limit. Wznowienie po
+    // pauzie wyznacza nowy punkt odniesienia z pozostałego czasu.
+    const segmentStart = Date.now();
+    const deadline = segmentStart + this.timeLeft * 1000;
+    const timeSpentBase = this.timeSpent;
 
-      if (this.timeLeft < 0) this.timeLeft = 0;
+    const tick = () => {
+      const now = Date.now();
+      this.timeSpent = timeSpentBase + Math.floor((now - segmentStart) / 1000);
+      this.timeLeft = Math.max(0, Math.ceil((deadline - now) / 1000));
 
       const minutes = Math.floor(this.timeLeft / 60);
       const seconds = this.timeLeft % 60;
@@ -719,7 +726,9 @@ export class TestRunner {
       if (this.timeLeft <= 0) {
         this.finishTest();
       }
-    }, 1000);
+    };
+
+    this.timerInterval = setInterval(tick, 1000);
   }
 
   /**
