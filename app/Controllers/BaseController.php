@@ -45,7 +45,44 @@ class BaseController
     if (isset($_SESSION['user']) && $_SESSION['user'] instanceof User) {
       $this->isUserLoggedIn = true;
       $this->currentUser = $_SESSION['user'];
+      $this->revalidateSessionUser();
     }
+  }
+
+  /** @var int Co ile sekund sesja jest ponownie sprawdzana z bazą danych */
+  private const SESSION_REVALIDATE_INTERVAL = 300;
+
+  /**
+   * Okresowo sprawdza, czy zalogowany użytkownik nadal ma aktywne konto.
+   *
+   * Sesja przechowuje kopię obiektu User, więc bez tego zablokowanie konta
+   * przez administratora nie wylogowałoby już zalogowanej osoby. Sprawdzenie
+   * jest wykonywane najwyżej raz na SESSION_REVALIDATE_INTERVAL sekund,
+   * żeby nie dokładać zapytania do każdego żądania.
+   *
+   * @return void
+   */
+  private function revalidateSessionUser(): void
+  {
+    $lastCheck = (int) ($_SESSION['user_checked_at'] ?? 0);
+    if (time() - $lastCheck < self::SESSION_REVALIDATE_INTERVAL) {
+      return;
+    }
+
+    // getUserById() zwraca wyłącznie aktywne konta (is_active = 1, bez deleted_at).
+    $freshUser = (new UserModel())->getUserById($this->currentUser->getId());
+
+    if ($freshUser === null) {
+      unset($_SESSION['user'], $_SESSION['user_checked_at']);
+      session_regenerate_id(true);
+      $this->isUserLoggedIn = false;
+      $this->currentUser = null;
+      return;
+    }
+
+    $_SESSION['user'] = $freshUser;
+    $_SESSION['user_checked_at'] = time();
+    $this->currentUser = $freshUser;
   }
 
   /**

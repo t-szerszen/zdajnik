@@ -25,6 +25,9 @@ use App\Services\AnalyticsService;
  */
 class AuthService
 {
+  /** @var string Komunikat dla konta zablokowanego przez administratora */
+  public const DEACTIVATED_MESSAGE = 'To konto zostało zablokowane. Jeśli uważasz, że to pomyłka, skontaktuj się z nami.';
+
   /** @var Database Instancja połączenia z bazą dancyh */
   private Database $db;
 
@@ -130,7 +133,14 @@ class AuthService
     $user = $this->userModel->login($formData);
 
     if ($user instanceof User) {
-      // KROK 3: Kontrola bezpieczeństwa - weryfikacja Double Opt-In
+      // KROK 3a: Konto zablokowane przez administratora
+      // (konta w trakcie samodzielnego usuwania są reaktywowane już w modelu).
+      if (!$user->isActive()) {
+        $this->analyticsService->trackValidationError($user->getId(), 'login', 'account_deactivated');
+        return ['success' => false, 'errors' => [self::DEACTIVATED_MESSAGE]];
+      }
+
+      // KROK 3b: Kontrola bezpieczeństwa - weryfikacja Double Opt-In
       if (!$user->isVerified()) {
         // Blokada dostępu do czasu potwierdzenia adresu e-mail
         $_SESSION['verify_user_id'] = $user->getId();

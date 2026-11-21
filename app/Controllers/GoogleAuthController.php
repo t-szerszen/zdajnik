@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\UserModel;
 use App\Models\User;
 use App\Services\AnalyticsService;
+use App\Services\AuthService;
 use Google\Client;
 use Google\Service\Oauth2;
 use Exception;
@@ -134,6 +135,13 @@ class GoogleAuthController extends BaseController
       // Metoda findOrCreateGoogleUser zapewnia, że konto zostanie utworzone lub powiązane (linkage).
       $existingUser = $this->userModel->getUserByEmail($email);
       $user = $this->userModel->findOrCreateGoogleUser($googleId, $email, $firstName, $lastName);
+
+      if ($user instanceof User && !$user->isActive()) {
+        // Konto zablokowane przez administratora - nie tworzymy sesji.
+        $_SESSION['flash_message'] = ['type' => 'error', 'text' => AuthService::DEACTIVATED_MESSAGE];
+        header('Location: ' . url('logowanie'));
+        exit();
+      }
 
       if ($user instanceof User) {
         // KROK 5: Finalizacja lokalnej sesji uwierzytelnionej
