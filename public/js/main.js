@@ -1,4 +1,4 @@
-const CHART_JS_URL = 'https://cdn.jsdelivr.net/npm/chart.js';
+const CHART_JS_URL = 'https://cdn.jsdelivr.net/npm/chart.js@4.6.1';
 const CACHE_QUERY = new URL(import.meta.url).search || `?v=${Date.now()}`;
 
 function modulePath(path) {
