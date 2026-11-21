@@ -17,6 +17,9 @@ use App\Services\StatisticsService;
  */
 class HistoryController extends BaseController
 {
+  /** @var string[] Dozwolone wartości parametru `type` (profile historii) */
+  public const HISTORY_TYPES = ['exams', 'errors', 'critical', 'saved'];
+
   /** @var StatisticsService Serwis do pobierania zestawień historycznych i statystyk */
   private StatisticsService $statsService;
 
@@ -64,7 +67,12 @@ class HistoryController extends BaseController
     }
 
     // KROK 3: Identyfikacja typu żądanej historii
+    // Biała lista: wartość trafia do widoku (klasy CSS, linki), więc nie może
+    // pochodzić wprost z adresu URL.
     $type = $_GET['type'] ?? 'exams';
+    if (!in_array($type, self::HISTORY_TYPES, true)) {
+      $type = 'exams';
+    }
 
     $viewData = [
       'type' => $type,

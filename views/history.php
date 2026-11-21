@@ -48,7 +48,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Zdajnik';
         </a>
       </div>
 
-      <div class="stats-card stats-card--main stats-card--<?= $type ?>">
+      <div class="stats-card stats-card--main stats-card--<?= htmlspecialchars($type, ENT_QUOTES) ?>">
         <div class="stats-card__header">
           <div class="stats-card__title">
             <?php if ($type === 'exams'): ?>
@@ -160,7 +160,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Zdajnik';
                           <?= $item['score'] ?>%
                         </strong>
                       </div>
-                      <a href="<?= url('wyniki/' . $item['id']) ?>?source=history&type=<?= $type ?>&category=<?= $selectedCategoryId ?>"
+                      <a href="<?= url('wyniki/' . $item['id']) ?>?source=history&type=<?= urlencode($type) ?>&category=<?= (int) $selectedCategoryId ?>"
                         class="btn btn--primary btn--icon-only" title="Zobacz szczegóły">
                         <i class="fas fa-chevron-right"></i>
                       </a>
@@ -187,7 +187,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Zdajnik';
                       </div>
                     </div>
                     <div class="stats-card__item-actions">
-                      <a href="<?= url('test-pytanie/' . $item['question_id']) ?>?source=history&type=<?= $type ?>&category=<?= $selectedCategoryId ?>"
+                      <a href="<?= url('test-pytanie/' . $item['question_id']) ?>?source=history&type=<?= urlencode($type) ?>&category=<?= (int) $selectedCategoryId ?>"
                         class="btn btn--secondary btn--sm">zobacz</a>
                     </div>
                   </div>
@@ -207,7 +207,7 @@ $pageTitle = ($title ?? 'Historia') . ' | Zdajnik';
                       </span>
                     </div>
                     <div class="stats-card__item-actions">
-                      <a href="<?= url('test-pytanie/' . $item['id']) ?>?source=history&type=<?= $type ?>&category=<?= $selectedCategoryId ?>"
+                      <a href="<?= url('test-pytanie/' . $item['id']) ?>?source=history&type=<?= urlencode($type) ?>&category=<?= (int) $selectedCategoryId ?>"
                         class="btn btn--primary btn--sm">zobacz</a>
                     </div>
                   </div>

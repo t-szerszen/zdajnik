@@ -58,14 +58,14 @@ class ReviewController extends BaseController
     // KROK 3: Wyznaczenie adresu powrotnego (logika dynamicznych linków "Wróć")
     $source = $_GET['source'] ?? 'stats';
     if ($source === 'history') {
-      $type = $_GET['type'] ?? 'errors';
-      $cat = $_GET['category'] ?? 0;
-      $backUrl = url('historia') . '?type=' . $type . '&category=' . $cat;
+      $backUrl = $this->buildHistoryBackUrl('errors');
     } elseif ($source === 'search') {
       $query = $_GET['query'] ?? '';
-      $exam = $_GET['exam_id'] ?? '';
-      $topic = $_GET['topic_id'] ?? '';
-      $backUrl = url('search') . "?exam_id=$exam&topic_id=$topic&query=" . urlencode($query);
+      $backUrl = url('search') . '?' . http_build_query([
+        'exam_id' => $this->getIntParam('exam_id'),
+        'topic_id' => $this->getIntParam('topic_id'),
+        'query' => is_string($query) ? $query : '',
+      ]);
     } else {
       $cat = $_GET['category'] ?? '';
       $anchor = $_GET['anchor'] ?? '';
@@ -119,9 +119,7 @@ class ReviewController extends BaseController
     // KROK 4: Wyznaczenie adresu URL powrotu na podstawie źródła
     $source = $_GET['source'] ?? 'stats';
     if ($source === 'history') {
-      $type = $_GET['type'] ?? 'exams';
-      $cat = $_GET['category'] ?? 0;
-      $backUrl = url('historia') . '?type=' . $type . '&category=' . $cat;
+      $backUrl = $this->buildHistoryBackUrl('exams');
     } else {
       $cat = $_GET['category'] ?? '';
       $backUrl = url('statystyki');
@@ -139,5 +137,39 @@ class ReviewController extends BaseController
       'examCode' => $reviewData['meta']['exam_code'],
       'backUrl' => $backUrl
     ]);
+  }
+  /**
+   * Buduje adres powrotu do historii z parametrów GET.
+   *
+   * Parametry pochodzą z adresu URL, więc typ jest sprawdzany z białą listą,
+   * a kategoria rzutowana na liczbę - inaczej spreparowany link mógłby
+   * wstrzyknąć HTML/JS do atrybutu href przycisku "Wróć".
+   *
+   * @param string $defaultType Typ historii używany, gdy parametr jest pusty lub nieznany.
+   * @return string Bezpieczny adres URL.
+   */
+  private function buildHistoryBackUrl(string $defaultType): string
+  {
+    $type = $_GET['type'] ?? $defaultType;
+    if (!in_array($type, HistoryController::HISTORY_TYPES, true)) {
+      $type = $defaultType;
+    }
+
+    return url('historia') . '?' . http_build_query([
+      'type' => $type,
+      'category' => $this->getIntParam('category'),
+    ]);
+  }
+
+  /**
+   * Zwraca parametr GET jako nieujemną liczbę całkowitą (0, gdy brak lub niepoprawny).
+   *
+   * @param string $name Nazwa parametru.
+   * @return int
+   */
+  private function getIntParam(string $name): int
+  {
+    $value = $_GET[$name] ?? '';
+    return ctype_digit((string) $value) ? (int) $value : 0;
   }
 }

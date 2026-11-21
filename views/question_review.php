@@ -65,7 +65,7 @@ $extraSchemas = [
   <div class="review-page__main-wrapper">
     <div class="review-page__container">
       <div class="review-page__back-nav">
-        <a href="<?= $backUrl ?>" class="back-link">
+        <a href="<?= htmlspecialchars($backUrl, ENT_QUOTES) ?>" class="back-link">
           <i class="fas fa-arrow-left"></i> Powrót
         </a>
       </div>
