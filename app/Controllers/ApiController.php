@@ -247,8 +247,13 @@ class ApiController extends BaseController
     $questionsData = [];
     $savedIds = $this->isUserLoggedIn ? $this->savedQuestionModel->getUserSavedIds($this->currentUser->getId()) : [];
 
+    // Jedno zapytanie o odpowiedzi do wszystkich pytań zamiast osobnego na każde pytanie.
+    $answersByVersion = $this->answerModel->getAnswersForBatch(
+      array_map(static fn(array $q): int => (int) $q['question_version_id'], $questions)
+    );
+
     foreach ($questions as $question) {
-      $answers = $this->answerModel->getAnswersByVersionId($question['question_version_id']);
+      $answers = $answersByVersion[$question['question_version_id']] ?? [];
       $question['is_saved'] = in_array((int) $question['question_id'], $savedIds);
       $questionsData[] = ['question' => $question, 'answers' => $answers];
     }
@@ -297,8 +302,13 @@ class ApiController extends BaseController
     $questionsData = [];
     $savedIds = $this->isUserLoggedIn ? $this->savedQuestionModel->getUserSavedIds($this->currentUser->getId()) : [];
 
+    // Jedno zapytanie o odpowiedzi do wszystkich pytań zamiast osobnego na każde pytanie.
+    $answersByVersion = $this->answerModel->getAnswersForBatch(
+      array_map(static fn(array $q): int => (int) $q['question_version_id'], $questions)
+    );
+
     foreach ($questions as $question) {
-      $answers = $this->answerModel->getAnswersByVersionId($question['question_version_id']);
+      $answers = $answersByVersion[$question['question_version_id']] ?? [];
       $question['is_saved'] = in_array((int) $question['question_id'], $savedIds);
       $questionsData[] = ['question' => $question, 'answers' => $answers];
     }
