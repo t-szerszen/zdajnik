@@ -743,8 +743,17 @@ class ApiController extends BaseController
       'explanation_viewed',
       'answer_changed',
       'validation_error',
+      'test_completed',
     ];
     if (!in_array($eventType, $allowedClientEvents, true)) {
+      $this->sendJsonResponse(['success' => false], 400);
+      return;
+    }
+
+    // Ukończenie testu przez zalogowanego rejestruje serwer przy zapisie podejścia
+    // (saveAttempt). Z przeglądarki przyjmujemy je tylko od gości, którzy nie mają
+    // gdzie zapisać podejścia - inaczej zalogowani byliby liczeni podwójnie.
+    if ($eventType === 'test_completed' && $this->isUserLoggedIn) {
       $this->sendJsonResponse(['success' => false], 400);
       return;
     }

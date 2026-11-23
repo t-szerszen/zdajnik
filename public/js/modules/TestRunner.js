@@ -297,6 +297,21 @@ export class TestRunner {
     const totalQuestions = this.questionsData.length;
     const score = totalQuestions > 0 ? (correctAnswersCount / totalQuestions) * 100 : 0;
 
+    if (!window.zdajnikAppState?.isUserLoggedIn) {
+      // Gość nie zapisuje podejścia, więc ukończenie trafia tylko do analityki
+      // (dla zalogowanych zdarzenie rejestruje serwer w saveAttempt).
+      const firstQuestion = this.questionsData[0]?.question || {};
+      api.trackAnalyticsEvent('test_completed', {
+        exam_id: firstQuestion.exam_type_id || null,
+        test_type: this.isFullExam ? 'full_exam' : 'personalized',
+        source: 'test_runner_guest',
+        score: Math.round(score * 10) / 10,
+        correct_answers: correctAnswersCount,
+        total_questions: totalQuestions,
+        duration_seconds: this.timeSpent,
+      }).catch(() => {});
+    }
+
     if (window.zdajnikAppState?.isUserLoggedIn) {
       const attemptPayload = {
         examCode: this.examCode || 'INF.03',

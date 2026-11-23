@@ -300,6 +300,13 @@
   }
 }
 
+// Podział wartości KPI (np. goście / zalogowani) pod główną liczbą.
+.admin-analytics__metric-detail {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
 .admin-analytics__comparison {
   margin-top: auto;
   font-size: 0.76rem;

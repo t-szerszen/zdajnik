@@ -44,6 +44,13 @@ class AnalyticsService
   private const TEST_TYPES = ['full_exam', 'personalized'];
   private const AUTH_PROVIDERS = ['local', 'google'];
   private const USER_ROLES = ['admin', 'user'];
+  /**
+   * Wzorzec user-agentów botów i narzędzi automatycznych (MySQL REGEXP i PHP preg).
+   * Roboty wyszukiwarek renderują JS, więc bez filtra zawyżały odsłony
+   * i "rozpoczęte testy" (strona testu sama pobiera zestaw pytań).
+   */
+  public const BOT_USER_AGENT_PATTERN = 'bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|curl|wget|python-requests|axios|go-http-client|java/';
+
   private const METADATA_KEYS = [
     'exam_id',
     'question_id',
@@ -55,6 +62,9 @@ class AnalyticsService
     'result',
     'count',
     'duration_seconds',
+    'score',
+    'correct_answers',
+    'total_questions',
   ];
 
   private Database $db;
@@ -72,6 +82,11 @@ class AnalyticsService
   ): bool {
     try {
       if (!in_array($eventType, self::EVENT_TYPES, true)) {
+        return false;
+      }
+
+      // Ruch botów nie trafia do analityki (zob. BOT_USER_AGENT_PATTERN).
+      if ($this->isBotUserAgent($this->getUserAgent())) {
         return false;
       }
 
@@ -694,7 +709,7 @@ class AnalyticsService
       'pageViewsToday' => $this->countEvents('page_view', $today, $filters),
       'entriesToday' => $this->countEvents('entry', $today, $filters),
       'testsStartedToday' => $this->countEvents('test_started', $today, $filters),
-      'testsCompletedToday' => $this->countAttempts($today, $filters),
+      'testsCompletedToday' => $this->countEvents('test_completed', $today, $filters),
       'questionsAnsweredToday' => $this->countEvents('question_answered', $today, $filters),
       'averageScore' => $this->fetchAverageScore($range, $filters),
     ], $this->getSingleQuestionSummary($range, $filters));
@@ -749,7 +764,7 @@ class AnalyticsService
       'logins' => $this->getDailyCounts('login', $range, $filters),
       'registrations' => $this->getRegistrationTimeline($range, $filters),
       'testsStarted' => $this->getDailyCounts('test_started', $range, $filters),
-      'testsCompleted' => $this->getAttemptTimeline($range, $filters),
+      'testsCompleted' => $this->getDailyCounts('test_completed', $range, $filters),
       'singleQuestionStarted' => $this->getDailyCounts('single_question_started', $range, $filters),
       'singleQuestionAnswered' => $this->getDailyCounts('single_question_answered', $range, $filters),
     ];
@@ -941,17 +956,24 @@ class AnalyticsService
   ): array {
     $filters = $this->normalizeFilters($filters);
     $buildSummary = function (array $range) use ($filters): array {
-      $started = $this->countEvents('test_started', $range, $filters);
-      $completed = $this->countAttempts($range, $filters);
+      // Starty i ukończenia liczone z tego samego źródła (zdarzeń), z podziałem
+      // na gości i zalogowanych - wcześniej ukończenia brano z tabeli attempts,
+      // do której trafiają tylko zalogowani, więc completion rate był zaniżony.
+      $started = $this->countEventsByAudience('test_started', $range, $filters);
+      $completed = $this->countEventsByAudience('test_completed', $range, $filters);
 
       return [
         'newUsers' => $this->countRegistrations($range, $filters),
         'activeUsers' => $this->countActiveUsers($range, $filters),
         'pageViews' => $this->countEvents('page_view', $range, $filters),
         'entries' => $this->countEvents('entry', $range, $filters),
-        'testsStarted' => $started,
-        'testsCompleted' => $completed,
-        'completionRate' => $this->percentage($completed, $started),
+        'testsStarted' => $started['total'],
+        'testsStartedGuests' => $started['guests'],
+        'testsStartedLoggedIn' => $started['loggedIn'],
+        'testsCompleted' => $completed['total'],
+        'testsCompletedGuests' => $completed['guests'],
+        'testsCompletedLoggedIn' => $completed['loggedIn'],
+        'completionRate' => $this->percentage($completed['total'], $started['total']),
         'averageScore' => $this->fetchAverageScore($range, $filters),
       ];
     };
@@ -1386,7 +1408,7 @@ class AnalyticsService
   ): array
   {
     $started = $this->countEvents('test_started', $range, $filters);
-    $completed = $this->countAttempts($range, $filters);
+    $completed = $this->countEvents('test_completed', $range, $filters);
     $abandonedTests ??= $this->getAbandonedTests($range, $filters);
     return [
       'summary' => [
@@ -1675,7 +1697,7 @@ class AnalyticsService
       }
       $scoped = array_merge($filters, ['test_type' => $testType]);
       $started = $this->countEvents('test_started', $range, $scoped);
-      $completed = $this->countAttempts($range, $scoped);
+      $completed = $this->countEvents('test_completed', $range, $scoped);
       $rows[] = [
         'test_type' => $testType,
         'started' => $started,
@@ -1887,6 +1909,27 @@ class AnalyticsService
     );
   }
 
+  /**
+   * Liczy zdarzenia danego typu z podziałem na gości (bez konta) i zalogowanych.
+   *
+   * @return array{total: int, guests: int, loggedIn: int}
+   */
+  private function countEventsByAudience(string $eventType, array $range, array $filters): array
+  {
+    $where = $this->buildEventWhere($range, $filters, 'e', 'u', $eventType);
+    $row = $this->db->fetch(
+      'SELECT COUNT(*) AS total, SUM(e.user_id IS NULL) AS guests
+       FROM analytics_events e LEFT JOIN users u ON u.id = e.user_id
+       WHERE ' . implode(' AND ', $where['conditions']),
+      $where['params']
+    );
+
+    $total = (int) ($row['total'] ?? 0);
+    $guests = (int) ($row['guests'] ?? 0);
+
+    return ['total' => $total, 'guests' => $guests, 'loggedIn' => $total - $guests];
+  }
+
   private function countRegistrations(array $range, array $filters): int
   {
     $where = $this->buildUserWhere($filters, 'u', false);
@@ -1894,16 +1937,6 @@ class AnalyticsService
     array_push($where['params'], $this->rangeStart($range), $this->rangeEnd($range));
     return $this->fetchCount(
       'SELECT COUNT(*) AS total FROM users u WHERE ' . implode(' AND ', $where['conditions']),
-      $where['params']
-    );
-  }
-
-  private function countAttempts(array $range, array $filters): int
-  {
-    $where = $this->buildAttemptWhere($range, $filters, 'a', 'u', 'completed_at');
-    return $this->fetchCount(
-      'SELECT COUNT(*) AS total FROM attempts a LEFT JOIN users u ON u.id = a.user_id WHERE ' .
-      implode(' AND ', $where['conditions']),
       $where['params']
     );
   }
@@ -1990,24 +2023,6 @@ class AnalyticsService
     return $map;
   }
 
-  private function getAttemptTimeline(array $range, array $filters): array
-  {
-    $bucket = $this->getBucketDefinition($range, 'a.completed_at');
-    $where = $this->buildAttemptWhere($range, $filters, 'a', 'u', 'completed_at');
-    $rows = $this->db->fetchAll(
-      "SELECT {$bucket['sql']} AS bucket, COUNT(*) AS total
-       FROM attempts a LEFT JOIN users u ON u.id = a.user_id
-       WHERE " . implode(' AND ', $where['conditions']) . "
-       GROUP BY bucket ORDER BY bucket",
-      $where['params']
-    );
-    $map = [];
-    foreach ($rows as $row) {
-      $map[(string) $row['bucket']] = (int) $row['total'];
-    }
-    return $map;
-  }
-
   private function timelineToSeries(array $map, array $range): array
   {
     $labels = $this->buildBucketLabels($range);
@@ -2028,8 +2043,10 @@ class AnalyticsService
     $conditions = [
       "$eventAlias.event_date BETWEEN ? AND ?",
       "($eventAlias.user_id IS NULL OR $userAlias.deleted_at IS NULL)",
+      // Starsze zdarzenia zapisane przed filtrem botów w trackEvent().
+      "($eventAlias.user_agent IS NULL OR LOWER($eventAlias.user_agent) NOT REGEXP ?)",
     ];
-    $params = [$this->rangeStart($range), $this->rangeEnd($range)];
+    $params = [$this->rangeStart($range), $this->rangeEnd($range), self::BOT_USER_AGENT_PATTERN];
 
     if ($forcedEventType !== null) {
       $conditions[] = "$eventAlias.event_type = ?";
@@ -2357,9 +2374,14 @@ class AnalyticsService
         continue;
       }
 
-      if (in_array($normalizedKey, ['exam_id', 'question_id', 'topic_id', 'test_id', 'count', 'duration_seconds'], true)) {
+      if ($normalizedKey === 'score') {
+        $sanitized['score'] = max(0.0, min(100.0, round((float) $value, 1)));
+        continue;
+      }
+
+      if (in_array($normalizedKey, ['exam_id', 'question_id', 'topic_id', 'test_id', 'count', 'duration_seconds', 'correct_answers', 'total_questions'], true)) {
         $number = (int) $value;
-        if (in_array($normalizedKey, ['count', 'duration_seconds'], true)) {
+        if (in_array($normalizedKey, ['count', 'duration_seconds', 'correct_answers', 'total_questions'], true)) {
           $sanitized[$normalizedKey] = max(0, $number);
         } elseif ($number > 0) {
           $sanitized[$normalizedKey] = $number;
@@ -2484,6 +2506,18 @@ class AnalyticsService
   {
     $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
     return is_string($ipAddress) && $ipAddress !== '' ? $ipAddress : null;
+  }
+
+  /**
+   * Sprawdza, czy user-agent należy do bota lub narzędzia automatycznego.
+   */
+  public function isBotUserAgent(?string $userAgent): bool
+  {
+    if ($userAgent === null || $userAgent === '') {
+      return false;
+    }
+
+    return (bool) preg_match('#' . self::BOT_USER_AGENT_PATTERN . '#i', $userAgent);
   }
 
   private function getUserAgent(): ?string

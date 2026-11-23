@@ -221,10 +221,12 @@ export class AdminAnalytics {
       this.metric('Aktywni użytkownicy', kpis.activeUsers, 'fa-users'),
       this.metric('Odsłony', kpis.pageViews, 'fa-eye'),
       this.metric('Wejścia (strona główna)', kpis.entries, 'fa-door-open'),
-      this.metric('Rozpoczęte testy', kpis.testsStarted, 'fa-play'),
-      this.metric('Ukończone testy', kpis.testsCompleted, 'fa-flag-checkered'),
+      this.metric('Rozpoczęte testy', kpis.testsStarted, 'fa-play', 'number',
+        this.audienceDetail(kpis.testsStartedGuests, kpis.testsStartedLoggedIn)),
+      this.metric('Ukończone testy', kpis.testsCompleted, 'fa-flag-checkered', 'number',
+        this.audienceDetail(kpis.testsCompletedGuests, kpis.testsCompletedLoggedIn)),
       this.metric('Completion rate', kpis.completionRate, 'fa-percent', 'percent'),
-      this.metric('Średni wynik', kpis.averageScore, 'fa-bullseye', 'percent'),
+      this.metric('Średni wynik (zalogowani)', kpis.averageScore, 'fa-bullseye', 'percent'),
     ], true);
     this.renderChart(daily);
   }
@@ -517,6 +519,7 @@ export class AdminAnalytics {
           <i class="fas ${this.escapeHTML(metric.icon)}" aria-hidden="true"></i>
         </div>
         <strong>${this.escapeHTML(this.metricValue(metric.value, metric.format))}</strong>
+        ${metric.detail ? `<small class="admin-analytics__metric-detail">${this.escapeHTML(metric.detail)}</small>` : ''}
         ${showComparison ? this.comparison(metric.data) : ''}
       </article>
     `).join('');
@@ -700,8 +703,16 @@ export class AdminAnalytics {
     window.history.replaceState({}, '', target);
   }
 
-  metric(label, data, icon, format = 'number') {
-    return { label, value: data?.value ?? 0, data: data || {}, icon, format };
+  metric(label, data, icon, format = 'number', detail = '') {
+    return { label, value: data?.value ?? 0, data: data || {}, icon, format, detail };
+  }
+
+  /**
+   * Opis podziału wartości na gości i zalogowanych (np. "Goście: 30 · Zalogowani: 3").
+   */
+  audienceDetail(guests, loggedIn) {
+    if (guests === undefined && loggedIn === undefined) return '';
+    return `Goście: ${this.number(guests?.value ?? 0)} · Zalogowani: ${this.number(loggedIn?.value ?? 0)}`;
   }
 
   simpleMetric(label, value, icon, format = 'number') {
