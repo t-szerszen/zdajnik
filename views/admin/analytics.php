@@ -216,13 +216,13 @@ $exports = [
           >
             <header class="admin-analytics__section-heading">
               <div><span>Overview</span><h2>Najważniejsze wskaźniki</h2></div>
-              <p>Porównanie z poprzednim okresem o tej samej długości.</p>
+              <p data-overview-period>Porównanie z poprzednim okresem o tej samej długości.</p>
             </header>
             <div class="admin-analytics__metric-grid" data-overview-kpis></div>
             <div class="admin-analytics__panel">
               <div class="admin-analytics__panel-heading">
                 <h3>Trend dzienny</h3>
-                <span>Odsłony, rejestracje i testy</span>
+                <span>Odsłony bez botów, rejestracje, nauka i testy</span>
               </div>
               <div class="admin-analytics__chart-wrap">
                 <div class="admin-empty hidden" data-chart-empty>Brak danych dla wybranego zakresu.</div>
@@ -280,14 +280,14 @@ $exports = [
           <section class="admin-analytics__section" data-analytics-section="content" id="analytics-section-content" aria-labelledby="analytics-tab-content" role="tabpanel" hidden>
             <header class="admin-analytics__section-heading">
               <div><span>Content</span><h2>Jakość pytań i tematów</h2></div>
-              <p>Trudność, skuteczność i miejsca utraty odpowiedzi.</p>
+              <p>Liczone ze wszystkich odpowiedzi: tryb jednego pytania (także goście) i zapisane testy.</p>
             </header>
             <div class="admin-analytics__panel">
-              <div class="admin-analytics__panel-heading"><h3>Jakość pytań</h3><span>Posortowane od najwyższego udziału błędów</span></div>
+              <div class="admin-analytics__panel-heading"><h3>Najtrudniejsze pytania</h3><span>Najwyższy udział błędnych odpowiedzi (min. 3 odpowiedzi). Bardzo wysoki odsetek błędów może oznaczać błąd w pytaniu lub kluczu odpowiedzi.</span></div>
               <div data-content-quality></div>
               <div class="admin-pagination admin-analytics__pagination" data-content-pagination></div>
             </div>
-            <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Skuteczność tematów</h3></div><div data-topic-activity></div></div>
+            <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Najsłabsze działy</h3><span>Odsetek poprawnych odpowiedzi w dziale (min. 10 odpowiedzi), od najniższego</span></div><div data-topic-activity></div></div>
             <div class="admin-analytics__split">
               <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Najczęściej zapisywane</h3></div><div data-saved-questions></div></div>
               <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Najczęściej pomijane</h3></div><div data-dropoff-questions></div></div>

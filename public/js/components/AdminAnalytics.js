@@ -216,20 +216,20 @@ export class AdminAnalytics {
   }
 
   renderOverview(kpis, daily) {
+    // Kolejność odpowiada pytaniom: ilu realnych ludzi -> czy się uczą -> czy wracają.
     this.renderMetricCards('[data-overview-kpis]', [
-      this.metric('Nowi użytkownicy', kpis.newUsers, 'fa-user-plus'),
-      this.metric('Aktywni użytkownicy', kpis.activeUsers, 'fa-users'),
-      this.metric('Odsłony', kpis.pageViews, 'fa-eye'),
-      this.metric('Wejścia (strona główna)', kpis.entries, 'fa-door-open'),
-      this.metric('Rozpoczęte testy', kpis.testsStarted, 'fa-play', 'number',
-        this.audienceDetail(kpis.testsStartedGuests, kpis.testsStartedLoggedIn)),
-      this.metric('Ukończone testy', kpis.testsCompleted, 'fa-flag-checkered', 'number',
-        this.audienceDetail(kpis.testsCompletedGuests, kpis.testsCompletedLoggedIn)),
-      this.metric('Completion rate', kpis.completionRate, 'fa-percent', 'percent'),
-      this.metric('Średni wynik (zalogowani)', kpis.averageScore, 'fa-bullseye', 'percent'),
+      this.metric('Odwiedzający', kpis.visitors, 'fa-user-group', 'number', 'Sesje z min. 2 odsłonami, bez botów'),
+      this.metric('Odsłony', kpis.pageViews, 'fa-eye', 'number', 'Bez botów i crawlerów'),
+      this.metric('Nowe konta', kpis.newUsers, 'fa-user-plus'),
+      this.metric('Aktywni zalogowani', kpis.activeUsers, 'fa-users', 'number',
+        `W tym powracający: ${this.number(kpis.returningUsers?.value ?? 0)}`),
       this.metric('Odpowiedzi: jedno pytanie', kpis.singleQuestionAnswered, 'fa-circle-question', 'number',
         this.audienceDetail(kpis.singleQuestionAnsweredGuests, kpis.singleQuestionAnsweredLoggedIn)),
       this.metric('Sesje nauki: jedno pytanie', kpis.singleQuestionSessions, 'fa-book-open'),
+      this.metric('Rozpoczęte testy', kpis.testsStarted, 'fa-play', 'number',
+        this.audienceDetail(kpis.testsStartedGuests, kpis.testsStartedLoggedIn)),
+      this.metric('Ukończone testy', kpis.testsCompleted, 'fa-flag-checkered', 'number',
+        `${this.percent(kpis.completionRate?.value ?? 0)} rozpoczętych · ${this.audienceDetail(kpis.testsCompletedGuests, kpis.testsCompletedLoggedIn)}`),
     ], true);
     this.renderChart(daily);
   }
@@ -269,9 +269,8 @@ export class AdminAnalytics {
       this.simpleMetric('MAU', summary.mau, 'fa-calendar'),
       this.simpleMetric('DAU / MAU', summary.dauMauStickiness, 'fa-chart-pie', 'percent'),
       this.simpleMetric('Aktywni w zakresie', summary.activeUsersInRange, 'fa-users'),
-      this.simpleMetric('Sesje', summary.sessions, 'fa-window-restore'),
-      this.simpleMetric('Pokrycie sesji', summary.sessionCoveragePercent, 'fa-database', 'percent'),
-      this.simpleMetric('Odsłony', summary.pageViews, 'fa-eye'),
+      this.simpleMetric('Odwiedzający', summary.sessions, 'fa-user-group'),
+      this.simpleMetric('Odsłony (bez botów)', summary.pageViews, 'fa-eye'),
     ]);
     this.renderBreakdown('[data-top-paths]', section.topPaths || [], 'Ścieżka', true);
     this.renderBreakdown('[data-event-types]', section.eventTypes || [], 'Event');
@@ -420,6 +419,10 @@ export class AdminAnalytics {
   renderRetention(section) {
     const summary = section.summary || {};
     this.renderMetricCards('[data-retention-kpis]', [
+      { ...this.simpleMetric('Powracający: 7 dni', summary.returningUsers7d, 'fa-arrow-rotate-left'),
+        detail: `Konta starsze niż 7 dni, aktywne w ostatnich 7 dniach (aktywnych: ${this.number(summary.activeUsers7d)})` },
+      { ...this.simpleMetric('Powracający: 30 dni', summary.returningUsers30d, 'fa-arrow-rotate-left'),
+        detail: `Konta starsze niż 30 dni, aktywne w ostatnich 30 dniach (aktywnych: ${this.number(summary.activeUsers30d)})` },
       this.simpleMetric('Powrót D1', summary.d1Rate, 'fa-rotate', 'percent'),
       this.simpleMetric('Powrót D7', summary.d7Rate, 'fa-calendar-week', 'percent'),
       this.simpleMetric('Powrót D30', summary.d30Rate, 'fa-calendar', 'percent'),
@@ -617,8 +620,7 @@ export class AdminAnalytics {
     const accentHover = styles.getPropertyValue('--accent-hover').trim() || '#059669';
     const navy = styles.getPropertyValue('--color-navy').trim() || '#0d1b3d';
     const datasets = [
-      ['Odsłony', daily.pageViews || [], navy],
-      ['Wejścia (strona główna)', daily.entries || [], '#8b5cf6'],
+      ['Odsłony (bez botów)', daily.pageViews || [], navy],
       ['Rejestracje', daily.registrations || [], '#f59e0b'],
       ['Logowania', daily.logins || [], accent],
       ['Starty testów', daily.testsStarted || [], accentHover],
@@ -677,6 +679,15 @@ export class AdminAnalytics {
   applyRange(range) {
     const label = this.root.querySelector('[data-range-label]');
     if (label) label.textContent = range.label || '';
+    // Każda liczba w panelu dotyczy wybranego okresu - pokazujemy go wprost nad kartami.
+    const period = this.root.querySelector('[data-overview-period]');
+    if (period) {
+      const day = (value) => String(value || '').split('-').reverse().join('.');
+      const current = `${range.label || 'Wybrany okres'}: ${day(range.from)} – ${day(range.to)}`;
+      period.textContent = range.previousFrom
+        ? `${current}. Zmiana względem ${day(range.previousFrom)} – ${day(range.previousTo)}.`
+        : `${current}.`;
+    }
     if (!this.form) return;
 
     const rangeInput = this.form.querySelector('[data-range-input]');

@@ -489,13 +489,6 @@ class ApiController extends BaseController
           'test_type' => $attemptData['test_type'],
         ]);
 
-        $this->analyticsService->trackQuestionAnsweredBatch(
-          $userId,
-          $examTypeId,
-          (int) $attemptId,
-          $answersDetails,
-          $attemptData['test_type']
-        );
       } catch (\Throwable $e) {
         // Analityka nie może blokować zapisu próby.
       }

@@ -49,7 +49,19 @@ class AnalyticsService
    * Roboty wyszukiwarek renderują JS, więc bez filtra zawyżały odsłony
    * i "rozpoczęte testy" (strona testu sama pobiera zestaw pytań).
    */
-  public const BOT_USER_AGENT_PATTERN = 'bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|curl|wget|python-requests|axios|go-http-client|java/';
+  public const BOT_USER_AGENT_PATTERN = 'bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|curl|wget|python|axios|go-http-client|java/|html, like gecko';
+
+  /**
+   * Typy, których nie zapisujemy (zostają w EVENT_TYPES dla starszych danych):
+   * - validation_error: ~1500 wpisów/mies. z ~40 miejsc (głównie boty na formularzach),
+   *   zagłuszał wszystkie zestawienia i nie odpowiadał na żadne pytanie produktowe,
+   * - entry: wejścia na stronę główną, w praktyce indeksowanie przez boty; dublował page_view,
+   * - question_answered: kopia attempt_answers (40 wierszy na każdy test zalogowanego).
+   */
+  private const NOT_RECORDED_EVENTS = ['validation_error', 'entry', 'question_answered'];
+
+  /** Zdarzenia techniczne pomijane w zestawieniach typów zdarzeń i ścieżek. */
+  private const NOISE_EVENTS = ['validation_error', 'entry', 'question_answered'];
 
   private const METADATA_KEYS = [
     'exam_id',
@@ -87,6 +99,10 @@ class AnalyticsService
 
       // Ruch botów nie trafia do analityki (zob. BOT_USER_AGENT_PATTERN).
       if ($this->isBotUserAgent($this->getUserAgent())) {
+        return false;
+      }
+
+      if (in_array($eventType, self::NOT_RECORDED_EVENTS, true)) {
         return false;
       }
 
@@ -455,11 +471,9 @@ class AnalyticsService
     $range = $this->resolveDateRange($filters);
     $previousRange = $this->buildPreviousRange($range);
 
-    $summary = $this->getSummaryStats($range, $filters);
     $daily = $this->getDailyAnalytics($range, $filters);
     $examActivity = $this->getExamActivity($range, $filters);
     $singleQuestionActivity = $this->getSingleQuestionActivity($range, $filters);
-    $recentActivity = $this->getRecentActivity(10, $filters);
     $comparison = $this->getComparisonSummary($range, $previousRange ?? $range, $filters);
     if ($previousRange === null) {
       $comparison['previous'] = null;
@@ -488,10 +502,9 @@ class AnalyticsService
     );
 
     return [
-      'schemaVersion' => 5,
+      'schemaVersion' => 6,
       'range' => $this->serializeRange($range, $previousRange),
       'filters' => $filters,
-      'summary' => $summary,
       'comparison' => $comparison,
       'daily' => $daily,
       'funnel' => $funnel,
@@ -504,13 +517,9 @@ class AnalyticsService
       'hardestQuestions' => $contentQuality['hardestQuestions'],
       'abandonedTests' => $abandonedTests,
       'userActivity' => $userActivity,
-      'recentActivity' => $recentActivity,
       'exportLinks' => $this->buildExportLinks($filters),
-
-      // Legacy aliases consumed by the current server-rendered view and JS.
       'singleQuestionActivity' => $singleQuestionActivity,
-      'recentLogins' => $recentActivity['logins'],
-      'overview' => ['kpis' => $comparison['metrics'], 'daily' => $daily, 'legacySummary' => $summary],
+      'overview' => ['kpis' => $comparison['metrics'], 'daily' => $daily],
       'acquisition' => $this->getAcquisitionSection($range, $filters, $funnel, $searchActivity),
       'engagement' => $this->getEngagementSection($range, $filters, $activeUsers),
       'learning' => $this->getLearningSection(
@@ -707,10 +716,8 @@ class AnalyticsService
       'newRegistrationsToday' => $this->countRegistrations($today, $filters),
       'loginsToday' => $this->countEvents('login', $today, $filters),
       'pageViewsToday' => $this->countEvents('page_view', $today, $filters),
-      'entriesToday' => $this->countEvents('entry', $today, $filters),
       'testsStartedToday' => $this->countEvents('test_started', $today, $filters),
       'testsCompletedToday' => $this->countEvents('test_completed', $today, $filters),
-      'questionsAnsweredToday' => $this->countEvents('question_answered', $today, $filters),
       'averageScore' => $this->fetchAverageScore($range, $filters),
     ], $this->getSingleQuestionSummary($range, $filters));
   }
@@ -760,7 +767,6 @@ class AnalyticsService
     $labels = $this->buildBucketLabels($range);
     $maps = [
       'pageViews' => $this->getDailyCounts('page_view', $range, $filters),
-      'entries' => $this->getDailyCounts('entry', $range, $filters),
       'logins' => $this->getDailyCounts('login', $range, $filters),
       'registrations' => $this->getRegistrationTimeline($range, $filters),
       'testsStarted' => $this->getDailyCounts('test_started', $range, $filters),
@@ -877,31 +883,30 @@ class AnalyticsService
   public function getHardestQuestions(array $range, int $limit = 10, array $filters = []): array
   {
     $limitSql = $limit > 0 ? 'LIMIT ' . min(5000, $limit) : '';
-    $where = $this->buildAttemptWhere($range, $filters, 'a', 'u', 'completed_at');
+    $source = $this->buildAnswerSource($range, $filters);
+    $min = self::MIN_ANSWERS_PER_QUESTION;
 
     return $this->db->fetchAll(
       "SELECT q.id AS question_id,
-              MAX(qv.question_text) AS question_text,
+              (SELECT qv.question_text FROM question_versions qv
+                WHERE qv.question_id = q.id AND qv.is_active = 1
+                ORDER BY qv.id DESC LIMIT 1) AS question_text,
               et.code AS exam_code,
               et.name AS exam_name,
               t.name AS topic_name,
               COUNT(*) AS total_answers,
-              SUM(aa.is_correct = 0) AS wrong_answers,
-              SUM(aa.answer_id IS NULL) AS skipped_answers,
-              ROUND(SUM(aa.is_correct = 0) * 100.0 / COUNT(*), 1) AS wrong_percent
-       FROM attempt_answers aa
-       JOIN attempts a ON a.id = aa.attempt_id
-       JOIN question_versions qv ON qv.id = aa.question_version_id
-       JOIN questions q ON q.id = qv.question_id
+              SUM(ans.is_correct = 0) AS wrong_answers,
+              SUM(ans.skipped = 1) AS skipped_answers,
+              ROUND(SUM(ans.is_correct = 0) * 100.0 / COUNT(*), 1) AS wrong_percent
+       FROM {$source['sql']} ans
+       JOIN questions q ON q.id = ans.question_id
        JOIN exam_types et ON et.id = q.exam_type_id
        JOIN topics t ON t.id = q.topic_id
-       LEFT JOIN users u ON u.id = a.user_id
-       WHERE " . implode(' AND ', $where['conditions']) . "
        GROUP BY q.id, et.code, et.name, t.name
-       HAVING total_answers >= 3
+       HAVING total_answers >= $min
        ORDER BY wrong_percent DESC, total_answers DESC
        $limitSql",
-      $where['params']
+      $source['params']
     );
   }
 
@@ -967,10 +972,11 @@ class AnalyticsService
       $singleAnswered = $this->countEventsByAudience('single_question_answered', $range, $filters);
 
       return [
+        'visitors' => $this->countRealVisitors($range, $filters),
         'newUsers' => $this->countRegistrations($range, $filters),
         'activeUsers' => $this->countActiveUsers($range, $filters),
+        'returningUsers' => $this->countReturningUsers($range, $filters),
         'pageViews' => $this->countEvents('page_view', $range, $filters),
-        'entries' => $this->countEvents('entry', $range, $filters),
         'testsStarted' => $started['total'],
         'testsStartedGuests' => $started['guests'],
         'testsStartedLoggedIn' => $started['loggedIn'],
@@ -1399,7 +1405,8 @@ class AnalyticsService
       'summary' => [
         ...$activeUsers,
         'pageViews' => $this->countEvents('page_view', $range, $filters),
-        'sessions' => $sessions['sessions'],
+        // Surowa liczba sesji to głównie boty bez ciasteczek - pokazujemy realnych odwiedzających.
+        'sessions' => $this->countRealVisitors($range, $filters),
         'sessionCoveragePercent' => $sessions['coverage'],
       ],
       'activeUsersTrend' => $this->getActiveUsersTimeline($range, $filters),
@@ -1450,8 +1457,24 @@ class AnalyticsService
       }
     }
 
+    // Powracający w stałych oknach (niezależnie od filtra okresu): odpowiada wprost
+    // na pytanie "czy ludzie wracają", także konta zarejestrowane dawno temu.
+    $returning = [];
+    foreach ([7, 30] as $days) {
+      $end = new DateTimeImmutable('now');
+      $window = ['start' => $end->sub(new DateInterval('P' . ($days - 1) . 'D'))->setTime(0, 0), 'end' => $end];
+      $returning[$days] = [
+        'returning' => $this->countReturningUsers($window, $filters),
+        'active' => $this->countActiveUsers($window, $filters),
+      ];
+    }
+
     return [
       'summary' => [
+        'returningUsers7d' => $returning[7]['returning'],
+        'activeUsers7d' => $returning[7]['active'],
+        'returningUsers30d' => $returning[30]['returning'],
+        'activeUsers30d' => $returning[30]['active'],
         'd1Rate' => $this->percentage($totals['d1']['users'], $totals['d1']['eligible']),
         'd7Rate' => $this->percentage($totals['d7']['users'], $totals['d7']['eligible']),
         'd30Rate' => $this->percentage($totals['d30']['users'], $totals['d30']['eligible']),
@@ -1552,20 +1575,61 @@ class AnalyticsService
     return $rows;
   }
 
+  /**
+   * Źródło wszystkich odpowiedzi na pytania w okresie: tryb jednego pytania
+   * (zdarzenia single_question_answered, także goście) + odpowiedzi w zapisanych
+   * testach (attempt_answers). Wcześniej jakość pytań i tematów liczono wyłącznie
+   * z testów zalogowanych - na produkcji ~1 test na 267 odpowiedzi w trybie
+   * jednego pytania, więc te zestawienia były puste.
+   *
+   * @return array{sql: string, params: array} Podzapytanie z kolumnami question_id, is_correct, skipped.
+   */
+  private function buildAnswerSource(array $range, array $filters): array
+  {
+    $attemptWhere = $this->buildAttemptWhere($range, $filters, 'a', 'au', 'completed_at');
+    $eventWhere = $this->buildEventWhere(
+      $range,
+      array_merge($filters, ['test_type' => '']),
+      'e',
+      'eu',
+      'single_question_answered'
+    );
+    $eventWhere['conditions'][] = 'e.question_id IS NOT NULL';
+
+    $sql = "(
+      SELECT qv.question_id AS question_id, aa.is_correct AS is_correct, (aa.answer_id IS NULL) AS skipped
+      FROM attempt_answers aa
+      JOIN attempts a ON a.id = aa.attempt_id
+      JOIN question_versions qv ON qv.id = aa.question_version_id
+      LEFT JOIN users au ON au.id = a.user_id
+      WHERE " . implode(' AND ', $attemptWhere['conditions']) . "
+      UNION ALL
+      SELECT e.question_id AS question_id, COALESCE(e.is_correct, 0) AS is_correct, 0 AS skipped
+      FROM analytics_events e
+      LEFT JOIN users eu ON eu.id = e.user_id
+      WHERE " . implode(' AND ', $eventWhere['conditions']) . "
+    )";
+
+    return ['sql' => $sql, 'params' => array_merge($attemptWhere['params'], $eventWhere['params'])];
+  }
+
+  /** Minimalna liczba odpowiedzi, żeby pytanie trafiło do rankingu trudności. */
+  private const MIN_ANSWERS_PER_QUESTION = 3;
+
+  /** Minimalna liczba odpowiedzi, żeby temat trafił do rankingu skuteczności. */
+  private const MIN_ANSWERS_PER_TOPIC = 10;
+
   private function getContentQualityTable(array $range, array $filters): array
   {
     $page = max(1, (int) $filters['page']);
     $perPage = min(100, max(10, (int) $filters['per_page']));
     $offset = ($page - 1) * $perPage;
-    $where = $this->buildAttemptWhere($range, $filters, 'a', 'u', 'completed_at');
-    $baseFrom = "FROM attempt_answers aa
-      JOIN attempts a ON a.id = aa.attempt_id
-      JOIN question_versions qv ON qv.id = aa.question_version_id
-      JOIN questions q ON q.id = qv.question_id
+    $source = $this->buildAnswerSource($range, $filters);
+    $min = self::MIN_ANSWERS_PER_QUESTION;
+    $baseFrom = "FROM {$source['sql']} ans
+      JOIN questions q ON q.id = ans.question_id
       JOIN exam_types et ON et.id = q.exam_type_id
-      JOIN topics t ON t.id = q.topic_id
-      LEFT JOIN users u ON u.id = a.user_id
-      WHERE " . implode(' AND ', $where['conditions']);
+      JOIN topics t ON t.id = q.topic_id";
 
     $total = $this->fetchCount(
       "SELECT COUNT(*) AS total
@@ -1573,30 +1637,32 @@ class AnalyticsService
          SELECT q.id
          $baseFrom
          GROUP BY q.id
-         HAVING COUNT(*) >= 3
+         HAVING COUNT(*) >= $min
        ) quality_rows",
-      $where['params']
+      $source['params']
     );
 
     $items = $this->db->fetchAll(
       "SELECT q.id AS question_id,
-              MAX(qv.question_text) AS question_text,
+              (SELECT qv.question_text FROM question_versions qv
+                WHERE qv.question_id = q.id AND qv.is_active = 1
+                ORDER BY qv.id DESC LIMIT 1) AS question_text,
               et.code AS exam_code,
               et.name AS exam_name,
               t.name AS topic_name,
               COUNT(*) AS total_answers,
-              SUM(aa.is_correct = 1) AS correct_answers,
-              SUM(aa.is_correct = 0) AS wrong_answers,
-              SUM(aa.answer_id IS NULL) AS skipped_answers,
-              ROUND(AVG(aa.is_correct) * 100, 1) AS accuracy,
-              ROUND(SUM(aa.is_correct = 0) * 100.0 / COUNT(*), 1) AS wrong_percent,
-              ROUND(SUM(aa.answer_id IS NULL) * 100.0 / COUNT(*), 1) AS drop_off_percent
+              SUM(ans.is_correct = 1) AS correct_answers,
+              SUM(ans.is_correct = 0 AND ans.skipped = 0) AS wrong_answers,
+              SUM(ans.skipped = 1) AS skipped_answers,
+              ROUND(AVG(ans.is_correct = 1) * 100, 1) AS accuracy,
+              ROUND(SUM(ans.is_correct = 0) * 100.0 / COUNT(*), 1) AS wrong_percent,
+              ROUND(SUM(ans.skipped = 1) * 100.0 / COUNT(*), 1) AS drop_off_percent
        $baseFrom
        GROUP BY q.id, et.code, et.name, t.name
-       HAVING total_answers >= 3
+       HAVING total_answers >= $min
        ORDER BY wrong_percent DESC, total_answers DESC, q.id
        LIMIT $perPage OFFSET $offset",
-      $where['params']
+      $source['params']
     );
 
     return [
@@ -1605,6 +1671,7 @@ class AnalyticsService
       'perPage' => $perPage,
       'total' => $total,
       'totalPages' => max(1, (int) ceil($total / $perPage)),
+      'minAnswers' => $min,
     ];
   }
 
@@ -1722,25 +1789,22 @@ class AnalyticsService
 
   private function getWeakestTopics(array $range, array $filters, int $limit = 20): array
   {
-    $where = $this->buildAttemptWhere($range, $filters, 'a', 'u', 'completed_at');
+    $source = $this->buildAnswerSource($range, $filters);
+    $min = self::MIN_ANSWERS_PER_TOPIC;
     return $this->db->fetchAll(
       "SELECT t.id AS topic_id, t.name AS topic_name, et.code AS exam_code,
               COUNT(*) AS total_answers,
-              SUM(aa.is_correct = 1) AS correct_answers,
-              ROUND(AVG(aa.is_correct) * 100, 1) AS accuracy
-       FROM attempt_answers aa
-       JOIN attempts a ON a.id = aa.attempt_id
-       JOIN question_versions qv ON qv.id = aa.question_version_id
-       JOIN questions q ON q.id = qv.question_id
+              SUM(ans.is_correct = 1) AS correct_answers,
+              ROUND(AVG(ans.is_correct = 1) * 100, 1) AS accuracy
+       FROM {$source['sql']} ans
+       JOIN questions q ON q.id = ans.question_id
        JOIN topics t ON t.id = q.topic_id
        JOIN exam_types et ON et.id = q.exam_type_id
-       LEFT JOIN users u ON u.id = a.user_id
-       WHERE " . implode(' AND ', $where['conditions']) . "
        GROUP BY t.id, t.name, et.code
-       HAVING total_answers >= 5
+       HAVING total_answers >= $min
        ORDER BY accuracy ASC, total_answers DESC
        LIMIT " . max(1, min(5000, $limit)),
-      $where['params']
+      $source['params']
     );
   }
 
@@ -1985,6 +2049,44 @@ class AnalyticsService
     );
   }
 
+  /**
+   * Realni odwiedzający: sesje z co najmniej dwiema odsłonami albo zalogowani.
+   *
+   * Boty (także te podszywające się pod przeglądarki) nie trzymają ciasteczek,
+   * więc każde ich żądanie to nowa sesja z jedną odsłoną - na produkcji było
+   * ~70 tys. "sesji" na ~73 tys. odsłon. Próg dwóch odsłon odcina ten szum.
+   */
+  private function countRealVisitors(array $range, array $filters): int
+  {
+    $where = $this->buildEventWhere($range, $filters, 'e', 'u', 'page_view');
+    return $this->fetchCount(
+      "SELECT COUNT(*) AS total FROM (
+         SELECT 1
+         FROM analytics_events e LEFT JOIN users u ON u.id = e.user_id
+         WHERE " . implode(' AND ', $where['conditions']) . "
+         GROUP BY COALESCE(e.session_hash, CONCAT('user-', e.user_id), CONCAT('event-', e.id))
+         HAVING COUNT(*) >= 2 OR MAX(e.user_id) IS NOT NULL
+       ) visitors",
+      $where['params']
+    );
+  }
+
+  /**
+   * Powracający: zalogowani aktywni w okresie, których konto powstało przed jego początkiem.
+   */
+  private function countReturningUsers(array $range, array $filters): int
+  {
+    $where = $this->buildEventWhere($range, $filters, 'e', 'u');
+    $where['conditions'][] = 'e.user_id IS NOT NULL';
+    $where['conditions'][] = 'u.created_at < ?';
+    $where['params'][] = $this->rangeStart($range);
+    return $this->fetchCount(
+      'SELECT COUNT(DISTINCT e.user_id) AS total FROM analytics_events e LEFT JOIN users u ON u.id = e.user_id WHERE ' .
+      implode(' AND ', $where['conditions']),
+      $where['params']
+    );
+  }
+
   private function countRegistrations(array $range, array $filters): int
   {
     $where = $this->buildUserWhere($filters, 'u', false);
@@ -2109,6 +2211,9 @@ class AnalyticsService
     } elseif ($filters['event_type'] !== '') {
       $conditions[] = "$eventAlias.event_type = ?";
       $params[] = $filters['event_type'];
+    } else {
+      // Zestawienia "wszystkich zdarzeń" (typy, ścieżki, aktywni) bez szumu technicznego.
+      $conditions[] = "$eventAlias.event_type NOT IN ('" . implode("', '", self::NOISE_EVENTS) . "')";
     }
     $examDimensionApplies = $forcedEventType === null || in_array($forcedEventType, [
       'test_started',
