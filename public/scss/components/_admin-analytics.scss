@@ -266,6 +266,12 @@
   @include media-down(lg) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  // Siatka w węższych panelach (np. połówka .admin-analytics__split): liczba kolumn
+  // wynika z dostępnej szerokości, zamiast sztywnych 4 kolumn wylewających się poza panel.
+  &.admin-analytics__metric-grid--compact {
+    grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+  }
 }
 
 .admin-analytics__metric {
@@ -382,14 +388,13 @@
 
 .admin-analytics__data-table {
   width: 100%;
-  min-width: 620px;
+  // Minimalna szerokość wynika z liczby kolumn (--table-min ustawiane w JS), a nie ze
+  // sztywnych 620/920 px - inaczej 3-kolumnowe tabele w połówkowych panelach zawsze
+  // dostawały poziomy pasek przewijania.
+  min-width: var(--table-min, 0);
   border-collapse: collapse;
   table-layout: auto;
   font-size: 0.82rem;
-
-  &.is-wide {
-    min-width: 920px;
-  }
 
   th,
   td {
@@ -574,11 +579,6 @@
     grid-row: 1;
   }
 
-  .admin-analytics__data-table,
-  .admin-analytics__data-table.is-wide {
-    min-width: 760px;
-  }
-
   .admin-analytics__data-table {
     th,
     td {
@@ -586,7 +586,7 @@
     }
 
     td:first-child {
-      min-width: 180px;
+      min-width: 140px;
     }
   }
 

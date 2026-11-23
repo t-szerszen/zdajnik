@@ -568,9 +568,11 @@ export class AdminAnalytics {
       return;
     }
 
+    // ~95 px na kolumnę, szersza pierwsza kolumna przy długich tekstach (wide).
+    const minWidth = headers.length * 95 + (wide ? 60 : 0);
     container.innerHTML = `
       <div class="admin-analytics__table-scroll">
-        <table class="admin-analytics__data-table${wide ? ' is-wide' : ''}">
+        <table class="admin-analytics__data-table${wide ? ' is-wide' : ''}" style="--table-min: ${minWidth}px">
           <thead>
             <tr>${headers.map((header) => `<th scope="col">${this.escapeHTML(header)}</th>`).join('')}</tr>
           </thead>
