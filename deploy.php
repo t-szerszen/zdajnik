@@ -165,6 +165,17 @@ final class Deployer
             ];
         }
 
+        // Zadania cykliczne wymagają vendor/, więc rejestrujemy je po composer install.
+        foreach ($this->config['scheduled_jobs'] ?? [] as $jobName => $job) {
+            if (empty($job['enabled'])) {
+                continue;
+            }
+            $steps[] = [
+                'name' => 'Register cron job: ' . $jobName,
+                'command' => $this->registerScheduledJobCommand((string) $jobName, $job),
+            ];
+        }
+
         if ($this->commandEnabled($this->config['commands']['frontend']['enabled'], 'package.json')) {
             if (!empty($this->config['commands']['frontend']['build_locally'])) {
                 // dart-sass (npm "sass") nie ma binarek dla FreeBSD, wiec na hostingach typu
@@ -321,6 +332,33 @@ final class Deployer
         $logFile = $this->dbBackupDir() . '/backup.log';
 
         $innerCommand = 'cd ' . $this->remoteQuote($this->config['app']['path']) . ' && ' . $this->dbBackupCommand();
+
+        return $this->registerCronLineCommand($schedule, $innerCommand, $logFile, $marker);
+    }
+
+    /**
+     * Rejestruje zadanie cykliczne aplikacji (sekcja scheduled_jobs w deploy.config.php).
+     * Log trafia do katalogu backupów, który i tak istnieje na serwerze.
+     */
+    private function registerScheduledJobCommand(string $jobName, array $job): string
+    {
+        $schedule = trim((string) ($job['schedule'] ?? '')) ?: '0 4 * * *';
+        $marker = 'zdajnik-job-' . preg_replace('/[^a-z0-9_-]/i', '', $jobName);
+        $logDir = rtrim((string) $this->config['backup']['dir'], '/');
+        $logFile = $logDir . '/' . $jobName . '.log';
+        $innerCommand = 'mkdir -p ' . $this->remoteQuote($logDir)
+            . ' && cd ' . $this->remoteQuote($this->config['app']['path'])
+            . ' && ' . $job['command'];
+
+        return $this->registerCronLineCommand($schedule, $innerCommand, $logFile, $marker);
+    }
+
+    /**
+     * Buduje komendę, która idempotentnie dopisuje (lub podmienia) linię crontab
+     * oznaczoną znacznikiem w komentarzu.
+     */
+    private function registerCronLineCommand(string $schedule, string $innerCommand, string $logFile, string $marker): string
+    {
         $cronCommand = 'bash -lc ' . $this->remoteQuote($innerCommand) . ' >> ' . $this->remoteQuote($logFile) . ' 2>&1';
 
         // Crontab traktuje niezescapowany "%" jako znak nowej linii / separator stdin,

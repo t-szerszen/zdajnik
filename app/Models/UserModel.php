@@ -25,6 +25,9 @@ use Exception;
  */
 class UserModel
 {
+  /** @var int Liczba dni na anulowanie usunięcia konta (ponowne zalogowanie) */
+  public const DELETION_GRACE_DAYS = 30;
+
   /** @var Database Instancja połączenia z bazą danych */
   private Database $db;
 
@@ -110,8 +113,14 @@ class UserModel
     // KROK 2: Weryfikacja poświadczeń
     if ($user_data && password_verify($data['password'], $user_data['password_hash'])) {
 
-      // KROK 3: Automatyczna reaktywacja (Anulowanie Soft Delete)
+      // KROK 3: Automatyczna reaktywacja (Anulowanie Soft Delete) - tylko w okresie karencji.
+      // Po jego upływie konto jest od razu anonimizowane i nie da się go przywrócić.
       if ((int) $user_data['is_active'] === 0 && !empty($user_data['deleted_at'])) {
+        if (!$this->isWithinDeletionGracePeriod($user_data['deleted_at'])) {
+          $this->anonymizeUsers([(int) $user_data['id']]);
+          return null;
+        }
+
         $this->reactivateUser($user_data['id']);
         $user_data['is_active'] = 1;
         $user_data['deleted_at'] = null;
@@ -145,8 +154,20 @@ class UserModel
     $sql = "SELECT * FROM users WHERE (google_id = ? OR email = ?) LIMIT 1";
     $userData = $this->db->fetch($sql, [$googleId, $email]);
 
+    // KROK 2a: Konto usunięte dawniej niż okres karencji - anonimizujemy je
+    // (odpina google_id i e-mail), a dalej tworzy się nowe, puste konto.
+    if (
+      $userData
+      && (int) $userData['is_active'] === 0
+      && !empty($userData['deleted_at'])
+      && !$this->isWithinDeletionGracePeriod($userData['deleted_at'])
+    ) {
+      $this->anonymizeUsers([(int) $userData['id']]);
+      $userData = false;
+    }
+
     if ($userData) {
-      // KROK 2: Obsługa reaktywacji
+      // KROK 2b: Obsługa reaktywacji w okresie karencji
       if ((int) $userData['is_active'] === 0 && !empty($userData['deleted_at'])) {
         $this->reactivateUser($userData['id']);
         $userData['is_active'] = 1;
@@ -311,7 +332,8 @@ class UserModel
   public function requestDeletion(int $userId): bool
   {
     // KROK: Smart Cleanup - anonimizacja rekordów, którym upłynął termin karencji
-    $this->anonymizeOldUsers();
+    // (główny mechanizm to codzienny cron: scripts/anonymize_deleted_users.php).
+    $this->anonymizeExpiredDeletedUsers();
 
     // KROK: Oznaczenie bieżącego konta jako nieaktywne (Soft Delete)
     $sql = "UPDATE users SET is_active = 0, deleted_at = NOW() WHERE id = ?";
@@ -331,27 +353,58 @@ class UserModel
   }
 
   /**
-   * Systemowa procedura anonimizacji starych kont użytkowników (Privacy Robot).
+   * Sprawdza, czy od żądania usunięcia konta nie minął jeszcze okres karencji.
    *
-   * Metoda identyfikuje konta w stanie Soft Delete, które przekroczyły 30-dniowy 
-   * okres karencji i trwale odcina powiązania z danymi osobowymi:
+   * @param string $deletedAt Wartość kolumny deleted_at.
+   * @return bool
+   */
+  public function isWithinDeletionGracePeriod(string $deletedAt): bool
+  {
+    $deletedAtTs = strtotime($deletedAt);
+    if ($deletedAtTs === false) {
+      return false;
+    }
+
+    return $deletedAtTs > strtotime('-' . self::DELETION_GRACE_DAYS . ' days');
+  }
+
+  /**
+   * Systemowa procedura anonimizacji kont usuniętych dawniej niż okres karencji.
+   *
+   * Uruchamiana codziennie przez cron (scripts/anonymize_deleted_users.php),
+   * dodatkowo przy każdym żądaniu usunięcia konta.
+   *
+   * @return int Liczba zanonimizowanych kont.
+   */
+  public function anonymizeExpiredDeletedUsers(): int
+  {
+    // KROK 1: Identyfikacja kandydatów do wygaszenia (pomijamy już zanonimizowane)
+    $sqlFetch = "SELECT id FROM users
+                 WHERE is_active = 0
+                   AND deleted_at < DATE_SUB(NOW(), INTERVAL " . self::DELETION_GRACE_DAYS . " DAY)
+                   AND (password_hash IS NULL OR password_hash <> 'ANONYMIZED')";
+    $userIds = array_map('intval', array_column($this->db->fetchAll($sqlFetch), 'id'));
+
+    $this->anonymizeUsers($userIds);
+
+    return count($userIds);
+  }
+
+  /**
+   * Trwale odcina wskazane konta od danych osobowych:
    * 1. Rozwiązanie powiązań w historii podejść (user_id = NULL w attempts).
    * 2. Całkowite usunięcie postępu nauki (user_progress).
    * 3. Zastąpienie danych w tabeli `users` placeholderami i sumami kontrolnymi MD5.
-   * 
+   *
+   * @param int[] $userIds
    * @return void
    */
-  private function anonymizeOldUsers(): void
+  private function anonymizeUsers(array $userIds): void
   {
-    // KROK 1: Identyfikacja kandydatów do wygaszenia
-    $sqlFetch = "SELECT id FROM users WHERE is_active = 0 AND deleted_at < DATE_SUB(NOW(), INTERVAL 30 DAY)";
-    $usersToAnonymize = $this->db->fetchAll($sqlFetch);
-
-    if (empty($usersToAnonymize)) {
+    if (empty($userIds)) {
       return;
     }
 
-    $userIds = array_column($usersToAnonymize, 'id');
     $placeholders = implode(',', array_fill(0, count($userIds), '?'));
 
     // KROK 2: Anonimizacja historii (odwiązanie statystyk od osoby)

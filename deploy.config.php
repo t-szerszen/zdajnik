@@ -57,6 +57,18 @@ return [
         'cron_schedule' => getenv('DEPLOY_DB_BACKUP_CRON') ?: '0 3 * * *',
     ],
 
+    // Cykliczne zadania aplikacji rejestrowane w crontab serwera przy każdym deployu
+    // (idempotentnie - wpis rozpoznawany po znaczniku). Komenda uruchamiana z katalogu aplikacji.
+    'scheduled_jobs' => [
+        'anonymize_deleted_users' => [
+            // RODO: konta usunięte > 30 dni temu muszą zostać zanonimizowane,
+            // nawet jeśli nikt inny w tym czasie nie usuwa konta.
+            'enabled' => filter_var(getenv('DEPLOY_ANONYMIZE_CRON_ENABLED') ?: true, FILTER_VALIDATE_BOOL),
+            'schedule' => getenv('DEPLOY_ANONYMIZE_CRON') ?: '30 3 * * *',
+            'command' => 'php scripts/anonymize_deleted_users.php',
+        ],
+    ],
+
     'logs' => [
         'dir' => getenv('DEPLOY_LOG_DIR') ?: __DIR__ . '/var/deploy-logs',
     ],
