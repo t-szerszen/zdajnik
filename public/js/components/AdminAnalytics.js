@@ -227,6 +227,9 @@ export class AdminAnalytics {
         this.audienceDetail(kpis.testsCompletedGuests, kpis.testsCompletedLoggedIn)),
       this.metric('Completion rate', kpis.completionRate, 'fa-percent', 'percent'),
       this.metric('Średni wynik (zalogowani)', kpis.averageScore, 'fa-bullseye', 'percent'),
+      this.metric('Odpowiedzi: jedno pytanie', kpis.singleQuestionAnswered, 'fa-circle-question', 'number',
+        this.audienceDetail(kpis.singleQuestionAnsweredGuests, kpis.singleQuestionAnsweredLoggedIn)),
+      this.metric('Sesje nauki: jedno pytanie', kpis.singleQuestionSessions, 'fa-book-open'),
     ], true);
     this.renderChart(daily);
   }
@@ -308,6 +311,21 @@ export class AdminAnalytics {
         this.number(row.unique_users),
         this.percent(row.avg_score),
         this.duration(row.avg_duration_seconds),
+      ]),
+      true
+    );
+
+    this.renderTable('[data-learning-single-question]',
+      ['Egzamin', 'Pytania wylosowane', 'Odpowiedzi', 'W tym goście', 'Sesje', 'Zalogowani', 'Skuteczność', 'Najczęstsze pytanie'],
+      (section.singleQuestion || []).map((row) => [
+        `${row.code || ''} - ${row.name || ''}`,
+        this.number(row.started_count),
+        this.number(row.answered_count),
+        this.number(row.guest_answered_count),
+        this.number(row.sessions),
+        this.number(row.unique_users),
+        this.percent(row.accuracy),
+        this.truncate(row.top_question_text || '', 120),
       ]),
       true
     );
@@ -415,12 +433,12 @@ export class AdminAnalytics {
       (section.cohorts || []).map((row) => [
         row.cohort || '',
         this.number(row.users),
-        this.number(row.d1_users),
-        this.percent(row.d1_rate),
-        this.number(row.d7_users),
-        this.percent(row.d7_rate),
-        this.number(row.d30_users),
-        this.percent(row.d30_rate),
+        this.retentionCount(row.d1_users, row.d1_eligible),
+        this.retentionRate(row.d1_rate),
+        this.retentionCount(row.d7_users, row.d7_eligible),
+        this.retentionRate(row.d7_rate),
+        this.retentionCount(row.d30_users, row.d30_eligible),
+        this.retentionRate(row.d30_rate),
       ])
     );
 
@@ -605,6 +623,7 @@ export class AdminAnalytics {
       ['Logowania', daily.logins || [], accent],
       ['Starty testów', daily.testsStarted || [], accentHover],
       ['Ukończenia', daily.testsCompleted || [], '#ef4444'],
+      ['Odpowiedzi (jedno pytanie)', daily.singleQuestionAnswered || [], '#0ea5e9'],
     ];
     const hasData = datasets.some(([, values]) => values.some((value) => Number(value) > 0));
 
@@ -787,6 +806,16 @@ export class AdminAnalytics {
 
   percent(value) {
     return `${this.number(value, 1)}%`;
+  }
+
+  /** "powroty / konta, którym okno już minęło", np. "2 / 5". */
+  retentionCount(users, eligible) {
+    return `${this.number(users)} / ${this.number(eligible)}`;
+  }
+
+  /** Kohorta, której okno jeszcze nie minęło, nie ma jeszcze wskaźnika. */
+  retentionRate(value) {
+    return value === null || value === undefined ? 'za wcześnie' : this.percent(value);
   }
 
   duration(value) {

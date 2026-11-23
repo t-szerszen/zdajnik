@@ -268,12 +268,13 @@ $exports = [
           <section class="admin-analytics__section" data-analytics-section="learning" id="analytics-section-learning" aria-labelledby="analytics-tab-learning" role="tabpanel" hidden>
             <header class="admin-analytics__section-heading">
               <div><span>Learning</span><h2>Skuteczność nauki</h2></div>
-              <p>Rozpoczęcia, ukończenia, wyniki i czas pracy.</p>
+              <p>Testy i tryb jednego pytania: rozpoczęcia, ukończenia, wyniki i czas pracy.</p>
             </header>
             <div class="admin-analytics__metric-grid" data-learning-kpis></div>
             <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Typ testu</h3></div><div data-learning-types></div></div>
             <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Porzucone testy</h3><span>Jawne wyjścia oraz starty bez wyniku po oknie 2-6 godzin</span></div><div data-abandoned-tests></div></div>
             <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Egzaminy</h3></div><div data-learning-exams></div></div>
+            <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Tryb jednego pytania</h3><span>Nauka pytanie po pytaniu, także przez gości</span></div><div data-learning-single-question></div></div>
           </section>
 
           <section class="admin-analytics__section" data-analytics-section="content" id="analytics-section-content" aria-labelledby="analytics-tab-content" role="tabpanel" hidden>
@@ -309,7 +310,7 @@ $exports = [
               <p>Retencja D1, D7 i D30 oraz konta bez aktywności.</p>
             </header>
             <div class="admin-analytics__metric-grid" data-retention-kpis></div>
-            <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Kohorty rejestracji</h3></div><div data-retention-cohorts></div></div>
+            <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Kohorty rejestracji</h3><span>Powrót = dowolna aktywność (odsłona, logowanie, nauka) po dniu rejestracji: D1 następnego dnia, D7/D30 w ciągu 7/30 dni. Liczone tylko dla kont, którym okno już minęło.</span></div><div data-retention-cohorts></div></div>
             <div class="admin-analytics__panel"><div class="admin-analytics__panel-heading"><h3>Nieaktywni użytkownicy</h3></div><div data-inactive-users></div></div>
           </section>
 

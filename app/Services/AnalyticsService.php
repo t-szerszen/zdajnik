@@ -847,6 +847,9 @@ class AnalyticsService
               COALESCE(et.name, 'Brak przypisanego egzaminu') AS name,
               SUM(e.event_type = 'single_question_started') AS started_count,
               SUM(e.event_type = 'single_question_answered') AS answered_count,
+              SUM(e.event_type = 'single_question_answered' AND e.user_id IS NULL) AS guest_answered_count,
+              COUNT(DISTINCT CASE WHEN e.event_type = 'single_question_answered'
+                THEN COALESCE(e.session_hash, CONCAT('user-', e.user_id)) END) AS sessions,
               COUNT(DISTINCT e.user_id) AS unique_users,
               ROUND(AVG(CASE WHEN e.event_type = 'single_question_answered' THEN e.is_correct END) * 100, 1) AS accuracy,
               (
@@ -961,6 +964,7 @@ class AnalyticsService
       // do której trafiają tylko zalogowani, więc completion rate był zaniżony.
       $started = $this->countEventsByAudience('test_started', $range, $filters);
       $completed = $this->countEventsByAudience('test_completed', $range, $filters);
+      $singleAnswered = $this->countEventsByAudience('single_question_answered', $range, $filters);
 
       return [
         'newUsers' => $this->countRegistrations($range, $filters),
@@ -974,6 +978,11 @@ class AnalyticsService
         'testsCompletedGuests' => $completed['guests'],
         'testsCompletedLoggedIn' => $completed['loggedIn'],
         'completionRate' => $this->percentage($completed['total'], $started['total']),
+        // Tryb jednego pytania - główny sposób nauki (wielokrotnie więcej odpowiedzi niż testów).
+        'singleQuestionAnswered' => $singleAnswered['total'],
+        'singleQuestionAnsweredGuests' => $singleAnswered['guests'],
+        'singleQuestionAnsweredLoggedIn' => $singleAnswered['loggedIn'],
+        'singleQuestionSessions' => $this->countEventSessions('single_question_answered', $range, $filters),
         'averageScore' => $this->fetchAverageScore($range, $filters),
       ];
     };
@@ -1432,19 +1441,20 @@ class AnalyticsService
   {
     $cohorts = $this->getRetentionCohorts($range, $filters);
     $churnRisk = $this->getChurnRisk($filters);
-    $totals = ['users' => 0, 'd1' => 0, 'd7' => 0, 'd30' => 0];
-    foreach ($cohorts as $row) {
-      $totals['users'] += (int) $row['users'];
-      $totals['d1'] += (int) $row['d1_users'];
-      $totals['d7'] += (int) $row['d7_users'];
-      $totals['d30'] += (int) $row['d30_users'];
+    $totals = [];
+    foreach (['d1', 'd7', 'd30'] as $window) {
+      $totals[$window] = ['users' => 0, 'eligible' => 0];
+      foreach ($cohorts as $row) {
+        $totals[$window]['users'] += $row[$window . '_users'];
+        $totals[$window]['eligible'] += $row[$window . '_eligible'];
+      }
     }
 
     return [
       'summary' => [
-        'd1Rate' => $this->percentage($totals['d1'], $totals['users']),
-        'd7Rate' => $this->percentage($totals['d7'], $totals['users']),
-        'd30Rate' => $this->percentage($totals['d30'], $totals['users']),
+        'd1Rate' => $this->percentage($totals['d1']['users'], $totals['d1']['eligible']),
+        'd7Rate' => $this->percentage($totals['d7']['users'], $totals['d7']['eligible']),
+        'd30Rate' => $this->percentage($totals['d30']['users'], $totals['d30']['eligible']),
         'inactiveUsers7d' => $churnRisk['inactive7d'],
         'inactiveUsers14d' => $churnRisk['inactive14d'],
         'inactiveUsers30d' => $churnRisk['inactive30d'],
@@ -1809,22 +1819,52 @@ class AnalyticsService
       $eventParams[] = $filters['event_type'];
     }
 
-    return $this->db->fetchAll(
-      "SELECT DATE_FORMAT(u.created_at, '%Y-%m') AS cohort,
-              COUNT(DISTINCT u.id) AS users,
-              COUNT(DISTINCT CASE WHEN DATEDIFF(DATE(e.event_date), DATE(u.created_at)) = 1 THEN u.id END) AS d1_users,
-              ROUND(COUNT(DISTINCT CASE WHEN DATEDIFF(DATE(e.event_date), DATE(u.created_at)) = 1 THEN u.id END) * 100.0 / COUNT(DISTINCT u.id), 1) AS d1_rate,
-              COUNT(DISTINCT CASE WHEN DATEDIFF(DATE(e.event_date), DATE(u.created_at)) = 7 THEN u.id END) AS d7_users,
-              ROUND(COUNT(DISTINCT CASE WHEN DATEDIFF(DATE(e.event_date), DATE(u.created_at)) = 7 THEN u.id END) * 100.0 / COUNT(DISTINCT u.id), 1) AS d7_rate,
-              COUNT(DISTINCT CASE WHEN DATEDIFF(DATE(e.event_date), DATE(u.created_at)) = 30 THEN u.id END) AS d30_users,
-              ROUND(COUNT(DISTINCT CASE WHEN DATEDIFF(DATE(e.event_date), DATE(u.created_at)) = 30 THEN u.id END) * 100.0 / COUNT(DISTINCT u.id), 1) AS d30_rate
-       FROM users u
-       LEFT JOIN analytics_events e ON " . implode(' AND ', $eventConditions) . "
-       WHERE " . implode(' AND ', $userWhere['conditions']) . "
+    // Powrót = dowolna aktywność zalogowanego użytkownika (odsłona, logowanie,
+    // nauka, test) w dniu innym niż dzień rejestracji:
+    // - D1: następnego dnia,
+    // - D7 / D30: w dowolnym dniu z okresu 1-7 / 1-30 dni po rejestracji.
+    // Mianownikiem są tylko konta, którym dane okno już minęło - inaczej świeże
+    // rejestracje zaniżały wskaźnik. Wcześniej liczono aktywność wyłącznie
+    // dokładnie w 1., 7. i 30. dniu, co przy małej liczbie kont dawało ~0%.
+    $rows = $this->db->fetchAll(
+      "SELECT cohort,
+              COUNT(*) AS users,
+              SUM(d1_eligible) AS d1_eligible,
+              SUM(back_d1 AND d1_eligible) AS d1_users,
+              SUM(d7_eligible) AS d7_eligible,
+              SUM(back_d7 AND d7_eligible) AS d7_users,
+              SUM(d30_eligible) AS d30_eligible,
+              SUM(back_d30 AND d30_eligible) AS d30_users
+       FROM (
+         SELECT u.id,
+                DATE_FORMAT(u.created_at, '%Y-%m') AS cohort,
+                DATE(u.created_at) <= CURDATE() - INTERVAL 1 DAY AS d1_eligible,
+                DATE(u.created_at) <= CURDATE() - INTERVAL 7 DAY AS d7_eligible,
+                DATE(u.created_at) <= CURDATE() - INTERVAL 30 DAY AS d30_eligible,
+                COALESCE(MAX(DATEDIFF(DATE(e.event_date), DATE(u.created_at)) = 1), 0) AS back_d1,
+                COALESCE(MAX(DATEDIFF(DATE(e.event_date), DATE(u.created_at)) BETWEEN 1 AND 7), 0) AS back_d7,
+                COALESCE(MAX(DATEDIFF(DATE(e.event_date), DATE(u.created_at)) BETWEEN 1 AND 30), 0) AS back_d30
+         FROM users u
+         LEFT JOIN analytics_events e ON " . implode(' AND ', $eventConditions) . "
+         WHERE " . implode(' AND ', $userWhere['conditions']) . "
+         GROUP BY u.id, u.created_at
+       ) per_user
        GROUP BY cohort
        ORDER BY cohort DESC",
       array_merge($eventParams, $userWhere['params'])
     );
+
+    return array_map(function (array $row): array {
+      foreach (['users', 'd1_eligible', 'd1_users', 'd7_eligible', 'd7_users', 'd30_eligible', 'd30_users'] as $key) {
+        $row[$key] = (int) ($row[$key] ?? 0);
+      }
+      foreach (['d1', 'd7', 'd30'] as $window) {
+        $row[$window . '_rate'] = $row[$window . '_eligible'] > 0
+          ? $this->percentage($row[$window . '_users'], $row[$window . '_eligible'])
+          : null;
+      }
+      return $row;
+    }, $rows);
   }
 
   private function getInactiveUsers(array $filters, int $days, int $limit): array
@@ -1928,6 +1968,21 @@ class AnalyticsService
     $guests = (int) ($row['guests'] ?? 0);
 
     return ['total' => $total, 'guests' => $guests, 'loggedIn' => $total - $guests];
+  }
+
+  /**
+   * Liczy sesje (także gości), w których wystąpiło zdarzenie danego typu.
+   * Zalogowanego bez skrótu sesji liczymy po identyfikatorze użytkownika.
+   */
+  private function countEventSessions(string $eventType, array $range, array $filters): int
+  {
+    $where = $this->buildEventWhere($range, $filters, 'e', 'u', $eventType);
+    return $this->fetchCount(
+      "SELECT COUNT(DISTINCT COALESCE(e.session_hash, CONCAT('user-', e.user_id))) AS total
+       FROM analytics_events e LEFT JOIN users u ON u.id = e.user_id
+       WHERE " . implode(' AND ', $where['conditions']),
+      $where['params']
+    );
   }
 
   private function countRegistrations(array $range, array $filters): int
