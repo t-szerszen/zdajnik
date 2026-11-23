@@ -265,7 +265,22 @@ final class Deployer
             . ' && ARCHIVE_FILE="$BACKUP_DIR/' . $appName . '-$(date +%Y%m%d%H%M%S).tar.gz"'
             . ' && tar -czf "$ARCHIVE_FILE"'
             . $excludes
-            . ' .';
+            . ' .'
+            . $this->pruneAppBackupsCommand();
+    }
+
+    /**
+     * Usuwa archiwa aplikacji starsze niz keep_releases najnowszych (sortowanie po czasie
+     * modyfikacji). Dotyczy tylko plikow <app>-*.tar.gz w katalogu backupow - zrzuty bazy
+     * leza w osobnym podkatalogu i maja wlasna rotacje (retention_days).
+     */
+    private function pruneAppBackupsCommand(): string
+    {
+        $keep = max(1, (int) ($this->config['backup']['keep_releases'] ?? 5));
+        $pattern = '"$BACKUP_DIR"/' . $this->appSlug() . '-*.tar.gz';
+
+        // "|| true" przy ls: pod set -o pipefail brak dopasowan nie moze przerwac deployu.
+        return ' && { { ls -1t ' . $pattern . ' 2>/dev/null || true; } | tail -n +' . ($keep + 1) . ' | xargs -r rm -- ; }';
     }
 
     private function appSlug(): string
@@ -448,7 +463,7 @@ final class Deployer
         $this->line('- katalog aplikacji: ' . $this->config['app']['path']);
         $this->line('- galaz produkcyjna: ' . $this->config['app']['production_branch']);
         $this->line('- maintenance mode: ' . ($this->config['maintenance']['enabled'] ? 'wlaczony' : 'wylaczony'));
-        $this->line('- backup: ' . ($this->config['backup']['enabled'] ? $this->config['backup']['dir'] : 'wylaczony'));
+        $this->line('- backup: ' . ($this->config['backup']['enabled'] ? $this->config['backup']['dir'] . ' (zostaje ' . $this->config['backup']['keep_releases'] . ' najnowszych archiwow)' : 'wylaczony'));
         $this->line('- backup bazy danych: ' . ($this->config['db_backup']['enabled'] ? $this->dbBackupDir() . ' (retencja ' . $this->config['db_backup']['retention_days'] . ' dni)' : 'wylaczony'));
         $this->line('- log: ' . $this->logFile);
         $this->line('- dry-run: ' . ($this->options['dry_run'] ? 'tak' : 'nie'));

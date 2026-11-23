@@ -36,7 +36,9 @@ return [
     'backup' => [
         'enabled' => filter_var(getenv('DEPLOY_BACKUP_ENABLED') ?: true, FILTER_VALIDATE_BOOL),
         'dir' => getenv('DEPLOY_BACKUP_DIR') ?: '/home/your-user/backups/zdajnik',
-        'keep_releases' => 5,
+        // Ile najnowszych archiwów aplikacji zostawiać - starsze są usuwane po każdym
+        // backupie (wcześniej nieużywane, przez co archiwa rosły bez końca: 31 szt. / ~700 MB).
+        'keep_releases' => max(1, (int) (getenv('DEPLOY_BACKUP_KEEP') ?: 5)),
         'exclude' => [
             './.git',
             './vendor',
