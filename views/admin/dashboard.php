@@ -69,7 +69,7 @@ $actionLabel = static fn(string $action): string => $auditActions[$action] ?? $a
 
           <section class="stats-card">
             <div class="stats-card__header">
-              <div class="stats-card__title">
+              <div class="stats-card__title stats-card__title--warning">
                 <i class="fas fa-triangle-exclamation"></i>
                 <span>Wymaga uwagi</span>
               </div>

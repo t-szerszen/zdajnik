@@ -162,3 +162,9 @@
   color: var(--accent);
   background: rgba(var(--accent-rgb), 0.1);
 }
+
+// Sekcje ostrzegawcze (np. "Wymaga uwagi") - kolor ostrzeżenia zamiast koloru marki.
+.stats-card__title.stats-card__title--warning i {
+  color: var(--warning);
+  background: var(--warning-bg);
+}
