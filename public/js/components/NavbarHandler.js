@@ -4,6 +4,12 @@
  *              w tym przełączanie menu hamburgera i animacje drawera.
  */
 
+/** Ile px trzeba przewinąć w górę (w jednym ciągu), żeby schowana nawigacja wróciła. */
+const NAV_SHOW_THRESHOLD = 80;
+
+/** Ile px w dół chowa nawigację - mały zapas tłumi drgania przy przewijaniu. */
+const NAV_HIDE_THRESHOLD = 10;
+
 export class NavbarHandler {
   constructor() {
     this.toggleBtn = document.querySelector('[data-toggle-nav]');
@@ -156,33 +162,39 @@ export class NavbarHandler {
 
   handleScroll() {
     const currentScrollY = window.scrollY;
-    const isScrollingUp = currentScrollY < this.lastScrollY;
+    const delta = currentScrollY - this.lastScrollY;
     const isAtTop = currentScrollY <= 20;
 
-    if (this.nav) {
-      // 1. Logika 'is-scrolled' (Bańka)
-      // Dodajemy klasę bańki TYLKO jeśli jedziemy w górę i nie jesteśmy na samej górze.
-      // Przy jeździe w dół nie chcemy, aby nav "skakał" w tryb bańki przed schowaniem się.
-      if (currentScrollY > 20 && isScrollingUp) {
-        this.nav.classList.add('is-scrolled');
-        this.body.classList.add('is-scrolled');
-      } else if (isAtTop) {
-        this.nav.classList.remove('is-scrolled');
-        this.body.classList.remove('is-scrolled');
-      }
+    // Dystans przejechany w jednym kierunku od ostatniej zmiany kierunku.
+    // Nawigacja reaguje dopiero po przekroczeniu progu - wcześniej wystarczył
+    // ruch w górę o 1 px (np. drgnięcie palca, inercja touchpada), żeby wróciła.
+    if (delta > 0) {
+      this.scrollDownDistance = (this.scrollDownDistance || 0) + delta;
+      this.scrollUpDistance = 0;
+    } else if (delta < 0) {
+      this.scrollUpDistance = (this.scrollUpDistance || 0) - delta;
+      this.scrollDownDistance = 0;
+    }
 
-      // 2. Smart Navbar logic (Hiding/Showing)
-      if (currentScrollY > 100) {
-        if (currentScrollY > this.lastScrollY) {
-          // Przewijanie w dół - chowamy nawigację
-          this.nav.classList.add('is-hidden');
-        } else {
-          // Przewijanie w górę - pokazujemy nawigację
-          this.nav.classList.remove('is-hidden');
-        }
-      } else {
+    if (this.nav) {
+      // Smart Navbar: chowanie przy przewijaniu w dół, pokazanie po wyraźnym ruchu w górę.
+      if (currentScrollY <= 100) {
         // Blisko góry zawsze pokazujemy
         this.nav.classList.remove('is-hidden');
+      } else if (this.scrollDownDistance >= NAV_HIDE_THRESHOLD) {
+        this.nav.classList.add('is-hidden');
+      } else if (this.scrollUpDistance >= NAV_SHOW_THRESHOLD) {
+        this.nav.classList.remove('is-hidden');
+      }
+
+      // Logika 'is-scrolled' (Bańka): włączana razem z ponownym pokazaniem nawigacji,
+      // żeby nav nie "skakał" w tryb bańki przy drobnych ruchach.
+      if (isAtTop) {
+        this.nav.classList.remove('is-scrolled');
+        this.body.classList.remove('is-scrolled');
+      } else if (currentScrollY > 20 && this.scrollUpDistance >= NAV_SHOW_THRESHOLD) {
+        this.nav.classList.add('is-scrolled');
+        this.body.classList.add('is-scrolled');
       }
     }
 
