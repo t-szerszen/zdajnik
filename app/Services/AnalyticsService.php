@@ -49,7 +49,7 @@ class AnalyticsService
    * Roboty wyszukiwarek renderują JS, więc bez filtra zawyżały odsłony
    * i "rozpoczęte testy" (strona testu sama pobiera zestaw pytań).
    */
-  public const BOT_USER_AGENT_PATTERN = 'bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|curl|wget|python|axios|go-http-client|java/|html, like gecko';
+  public const BOT_USER_AGENT_PATTERN = 'bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|curl|wget|python|axios|go-http-client|java/|[(]html, like gecko';
 
   /**
    * Typy, których nie zapisujemy (zostają w EVENT_TYPES dla starszych danych):
