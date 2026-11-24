@@ -105,6 +105,20 @@ body.home-page-background {
     }
   }
 
+  // Hero jest wsunięty pod navbar (patrz _hero-section.scss) - górny padding
+  // rośnie o wysokość navbara, żeby treść nie przesunęła się w górę.
+  .hero-section {
+    padding-top: calc(5.8rem + var(--hero-nav-offset));
+
+    @media (max-width: 768px) {
+      padding-top: calc(4.25rem + var(--hero-nav-offset));
+    }
+
+    @media (max-width: 430px) {
+      padding-top: calc(3.5rem + var(--hero-nav-offset));
+    }
+  }
+
   a,
   button {
     scroll-margin-top: 7rem;

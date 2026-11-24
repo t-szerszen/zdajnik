@@ -25,8 +25,17 @@
 }
 
 .hero-section {
+  // Hero podciąga się pod przezroczysty navbar (jak .page-header), żeby poświata
+  // z ::before sięgała do samej góry okna. Wcześniej zaczynała się dopiero pod
+  // navbarem i nad nią zostawał pas gołego tła strony z ostrą krawędzią -
+  // przy przewijaniu wyglądał jak ciemny cień pod logo. min-height i padding-top
+  // (ten drugi w _home.scss, bo tam .home-page section ustawia padding sekcji)
+  // rosną o tę samą wysokość, więc treść zostaje w tym samym miejscu.
+  --hero-nav-offset: var(--dynamic-nav-height, 5rem);
+
   position: relative;
-  min-height: min(860px, calc(100vh - 1rem));
+  min-height: calc(min(860px, calc(100vh - 1rem)) + var(--hero-nav-offset));
+  margin-top: calc(-1 * var(--hero-nav-offset));
   padding: 7.5rem 1.5rem 5rem;
   overflow: clip;
   isolation: isolate;
