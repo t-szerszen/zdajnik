@@ -211,12 +211,15 @@ export class NavbarHandler {
         this.nav.classList.remove('is-hidden');
       }
 
-      // Logika 'is-scrolled' (Bańka): włączana razem z ponownym pokazaniem nawigacji,
-      // żeby nav nie "skakał" w tryb bańki przy drobnych ruchach.
+      // Logika 'is-scrolled' (Bańka): przy przewijaniu w górę widoczna nawigacja
+      // zawsze jest bańką. Nie wiążemy tego z progiem NAV_SHOW_THRESHOLD - przy
+      // powolnym przewijaniu w górę nav pokazuje się już w strefie <= 100px
+      // (zanim uzbiera się próg) i bez bańki wracał w przezroczystym stanie
+      // "szczytu strony", rozciągnięty nad treścią.
       if (isAtTop) {
         this.nav.classList.remove('is-scrolled');
         this.body.classList.remove('is-scrolled');
-      } else if (currentScrollY > 20 && this.scrollUpDistance >= NAV_SHOW_THRESHOLD) {
+      } else if (this.scrollUpDistance > 0 && !this.nav.classList.contains('is-hidden')) {
         this.nav.classList.add('is-scrolled');
         this.body.classList.add('is-scrolled');
       }
