@@ -270,6 +270,21 @@ CREATE TABLE `questions` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `request_throttle`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `request_throttle` (
+  `throttle_key` char(64) NOT NULL,
+  `hits` int unsigned NOT NULL DEFAULT '0',
+  `window_start` datetime NOT NULL,
+  PRIMARY KEY (`throttle_key`),
+  KEY `idx_request_throttle_window` (`window_start`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `saved_questions`
 --
 
@@ -366,6 +381,33 @@ CREATE TABLE `sheets` (
   PRIMARY KEY (`id`),
   KEY `idx_sheet_topic` (`sheet_topic_id`),
   CONSTRAINT `sheets_ibfk_1` FOREIGN KEY (`sheet_topic_id`) REFERENCES `sheet_topics` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `single_question_answers`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `single_question_answers` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int unsigned DEFAULT NULL,
+  `question_id` int unsigned NOT NULL,
+  `question_version_id` int unsigned DEFAULT NULL,
+  `answer_id` int unsigned DEFAULT NULL,
+  `is_correct` tinyint(1) NOT NULL,
+  `answered_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sqa_user_answered` (`user_id`, `answered_at`),
+  KEY `idx_sqa_question` (`question_id`),
+  KEY `idx_sqa_answered` (`answered_at`),
+  KEY `idx_sqa_version` (`question_version_id`),
+  KEY `idx_sqa_answer` (`answer_id`),
+  CONSTRAINT `fk_sqa_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_sqa_question` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_sqa_version` FOREIGN KEY (`question_version_id`) REFERENCES `question_versions` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_sqa_answer` FOREIGN KEY (`answer_id`) REFERENCES `answers` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -507,5 +549,6 @@ INSERT INTO `schema_migrations` (version) VALUES
   ('20260719150000'),
   ('20260802220000'),
   ('20260806120000'),
-  ('20261124120000');
+  ('20261124120000'),
+  ('20261124210000');
 UNLOCK TABLES;

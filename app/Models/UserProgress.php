@@ -73,7 +73,7 @@ class UserProgress
         $sql = "INSERT INTO user_progress (user_id, question_id, attempts_count, correct_count, incorrect_count, skipped_count, last_result)
                   SELECT ?, qv.question_id, 1, a.is_correct, (1 - a.is_correct), 0, a.is_correct
                   FROM question_versions qv
-                  JOIN answers a ON a.id = ?
+                  JOIN answers a ON a.id = ? AND a.question_version_id = qv.id
                   WHERE qv.id = ?
                   ON DUPLICATE KEY UPDATE 
                       attempts_count = attempts_count + 1,

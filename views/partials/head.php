@@ -72,9 +72,10 @@
   -->
   <meta name="theme-color" content="#10B981">
   <meta name="color-scheme" content="light dark">
-  <?php if (isset($_SESSION['user'])): ?>
-    <meta name="csrf-token" content="<?= htmlspecialchars(csrf_token()) ?>">
-  <?php endif; ?>
+  <!-- Token CSRF dla żądań zapisujących z JS (ApiClient) - także dla gości,
+       którzy sprawdzają odpowiedzi i wysyłają zdarzenia analityki. HTML ma
+       Cache-Control: no-store, więc token zawsze pasuje do bieżącej sesji. -->
+  <meta name="csrf-token" content="<?= htmlspecialchars(csrf_token()) ?>">
 
   <!-- ================================================================== -->
   <!-- 2. Kluczowe Tagi SEO (Tytuł, Opis, Kanoniczny URL) -->

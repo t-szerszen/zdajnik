@@ -411,6 +411,11 @@ class UserModel
     $sqlAttempts = "UPDATE attempts SET user_id = NULL WHERE user_id IN ($placeholders)";
     $this->db->execute($sqlAttempts, $userIds);
 
+    // Historia odpowiedzi z trybu "jedno pytanie" - tak samo jak podejścia:
+    // zostaje do statystyk treści, ale bez powiązania z osobą.
+    $sqlSingleAnswers = "UPDATE single_question_answers SET user_id = NULL WHERE user_id IN ($placeholders)";
+    $this->db->execute($sqlSingleAnswers, $userIds);
+
     // KROK 3: Wyczyszczenie szczegółowego progresu (oszczędność miejsca i prywatność)
     $sqlProgress = "DELETE FROM user_progress WHERE user_id IN ($placeholders)";
     $this->db->execute($sqlProgress, $userIds);

@@ -306,7 +306,6 @@ class Router
     $this->get('api/test/full/{examCode}', 'ApiController@getFullTest');
     $this->post('api/check-answer', 'ApiController@checkAnswer');
     $this->post('api/save-attempt', 'ApiController@saveAttempt');
-    $this->post('api/save-progress-bulk', 'ApiController@saveProgressBulk');
     $this->post('api/toggle-saved', 'ApiController@toggleSavedQuestion');
     $this->post('api/zglos-blad', 'ApiController@reportQuestion');
     $this->post('api/sheet-note', 'ApiController@saveSheetNote');

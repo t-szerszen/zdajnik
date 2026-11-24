@@ -66,20 +66,25 @@ $date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotim
             <div class="stats-card admin-tile admin-tile--static">
               <div class="admin-tile__icon"><i class="fas fa-rocket"></i></div>
               <div class="admin-tile__content">
-                <span class="admin-tile__label">Testy rozpoczęte</span>
+                <span class="admin-tile__label">Testy</span>
                 <strong class="admin-tile__value"><?= (int) ($userStats['started_tests'] ?? 0) ?></strong>
                 <span class="admin-tile__meta">Ukończone: <?= (int) ($userStats['completed_tests'] ?? 0) ?></span>
+                <span class="admin-tile__meta">
+                  Średni wynik: <?= isset($userStats['avg_score']) ? htmlspecialchars((string) $userStats['avg_score']) . '%' : 'brak' ?>
+                </span>
               </div>
             </div>
 
+            <?php $single = $userStats['single'] ?? ['total' => 0, 'correct' => 0, 'accuracy' => null, 'last_answered_at' => null]; ?>
             <div class="stats-card admin-tile admin-tile--static">
-              <div class="admin-tile__icon"><i class="fas fa-percentage"></i></div>
+              <div class="admin-tile__icon"><i class="fas fa-bolt"></i></div>
               <div class="admin-tile__content">
-                <span class="admin-tile__label">Średni wynik</span>
-                <strong class="admin-tile__value">
-                  <?= isset($userStats['avg_score']) ? htmlspecialchars((string) $userStats['avg_score']) . '%' : 'Brak' ?>
-                </strong>
-                <span class="admin-tile__meta">W oparciu o zakończone próby</span>
+                <span class="admin-tile__label">Jedno pytanie</span>
+                <strong class="admin-tile__value"><?= (int) $single['total'] ?></strong>
+                <span class="admin-tile__meta">
+                  <?= $single['accuracy'] !== null ? 'Poprawne: ' . (int) $single['correct'] . ' (' . htmlspecialchars((string) $single['accuracy']) . '%)' : 'Brak odpowiedzi' ?>
+                </span>
+                <span class="admin-tile__meta">Ostatnio: <?= $date($single['last_answered_at'] ?? null) ?></span>
               </div>
             </div>
           </div>
@@ -209,8 +214,9 @@ $date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotim
             <div class="stats-card__header">
               <div class="stats-card__title">
                 <i class="fas fa-pen-to-square"></i>
-                <span>Podgląd odpowiedzi</span>
+                <span>Ostatnie odpowiedzi</span>
               </div>
+              <span class="admin-table__muted">Testy i tryb jednego pytania</span>
             </div>
 
             <div class="admin-table admin-table--compact">
@@ -221,7 +227,8 @@ $date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotim
                   <div class="admin-table__row admin-table__row--stacked">
                     <div>
                       <strong><?= htmlspecialchars(mb_strimwidth((string) ($row['question_text'] ?? ''), 0, 140, '...')) ?></strong>
-                      <div class="admin-table__muted">
+                      <div class="admin-table__muted admin-table__muted--inline">
+                        <span class="badge badge--secondary"><?= ($row['source'] ?? 'test') === 'single' ? 'Jedno pytanie' : 'Test' ?></span>
                         <?= !empty($row['answered_at']) ? htmlspecialchars(date('d.m.Y H:i', strtotime((string) $row['answered_at']))) : 'Brak daty' ?>
                       </div>
                     </div>
@@ -229,7 +236,13 @@ $date = static fn(?string $value): string => $value ? date('d.m.Y H:i', strtotim
                     <div class="admin-answer-grid">
                       <div class="admin-answer-grid__item">
                         <span class="admin-answer-grid__label">Odpowiedź użytkownika</span>
-                        <span><?= htmlspecialchars($row['user_answer'] ?? 'Pominięte') ?></span>
+                        <span>
+                          <?php if ((int) ($row['answer_unknown'] ?? 0) === 1): ?>
+                            <span class="admin-table__muted">Brak danych (odpowiedź sprzed zapisu historii)</span>
+                          <?php else: ?>
+                            <?= htmlspecialchars($row['user_answer'] ?? 'Pominięte') ?>
+                          <?php endif; ?>
+                        </span>
                       </div>
                       <div class="admin-answer-grid__item">
                         <span class="admin-answer-grid__label">Poprawna odpowiedź</span>

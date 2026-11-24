@@ -88,6 +88,7 @@ $canonicalUrl = url('logowanie');
       =====================================================================
     -->
     <form method="POST" class="form-card">
+      <?= csrf_field() ?>
       <div class="form-card__header">
         <div class="form-card__icon-circle">
           <i class="fas fa-user-lock"></i>

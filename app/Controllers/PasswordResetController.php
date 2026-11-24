@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Models\UserModel;
 use App\Services\TokenService;
+use App\Services\CsrfService;
+use App\Services\ThrottleService;
 use App\Services\Mailer;
 use App\Services\Validator;
 
@@ -86,9 +88,32 @@ class PasswordResetController extends BaseController
       exit();
     }
 
+    // KROK 1b: CSRF i limit w bazie (sesyjny cooldown wyżej omija się bez ciasteczka):
+    // 10 próśb na godzinę z jednego IP i 3 na jeden adres e-mail.
+    if (!(new CsrfService())->validate($_POST['csrf_token'] ?? null)) {
+      $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Sesja formularza wygasła. Odśwież stronę i spróbuj ponownie.'];
+      header('Location: ' . url('reset-hasla'));
+      exit();
+    }
+
+    $email = is_string($_POST['email'] ?? null) ? trim($_POST['email']) : '';
+    $throttle = new ThrottleService();
+    $ip = ThrottleService::clientIp();
+    if (
+      $throttle->tooManyAttempts('reset_ip', $ip, 10, 3600)
+      || ($email !== '' && $throttle->tooManyAttempts('reset_email', $email, 3, 3600))
+    ) {
+      $_SESSION['flash_message'] = ['type' => 'error', 'text' => 'Zbyt wiele próśb o reset hasła. Spróbuj ponownie za godzinę.'];
+      header('Location: ' . url('reset-hasla'));
+      exit();
+    }
+    $throttle->hit('reset_ip', $ip, 3600);
+    if ($email !== '') {
+      $throttle->hit('reset_email', $email, 3600);
+    }
+
     // KROK 2: Identyfikacja użytkownika
-    $email = $_POST['email'] ?? null;
-    $user = $this->userModel->getUserByEmail($email);
+    $user = $email !== '' ? $this->userModel->getUserByEmail($email) : null;
     $this->getAnalyticsService()->trackPasswordResetRequested($user?->getId());
 
     if ($user) {

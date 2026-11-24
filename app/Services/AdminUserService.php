@@ -134,6 +134,9 @@ class AdminUserService
 
     $result['top_mistakes'] = $this->db->fetchAll($mistakesSql, [$userId]);
 
+    // Tryb "jedno pytanie" - główny sposób nauki, więc pokazujemy go obok testów.
+    $result['single'] = (new \App\Models\SingleQuestionAnswer())->getUserSummary($userId);
+
     return $result;
   }
 
@@ -171,26 +174,54 @@ class AdminUserService
    */
   public function getUserAnswerPreview(int $userId, int $limit = 40): array
   {
-    $sql = "SELECT
-              aa.answered_at,
-              a.id as attempt_id,
-              a.completed_at,
-              q.id as question_id,
-              qv.question_text,
-              ua.answer_text as user_answer,
-              ca.answer_text as correct_answer,
-              aa.is_correct
-            FROM attempt_answers aa
-            JOIN attempts a ON aa.attempt_id = a.id
-            JOIN question_versions qv ON aa.question_version_id = qv.id
-            JOIN questions q ON qv.question_id = q.id
-            LEFT JOIN answers ua ON aa.answer_id = ua.id
-            LEFT JOIN answers ca ON ca.question_version_id = aa.question_version_id AND ca.is_correct = 1
-            WHERE a.user_id = ?
-            ORDER BY aa.answered_at DESC
-            LIMIT " . max(1, $limit);
+    // Odpowiedzi z testów i z trybu "jedno pytanie" na jednej osi czasu.
+    // source: 'test' | 'single'; answer_unknown = 1 dla odpowiedzi zaimportowanych
+    // ze zdarzeń analityki (znamy wynik, ale nie wybrany wariant).
+    $limit = max(1, $limit);
+    $sql = "SELECT * FROM (
+              (SELECT
+                'test' AS source,
+                aa.answered_at,
+                a.id AS attempt_id,
+                q.id AS question_id,
+                qv.question_text,
+                ua.answer_text AS user_answer,
+                ca.answer_text AS correct_answer,
+                aa.is_correct,
+                0 AS answer_unknown
+              FROM attempt_answers aa
+              JOIN attempts a ON aa.attempt_id = a.id
+              JOIN question_versions qv ON aa.question_version_id = qv.id
+              JOIN questions q ON qv.question_id = q.id
+              LEFT JOIN answers ua ON aa.answer_id = ua.id
+              LEFT JOIN answers ca ON ca.question_version_id = aa.question_version_id AND ca.is_correct = 1
+              WHERE a.user_id = ?
+              ORDER BY aa.answered_at DESC
+              LIMIT $limit)
+              UNION ALL
+              (SELECT
+                'single' AS source,
+                sqa.answered_at,
+                NULL AS attempt_id,
+                sqa.question_id,
+                COALESCE(qv.question_text, cur.question_text) AS question_text,
+                ua.answer_text AS user_answer,
+                ca.answer_text AS correct_answer,
+                sqa.is_correct,
+                CASE WHEN sqa.answer_id IS NULL THEN 1 ELSE 0 END AS answer_unknown
+              FROM single_question_answers sqa
+              LEFT JOIN question_versions qv ON qv.id = sqa.question_version_id
+              LEFT JOIN question_versions cur ON cur.question_id = sqa.question_id AND cur.is_active = 1
+              LEFT JOIN answers ua ON ua.id = sqa.answer_id
+              LEFT JOIN answers ca ON ca.question_version_id = COALESCE(sqa.question_version_id, cur.id) AND ca.is_correct = 1
+              WHERE sqa.user_id = ?
+              ORDER BY sqa.answered_at DESC
+              LIMIT $limit)
+            ) answers_timeline
+            ORDER BY answered_at DESC
+            LIMIT $limit";
 
-    return $this->db->fetchAll($sql, [$userId]);
+    return $this->db->fetchAll($sql, [$userId, $userId]);
   }
 
   /**
