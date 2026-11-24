@@ -252,6 +252,55 @@ class Question
   }
 
   /**
+   * Czy pytanie o podanym ID istnieje (niezależnie od aktywności).
+   */
+  public function questionExists(int $questionId): bool
+  {
+    return (bool) $this->db->fetch("SELECT 1 FROM questions WHERE id = ? AND deleted_at IS NULL LIMIT 1", [$questionId]);
+  }
+
+  /**
+   * Liczy, ile z podanych wersji pytań istnieje w bazie.
+   *
+   * @param int[] $versionIds
+   */
+  public function countExistingVersions(array $versionIds): int
+  {
+    if (empty($versionIds)) {
+      return 0;
+    }
+
+    $placeholders = implode(',', array_fill(0, count($versionIds), '?'));
+    $row = $this->db->fetch(
+      "SELECT COUNT(*) AS n FROM question_versions WHERE id IN ($placeholders)",
+      array_map('intval', $versionIds)
+    );
+
+    return (int) ($row['n'] ?? 0);
+  }
+
+  /**
+   * Zostawia tylko tematy należące do danej kwalifikacji.
+   *
+   * @param int[] $topicIds
+   * @return int[]
+   */
+  public function filterTopicIdsForExam(array $topicIds, int $examTypeId): array
+  {
+    if (empty($topicIds)) {
+      return [];
+    }
+
+    $placeholders = implode(',', array_fill(0, count($topicIds), '?'));
+    $rows = $this->db->fetchAll(
+      "SELECT id FROM topics WHERE exam_type_id = ? AND id IN ($placeholders)",
+      array_merge([$examTypeId], array_map('intval', $topicIds))
+    );
+
+    return array_map(static fn(array $row): int => (int) $row['id'], $rows);
+  }
+
+  /**
    * Pobiera ID bazowego pytania na podstawie identyfikatora wersji.
    * 
    * @param int $qvId ID wersji pytania.

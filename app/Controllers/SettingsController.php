@@ -622,7 +622,9 @@ class SettingsController extends BaseController
     }
 
     // KROK 4: Bezpowrotne usunięcie mapowania postępu konkretnego użytkownika
+    // oraz odpięcie historii odpowiedzi z trybu "jedno pytanie" (jak podejść).
     $progressDeleted = $this->userProgressModel->deleteProgress($userId, $examTypeId);
+    (new \App\Models\SingleQuestionAnswer())->anonymizeForExam($userId, $examTypeId);
 
     // KROK 5: Sprzątanie i przekierowanie z komunikatem o sukcesie
     if ($progressDeleted !== false && $attemptsResult !== false) {

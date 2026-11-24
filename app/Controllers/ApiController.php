@@ -10,7 +10,9 @@ use App\Models\SavedQuestion;
 use App\Models\Sheet;
 use App\Models\SheetNote;
 use App\Models\UserModel;
+use App\Models\SingleQuestionAnswer;
 use App\Services\AnalyticsService;
+use App\Services\CsrfService;
 
 /**
  * Kontroler API (ApiController).
@@ -53,6 +55,18 @@ class ApiController extends BaseController
   /** @var AnalyticsService Serwis analityki produktu */
   private AnalyticsService $analyticsService;
 
+  /** @var SingleQuestionAnswer Historia odpowiedzi z trybu "jedno pytanie" */
+  private SingleQuestionAnswer $singleAnswerModel;
+
+  /** Maksymalna liczba pytań w zapisywanym podejściu (pełny egzamin ma 40). */
+  private const MAX_ATTEMPT_QUESTIONS = 40;
+
+  /** Maksymalny rozmiar awatara po zdekodowaniu (bajty). */
+  private const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+
+  /** Maksymalna liczba tematów w jednym zapytaniu o pytania. */
+  private const MAX_TOPICS_PER_REQUEST = 60;
+
   /**
    * Projektuje i inicjalizuje mosty do warstwy danych.
    */
@@ -66,6 +80,7 @@ class ApiController extends BaseController
     $this->savedQuestionModel = new SavedQuestion();
     $this->userModel = new UserModel();
     $this->analyticsService = new AnalyticsService();
+    $this->singleAnswerModel = new SingleQuestionAnswer();
   }
 
   // --- ENDPOINTY POBIERANIA PYTAŃ (READ) ---
@@ -79,6 +94,7 @@ class ApiController extends BaseController
   public function getQuestion(string $examCode): void
   {
     $this->ensureGetRequest();
+    $this->enforceRateLimit('get_question', 120);
 
     // KROK: Pobranie fizycznych rekordów z bazy przez filtr centralny
     $result = $this->fetchFilteredQuestions($examCode, 1);
@@ -176,6 +192,7 @@ class ApiController extends BaseController
   public function getPersonalizedTest(string $examCode): void
   {
     $this->ensureGetRequest();
+    $this->enforceRateLimit('get_test', 30);
 
     // Walidacja limitu (bezpieczne granice 10-40)
     $limit = isset($_GET['question_count']) ? (int) $_GET['question_count'] : 20;
@@ -267,6 +284,7 @@ class ApiController extends BaseController
   public function getFullTest(string $examCode): void
   {
     $this->ensureGetRequest();
+    $this->enforceRateLimit('get_test', 30);
 
     $examTypeId = $this->questionModel->getExamTypeIdByCode($examCode);
 
@@ -323,12 +341,12 @@ class ApiController extends BaseController
    */
   public function checkAnswer(): void
   {
-    $this->ensurePostRequest();
+    $this->guardWriteRequest('check_answer', 60);
 
     $qvId = (int) ($_POST['question_version_id'] ?? 0);
     $userAnswerId = (int) ($_POST['answer_id'] ?? 0);
 
-    if (!$qvId || !$userAnswerId) {
+    if ($qvId <= 0 || $userAnswerId <= 0) {
       $this->analyticsService->trackValidationError(
         $this->currentUser?->getId(),
         'single_question_answer',
@@ -338,9 +356,10 @@ class ApiController extends BaseController
       return;
     }
 
-    // Pobranie wzorcowej poprawnej odpowiedzi dla danej wersji
-    $correctAnswer = $this->answerModel->getCorrectAnswerForVersion($qvId);
-    if (!$correctAnswer) {
+    // Jedno zapytanie: wybrana odpowiedź musi należeć do tej wersji pytania.
+    // Wcześniej przyjmowaliśmy dowolne answer_id i tylko porównywaliśmy je z poprawnym.
+    $context = $this->answerModel->getAnswerContext($qvId, $userAnswerId);
+    if (!$context || empty($context['correct_answer_id'])) {
       $this->analyticsService->trackValidationError(
         $this->currentUser?->getId(),
         'single_question_answer',
@@ -350,71 +369,70 @@ class ApiController extends BaseController
       return;
     }
 
-    $isCorrect = $userAnswerId === (int) $correctAnswer['id'];
+    $isCorrect = (int) $context['is_correct'] === 1;
+    $questionId = (int) $context['question_id'];
+    $examId = (int) $context['exam_type_id'];
+    $response = [
+      'success' => true,
+      'is_correct' => $isCorrect,
+      'correct_answer_id' => (int) $context['correct_answer_id'],
+    ];
+
+    // Podwójne kliknięcie / ponowione żądanie nie może podwójnie liczyć odpowiedzi
+    // (liczniki postępu, historia, analityka) - zwracamy wynik bez ponownego zapisu.
+    if ($this->isDuplicateSingleAnswer($qvId)) {
+      $this->sendJsonResponse($response);
+      return;
+    }
 
     try {
-      $questionId = $this->questionModel->getQuestionIdByVersionId($qvId);
-      if ($questionId) {
-        $question = $this->questionModel->getQuestionById((int) $questionId);
-        $examId = (int) ($question['exam_type_id'] ?? 0);
-        $this->analyticsService->trackSingleQuestionAnswered(
-          $this->isUserLoggedIn ? $this->currentUser->getId() : null,
-          $examId > 0 ? $examId : null,
-          (int) $questionId,
-          $isCorrect,
-          [
-            'topic_id' => isset($question['topic_id']) ? (int) $question['topic_id'] : null,
-            'source' => 'single_question_module',
-          ]
-        );
-      }
+      $this->analyticsService->trackSingleQuestionAnswered(
+        $this->isUserLoggedIn ? $this->currentUser->getId() : null,
+        $examId > 0 ? $examId : null,
+        $questionId,
+        $isCorrect,
+        [
+          'topic_id' => (int) $context['topic_id'],
+          'source' => 'single_question_module',
+        ]
+      );
     } catch (\Throwable $e) {
       // Analityka nie może blokować sprawdzenia odpowiedzi.
     }
 
-    // Utrwalenie progresu dla zalogowanych (Micro-save)
+    // Utrwalenie progresu i historii odpowiedzi dla zalogowanych
     if ($this->isUserLoggedIn) {
-      $questionId = $this->questionModel->getQuestionIdByVersionId($qvId);
-      if ($questionId) {
-        $this->userProgressModel->saveProgress($this->currentUser->getId(), $questionId, (int) $isCorrect);
+      $userId = $this->currentUser->getId();
+      $this->userProgressModel->saveProgress($userId, $questionId, (int) $isCorrect);
+
+      try {
+        $this->singleAnswerModel->record($userId, $questionId, $qvId, $userAnswerId, $isCorrect);
+      } catch (\Throwable $e) {
+        // Historia nie może blokować sprawdzenia odpowiedzi.
+        error_log('[SingleQuestionAnswer] ' . $e->getMessage());
       }
     }
 
-    $this->sendJsonResponse([
-      'success' => true,
-      'is_correct' => $isCorrect,
-      'correct_answer_id' => (int) $correctAnswer['id'],
-    ]);
+    $this->sendJsonResponse($response);
   }
 
   /**
-   * Endpoint: Wykonuje masowy zapis progresu (Bulk Save).
-   * Używane głównie przy synchronizacji stanu po trybach offline lub długich sesjach.
+   * Czy to ta sama odpowiedź wysłana przed chwilą (podwójne kliknięcie, ponowienie).
+   * Zalogowani - wg historii w bazie, goście - wg sesji.
    */
-  public function saveProgressBulk(): void
+  private function isDuplicateSingleAnswer(int $qvId): bool
   {
-    $this->ensurePostRequest();
-
-    if (!$this->isUserLoggedIn) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Funkcja dostępna tylko dla zalogowanych.'], 403);
-      return;
+    if ($this->isUserLoggedIn) {
+      return $this->singleAnswerModel->isRecentDuplicate($this->currentUser->getId(), $qvId);
     }
 
-    $progressData = json_decode(file_get_contents('php://input'), true);
-    if (!is_array($progressData)) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy format danych JSON.'], 400);
-      return;
-    }
+    $last = $_SESSION['last_single_answer'] ?? null;
+    $now = time();
+    $_SESSION['last_single_answer'] = ['qv' => $qvId, 'at' => $now];
 
-    $userId = $this->currentUser->getId();
-
-    foreach ($progressData as $progressItem) {
-      if (isset($progressItem['questionId'], $progressItem['isCorrect'])) {
-        $this->userProgressModel->saveProgress($userId, (int) $progressItem['questionId'], $progressItem['isCorrect'] ? 1 : 0);
-      }
-    }
-
-    $this->sendJsonResponse(['success' => true, 'message' => 'Postęp zaktualizowany pomyślnie.']);
+    return is_array($last)
+      && (int) ($last['qv'] ?? 0) === $qvId
+      && $now - (int) ($last['at'] ?? 0) < SingleQuestionAnswer::DUPLICATE_WINDOW_SECONDS;
   }
 
   /**
@@ -428,7 +446,7 @@ class ApiController extends BaseController
    */
   public function saveAttempt(): void
   {
-    $this->ensurePostRequest();
+    $this->guardWriteRequest('save_attempt', 10);
 
     if (!$this->isUserLoggedIn) {
       $this->analyticsService->trackValidationError(null, 'save_attempt', 'authentication_required');
@@ -449,27 +467,48 @@ class ApiController extends BaseController
     }
     $userId = $this->currentUser->getId();
 
-    $examTypeId = $this->questionModel->getExamTypeIdByCode($input['examCode'] ?? 'INF.03');
+    $examTypeId = $this->questionModel->getExamTypeIdByCode((string) ($input['examCode'] ?? ''));
     if (!$examTypeId) {
       $this->analyticsService->trackValidationError($userId, 'save_attempt', 'invalid_exam');
       $this->sendJsonResponse(['error' => 'Nieprawidłowy typ egzaminu'], 400);
       return;
     }
 
-    // KROK 1: Przygotowanie paczki danych historycznych
+    // KROK 1: Weryfikacja odpowiedzi po stronie serwera.
+    // Wcześniej zapisywaliśmy wynik (correctAnswers/totalQuestions) i poprawność
+    // każdej odpowiedzi dokładnie tak, jak przysłała je przeglądarka - dało się
+    // wpisać dowolny wynik i dowolne liczniki postępu. Teraz poprawność liczymy
+    // z bazy, a odpowiedź musi należeć do swojej wersji pytania.
+    $answersDetails = $this->normalizeAttemptAnswers($input['answers'] ?? null);
+    if ($answersDetails === null) {
+      $this->analyticsService->trackValidationError($userId, 'save_attempt', 'invalid_answers');
+      $this->sendJsonResponse(['error' => 'Nieprawidłowe odpowiedzi w podejściu'], 400);
+      return;
+    }
+
+    $correctCount = 0;
+    foreach ($answersDetails as $detail) {
+      $correctCount += $detail['is_correct'];
+    }
+
     $attemptData = [
       'user_id' => $userId,
       'exam_type_id' => $examTypeId,
       'test_type' => ($input['isFullExam'] ?? false) ? 'full_exam' : 'personalized',
-      'correct_count' => (int) ($input['correctAnswers'] ?? 0),
-      'total_questions' => (int) ($input['totalQuestions'] ?? 0),
-      'duration_seconds' => (int) ($input['duration'] ?? 0)
+      'correct_count' => $correctCount,
+      'total_questions' => count($answersDetails),
+      // Maks. 4 h - pełny egzamin trwa 60 min, reszta to zapas na pauzy.
+      'duration_seconds' => max(0, min(14400, (int) ($input['duration'] ?? 0))),
     ];
 
-    $answersDetails = $input['answers'] ?? [];
+    $topicIds = array_values(array_unique(array_filter(
+      array_map('intval', is_array($input['topicIds'] ?? null) ? $input['topicIds'] : []),
+      static fn(int $id): bool => $id > 0
+    )));
+    $topicIds = $this->questionModel->filterTopicIdsForExam($topicIds, (int) $examTypeId);
 
     // KROK 2: Transakcyjny zapis w bazie danych
-    $attemptId = $this->attemptModel->createAttempt($attemptData, $input['topicIds'] ?? [], $answersDetails);
+    $attemptId = $this->attemptModel->createAttempt($attemptData, $topicIds, $answersDetails);
 
     if ($attemptId) {
       // KROK 3: Masowa aktualizacja statystyk pytań
@@ -500,11 +539,67 @@ class ApiController extends BaseController
   }
 
   /**
+   * Weryfikuje odpowiedzi z podejścia na podstawie bazy.
+   *
+   * Zwraca listę w kolejności prezentacji: question_version_id, answer_id (null =
+   * pominięte), is_correct wyliczone z bazy. Null, gdy dane są nieprawidłowe
+   * (zła struktura, za dużo pytań, powtórzone pytanie, odpowiedź spoza pytania).
+   *
+   * @return array<int, array{question_version_id:int, answer_id:?int, is_correct:int}>|null
+   */
+  private function normalizeAttemptAnswers(mixed $rawAnswers): ?array
+  {
+    if (!is_array($rawAnswers) || $rawAnswers === [] || count($rawAnswers) > self::MAX_ATTEMPT_QUESTIONS) {
+      return null;
+    }
+
+    $normalized = [];
+    $pairs = [];
+    $versionIds = [];
+    foreach (array_values($rawAnswers) as $raw) {
+      if (!is_array($raw)) {
+        return null;
+      }
+
+      $versionId = (int) ($raw['question_version_id'] ?? 0);
+      $answerId = isset($raw['answer_id']) && $raw['answer_id'] !== '' ? (int) $raw['answer_id'] : null;
+      if ($versionId <= 0 || isset($versionIds[$versionId]) || ($answerId !== null && $answerId <= 0)) {
+        return null;
+      }
+
+      $versionIds[$versionId] = true;
+      if ($answerId !== null) {
+        $pairs[$versionId] = $answerId;
+      }
+      $normalized[] = ['question_version_id' => $versionId, 'answer_id' => $answerId, 'is_correct' => 0];
+    }
+
+    // Każda wersja pytania musi istnieć (także te pominięte).
+    if ($this->questionModel->countExistingVersions(array_keys($versionIds)) !== count($versionIds)) {
+      return null;
+    }
+
+    $verified = $this->answerModel->verifyAnswersForVersions($pairs);
+    if (count($verified) !== count($pairs)) {
+      return null;
+    }
+
+    foreach ($normalized as &$item) {
+      if ($item['answer_id'] !== null) {
+        $item['is_correct'] = $verified[$item['question_version_id']]['is_correct'];
+      }
+    }
+    unset($item);
+
+    return $normalized;
+  }
+
+  /**
    * Endpoint: Przełącza stan zapisania pytania w schowku (Toggle).
    */
   public function toggleSavedQuestion(): void
   {
-    $this->ensurePostRequest();
+    $this->guardWriteRequest('toggle_saved', 60);
 
     if (!$this->isUserLoggedIn) {
       $this->sendJsonResponse(['success' => false, 'message' => 'Zaloguj się, aby zarządzać zapisanymi pytaniami.'], 403);
@@ -513,13 +608,19 @@ class ApiController extends BaseController
 
     $questionId = (int) ($_POST['question_id'] ?? 0);
 
-    if (!$questionId) {
+    if ($questionId <= 0) {
       $this->analyticsService->trackValidationError(
         $this->currentUser->getId(),
         'saved_question',
         'missing_question_id'
       );
       $this->sendJsonResponse(['success' => false, 'message' => 'Brak identyfikatora pytania.'], 400);
+      return;
+    }
+
+    // Zapisać można tylko istniejące pytanie (saved_questions nie ma klucza obcego).
+    if (!$this->questionModel->questionExists($questionId)) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Pytanie nie istnieje.'], 404);
       return;
     }
 
@@ -555,7 +656,7 @@ class ApiController extends BaseController
    */
   public function saveSheetNote(): void
   {
-    $this->ensurePostRequest();
+    $this->guardWriteRequest('sheet_note', 20);
 
     // Biblioteka Arkuszy nie jest jeszcze udostępniona użytkownikom — endpoint tymczasowo wyłączony
     $this->sendJsonResponse(['success' => false, 'message' => 'Ta funkcja nie jest jeszcze dostępna.'], 404);
@@ -609,15 +710,22 @@ class ApiController extends BaseController
    */
   public function updateAvatar(): void
   {
-    $this->ensurePostRequest();
+    $this->guardWriteRequest('avatar', 10);
 
     if (!$this->isUserLoggedIn) {
       $this->sendJsonResponse(['success' => false, 'message' => 'Wymagane uwierzytelnienie.'], 403);
       return;
     }
 
-    $input = json_decode(file_get_contents('php://input'), true);
-    if (!isset($input['type']) || !isset($input['avatar'])) {
+    $rawInput = file_get_contents('php://input');
+    // Base64 powiększa plik o ~1/3 - limit z zapasem na nagłówek data URL.
+    if (!is_string($rawInput) || strlen($rawInput) > (int) (self::MAX_AVATAR_BYTES * 1.4)) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Plik jest za duży (maks. 2 MB).'], 413);
+      return;
+    }
+
+    $input = json_decode($rawInput, true);
+    if (!is_array($input) || !is_string($input['type'] ?? null) || !is_string($input['avatar'] ?? null)) {
       $this->sendJsonResponse(['success' => false, 'message' => 'Brak wymaganych parametrów.'], 400);
       return;
     }
@@ -637,38 +745,51 @@ class ApiController extends BaseController
     if ($type === 'default') {
       // Walidacja czy plik domyślny istnieje
       $defaultPath = 'defaults/' . basename($avatarData);
-      if (file_exists($avatarsDir . $defaultPath)) {
+      if (preg_match('/^[a-z0-9_-]+\.(png|jpe?g|webp|svg)$/i', basename($avatarData)) && is_file($avatarsDir . $defaultPath)) {
         $newAvatarPath = $defaultPath;
       } else {
         $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy awatar domyślny.'], 400);
         return;
       }
     } elseif ($type === 'custom') {
-      // Obsługa Base64 (WebP/JPEG)
-      if (preg_match('/^data:image\/(\w+);base64,/', $avatarData, $typeMatch)) {
-        $data = substr($avatarData, strpos($avatarData, ',') + 1);
-        $data = base64_decode($data);
-
-        if ($data === false) {
-          $this->sendJsonResponse(['success' => false, 'message' => 'Błąd dekodowania obrazu.'], 400);
-          return;
-        }
-
-        // Generowanie unikalnej nazwy
-        $extension = $typeMatch[1] === 'jpeg' ? 'jpg' : $typeMatch[1];
-        if (!in_array($extension, ['jpg', 'png', 'webp'])) {
-          $extension = 'webp'; // fallback
-        }
-
-        $filename = 'custom_' . $userId . '_' . time() . '.' . $extension;
-        $newAvatarPath = $filename;
-
-        if (file_put_contents($avatarsDir . $filename, $data) === false) {
-          $this->sendJsonResponse(['success' => false, 'message' => 'Błąd zapisu pliku na serwerze.'], 500);
-          return;
-        }
-      } else {
+      // Obsługa Base64 (WebP/JPEG/PNG). Typ i wymiary sprawdzamy na samych bajtach
+      // pliku - wcześniej zapisywaliśmy dowolną zawartość z rozszerzeniem podanym
+      // przez przeglądarkę i bez limitu rozmiaru.
+      if (!preg_match('/^data:image\/[a-z]+;base64,/', $avatarData)) {
         $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy format obrazu.'], 400);
+        return;
+      }
+
+      $data = base64_decode(substr($avatarData, strpos($avatarData, ',') + 1), true);
+      if ($data === false || $data === '') {
+        $this->sendJsonResponse(['success' => false, 'message' => 'Błąd dekodowania obrazu.'], 400);
+        return;
+      }
+
+      if (strlen($data) > self::MAX_AVATAR_BYTES) {
+        $this->sendJsonResponse(['success' => false, 'message' => 'Plik jest za duży (maks. 2 MB).'], 413);
+        return;
+      }
+
+      $allowedTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+      $mimeType = (new \finfo(FILEINFO_MIME_TYPE))->buffer($data) ?: '';
+      $imageInfo = @getimagesizefromstring($data);
+      if (
+        !isset($allowedTypes[$mimeType])
+        || $imageInfo === false
+        || ($imageInfo['mime'] ?? '') !== $mimeType
+        || $imageInfo[0] < 16 || $imageInfo[1] < 16
+        || $imageInfo[0] > 4096 || $imageInfo[1] > 4096
+      ) {
+        $this->sendJsonResponse(['success' => false, 'message' => 'Dozwolone są obrazy JPG, PNG lub WebP do 4096 px.'], 400);
+        return;
+      }
+
+      $filename = 'custom_' . $userId . '_' . time() . '.' . $allowedTypes[$mimeType];
+      $newAvatarPath = $filename;
+
+      if (file_put_contents($avatarsDir . $filename, $data) === false) {
+        $this->sendJsonResponse(['success' => false, 'message' => 'Błąd zapisu pliku na serwerze.'], 500);
         return;
       }
     } else {
@@ -711,24 +832,16 @@ class ApiController extends BaseController
       return;
     }
 
-    $windowStart = (int) ($_SESSION['analytics_event_window'] ?? 0);
-    $windowCount = (int) ($_SESSION['analytics_event_count'] ?? 0);
-    if ($windowStart === 0 || time() - $windowStart >= 60) {
-      $windowStart = time();
-      $windowCount = 0;
-    }
-    if ($windowCount >= 120) {
-      $this->sendJsonResponse(['success' => false], 429);
-      return;
-    }
-    $_SESSION['analytics_event_window'] = $windowStart;
-    $_SESSION['analytics_event_count'] = $windowCount + 1;
-
     $input = json_decode($rawInput, true);
     if (!is_array($input)) {
       $this->sendJsonResponse(['success' => false], 400);
       return;
     }
+
+    // navigator.sendBeacon nie pozwala ustawić nagłówka, więc token CSRF
+    // może przyjść także w treści żądania.
+    $this->requireCsrf(is_string($input['csrf_token'] ?? null) ? $input['csrf_token'] : null);
+    $this->enforceRateLimit('analytics_event', 120);
 
     $eventType = trim((string) ($input['event_type'] ?? ''));
     $allowedClientEvents = [
@@ -751,7 +864,7 @@ class ApiController extends BaseController
       return;
     }
 
-    $metadata = is_array($input['metadata'] ?? null) ? $input['metadata'] : [];
+    $metadata = is_array($input['metadata'] ?? null) ? array_slice($input['metadata'], 0, 20, true) : [];
     $success = $this->analyticsService->trackEvent(
       $eventType,
       $this->currentUser?->getId(),
@@ -779,7 +892,13 @@ class ApiController extends BaseController
    */
   private function fetchFilteredQuestions(string $examCode, int $limit): array
   {
-    $subjectIds = $_GET['subject'] ?? [];
+    $rawSubjects = $_GET['subject'] ?? [];
+    $subjectIds = is_array($rawSubjects)
+      ? array_values(array_unique(array_filter(
+          array_map('intval', array_slice($rawSubjects, 0, self::MAX_TOPICS_PER_REQUEST)),
+          static fn(int $id): bool => $id > 0
+        )))
+      : [];
 
     if (!$examCode || empty($subjectIds)) {
       $this->analyticsService->trackValidationError(
@@ -792,8 +911,14 @@ class ApiController extends BaseController
     }
 
     $examTypeId = $this->questionModel->getExamTypeIdByCode($examCode);
-    $subjectIds = array_map('intval', $subjectIds);
+    if (!$examTypeId) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowy kod egzaminu.'], 404);
+      return ['success' => false, 'questions' => []];
+    }
+
+    $allowedFilters = ['toDiscover', 'toImprove', 'toRemind', 'lastMistakes', 'saved'];
     $specialFilter = $_GET['premium_option'] ?? null;
+    $specialFilter = is_string($specialFilter) && in_array($specialFilter, $allowedFilters, true) ? $specialFilter : null;
 
     // KROK: Weryfikacja uprawnień do filtrów zaawansowanych
     if ($specialFilter && !$this->isUserLoggedIn) {
@@ -871,6 +996,59 @@ class ApiController extends BaseController
       $this->sendJsonResponse(['success' => false, 'message' => 'Metoda niedozwolona (Wymagany GET).'], 405);
       exit();
     }
+  }
+
+  /**
+   * Wspólna ochrona endpointów zapisujących: tylko POST, poprawny token CSRF
+   * (nagłówek X-CSRF-Token) i limit żądań na sesję.
+   *
+   * Ciasteczko sesji ma SameSite=Lax, więc obce strony i tak nie wyślą go
+   * w żądaniu POST - token to druga, niezależna warstwa.
+   */
+  private function guardWriteRequest(string $rateKey, int $maxPerMinute): void
+  {
+    $this->ensurePostRequest();
+    $this->requireCsrf($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_POST['csrf_token'] ?? null));
+    $this->enforceRateLimit($rateKey, $maxPerMinute);
+  }
+
+  /**
+   * Przerywa żądanie z kodem 403, gdy token CSRF jest nieprawidłowy.
+   */
+  private function requireCsrf(?string $token): void
+  {
+    $token ??= $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
+    if (!(new CsrfService())->validate(is_string($token) ? $token : null)) {
+      $this->sendJsonResponse([
+        'success' => false,
+        'status' => 'csrf',
+        'message' => 'Sesja wygasła. Odśwież stronę i spróbuj ponownie.',
+      ], 403);
+    }
+  }
+
+  /**
+   * Prosty limit żądań w oknie 60 s na sesję (chroni liczniki i analitykę
+   * przed zalewaniem z jednej karty/skryptu). Przekroczenie = 429.
+   */
+  private function enforceRateLimit(string $key, int $maxPerMinute): void
+  {
+    $now = time();
+    $bucket = $_SESSION['rate_limit'][$key] ?? null;
+    if (!is_array($bucket) || $now - (int) ($bucket['start'] ?? 0) >= 60) {
+      $bucket = ['start' => $now, 'count' => 0];
+    }
+
+    if ((int) $bucket['count'] >= $maxPerMinute) {
+      $this->sendJsonResponse([
+        'success' => false,
+        'status' => 'rate_limited',
+        'message' => 'Za dużo żądań w krótkim czasie. Odczekaj chwilę.',
+      ], 429);
+    }
+
+    $bucket['count'] = (int) $bucket['count'] + 1;
+    $_SESSION['rate_limit'][$key] = $bucket;
   }
 
   /**

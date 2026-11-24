@@ -66,6 +66,71 @@ class Answer
   }
 
   /**
+   * Sprawdza wybraną odpowiedź w kontekście wersji pytania (jedno zapytanie).
+   *
+   * Zwraca dane tylko wtedy, gdy odpowiedź naprawdę należy do tej wersji pytania -
+   * wcześniej endpoint porównywał jedynie ID z poprawną odpowiedzią i przyjmował
+   * dowolną liczbę jako "wybraną odpowiedź".
+   *
+   * @return array{answer_id:int, is_correct:int, correct_answer_id:?int, question_id:int, exam_type_id:int, topic_id:int}|false
+   */
+  public function getAnswerContext(int $versionId, int $answerId): array|false
+  {
+    $sql = "SELECT
+              a.id AS answer_id,
+              a.is_correct,
+              qv.question_id,
+              q.exam_type_id,
+              q.topic_id,
+              (SELECT c.id FROM answers c
+               WHERE c.question_version_id = qv.id AND c.is_correct = 1 AND c.is_active = 1
+               LIMIT 1) AS correct_answer_id
+            FROM question_versions qv
+            JOIN questions q ON q.id = qv.question_id
+            JOIN answers a ON a.id = ? AND a.question_version_id = qv.id AND a.is_active = 1
+            WHERE qv.id = ?
+            LIMIT 1";
+
+    return $this->db->fetch($sql, [$answerId, $versionId]);
+  }
+
+  /**
+   * Zwraca poprawność wskazanych odpowiedzi - tylko tych, które należą do podanych wersji pytań.
+   *
+   * @param array<int, int> $pairs Mapa question_version_id => answer_id.
+   * @return array<int, array{question_id:int, is_correct:int}> Klucz: question_version_id.
+   */
+  public function verifyAnswersForVersions(array $pairs): array
+  {
+    if (empty($pairs)) {
+      return [];
+    }
+
+    $conditions = [];
+    $params = [];
+    foreach ($pairs as $versionId => $answerId) {
+      $conditions[] = '(a.question_version_id = ? AND a.id = ?)';
+      $params[] = (int) $versionId;
+      $params[] = (int) $answerId;
+    }
+
+    $sql = "SELECT a.question_version_id, a.is_correct, qv.question_id
+            FROM answers a
+            JOIN question_versions qv ON qv.id = a.question_version_id
+            WHERE " . implode(' OR ', $conditions);
+
+    $result = [];
+    foreach ($this->db->fetchAll($sql, $params) as $row) {
+      $result[(int) $row['question_version_id']] = [
+        'question_id' => (int) $row['question_id'],
+        'is_correct' => (int) $row['is_correct'],
+      ];
+    }
+
+    return $result;
+  }
+
+  /**
    * Pobiera definicję poprawnej odpowiedzi dla danej wersji pytania.
    *
    * @param int $versionId ID wersji pytania.

@@ -327,3 +327,20 @@
     flex-direction: column;
   }
 }
+
+// Linia "źródło + data" w ostatnich odpowiedziach użytkownika - etykieta
+// w jednej linii z datą zamiast rozciągniętej na całą szerokość.
+.admin-table__muted--inline {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+
+  .badge {
+    flex: 0 0 auto;
+    width: auto;
+  }
+}

@@ -41,6 +41,11 @@
 /** Klucz localStorage dla podejść, których nie udało się wysłać. */
 const PENDING_ATTEMPTS_KEY = 'zdajnik_pending_attempts';
 
+/** Token CSRF sesji z <meta name="csrf-token"> (views/partials/head.php). */
+export function getCsrfToken() {
+  return document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+
 class ApiClient {
   /**
    * @constructs ApiClient
@@ -66,6 +71,15 @@ class ApiClient {
   async _request(endpoint, options = {}) {
     try {
       // Krok 1: Wykonaj zapytanie i poczekaj na odpowiedź.
+      // Każde żądanie zapisujące niesie token CSRF - serwer odrzuca POST bez niego.
+      const method = (options.method || 'GET').toUpperCase();
+      if (method !== 'GET') {
+        options = {
+          ...options,
+          headers: { ...(options.headers || {}), 'X-CSRF-Token': getCsrfToken() },
+        };
+      }
+
       const response = await fetch(this.baseUrl + endpoint, options);
       // Krok 2: Sparsuj ciało odpowiedzi jako JSON.
       const data = await response.json();
@@ -247,22 +261,6 @@ class ApiClient {
   }
 
   /**
-   * Zapisuje masowo postęp użytkownika (każdą odpowiedź z testu).
-   *
-   * @param {Array<object>} progressData - Tablica obiektów z odpowiedziami,
-   * np. `[{questionId: 1, isCorrect: true}]`.
-   * @returns {Promise<{success: boolean, data?: object, error?: string}>}
-   */
-  saveBulkProgress(progressData) {
-    const options = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(progressData),
-    };
-    return this._request('/save-progress-bulk', options);
-  }
-
-  /**
    * Sprawdza poprawność odpowiedzi na serwerze.
    * @param {number} questionVersionId - ID wersji pytania.
    * @param {number} answerId - ID odpowiedzi.
@@ -321,9 +319,11 @@ class ApiClient {
    * opuszczaniu strony, kiedy zwykły fetch może zostać anulowany.
    */
   trackAnalyticsEvent(eventType, metadata = {}, useBeacon = false) {
+    // Token w treści, bo navigator.sendBeacon nie pozwala ustawić nagłówka.
     const payload = JSON.stringify({
       event_type: eventType,
       metadata,
+      csrf_token: getCsrfToken(),
     });
     const endpoint = `${this.baseUrl}/analytics/event`;
 
