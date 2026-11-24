@@ -228,6 +228,22 @@ async function initAdminSparklines() {
   initDashboardSparklines();
 }
 
+/**
+ * Globalna obsługa przycisków "Zgłoś błąd" (`[data-report-question]`).
+ * Delegacja na document działa także dla kart renderowanych dynamicznie
+ * (jedno pytanie, test, wyniki), a okienko ładuje się dopiero przy pierwszym kliknięciu.
+ */
+function initQuestionReportButtons() {
+  document.addEventListener('click', async (event) => {
+    const trigger = event.target.closest('[data-report-question]');
+    if (!trigger || trigger.disabled) return;
+
+    event.preventDefault();
+    const { default: reportDialog } = await import(modulePath('./components/QuestionReportDialog.js'));
+    reportDialog.open(trigger);
+  });
+}
+
 async function initPageModules() {
   const results = await Promise.allSettled([
     initHomePage(),
@@ -313,6 +329,7 @@ async function initPendingAttemptsSync() {
 }
 
 onReady(() => {
+  initQuestionReportButtons();
   initPendingAttemptsSync().catch((error) => {
     console.error('Zdajnik: błąd synchronizacji zaległych wyników', error);
   });

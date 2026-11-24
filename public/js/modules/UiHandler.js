@@ -30,7 +30,7 @@
  */
 
 import { escapeHTML } from '../utils/sanitize.js';
-import { renderQuestionBadgesHTML, renderQuestionSourceHTML } from '../utils/questionCard.js';
+import { renderQuestionBadgesHTML, renderQuestionSourceHTML, renderReportButtonHTML } from '../utils/questionCard.js';
 import ExplanationToggler from '../components/ExplanationToggler.js';
 
 class UIHandler {
@@ -103,6 +103,7 @@ class UIHandler {
             ${renderQuestionBadgesHTML(question)}
           </div>
           <div class="quiz-card__header-actions">
+            ${renderReportButtonHTML(question.question_id, 'one_question')}
             ${saveBtnHTML}
           </div>
         </div>

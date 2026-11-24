@@ -104,6 +104,18 @@
   }
 }
 
+.admin-sidebar__count {
+  margin-left: auto;
+  min-width: 1.5rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-pill);
+  background: var(--warning);
+  color: var(--color-white);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
 .admin-sidebar__footer {
   margin-top: auto;
   padding-top: 0.5rem;

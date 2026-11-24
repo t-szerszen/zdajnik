@@ -257,6 +257,8 @@ class Router
     $this->get('admin/analytics/export', 'Admin\AdminAnalyticsController@analyticsExport');
     $this->get('admin/statystyki', 'Admin\AdminAnalyticsController@analytics');
     $this->get('admin/audyt', 'Admin\AdminAuditController@auditLogs');
+    $this->get('admin/zgloszenia', 'Admin\AdminReportController@reports');
+    $this->post('admin/zgloszenia/{reportId}/status', 'Admin\AdminReportController@updateStatus');
     $this->post('admin/uzytkownicy/{userId}/rola', 'Admin\AdminUserController@updateUserRole');
     $this->post('admin/uzytkownicy/{userId}/zweryfikuj', 'Admin\AdminUserController@verifyUser');
     $this->post('admin/uzytkownicy/{userId}/dezaktywuj', 'Admin\AdminUserController@deactivateUser');
@@ -306,6 +308,7 @@ class Router
     $this->post('api/save-attempt', 'ApiController@saveAttempt');
     $this->post('api/save-progress-bulk', 'ApiController@saveProgressBulk');
     $this->post('api/toggle-saved', 'ApiController@toggleSavedQuestion');
+    $this->post('api/zglos-blad', 'ApiController@reportQuestion');
     $this->post('api/sheet-note', 'ApiController@saveSheetNote');
     $this->post('api/user/avatar', 'ApiController@updateAvatar');
     $this->post('api/analytics/event', 'ApiController@trackAnalyticsEventFromClient');

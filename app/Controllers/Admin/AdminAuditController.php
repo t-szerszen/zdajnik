@@ -39,6 +39,7 @@ class AdminAuditController extends AdminBaseController
         'user' => 'Użytkownik',
         'exam' => 'Egzamin',
         'question' => 'Pytanie',
+        'question_report' => 'Zgłoszenie błędu',
       ],
     ]);
   }

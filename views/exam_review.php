@@ -124,6 +124,7 @@ $pageDescription = 'Szczegółowa analiza podejścia do egzaminu zakończonego w
                     <span class="status-badge status-badge--error"><i class="fas fa-times"></i> Błąd</span>
                   <?php endif; ?>
 
+                  <?= report_button_html((int) $question['question_id'], 'review') ?>
                   <?php if ($isUserLoggedIn): ?>
                     <button class="quiz-card__save-btn" data-question-id="<?= $question['question_id'] ?>"
                       title="Zapisz pytanie"

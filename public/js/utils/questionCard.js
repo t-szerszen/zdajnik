@@ -49,3 +49,18 @@ export function renderQuestionSourceHTML(source) {
 
   return `<p class="quiz-card__source"><i class="fas fa-book" aria-hidden="true"></i> Źródło: ${escapeHTML(trimmed)}</p>`;
 }
+
+/**
+ * Buduje przycisk "Zgłoś błąd" (flaga) do `.quiz-card__header-actions`.
+ * Kliknięcia obsługuje globalnie main.js (leniwie ładuje QuestionReportDialog).
+ *
+ * @param {number|string} questionId - ID pytania.
+ * @param {'one_question'|'test'|'test_results'} context - Tryb, z którego wysłano zgłoszenie.
+ * @returns {string} HTML przycisku.
+ */
+export function renderReportButtonHTML(questionId, context) {
+  return `<button type="button" class="quiz-card__report-btn" data-report-question="${escapeHTML(String(questionId))}"
+    data-report-context="${escapeHTML(context)}" title="Zgłoś błąd w pytaniu" aria-label="Zgłoś błąd w pytaniu">
+    <i class="far fa-flag" aria-hidden="true"></i>
+  </button>`;
+}

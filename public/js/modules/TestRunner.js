@@ -23,7 +23,7 @@
 
 import api from './ApiClient.js';
 import { escapeHTML } from '../utils/sanitize.js';
-import { renderQuestionBadgesHTML, renderQuestionSourceHTML } from '../utils/questionCard.js';
+import { renderQuestionBadgesHTML, renderQuestionSourceHTML, renderReportButtonHTML } from '../utils/questionCard.js';
 import ExplanationToggler from '../components/ExplanationToggler.js';
 import saveToggle from '../components/SaveToggleHandler.js';
 import Toast from '../components/Toast.js';
@@ -274,6 +274,7 @@ export class TestRunner {
               ${renderQuestionBadgesHTML(qData.question)}
             </div>
             <div class="quiz-card__header-actions">
+           ${renderReportButtonHTML(question_id, 'test')}
            ${window.zdajnikAppState.isUserLoggedIn ? `
              <button class="quiz-card__save-btn" data-question-id="${question_id}" title="Zapisz pytanie" aria-label="${qData.question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-pressed="${qData.question.is_saved ? 'true' : 'false'}">
                <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>
@@ -527,6 +528,7 @@ export class TestRunner {
                 ${renderQuestionBadgesHTML(qData.question, true)}
               </div>
               <div class="quiz-card__header-actions">
+               ${renderReportButtonHTML(question_id, 'test_results')}
                ${window.zdajnikAppState.isUserLoggedIn ? `
                  <button class="quiz-card__save-btn" data-question-id="${question_id}" title="${qData.question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-label="${qData.question.is_saved ? 'Usuń z zapisanych' : 'Zapisz pytanie'}" aria-pressed="${qData.question.is_saved ? 'true' : 'false'}">
                    <i class="${qData.question.is_saved ? 'fas' : 'far'} fa-heart"></i>

@@ -412,3 +412,21 @@ if (!function_exists('csrf_field')) {
     return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') . '">';
   }
 }
+
+if (!function_exists('report_button_html')) {
+  /**
+   * Przycisk "Zgłoś błąd" (flaga) do nagłówka karty pytania renderowanej w PHP.
+   * Odpowiednik renderReportButtonHTML() z public/js/utils/questionCard.js -
+   * kliknięcia obsługuje globalnie main.js.
+   *
+   * @param int $questionId ID pytania.
+   * @param string $context Kontekst zgłoszenia (np. 'review', 'public').
+   */
+  function report_button_html(int $questionId, string $context): string
+  {
+    return '<button type="button" class="quiz-card__report-btn" data-report-question="' . $questionId . '"'
+      . ' data-report-context="' . htmlspecialchars($context, ENT_QUOTES, 'UTF-8') . '"'
+      . ' title="Zgłoś błąd w pytaniu" aria-label="Zgłoś błąd w pytaniu">'
+      . '<i class="far fa-flag" aria-hidden="true"></i></button>';
+  }
+}

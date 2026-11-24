@@ -191,6 +191,37 @@ CREATE TABLE `exam_types` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `question_reports`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `question_reports` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `question_id` int unsigned NOT NULL,
+  `question_version_id` int unsigned DEFAULT NULL,
+  `user_id` int unsigned DEFAULT NULL,
+  `category` enum('wrong_answer','content_error','explanation','display','other') COLLATE utf8mb4_polish_ci NOT NULL,
+  `message` varchar(1000) COLLATE utf8mb4_polish_ci DEFAULT NULL,
+  `context` varchar(32) COLLATE utf8mb4_polish_ci DEFAULT NULL,
+  `status` enum('new','resolved','rejected') COLLATE utf8mb4_polish_ci NOT NULL DEFAULT 'new',
+  `resolved_by` int unsigned DEFAULT NULL,
+  `resolved_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_question_reports_status_created` (`status`,`created_at`),
+  KEY `idx_question_reports_question` (`question_id`),
+  KEY `fk_question_reports_version` (`question_version_id`),
+  KEY `fk_question_reports_user` (`user_id`),
+  KEY `fk_question_reports_resolver` (`resolved_by`),
+  CONSTRAINT `fk_question_reports_question` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_question_reports_resolver` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_question_reports_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_question_reports_version` FOREIGN KEY (`question_version_id`) REFERENCES `question_versions` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_polish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `question_versions`
 --
 
@@ -475,5 +506,6 @@ INSERT INTO `schema_migrations` (version) VALUES
   ('20260719120000'),
   ('20260719150000'),
   ('20260802220000'),
-  ('20260806120000');
+  ('20260806120000'),
+  ('20261124120000');
 UNLOCK TABLES;

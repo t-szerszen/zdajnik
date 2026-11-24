@@ -85,6 +85,7 @@ $extraSchemas = [
             </div>
             <div class="quiz-card__header-actions">
               <span class="status-badge status-badge--success"><i class="fas fa-eye"></i> Tryb przeglądu</span>
+              <?= report_button_html((int) $question['id'], 'review') ?>
               <?php if ($isUserLoggedIn): ?>
                 <button class="quiz-card__save-btn" data-question-id="<?= $question['id'] ?>" title="Zapisz pytanie"
                   aria-label="<?= $question['is_saved'] ? 'Usuń z zapisanych' : 'Zapisz pytanie' ?>">

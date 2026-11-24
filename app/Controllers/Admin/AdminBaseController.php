@@ -151,6 +151,7 @@ abstract class AdminBaseController extends BaseController
       'update_question' => 'Edycja pytania',
       'activate_question' => 'Aktywacja pytania',
       'deactivate_question' => 'Dezaktywacja pytania',
+      'update_report_status' => 'Zmiana statusu zgłoszenia błędu',
     ];
   }
 }

@@ -275,6 +275,7 @@ use App\Models\User;
 <script>
   window.zdajnikAppState = {
     isUserLoggedIn: <?= isset($_SESSION['user']) && $_SESSION['user'] instanceof User ? 'true' : 'false' ?>,
-    baseUrl: '<?= BASE_URL ?>'
+    baseUrl: '<?= BASE_URL ?>',
+    csrfToken: '<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>'
   };
 </script>

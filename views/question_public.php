@@ -139,6 +139,7 @@ $extraSchemas = [
             </div>
             <div class="quiz-card__header-actions">
               <a href="<?= url('pytania/' . $examUrlCode) ?>" class="badge badge--accent"><?= htmlspecialchars($examCode) ?></a>
+              <?= report_button_html((int) $question['question_id'], 'public') ?>
             </div>
           </div>
 

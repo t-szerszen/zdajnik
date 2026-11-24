@@ -11,6 +11,7 @@ $activeSection = $activeSection ?? 'dashboard';
 // Ukrycie linków to wyłącznie UX — dostęp egzekwują server-side guardy
 // (requireAdmin/requireContentManager) w kontrolerach.
 $navIsFullAdmin = isset($currentUser) && $currentUser !== null && $currentUser->isAdmin();
+$navNewReports = (new \App\Models\QuestionReport())->countNew();
 ?>
 
 <aside class="admin-sidebar">
@@ -37,6 +38,13 @@ $navIsFullAdmin = isset($currentUser) && $currentUser !== null && $currentUser->
     <a href="<?= url('admin/pytania') ?>" class="admin-sidebar__link <?= $activeSection === 'questions' ? 'is-active' : '' ?>">
       <i class="fas fa-circle-question"></i>
       <span>Pytania</span>
+    </a>
+    <a href="<?= url('admin/zgloszenia') ?>" class="admin-sidebar__link <?= $activeSection === 'reports' ? 'is-active' : '' ?>">
+      <i class="fas fa-flag"></i>
+      <span>Zgłoszenia</span>
+      <?php if ($navNewReports > 0): ?>
+        <span class="admin-sidebar__count" aria-label="<?= $navNewReports ?> nowych zgłoszeń"><?= $navNewReports ?></span>
+      <?php endif; ?>
     </a>
     <a href="<?= url('admin/arkusze') ?>" class="admin-sidebar__link <?= $activeSection === 'sheets' ? 'is-active' : '' ?>">
       <i class="fas fa-file-pdf"></i>

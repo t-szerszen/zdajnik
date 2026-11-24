@@ -1,0 +1,208 @@
+// ==========================================================================
+// Zgłaszanie błędów w pytaniach
+// Przycisk flagi w nagłówku karty pytania + okienko (natywny <dialog>).
+// Logika: public/js/components/QuestionReportDialog.js
+// ==========================================================================
+
+// Przycisk flagi - celowo cichszy niż serduszko zapisu, żeby nie odciągał
+// uwagi od pytania w trakcie testu.
+.quiz-card__report-btn {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted-text);
+  font-size: 0.95rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: color var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard),
+    background-color var(--duration-base) var(--ease-standard),
+    opacity var(--duration-base) var(--ease-standard);
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+    color: var(--warning);
+    border-color: var(--subtle-border);
+    background: var(--warning-bg);
+  }
+
+  &.is-reported {
+    opacity: 1;
+    color: var(--warning);
+    cursor: default;
+  }
+}
+
+.report-dialog {
+  width: min(440px, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  &[open] {
+    animation: report-dialog-in var(--duration-base, 0.2s) var(--ease-standard, ease) both;
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem 1.4rem 1.4rem;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.1rem;
+
+    i {
+      color: var(--warning);
+      margin-right: 0.25rem;
+    }
+  }
+
+  &__close {
+    margin-left: auto;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--muted-text);
+    font-size: 1.1rem;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--text);
+      background: var(--surface-subtle);
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    textarea {
+      resize: vertical;
+      min-height: 84px;
+      font-family: inherit;
+    }
+  }
+
+  &__label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+
+    small {
+      font-weight: var(--font-weight-regular);
+      color: var(--muted-text);
+    }
+  }
+
+  &__error {
+    margin: 0;
+    color: var(--error-text);
+    font-size: var(--font-size-sm);
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+  }
+}
+
+body.report-dialog-open {
+  overflow: hidden;
+}
+
+@keyframes report-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-dialog[open] {
+    animation: none;
+  }
+}
+
+// Lista zgłoszeń w panelu CMS (views/admin/reports.php) - bazuje na .admin-audit__item
+.admin-report {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  &__meta {
+    display: block;
+    margin-top: 0.2rem;
+    color: var(--muted-text);
+
+    a {
+      color: var(--accent);
+    }
+  }
+
+  &__question {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  &__message {
+    margin: 0;
+    padding: 0.65rem 0.9rem;
+    border-left: 3px solid var(--warning);
+    border-radius: var(--radius-sm);
+    background: var(--warning-bg);
+    color: var(--text);
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+
+    .admin-actions {
+      margin-left: auto;
+    }
+
+    form {
+      margin: 0;
+    }
+  }
+}

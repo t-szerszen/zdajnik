@@ -7,6 +7,7 @@ use App\Models\Answer;
 use App\Models\UserProgress;
 use App\Models\Attempt;
 use App\Models\SavedQuestion;
+use App\Models\QuestionReport;
 use App\Models\Sheet;
 use App\Models\SheetNote;
 use App\Models\UserModel;
@@ -696,6 +697,106 @@ class ApiController extends BaseController
     } else {
       $this->sendJsonResponse(['success' => false, 'message' => 'Błąd aktualizacji bazy danych.'], 500);
     }
+  }
+
+  /**
+   * Endpoint: Zgłoszenie błędu w pytaniu.
+   *
+   * Dostępny także dla gości (błąd może zauważyć każdy). Ochrona przed
+   * nadużyciami: token CSRF w nagłówku X-CSRF-Token, limit zgłoszeń na sesję
+   * oraz blokada ponownego zgłoszenia tego samego pytania (sesja / otwarte
+   * zgłoszenie zalogowanego użytkownika).
+   */
+  public function reportQuestion(): void
+  {
+    $this->ensurePostRequest();
+
+    if (!(new \App\Services\CsrfService())->validate($_SERVER['HTTP_X_CSRF_TOKEN'] ?? null)) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Sesja wygasła. Odśwież stronę i spróbuj ponownie.'], 403);
+      return;
+    }
+
+    $rawInput = file_get_contents('php://input');
+    if (!is_string($rawInput) || strlen($rawInput) > 8192) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Zgłoszenie jest zbyt długie.'], 413);
+      return;
+    }
+
+    $input = json_decode($rawInput, true);
+    if (!is_array($input)) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nieprawidłowe dane zgłoszenia.'], 400);
+      return;
+    }
+
+    $questionId = (int) ($input['question_id'] ?? 0);
+    $category = (string) ($input['category'] ?? '');
+    $message = trim((string) ($input['message'] ?? ''));
+    $context = (string) ($input['context'] ?? '');
+
+    if (!isset(QuestionReport::CATEGORIES[$category])) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Wybierz, czego dotyczy błąd.'], 400);
+      return;
+    }
+    if ($category === 'other' && $message === '') {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Opisz krótko, co jest nie tak.'], 400);
+      return;
+    }
+    if (mb_strlen($message) > QuestionReport::MESSAGE_MAX_LENGTH) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Opis może mieć maksymalnie ' . QuestionReport::MESSAGE_MAX_LENGTH . ' znaków.'], 400);
+      return;
+    }
+
+    $question = $questionId > 0 ? $this->questionModel->getQuestionById($questionId) : false;
+    if (!$question) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nie znaleziono pytania.'], 404);
+      return;
+    }
+
+    // Jedno pytanie zgłaszamy raz na sesję - chroni przed podwójnym kliknięciem i spamem.
+    $reportedInSession = is_array($_SESSION['reported_questions'] ?? null) ? $_SESSION['reported_questions'] : [];
+    $userId = $this->currentUser?->getId();
+    $reportModel = new QuestionReport();
+
+    if (in_array($questionId, $reportedInSession, true) || ($userId && $reportModel->hasOpenReport($userId, $questionId))) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'To pytanie zostało już przez Ciebie zgłoszone. Dziękujemy!'], 409);
+      return;
+    }
+
+    // Limit: 10 zgłoszeń na 10 minut w obrębie jednej sesji.
+    $windowStart = (int) ($_SESSION['report_window'] ?? 0);
+    $windowCount = (int) ($_SESSION['report_count'] ?? 0);
+    if ($windowStart === 0 || time() - $windowStart >= 600) {
+      $windowStart = time();
+      $windowCount = 0;
+    }
+    if ($windowCount >= 10) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Wysłano zbyt wiele zgłoszeń. Spróbuj ponownie za kilka minut.'], 429);
+      return;
+    }
+
+    $reportId = $reportModel->create(
+      $questionId,
+      isset($question['question_version_id']) ? (int) $question['question_version_id'] : null,
+      $userId,
+      $category,
+      $message !== '' ? $message : null,
+      isset(QuestionReport::CONTEXTS[$context]) ? $context : null
+    );
+
+    if ($reportId === null) {
+      $this->sendJsonResponse(['success' => false, 'message' => 'Nie udało się wysłać zgłoszenia. Spróbuj ponownie.'], 500);
+      return;
+    }
+
+    $_SESSION['report_window'] = $windowStart;
+    $_SESSION['report_count'] = $windowCount + 1;
+    $reportedInSession[] = $questionId;
+    $_SESSION['reported_questions'] = array_slice($reportedInSession, -200);
+
+    $this->sendJsonResponse([
+      'success' => true,
+      'message' => 'Dziękujemy! Zgłoszenie trafiło do redakcji.',
+    ]);
   }
 
   /**
