@@ -565,3 +565,20 @@
     }
   }
 }
+
+// Telefon: kafelki wyniku (punkty, czas, data) w 2 kolumnach zamiast trzech
+// pełnych wierszy; nieparzysty ostatni kafelek zajmuje całą szerokość.
+@include media-down(sm) {
+  .review-page__stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .review-page__stat-box {
+    padding: 0.85rem 0.75rem;
+
+    &:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+  }
+}

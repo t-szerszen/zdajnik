@@ -727,8 +727,10 @@ body.stats-tutorial-active {
     gap: 1.5rem;
     flex: 1;
 
+    // Telefon: zostają 2 kolumny (4 kafelki w siatce 2x2 zamiast czterech
+    // pełnych wierszy), ale z mniejszym odstępem i treścią - patrz .metric-box.
     @include media-down(sm) {
-      grid-template-columns: 1fr;
+      gap: 0.75rem;
     }
   }
 
@@ -779,6 +781,29 @@ body.stats-tutorial-active {
       opacity: 0.05;
       color: var(--accent);
       transition: all 0.4s ease;
+    }
+
+    @include media-down(sm) {
+      padding: 1rem 0.9rem;
+      border-radius: 1.1rem;
+      min-width: 0;
+
+      &__label {
+        font-size: 0.66rem;
+        letter-spacing: 0.06em;
+      }
+
+      &__value {
+        font-size: 1.3rem;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+      }
+
+      &__icon {
+        right: 0.75rem;
+        bottom: 0.75rem;
+        font-size: 1.75rem;
+      }
     }
   }
 
