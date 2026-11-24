@@ -211,15 +211,15 @@ export class NavbarHandler {
         this.nav.classList.remove('is-hidden');
       }
 
-      // Logika 'is-scrolled' (Bańka): przy przewijaniu w górę widoczna nawigacja
-      // zawsze jest bańką. Nie wiążemy tego z progiem NAV_SHOW_THRESHOLD - przy
-      // powolnym przewijaniu w górę nav pokazuje się już w strefie <= 100px
-      // (zanim uzbiera się próg) i bez bańki wracał w przezroczystym stanie
-      // "szczytu strony", rozciągnięty nad treścią.
+      // Logika 'is-scrolled' (Bańka): płaski, przezroczysty stan jest tylko na
+      // samej górze strony. Gdy strona jest choć trochę przewinięta, widoczna
+      // nawigacja zawsze jest bańką - wcześniej w strefie 20-100px (powolne
+      // przewijanie w dół albo w górę) zostawała płaska, a logo i linki wisiały
+      // bez tła nad przewijaną treścią.
       if (isAtTop) {
         this.nav.classList.remove('is-scrolled');
         this.body.classList.remove('is-scrolled');
-      } else if (this.scrollUpDistance > 0 && !this.nav.classList.contains('is-hidden')) {
+      } else if (!this.nav.classList.contains('is-hidden')) {
         this.nav.classList.add('is-scrolled');
         this.body.classList.add('is-scrolled');
       }
