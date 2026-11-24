@@ -11,8 +11,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  // Telefon: działy jako zawijane "chipy" zamiast kolumny pełnej szerokości
+  // przycisków - 3 kwalifikacje x ~10 działów dawały ~1500px samej listy.
   @include media-down(sm) {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 }
 
@@ -50,6 +54,13 @@
       background: rgba(255, 255, 255, 0.5) !important;
       filter: saturate(0.55) !important;
     }
+  }
+
+  @include media-down(sm) {
+    min-height: 2.6rem;
+    padding: 0.5rem 0.95rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.9rem;
   }
 
   html.dark & {
