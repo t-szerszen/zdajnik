@@ -18,42 +18,42 @@ return [
   'label' => 'Aktualizacja',
   'teaser' => 'Zobacz, co poprawiliśmy',
   'title' => 'Co nowego w Zdajniku',
-  'intro' => 'Poprawiliśmy rzeczy, które przeszkadzały w nauce - szczególnie na telefonie.',
+  'intro' => 'Nowe wyjaśnienia, poprawione pytania i wygodniejsza nauka na telefonie.',
   'items' => [
-    [
-      'icon' => 'fas fa-mobile-screen',
-      'title' => 'Wygodniej na telefonie',
-      'text' => 'Karta pytania, podgląd i przegląd odpowiedzi oraz kafelki wyników są dopasowane do małych ekranów. Menu jest lżejsze, a samouczki pokazują dokładnie ten element, o którym mówią.',
-    ],
-    [
-      'icon' => 'fas fa-stopwatch',
-      'title' => 'Czas i pauza zawsze pod ręką',
-      'text' => 'Podczas egzaminu na telefonie licznik czasu i przycisk pauzy są widoczne przez cały test, nie tylko na górze strony.',
-    ],
-    [
-      'icon' => 'fas fa-compass',
-      'title' => 'Spokojniejsza nawigacja',
-      'text' => 'Górny pasek nie wyskakuje już przy każdym drgnięciu palca i nie zasłania treści podczas przewijania.',
-    ],
     [
       'icon' => 'fas fa-layer-group',
       'title' => 'Wybór tematów w trybie jednego pytania',
-      'text' => 'Panel tematów działa wygodnie także na telefonie i tablecie.',
+      'text' => 'Wybierasz dokładnie te działy, które chcesz powtórzyć, w wygodnym panelu tematów - także na telefonie i tablecie.',
     ],
     [
-      'icon' => 'fas fa-bolt',
-      'title' => 'Szybszy start testu',
-      'text' => 'Pytania do egzaminu ładują się szybciej, więc od kliknięcia do pierwszego pytania mija mniej czasu.',
+      'icon' => 'fas fa-lightbulb',
+      'title' => 'Wyjaśnienia do wszystkich pytań',
+      'text' => '947 pytań dostało wyjaśnienie, którego wcześniej nie miało, a 488 istniejących przepisaliśmy na jaśniejsze. Teraz każde z 3513 pytań ma wyjaśnienie.',
     ],
     [
-      'icon' => 'fas fa-user-shield',
-      'title' => '30 dni na zmianę zdania',
-      'text' => 'Po usunięciu konta możesz je przywrócić, logując się w ciągu 30 dni. Później dane są trwale anonimizowane.',
+      'icon' => 'fas fa-code',
+      'title' => 'Kod wygląda jak kod',
+      'text' => 'W około 700 pytaniach fragmenty kodu są wyraźnie oznaczone i sformatowane, więc łatwiej je przeczytać i porównać odpowiedzi.',
+    ],
+    [
+      'icon' => 'fas fa-spell-check',
+      'title' => 'Poprawki w treści pytań',
+      'text' => 'Poprawiliśmy treść części pytań i odpowiedzi, a w 13 pytaniach - oznaczenie poprawnej odpowiedzi.',
+    ],
+    [
+      'icon' => 'fas fa-mobile-screen',
+      'title' => 'Wygodniej na telefonie',
+      'text' => 'Karta pytania, przegląd odpowiedzi i kafelki wyników są dopasowane do małych ekranów, menu jest lżejsze, a czas i pauza testu są widoczne przez cały egzamin.',
+    ],
+    [
+      'icon' => 'fas fa-wand-magic-sparkles',
+      'title' => 'Drobne usprawnienia',
+      'text' => 'Spokojniejsza nawigacja przy przewijaniu, szybszy start testu i samouczki, które pokazują dokładnie ten element, o którym mówią.',
     ],
     [
       'icon' => 'fas fa-shield-halved',
-      'title' => 'Bezpieczeństwo i stabilność',
-      'text' => 'Poprawki pod maską, dzięki którym Zdajnik działa stabilniej i bezpieczniej.',
+      'title' => 'Bezpieczeństwo',
+      'text' => 'Wprowadziliśmy poprawki bezpieczeństwa i stabilności.',
     ],
   ],
 ];
