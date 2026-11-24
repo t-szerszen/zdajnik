@@ -98,8 +98,65 @@ function initFeatureModal() {
   });
 }
 
+const UPDATE_SEEN_KEY = 'zdajnik:update-seen';
+
+// localStorage bywa zablokowany (tryb prywatny, przeglądarki blokujące
+// ciasteczka) - wtedy kropka "nowe" po prostu świeci przy każdej wizycie.
+function readSeenVersion() {
+  try {
+    return window.localStorage.getItem(UPDATE_SEEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveSeenVersion(version) {
+  try {
+    window.localStorage.setItem(UPDATE_SEEN_KEY, version);
+  } catch {
+    // brak dostępu do storage - nic nie szkodzi
+  }
+}
+
+function initUpdateAnnouncement() {
+  const trigger = document.querySelector('[data-update-open]');
+  const dialog = document.querySelector('[data-update-dialog]');
+  if (!trigger || !dialog || typeof dialog.showModal !== 'function') return;
+
+  const version = trigger.dataset.updateVersion || '';
+  if (version && readSeenVersion() === version) {
+    trigger.classList.add('is-seen');
+  }
+
+  const close = () => {
+    if (dialog.open) dialog.close();
+  };
+
+  trigger.addEventListener('click', () => {
+    dialog.showModal();
+    document.body.classList.add('has-open-modal');
+    trigger.classList.add('is-seen');
+    if (version) saveSeenVersion(version);
+  });
+
+  dialog.querySelectorAll('[data-update-close]').forEach((button) => {
+    button.addEventListener('click', close);
+  });
+
+  // Kliknięcie w przyciemnione tło (poza panelem) zamyka okno.
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) close();
+  });
+
+  dialog.addEventListener('close', () => {
+    document.body.classList.remove('has-open-modal');
+    trigger.focus();
+  });
+}
+
 export function initHomePage() {
   initRotatingWord();
   initSearchMockupPulse();
   initFeatureModal();
+  initUpdateAnnouncement();
 }

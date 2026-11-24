@@ -149,6 +149,19 @@ $extraSchemas = [
     <section class="hero-section">
       <div class="hero-section__grid">
         <div class="hero-section__content">
+          <?php $updateAnnouncement = include 'partials/data/update_announcement.php'; ?>
+          <?php if (!empty($updateAnnouncement)): ?>
+            <button type="button" class="hero-section__update" data-update-open
+              data-update-version="<?= htmlspecialchars($updateAnnouncement['version']) ?>"
+              aria-haspopup="dialog" aria-controls="update-dialog">
+              <span class="hero-section__update-label">
+                <span class="hero-section__update-dot" aria-hidden="true"></span>
+                <?= htmlspecialchars($updateAnnouncement['label']) ?>
+              </span>
+              <span class="hero-section__update-text"><?= htmlspecialchars($updateAnnouncement['teaser']) ?></span>
+              <i class="fas fa-arrow-right hero-section__update-arrow" aria-hidden="true"></i>
+            </button>
+          <?php endif; ?>
           <p class="hero-section__lockup">
             <span class="hero-section__lockup-badge">Zdajnik</span>
             <span class="hero-section__lockup-text">Od ucznia dla uczniów ;)</span>
@@ -378,6 +391,38 @@ $extraSchemas = [
         <?php endforeach; ?>
       </div>
     </section>
+    <?php if (!empty($updateAnnouncement)): ?>
+      <dialog class="update-dialog" id="update-dialog" aria-labelledby="update-dialog-title" data-update-dialog>
+        <div class="update-dialog__panel">
+          <header class="update-dialog__header">
+            <span class="update-dialog__eyebrow">
+              <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>
+              <?= htmlspecialchars($updateAnnouncement['label']) ?> &middot;
+              <time datetime="<?= htmlspecialchars($updateAnnouncement['version']) ?>"><?= htmlspecialchars(date('d.m.Y', strtotime($updateAnnouncement['version']))) ?></time>
+            </span>
+            <h2 class="update-dialog__title" id="update-dialog-title"><?= htmlspecialchars($updateAnnouncement['title']) ?></h2>
+            <p class="update-dialog__intro"><?= htmlspecialchars($updateAnnouncement['intro']) ?></p>
+            <button type="button" class="update-dialog__close" data-update-close aria-label="Zamknij">
+              <i class="fas fa-xmark" aria-hidden="true"></i>
+            </button>
+          </header>
+          <ul class="update-dialog__list">
+            <?php foreach ($updateAnnouncement['items'] as $item): ?>
+              <li class="update-dialog__item">
+                <span class="update-dialog__icon" aria-hidden="true"><i class="<?= htmlspecialchars($item['icon']) ?>"></i></span>
+                <div>
+                  <h3 class="update-dialog__item-title"><?= htmlspecialchars($item['title']) ?></h3>
+                  <p class="update-dialog__item-text"><?= htmlspecialchars($item['text']) ?></p>
+                </div>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+          <footer class="update-dialog__footer">
+            <button type="button" class="btn btn--primary" data-update-close>Super, wracam do nauki</button>
+          </footer>
+        </div>
+      </dialog>
+    <?php endif; ?>
   </main>
 
   <!-- Dołączenie reużywalnego komponentu stopki -->
