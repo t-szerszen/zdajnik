@@ -18,6 +18,12 @@
     padding: 2rem 1.25rem 1.5rem 1.25rem;
   }
 
+  // Telefon: karta i tak jest już w kontenerze z marginesem 1rem - mniejszy
+  // wewnętrzny padding zostawia więcej miejsca na treść odpowiedzi.
+  @media (max-width: 576px) {
+    padding: 1.35rem 1rem 1.25rem;
+  }
+
   &__header {
     display: flex;
     justify-content: space-between;
@@ -233,15 +239,19 @@
       transition: all 0.2s ease;
     }
 
-    &:hover {
-      border-color: var(--accent);
-      background: var(--field-bg);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.1);
+    // Tylko dla myszy: na dotyku :hover zostaje "przyklejony" do ostatnio
+    // tapniętej odpowiedzi (uniesiona, z ramką), co myli po sprawdzeniu.
+    @media (hover: hover) {
+      &:hover {
+        border-color: var(--accent);
+        background: var(--field-bg);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.1);
 
-      .quiz-card__answer-prefix {
-        color: var(--accent);
-        background: rgba(var(--accent-rgb), 0.1);
+        .quiz-card__answer-prefix {
+          color: var(--accent);
+          background: rgba(var(--accent-rgb), 0.1);
+        }
       }
     }
 
@@ -264,6 +274,31 @@
         background:
           linear-gradient(135deg, rgba(var(--accent-rgb), 0.18), rgba(18, 26, 24, 0.92)),
           var(--surface);
+      }
+    }
+
+    // Miejsce na ikonę ✓/✗ (::after, position: absolute) - bez tego na wąskim
+    // ekranie ikona nachodziła na ostatnie słowa dłuższej odpowiedzi.
+    &--correct,
+    &--incorrect {
+      padding-right: 2.75rem;
+    }
+
+    @media (max-width: 576px) {
+      padding: 0.7rem 0.85rem;
+
+      &--correct,
+      &--incorrect {
+        padding-right: 2.5rem;
+      }
+
+      &-prefix {
+        margin-right: 0.75rem;
+      }
+
+      &--correct::after,
+      &--incorrect::after {
+        right: 0.75rem;
       }
     }
 

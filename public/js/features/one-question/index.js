@@ -156,6 +156,7 @@ export class SingleQuestionPage {
 
           // Aktualizacja paska postępu
           this.updateProgressBar(data.pool_progress);
+          this.revealQuestionOnNarrowScreen();
         }
       } else {
         if (result.status === 'gatekeeper') {
@@ -290,6 +291,34 @@ export class SingleQuestionPage {
     if (this.progressCounts) this.progressCounts.textContent = `${answered} / ${total}`;
     if (this.progressPercent) this.progressPercent.textContent = `${percent}%`;
     if (this.progressFill) this.progressFill.style.width = `${percent}%`;
+  }
+
+  /**
+   * Na tablecie/telefonie (układ jednokolumnowy, panel tematów NAD pytaniem)
+   * przewija do nowego pytania. Bez tego po "Rozpocznij naukę" pytanie
+   * ładowało się poza ekranem, a po "Następne pytanie" użytkownik zostawał
+   * na dole poprzedniego wyjaśnienia.
+   * @private
+   */
+  revealQuestionOnNarrowScreen() {
+    if (!window.matchMedia('(max-width: 992px)').matches) return;
+
+    const progressVisible = this.progressBar && !this.progressBar.classList.contains('hidden');
+    const anchor = progressVisible ? this.progressBar : this.quizContainer;
+    const rect = anchor.getBoundingClientRect();
+    const isScrollingUp = rect.top < 0;
+    // Navbar chowa się przy przewijaniu w dół i wraca przy przewijaniu w górę -
+    // miejsce na niego rezerwujemy tylko w tym drugim przypadku.
+    const navOffset = isScrollingUp ? (document.querySelector('.main-nav')?.offsetHeight || 0) : 0;
+
+    // Początek pytania jest już w górnej części ekranu - nie ruszamy widoku.
+    if (!isScrollingUp && rect.top < window.innerHeight * 0.4) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({
+      top: Math.max(0, window.scrollY + rect.top - navOffset - 12),
+      behavior: reduceMotion ? 'auto' : 'smooth',
+    });
   }
 
   /**

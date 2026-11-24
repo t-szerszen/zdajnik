@@ -1,3 +1,5 @@
+import { scrollToTutorialTarget, SpotlightTracker, onViewportWidthChange } from '../utils/tutorialSpotlight.js';
+
 export class PremiumOptionsTutorial {
   constructor(config = {}) {
     this.mode = config.mode || 'one-question';
@@ -12,6 +14,7 @@ export class PremiumOptionsTutorial {
     this.guestPreview = config.guestPreview === true;
     this.autoStart = config.autoStart !== false;
     this.elements = this.createUI();
+    this.spotlightTracker = new SpotlightTracker(this.elements.spotlight, 8);
     this.steps = this.buildSteps();
     this.pendingAutoStart = true;
 
@@ -112,7 +115,7 @@ export class PremiumOptionsTutorial {
 
     this.form.addEventListener('premiumoptions:statechange', () => this.updateTriggerState());
     this.observeRootVisibility();
-    window.addEventListener('resize', () => {
+    onViewportWidthChange(() => {
       if (this.isOpen) this.renderStep();
     });
   }
@@ -177,6 +180,7 @@ export class PremiumOptionsTutorial {
     this.elements.spotlight.classList.add('hidden');
     this.elements.panel.classList.add('hidden');
     this.clearHighlights();
+    this.spotlightTracker.stop();
     window.localStorage.setItem(this.storageKey, '1');
   }
 
@@ -202,7 +206,6 @@ export class PremiumOptionsTutorial {
 
     this.clearHighlights();
     step.target.classList.add('premium-tutorial-target');
-    step.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     this.elements.counter.textContent = `Krok ${this.currentStep + 1} z ${this.steps.length}`;
     this.elements.title.textContent = step.title;
@@ -210,12 +213,9 @@ export class PremiumOptionsTutorial {
     this.elements.prevBtn.disabled = this.currentStep === 0;
     this.elements.nextBtn.textContent = this.currentStep === this.steps.length - 1 ? 'Zakończ' : 'Dalej';
 
-    const rect = step.target.getBoundingClientRect();
-    const padding = 8;
-    this.elements.spotlight.style.top = `${rect.top - padding + window.scrollY}px`;
-    this.elements.spotlight.style.left = `${rect.left - padding + window.scrollX}px`;
-    this.elements.spotlight.style.width = `${rect.width + padding * 2}px`;
-    this.elements.spotlight.style.height = `${rect.height + padding * 2}px`;
+    // Treść panelu jest już wpisana, więc znana jest jego wysokość.
+    scrollToTutorialTarget(step.target, this.elements.panel);
+    this.spotlightTracker.follow(step.target);
   }
 
   clearHighlights() {

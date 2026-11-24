@@ -61,14 +61,40 @@
 }
 
 // Media query dla mniejszych ekranów
+// Tablet i telefon: jedna kolumna - panel tematów nad pytaniem.
+// Uwaga: w kolumnowym flexie `flex-basis` (350px / 600px) dotyczy WYSOKOŚCI,
+// a `align-self: flex-start` zwężał sidebar do szerokości treści - stąd wcześniej
+// wąski panel z własnym, ucinającym scrollem. Wyłączamy oba.
 @include media-down(lg) {
   .quiz-page-layout {
     flex-direction: column;
+    gap: 1.25rem;
+    margin: 1.25rem auto 2rem;
+
+    &__sidebar,
+    &__main-content {
+      flex: none;
+      width: 100%;
+      min-width: 0;
+    }
 
     &__sidebar {
       position: static; // Wyłączamy przyklejenie
+      align-self: stretch;
       max-height: none;
+      overflow: visible;
     }
+  }
+
+  .quiz-placeholder {
+    min-height: 200px;
+    margin: 0;
+    padding: 1.5rem 1rem;
+    font-size: 1rem;
+  }
+
+  .quiz-container--spaced {
+    margin-top: 0;
   }
 }
 
@@ -133,13 +159,12 @@ body.oneq-tutorial-active {
   }
 
   &__spotlight {
-    position: absolute;
+    @include tutorial-spotlight-position;
     border: 2px solid rgba(var(--accent-rgb), 0.95);
     border-radius: 1.2rem;
     box-shadow: 0 0 0 9999px rgba(10, 12, 18, 0.5), 0 0 0 8px rgba(var(--accent-rgb), 0.12);
     pointer-events: none;
     z-index: var(--z-tutorial-spotlight);
-    transition: all 0.25s ease;
   }
 
   &__panel {
@@ -153,6 +178,8 @@ body.oneq-tutorial-active {
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
     padding: 1rem;
     z-index: var(--z-tutorial-panel);
+
+    @include tutorial-panel-mobile;
   }
 
   &__panel-head {

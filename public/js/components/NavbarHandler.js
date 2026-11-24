@@ -10,6 +10,10 @@ const NAV_SHOW_THRESHOLD = 80;
 /** Ile px w dół chowa nawigację - mały zapas tłumi drgania przy przewijaniu. */
 const NAV_HIDE_THRESHOLD = 10;
 
+// Ten sam próg co `media-down(1400px)` w _nav.scss - do tej szerokości
+// włącznie linki są w drawerze (hamburger), powyżej w poziomym pasku.
+const DRAWER_MEDIA_QUERY = '(max-width: 1400px)';
+
 export class NavbarHandler {
   constructor() {
     this.toggleBtn = document.querySelector('[data-toggle-nav]');
@@ -21,6 +25,7 @@ export class NavbarHandler {
     this.lastNavHeight = null;
     this.scrollTicking = false;
     this.resizeTicking = false;
+    this.drawerMedia = window.matchMedia(DRAWER_MEDIA_QUERY);
 
     // .page-header (jeśli jest na stronie) podciąga się pod to, co jest nad nim,
     // zmienną CSS --dynamic-nav-height - ani navbar (np. profil zalogowanego
@@ -41,6 +46,27 @@ export class NavbarHandler {
     }
 
     window.addEventListener('resize', () => this.handleResize(), { passive: true });
+
+    // Przejście między drawerem a desktopowym paskiem (obrót tabletu, zmiana
+    // rozmiaru okna, zamknięcie DevTools w trybie urządzenia) - stan jednego
+    // układu nie może przeciec do drugiego. Wcześniej rozwinięty w drawerze
+    // akordeon (np. Teoria > INF.03) po powrocie na desktop zostawał otwarty
+    // jako dwa wiszące flyouty, bo `.dropdown.is-open` pokazuje menu w obu
+    // układach.
+    this.drawerMedia.addEventListener('change', () => {
+      if (this.drawer) this.closeMenu();
+      this.collapseDropdowns();
+    });
+  }
+
+  isDrawerLayout() {
+    return this.drawerMedia.matches;
+  }
+
+  collapseDropdowns() {
+    document.querySelectorAll('.main-nav .dropdown.is-open').forEach((dropdown) => {
+      dropdown.classList.remove('is-open');
+    });
   }
 
   handleResize() {
@@ -50,10 +76,6 @@ export class NavbarHandler {
     requestAnimationFrame(() => {
       if (this.nav) {
         this.syncNavHeight();
-      }
-
-      if (this.drawer && window.innerWidth > 992 && this.drawer.classList.contains('is-active')) {
-        this.closeMenu();
       }
 
       this.resizeTicking = false;
@@ -92,10 +114,12 @@ export class NavbarHandler {
       const trigger = dropdown.querySelector(':scope > .main-nav__link, :scope > .dropdown__link');
       if (trigger) {
         trigger.addEventListener('click', (e) => {
-          // Jeśli szerokość ekranu jest <= 992px (Mobile menu)
+          // Jeśli linki są w drawerze (hamburger, <= 1400px - wcześniej
+          // sprawdzane było <= 992px, przez co w drawerze na 993-1400px
+          // kliknięcie "Teoria" przechodziło pod link zamiast rozwijać menu)
           // LUB jeśli urządzenie wspiera touch (np. iPad w trybie desktopowym)
           const isTouchCapability = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-          const isMobileMenu = window.innerWidth <= 992;
+          const isMobileMenu = this.isDrawerLayout();
 
           if (isMobileMenu || isTouchCapability) {
             // Zapobiegaj przejściu, dopóki dropdown nie jest otwarty
@@ -214,6 +238,8 @@ export class NavbarHandler {
       this.body.style.overflow = 'hidden'; // Blokada przewijania tła
     } else {
       this.body.style.overflow = '';
+      // Po ponownym otwarciu drawer startuje ze zwiniętym akordeonem.
+      this.collapseDropdowns();
     }
   }
 
@@ -225,6 +251,7 @@ export class NavbarHandler {
       this.overlay.classList.remove('is-active');
     }
     this.body.style.overflow = '';
+    this.collapseDropdowns();
   }
 }
 

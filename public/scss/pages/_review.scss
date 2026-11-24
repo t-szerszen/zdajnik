@@ -518,3 +518,67 @@
   }
 
 }
+
+// Telefon: karta ma już własny padding, więc dodatkowe poziome wcięcia treści
+// i odpowiedzi (1.5rem z każdej strony) zjadały ~1/4 szerokości ekranu.
+// Nagłówek zostaje w jednym zawijanym wierszu (ID, temat, trudność | kwalifikacja)
+// zamiast wyśrodkowanej kolumny z kwalifikacją osobno pod spodem.
+@include media-down(sm) {
+  .review-page .quiz-card {
+    &__header {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    &__header-left {
+      gap: 0.5rem;
+    }
+
+    &__header-actions {
+      width: auto;
+      margin-left: auto;
+    }
+
+    &__content {
+      padding: 1rem 0;
+    }
+
+    &__answers {
+      padding: 0 0 1rem;
+    }
+
+    &__answer {
+      padding: 0.6rem 0.8rem;
+
+      &--correct,
+      &--incorrect,
+      &--skipped {
+        padding-right: 2.6rem;
+
+        &::after {
+          right: 0.8rem;
+          font-size: 1.25rem;
+        }
+      }
+    }
+  }
+}
+
+// Telefon: kafelki wyniku (punkty, czas, data) w 2 kolumnach zamiast trzech
+// pełnych wierszy; nieparzysty ostatni kafelek zajmuje całą szerokość.
+@include media-down(sm) {
+  .review-page__stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .review-page__stat-box {
+    padding: 0.85rem 0.75rem;
+
+    &:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+  }
+}

@@ -254,13 +254,12 @@ body.stats-tutorial-active {
   }
 
   &__spotlight {
-    position: absolute;
+    @include tutorial-spotlight-position;
     border: 2px solid rgba(var(--accent-rgb), 0.95);
     border-radius: 1.2rem;
     box-shadow: 0 0 0 9999px rgba(10, 12, 18, 0.5), 0 0 0 8px rgba(var(--accent-rgb), 0.12);
     pointer-events: none;
     z-index: var(--z-tutorial-spotlight);
-    transition: all 0.25s ease;
   }
 
   &__panel {
@@ -274,6 +273,8 @@ body.stats-tutorial-active {
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
     padding: 1rem;
     z-index: var(--z-tutorial-panel);
+
+    @include tutorial-panel-mobile;
   }
 
   &__panel-head {
@@ -726,8 +727,10 @@ body.stats-tutorial-active {
     gap: 1.5rem;
     flex: 1;
 
+    // Telefon: zostają 2 kolumny (4 kafelki w siatce 2x2 zamiast czterech
+    // pełnych wierszy), ale z mniejszym odstępem i treścią - patrz .metric-box.
     @include media-down(sm) {
-      grid-template-columns: 1fr;
+      gap: 0.75rem;
     }
   }
 
@@ -778,6 +781,29 @@ body.stats-tutorial-active {
       opacity: 0.05;
       color: var(--accent);
       transition: all 0.4s ease;
+    }
+
+    @include media-down(sm) {
+      padding: 1rem 0.9rem;
+      border-radius: 1.1rem;
+      min-width: 0;
+
+      &__label {
+        font-size: 0.66rem;
+        letter-spacing: 0.06em;
+      }
+
+      &__value {
+        font-size: 1.3rem;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+      }
+
+      &__icon {
+        right: 0.75rem;
+        bottom: 0.75rem;
+        font-size: 1.75rem;
+      }
     }
   }
 
