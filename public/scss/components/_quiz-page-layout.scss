@@ -133,13 +133,12 @@ body.oneq-tutorial-active {
   }
 
   &__spotlight {
-    position: absolute;
+    @include tutorial-spotlight-position;
     border: 2px solid rgba(var(--accent-rgb), 0.95);
     border-radius: 1.2rem;
     box-shadow: 0 0 0 9999px rgba(10, 12, 18, 0.5), 0 0 0 8px rgba(var(--accent-rgb), 0.12);
     pointer-events: none;
     z-index: var(--z-tutorial-spotlight);
-    transition: all 0.25s ease;
   }
 
   &__panel {
@@ -153,6 +152,8 @@ body.oneq-tutorial-active {
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
     padding: 1rem;
     z-index: var(--z-tutorial-panel);
+
+    @include tutorial-panel-mobile;
   }
 
   &__panel-head {

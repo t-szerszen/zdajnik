@@ -137,3 +137,27 @@
   color: transparent;
   display: inline-block; // Zapewnia poprawne działanie na niektórych elementach
 }
+
+// Ramka podświetlenia samouczków. `position: fixed`, bo jej pozycję co klatkę
+// ustawia SpotlightTracker (public/js/utils/tutorialSpotlight.js) ze współrzędnych
+// okna - bez przejść na top/left, inaczej ramka "goni" element przy przewijaniu.
+@mixin tutorial-spotlight-position {
+  position: fixed;
+  transition: border-radius 0.25s ease;
+}
+
+// Panel samouczka: na telefonie dolny arkusz na całą szerokość (z miejscem na
+// pasek Safari/home indicator), z własnym przewijaniem przy długich opisach.
+@mixin tutorial-panel-mobile {
+  @include media-down(md) {
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-height: 48vh;
+    max-height: 48dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.9rem 1rem 1rem;
+  }
+}

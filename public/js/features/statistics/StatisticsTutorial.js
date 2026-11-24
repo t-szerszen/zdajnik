@@ -1,3 +1,5 @@
+import { scrollToTutorialTarget, SpotlightTracker, onViewportWidthChange } from '../../utils/tutorialSpotlight.js';
+
 export class StatisticsTutorial {
   constructor() {
     this.root = document.querySelector('[data-stats-tutorial-root]');
@@ -6,6 +8,7 @@ export class StatisticsTutorial {
     this.currentStep = 0;
     this.isOpen = false;
     this.elements = this.createTutorialElements();
+    this.spotlightTracker = new SpotlightTracker(this.elements.spotlight, 10);
     this.steps = this.buildSteps();
 
     if (!this.root || !this.restartButton || this.steps.length === 0) {
@@ -125,7 +128,7 @@ export class StatisticsTutorial {
       if (event.key === 'ArrowLeft') this.prevStep();
     });
 
-    window.addEventListener('resize', () => {
+    onViewportWidthChange(() => {
       if (this.isOpen) this.renderStep();
     });
   }
@@ -161,6 +164,7 @@ export class StatisticsTutorial {
     this.elements.panel.classList.add('hidden');
     document.body.classList.remove('stats-tutorial-active');
     this.clearHighlights();
+    this.spotlightTracker.stop();
     window.localStorage.setItem(this.storageKey, '1');
   }
 
@@ -192,7 +196,6 @@ export class StatisticsTutorial {
 
     this.clearHighlights();
     target.classList.add('stats-tutorial-target');
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     this.elements.counter.textContent = `Krok ${this.currentStep + 1} z ${this.steps.length}`;
     this.elements.title.textContent = step.title;
@@ -200,7 +203,9 @@ export class StatisticsTutorial {
     this.elements.prevBtn.disabled = this.currentStep === 0;
     this.elements.nextBtn.textContent = this.currentStep === this.steps.length - 1 ? 'Zakończ' : 'Dalej';
 
-    this.positionSpotlight(target);
+    // Treść panelu jest już wpisana, więc znana jest jego wysokość.
+    scrollToTutorialTarget(target, this.elements.panel);
+    this.spotlightTracker.follow(target);
   }
 
   clearHighlights() {
@@ -208,15 +213,6 @@ export class StatisticsTutorial {
     highlighted.forEach((item) => item.classList.remove('stats-tutorial-target'));
   }
 
-  positionSpotlight(target) {
-    const rect = target.getBoundingClientRect();
-    const padding = 10;
-
-    this.elements.spotlight.style.top = `${rect.top - padding + window.scrollY}px`;
-    this.elements.spotlight.style.left = `${rect.left - padding + window.scrollX}px`;
-    this.elements.spotlight.style.width = `${rect.width + padding * 2}px`;
-    this.elements.spotlight.style.height = `${rect.height + padding * 2}px`;
-  }
 }
 
 export function initStatisticsTutorial() {
