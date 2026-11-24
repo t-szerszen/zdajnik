@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Models\UserModel;
 use App\Services\AuthService;
+use App\Services\CsrfService;
+use App\Services\ThrottleService;
 use App\Services\TokenService;
 use App\Services\Mailer;
 
@@ -74,8 +76,30 @@ class RegisterController extends BaseController
    */
   public function processRegistration(): void
   {
-    // KROK 1: Próba rejestracji przez serwis AuthService
     $formData = $_POST;
+
+    // KROK 0: CSRF i limit rejestracji z jednego IP (10 na godzinę) - chroni
+    // przed masowym zakładaniem kont i wysyłką maili weryfikacyjnych.
+    if (!(new CsrfService())->validate($formData['csrf_token'] ?? null)) {
+      $this->renderView('register', [
+        'errors' => ['Sesja formularza wygasła. Odśwież stronę i spróbuj ponownie.'],
+        'formData' => $formData,
+      ]);
+      return;
+    }
+
+    $throttle = new ThrottleService();
+    $ip = ThrottleService::clientIp();
+    if ($throttle->tooManyAttempts('register_ip', $ip, 10, 3600)) {
+      $this->renderView('register', [
+        'errors' => ['Zbyt wiele prób rejestracji z tej sieci. Spróbuj ponownie za godzinę.'],
+        'formData' => $formData,
+      ]);
+      return;
+    }
+    $throttle->hit('register_ip', $ip, 3600);
+
+    // KROK 1: Próba rejestracji przez serwis AuthService
     $result = $this->auth->register($formData);
 
     // KROK 2: Obsługa sukcesu operacji

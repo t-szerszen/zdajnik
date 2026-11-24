@@ -28,6 +28,7 @@ $noIndex = true;
   <?php include 'partials/navbar.php'; ?>
   <main>
     <form method="POST" action="<?= url('reset-hasla') ?>" class="form-card">
+      <?= csrf_field() ?>
       <div class="form-card__header">
         <h1 class="form-card__title">Zapomniałeś hasła?</h1>
         <p class="form-card__subtitle">Podaj swój adres e-mail, a wyślemy Ci link do zresetowania hasła.</p>

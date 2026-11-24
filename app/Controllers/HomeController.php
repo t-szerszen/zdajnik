@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Services\CsrfService;
+use App\Services\ThrottleService;
 use App\Services\DynamicDataService;
 use App\Services\Mailer;
 
@@ -112,6 +113,14 @@ class HomeController extends BaseController
     if (!$this->csrfService->validate($_POST['csrf_token'] ?? null)) {
       $this->redirectContact('error', ['Sesja formularza wygasła. Odśwież stronę i spróbuj ponownie.'], $formData);
     }
+
+    // Limit wiadomości z jednego IP (5 na godzinę) - ochrona skrzynki przed spamem.
+    $throttle = new ThrottleService();
+    $ip = ThrottleService::clientIp();
+    if ($throttle->tooManyAttempts('contact_ip', $ip, 5, 3600)) {
+      $this->redirectContact('error', ['Wysłano już kilka wiadomości. Spróbuj ponownie za godzinę.'], $formData);
+    }
+    $throttle->hit('contact_ip', $ip, 3600);
     
     // Walidacja Cloudflare Turnstile (jeśli skonfigurowane w .env)
     if (!empty($_ENV['TURNSTILE_SECRET_KEY'])) {
