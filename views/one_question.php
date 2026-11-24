@@ -200,18 +200,6 @@ $extraScripts = [
   <!-- Dołączenie reużywalnego komponentu stopki -->
   <?php include 'partials/footer.php'; ?>
 
-  <!-- Skrypty JS ładowane jako moduły na końcu strony -->
-  <!-- Skrypt pomocniczy, dodający funkcjonalności do formularza (np. "zaznacz wszystko") -->
-  <!-- Ścieżki celowo względne, nie przez url()/BASE_URL - patrz komentarz w footer.php:
-       moduły ES ładowane cross-origin (BASE_URL != host, z którego serwowana jest strona)
-       są blokowane przez przeglądarkę (CORS), przez co cały JS na stronie przestaje działać. -->
-  <script type="module" src="/js/components/TopicFormEnhancer.js"></script>
-  <script>
-    window.examlyPremiumTutorialConfig = { mode: 'one-question' };
-  </script>
-  <script type="module" src="/js/components/PremiumOptionsTutorial.js"></script>
-  <!-- Główny skrypt aplikacji dla tego widoku, obsługujący logikę pobierania i wyświetlania pytań -->
-  <script type="module" src="/js/features/one-question/index.js"></script>
 </body>
 
 </html>
