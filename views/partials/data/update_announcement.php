@@ -18,7 +18,7 @@ return [
   'label' => 'Aktualizacja',
   'teaser' => 'Zobacz, co poprawiliśmy',
   'title' => 'Co nowego w Zdajniku',
-  'intro' => 'Nowe wyjaśnienia, poprawione pytania i wygodniejsza nauka na telefonie.',
+  'intro' => 'Nowe wyjaśnienia, formatowanie kodu, poprawione pytania i wygodniejsza nauka na telefonie.',
   'items' => [
     [
       'icon' => 'fas fa-layer-group',
@@ -32,13 +32,18 @@ return [
     ],
     [
       'icon' => 'fas fa-code',
-      'title' => 'Kod wygląda jak kod',
-      'text' => 'W około 700 pytaniach fragmenty kodu są wyraźnie oznaczone i sformatowane, więc łatwiej je przeczytać i porównać odpowiedzi.',
+      'title' => 'Pytania z kodem mają formatowanie',
+      'text' => 'W około 700 pytaniach kod jest wyraźnie oznaczony i sformatowany - jak w edytorze - więc łatwiej go przeczytać i porównać odpowiedzi.',
     ],
     [
       'icon' => 'fas fa-spell-check',
       'title' => 'Poprawki w treści pytań',
       'text' => 'Poprawiliśmy treść części pytań i odpowiedzi, a w 13 pytaniach - oznaczenie poprawnej odpowiedzi.',
+    ],
+    [
+      'icon' => 'fas fa-flag',
+      'title' => 'Zgłoś błąd w pytaniu',
+      'text' => 'Widzisz błąd w pytaniu albo wyjaśnieniu? Kliknij flagę na karcie pytania i opisz problem - zgłoszenie trafi prosto do nas.',
     ],
     [
       'icon' => 'fas fa-mobile-screen',
