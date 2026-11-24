@@ -345,6 +345,56 @@ body.test-page .stats-page__decorations {
   }
 }
 
+// Telefon: nagłówek testu zadokowany u dołu ekranu po przewinięciu za niego
+// (TestRunner.updateMobileHeaderDock). Na szerszych ekranach tę rolę pełni
+// mini-timer w navbarze, który < 768px jest ukryty - bez tego na telefonie
+// przy 40 pytaniach czas i pauza znikały z widoku na cały test.
+@keyframes test-header-dock-in {
+  from {
+    opacity: 0;
+    transform: translateY(120%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.test-header-docked {
+    padding-bottom: 5.5rem;
+
+    .test-header {
+      position: fixed;
+      top: auto;
+      left: 0.75rem;
+      right: 0.75rem;
+      bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+      gap: 0.75rem;
+      margin: 0;
+      padding: 0.55rem 0.6rem 0.55rem 0.95rem;
+      border-color: rgba(var(--accent-rgb), 0.28);
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+      animation: test-header-dock-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .test-header__title {
+      font-size: 0.85rem;
+    }
+
+    .timer {
+      padding: 0.35rem 0.8rem;
+      font-size: 1rem;
+    }
+
+    .test-header__pause-btn {
+      width: 38px;
+      height: 38px;
+    }
+  }
+}
+
 .test-pause-overlay {
   position: fixed;
   top: 0;

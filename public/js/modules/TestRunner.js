@@ -136,11 +136,21 @@ export class TestRunner {
   handleSyncScroll() {
     const currentScrollY = window.scrollY;
 
-    if (!this.testHeader || window.innerWidth < 768) {
-      document.body.classList.remove('test-scrolled-past-header');
+    if (!this.testHeader) {
       this.lastScrollY = currentScrollY;
       return;
     }
+
+    // Telefon: nie ma miejsca na mini-timer w navbarze (ukryty < 768px), więc
+    // po przewinięciu za nagłówek dokujemy go jako pasek u dołu ekranu.
+    if (window.innerWidth < 768) {
+      document.body.classList.remove('test-scrolled-past-header');
+      this.updateMobileHeaderDock();
+      this.lastScrollY = currentScrollY;
+      return;
+    }
+
+    this.setMobileHeaderDocked(false);
 
     const headerBottom = this.testHeader.offsetTop + this.testHeader.offsetHeight;
     const isScrollingUp = currentScrollY < this.lastScrollY;
@@ -156,6 +166,41 @@ export class TestRunner {
     }
 
     this.lastScrollY = currentScrollY;
+  }
+
+  /**
+   * Dokuje nagłówek testu (czas, postęp, pauza) u dołu ekranu, gdy jego
+   * miejsce w treści zniknie z widoku. Pozycję sprawdzamy na placeholderze,
+   * który trzyma miejsce nagłówka - inaczej treść podskakiwałaby o jego wysokość.
+   * @private
+   */
+  updateMobileHeaderDock() {
+    const anchor = this.isHeaderDocked && this.headerPlaceholder ? this.headerPlaceholder : this.testHeader;
+    this.setMobileHeaderDocked(anchor.getBoundingClientRect().bottom < 0);
+  }
+
+  /**
+   * @private
+   * @param {boolean} docked
+   */
+  setMobileHeaderDocked(docked) {
+    if (!this.testHeader || docked === Boolean(this.isHeaderDocked)) return;
+
+    if (docked) {
+      if (!this.headerPlaceholder) {
+        this.headerPlaceholder = document.createElement('div');
+        this.headerPlaceholder.className = 'test-header-placeholder';
+        this.headerPlaceholder.setAttribute('aria-hidden', 'true');
+      }
+      this.headerPlaceholder.style.height = `${this.testHeader.offsetHeight}px`;
+      this.headerPlaceholder.style.marginBottom = window.getComputedStyle(this.testHeader).marginBottom;
+      this.testHeader.before(this.headerPlaceholder);
+    } else {
+      this.headerPlaceholder?.remove();
+    }
+
+    this.isHeaderDocked = docked;
+    document.body.classList.toggle('test-header-docked', docked);
   }
 
   /**
@@ -262,6 +307,7 @@ export class TestRunner {
     window.removeEventListener('pagehide', this.handlePageHide);
     window.removeEventListener('scroll', this.handleSyncScroll);
     document.body.classList.remove('test-scrolled-past-header');
+    this.setMobileHeaderDocked(false);
 
     let correctAnswersCount = 0;
     const topicIdsInTest = new Set();
