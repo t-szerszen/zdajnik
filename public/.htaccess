@@ -24,9 +24,10 @@
 # 2. Cache statyki (mod_expires)
 # =============================================================================
 # Roczny cache jest bezpieczny, bo adresy zasobów są wersjonowane znacznikiem
-# filemtime(): main.css?v=... (head.php) oraz main.js?v=... (footer.php), a
-# main.js przepisuje swój parametr ?v= na wszystkie dynamiczne importy modułów
-# (modulePath() w main.js). Zmiana pliku = zmiana adresu = ominięcie cache'a.
+# filemtime(): main.css?v=... (head.php), main.js?v=... (footer.php), a każdy
+# moduł z public/js/ - również importowany statycznie wewnątrz innych modułów -
+# trafia pod własny ?v=mtime przez import mapę (js_import_map_json() w head.php).
+# Zmiana pliku = zmiana adresu = ominięcie cache'a.
 #
 # HTML celowo NIE jest tu wymieniony (brak ExpiresDefault) - strony są dynamiczne.
 <IfModule mod_expires.c>

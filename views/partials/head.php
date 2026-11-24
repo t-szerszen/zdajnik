@@ -230,20 +230,31 @@
   <link rel="preload" as="font" type="font/woff2" href="<?= url('fonts/outfit/outfit-latin-ext.woff2') ?>" crossorigin>
 
   <!--
+    @property importmap - wersjonowanie WSZYSTKICH modułów JS
+    @description Mapuje każdy plik z public/js/ na adres z jego własnym mtime (?v=...).
+                 Obejmuje to także importy statyczne wewnątrz modułów (np.
+                 `import ... from '../utils/questionCard.js'`), które wcześniej szły
+                 bez wersji - a przy rocznym Expires (.htaccess) i cache'u Service
+                 Workera przeglądarka składała stronę z nowych i starych plików
+                 ("does not provide an export named ..."). Musi stać przed
+                 jakimkolwiek modulepreload / <script type="module">.
+  -->
+  <script type="importmap"><?= js_import_map_json() ?></script>
+
+  <!--
     @property modulepreload dla globalnych modułów JS
-    @description main.js (footer.php) dynamicznie import()-uje te 4 moduły od razu
+    @description main.js (footer.php) dynamicznie import()-uje te moduły od razu
                  po starcie na każdej stronie - modulepreload pozwala przeglądarce
                  zacząć je pobierać równolegle z main.js, zamiast dopiero po jego
-                 sparsowaniu (oszczędza jeden RTT). Ścieżki względne i wersja (?v=)
-                 muszą być identyczne z tym, co main.js doklei przez CACHE_QUERY -
-                 stąd współdzielony js_assets_version() zamiast osobnego wyliczenia.
+                 sparsowaniu (oszczędza jeden RTT). href musi być identyczny z
+                 adresem z import mapy (modulepreload nie jest przez nią
+                 przepisywany) - stąd js_asset_url().
   -->
-  <?php $jsPreloadVersion = js_assets_version(); ?>
-  <link rel="modulepreload" href="/js/components/NavbarHandler.js?v=<?= $jsPreloadVersion ?>">
-  <link rel="modulepreload" href="/js/components/ThemeSwitcher.js?v=<?= $jsPreloadVersion ?>">
-  <link rel="modulepreload" href="/js/components/show-password-toggle.js?v=<?= $jsPreloadVersion ?>">
-  <link rel="modulepreload" href="/js/modules/ServiceWorkerRegistration.js?v=<?= $jsPreloadVersion ?>">
-  <link rel="modulepreload" href="/js/components/CookieConsent.js?v=<?= $jsPreloadVersion ?>">
+  <link rel="modulepreload" href="<?= js_asset_url('/js/components/NavbarHandler.js') ?>">
+  <link rel="modulepreload" href="<?= js_asset_url('/js/components/ThemeSwitcher.js') ?>">
+  <link rel="modulepreload" href="<?= js_asset_url('/js/components/show-password-toggle.js') ?>">
+  <link rel="modulepreload" href="<?= js_asset_url('/js/modules/ServiceWorkerRegistration.js') ?>">
+  <link rel="modulepreload" href="<?= js_asset_url('/js/components/CookieConsent.js') ?>">
 
   <!-- ================================================================== -->
   <!-- 5. Uporządkowane dane (Structured Data - Schema.org) - ZAAWANSOWANE SEO -->

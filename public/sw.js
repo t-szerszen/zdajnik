@@ -3,10 +3,14 @@
 //
 // Podbicie CACHE_VERSION przy każdym deployu, który powinien wymusić u
 // użytkowników odświeżenie cache'a (np. zmiana logiki SW albo listy PRECACHE_URLS).
-// Wersjonowanie samych plików CSS/JS (main.css?v=..., main.js?v=...) jest już
-// obsłużone przez filemtime() w head.php/footer.php - dlatego te URL-e NIE są
-// tu precache'owane na sztywno, tylko łapane dynamicznie przy pierwszym fetchu.
-const CACHE_VERSION = 'v2';
+// Wersjonowanie samych plików CSS/JS jest już obsłużone przez filemtime():
+// main.css?v=... (head.php), a każdy moduł JS - także importowany statycznie
+// wewnątrz innych modułów - dostaje własne ?v= przez import mapę (head.php).
+// Dlatego te URL-e NIE są tu precache'owane na sztywno, tylko łapane dynamicznie.
+//
+// v3: czyści cache z epoki przed import mapą, w którym leżały niewersjonowane
+// moduły (/js/utils/questionCard.js bez ?v=) serwowane obok nowszych plików.
+const CACHE_VERSION = 'v3';
 const STATIC_CACHE = `zdajnik-static-${CACHE_VERSION}`;
 const CACHE_PREFIX = 'zdajnik-';
 const OFFLINE_URL = '/offline.html';
@@ -60,13 +64,30 @@ async function cacheFirst(request) {
   const networkFetch = fetch(request)
     .then((response) => {
       if (response.ok && response.type === 'basic') {
-        cache.put(request, response.clone());
+        cache.put(request, response.clone()).then(() => pruneOldVersions(cache, request));
       }
       return response;
     })
     .catch(() => null);
 
   return cached || (await networkFetch) || Response.error();
+}
+
+/**
+ * Usuwa z cache'a starsze wersje tego samego pliku (ten sam pathname, inne ?v=),
+ * żeby każdy deploy nie dokładał kolejnej kopii każdego modułu JS / arkusza CSS.
+ */
+async function pruneOldVersions(cache, request) {
+  const url = new URL(request.url);
+  if (!url.searchParams.has('v')) return;
+
+  const keys = await cache.keys();
+  await Promise.all(keys
+    .filter((key) => {
+      const keyUrl = new URL(key.url);
+      return keyUrl.pathname === url.pathname && keyUrl.search !== url.search;
+    })
+    .map((key) => cache.delete(key)));
 }
 
 async function networkFirstNavigation(request) {

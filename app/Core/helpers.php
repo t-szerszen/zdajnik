@@ -307,11 +307,10 @@ if (!function_exists('js_assets_version')) {
   /**
    * Zwraca wspólny numer wersji (cache-busting) dla całego drzewa public/js/.
    *
-   * Zmienia się, gdy zmieni się mtime dowolnego pliku .js - main.js oraz
-   * dynamicznie importowane moduły dzielą więc jeden numer wersji, co jest
-   * konieczne, żeby modulepreload w <head> (head.php) trafiał w te same URL-e
-   * co import() w main.js (który dokleja tę samą wartość jako query string
-   * do każdego dynamicznego importu - patrz CACHE_QUERY w public/js/main.js).
+   * Zmienia się, gdy zmieni się mtime dowolnego pliku .js. Używana jako ?v=
+   * dla main.js (footer.php) i - tylko w przeglądarkach bez import map - jako
+   * fallback doklejany przez main.js do dynamicznych importów (CACHE_QUERY).
+   * Właściwe wersjonowanie modułów: js_module_versions() + import mapa.
    *
    * @return int Znacznik czasu (mtime) najnowszego pliku .js.
    */
@@ -333,6 +332,70 @@ if (!function_exists('js_assets_version')) {
     }
 
     return $version;
+  }
+}
+
+if (!function_exists('js_module_versions')) {
+  /**
+   * Mapa wersji (mtime) każdego modułu w public/js/, kluczowana ścieżką URL
+   * (np. '/js/utils/questionCard.js' => 1764000000).
+   *
+   * Podstawa import mapy w head.php: dzięki niej także importy statyczne
+   * wewnątrz modułów (`import x from '../utils/a.js'`, bez ?v=) trafiają pod
+   * wersjonowany adres. Bez tego przeglądarka (Expires: 1 rok w .htaccess)
+   * i Service Worker serwowały stare zależności obok nowych plików.
+   *
+   * @return array<string, int>
+   */
+  function js_module_versions(): array
+  {
+    static $versions = null;
+
+    if ($versions === null) {
+      $versions = [];
+      $jsRoot = $_SERVER['DOCUMENT_ROOT'] . '/js';
+      $jsFiles = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($jsRoot, FilesystemIterator::SKIP_DOTS)
+      );
+      foreach ($jsFiles as $jsFile) {
+        if ($jsFile->isFile() && $jsFile->getExtension() === 'js') {
+          $relative = str_replace(DIRECTORY_SEPARATOR, '/', substr($jsFile->getPathname(), strlen($jsRoot)));
+          $versions['/js' . $relative] = $jsFile->getMTime();
+        }
+      }
+      ksort($versions);
+    }
+
+    return $versions;
+  }
+}
+
+if (!function_exists('js_asset_url')) {
+  /**
+   * Wersjonowany adres modułu JS - identyczny z tym, na który wskazuje import
+   * mapa (wymagane np. przez modulepreload, którego href mapa nie przepisuje).
+   *
+   * @param string $path Ścieżka URL modułu, np. '/js/components/Toast.js'.
+   */
+  function js_asset_url(string $path): string
+  {
+    $version = js_module_versions()[$path] ?? null;
+    return $version === null ? $path : $path . '?v=' . $version;
+  }
+}
+
+if (!function_exists('js_import_map_json')) {
+  /**
+   * JSON import mapy: każdy moduł z public/js/ -> jego wersjonowany adres.
+   */
+  function js_import_map_json(): string
+  {
+    $imports = [];
+    foreach (array_keys(js_module_versions()) as $path) {
+      $imports[$path] = js_asset_url($path);
+    }
+
+    return (string) json_encode(['imports' => $imports], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG);
   }
 }
 

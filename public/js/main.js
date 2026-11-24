@@ -1,8 +1,15 @@
 const CHART_JS_URL = 'https://cdn.jsdelivr.net/npm/chart.js@4.6.1';
 const CACHE_QUERY = new URL(import.meta.url).search || `?v=${Date.now()}`;
 
+// Wersjonowanie modułów załatwia import mapa z head.php (każdy plik ma własny ?v=mtime,
+// także w importach statycznych). Gołe ścieżki muszą więc przejść przez mapę - dopisanie
+// ?v= tutaj ominęłoby ją i stworzyło drugą instancję modułu pod innym adresem.
+// Fallback (przeglądarki bez import map): globalna wersja main.js, jak wcześniej.
+const SUPPORTS_IMPORT_MAPS = typeof HTMLScriptElement.supports === 'function'
+  && HTMLScriptElement.supports('importmap');
+
 function modulePath(path) {
-  return `${path}${CACHE_QUERY}`;
+  return SUPPORTS_IMPORT_MAPS ? path : `${path}${CACHE_QUERY}`;
 }
 
 function onReady(callback) {
