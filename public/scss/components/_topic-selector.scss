@@ -361,8 +361,10 @@ html.dark {
 }
 
 // Tablet: panel tematów nad pytaniem na całą szerokość, chipy się zawijają.
+// Tylko strona "Jedno pytanie" (.quiz-page-layout) - kreator testu
+// personalizowanego ma własny układ kroków i zostaje przy zawijanych chipach.
 @include media-down(lg) {
-  .topic-selector {
+  .quiz-page-layout .topic-selector {
     max-width: none;
     margin: 0;
 
@@ -386,9 +388,13 @@ html.dark {
 // Telefon: każda grupa to jeden poziomy, przewijany palcem pasek chipów
 // (zamiast kolumny kilkunastu pełnej szerokości przycisków). Wygaszenie
 // prawej krawędzi podpowiada, że pasek da się przewinąć.
-@include media-down(md) {
-  .topic-selector {
+// Próg poniżej md (768px), żeby iPad mini w pionie dostał jeszcze zawijane chipy.
+@include media-down(767.98px) {
+  .quiz-page-layout .topic-selector {
     &__fieldset {
+      // <fieldset> ma domyślnie min-width: min-content - bez tego rozciągałby
+      // się do szerokości wszystkich chipów zamiast przewijać pasek.
+      min-width: 0;
       margin-bottom: 1.5rem;
       padding: 1.6rem 0 0.6rem;
       border-radius: var(--radius-lg);
