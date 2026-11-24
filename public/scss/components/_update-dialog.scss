@@ -1,0 +1,202 @@
+@use '../core/mixins' as *;
+
+// Okno "Co nowego" otwierane z przycisku w hero strony głównej (views/home.php).
+// Natywny <dialog> + showModal() - trafia do top layer, więc nie trzeba go
+// przenosić poza .home-page (isolation: isolate), jak modal kart funkcji.
+.update-dialog {
+  width: min(600px, calc(100% - 2rem));
+  max-height: min(760px, calc(100dvh - 2rem));
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 30px 90px -20px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+
+  &::backdrop {
+    background: rgba(5, 10, 9, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  &[open] {
+    animation: update-dialog-in 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &::backdrop {
+      animation: update-dialog-fade 0.32s ease;
+    }
+  }
+
+  @include media-down(sm) {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - 3rem);
+    margin: auto 0 0;
+    border-bottom: 0;
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+
+    &[open] {
+      animation-name: update-dialog-sheet;
+    }
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    max-height: inherit;
+  }
+
+  &__header {
+    position: relative;
+    padding: 1.75rem 3.75rem 1.25rem 1.75rem;
+    border-bottom: 1px solid var(--border);
+    background:
+      radial-gradient(circle at 0% 0%, rgba(var(--accent-rgb), 0.16), transparent 55%),
+      var(--surface);
+
+    @include media-down(sm) {
+      padding: 1.4rem 3.5rem 1.1rem 1.25rem;
+    }
+  }
+
+  &__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.6rem;
+    color: var(--accent);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    margin: 0 0 0.45rem;
+    font-size: clamp(1.4rem, 3vw, 1.75rem);
+    font-weight: 850;
+    line-height: 1.15;
+  }
+
+  &__intro {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  &__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--text);
+      border-color: rgba(var(--accent-rgb), 0.45);
+      transform: rotate(90deg);
+    }
+  }
+
+  &__list {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0.85rem;
+    overflow-y: auto;
+    list-style: none;
+    overscroll-behavior: contain;
+  }
+
+  &__item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.95rem;
+    align-items: start;
+    padding: 0.85rem 0.9rem;
+    border-radius: var(--radius-lg);
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(var(--accent-rgb), 0.05);
+    }
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 0.75rem;
+    background: rgba(var(--accent-rgb), 0.12);
+    color: var(--accent);
+    font-size: 1rem;
+  }
+
+  &__item-title {
+    margin: 0.1rem 0 0.25rem;
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+
+  &__item-text {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem 1.75rem 1.25rem;
+    border-top: 1px solid var(--border);
+
+    @include media-down(sm) {
+      padding: 0.9rem 1.25rem calc(1rem + env(safe-area-inset-bottom));
+
+      .btn {
+        width: 100%;
+      }
+    }
+  }
+}
+
+@keyframes update-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+}
+
+@keyframes update-dialog-sheet {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes update-dialog-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .update-dialog[open],
+  .update-dialog[open]::backdrop {
+    animation: none;
+  }
+}

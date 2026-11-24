@@ -12,6 +12,20 @@
   }
 }
 
+@keyframes hero-update-ping {
+  75%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-section__update-dot::after {
+    animation: none;
+  }
+}
+
 // Bez opacity - .hero-section__title jest elementem LCP, a opacity: 0 na starcie
 // opóźnia moment, w którym przeglądarka liczy Largest Contentful Paint.
 @keyframes hero-title-rise {
@@ -82,6 +96,118 @@
       margin: 0 auto;
       text-align: center;
     }
+  }
+
+  // Przycisk "Co nowego" nad lockupem - otwiera .update-dialog (_update-dialog.scss).
+  &__update {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 0 0.85rem;
+    padding: 0.3rem 0.9rem 0.3rem 0.3rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover,
+    &:focus-visible {
+      border-color: rgba(var(--accent-rgb), 0.45);
+      box-shadow: 0 10px 28px -14px rgba(var(--accent-rgb), 0.55);
+      transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    &:hover .hero-section__update-arrow {
+      transform: translateX(3px);
+    }
+
+    // Na wąskich ekranach treść hero jest wyśrodkowana (text-align nie działa
+    // na element blokowy), a dłuższy tekst skraca się wielokropkiem.
+    @include media-down(xl) {
+      margin-inline: auto;
+    }
+
+    // Tekst w jednej linii (nowrap) rozpychał kolumnę hero na telefonie -
+    // na wąskich ekranach zawija się do drugiej linii.
+    @include media-down(sm) {
+      border-radius: var(--radius-lg);
+
+      .hero-section__update-text {
+        white-space: normal;
+        line-height: 1.3;
+      }
+    }
+  }
+
+  &__update-label {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-pill);
+    background: rgba(var(--accent-rgb), 0.12);
+    color: var(--accent);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  &__update-dot {
+    position: relative;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: var(--accent);
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: inherit;
+      animation: hero-update-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    // Po obejrzeniu ogłoszenia kropka gaśnie (klasę dodaje features/home/index.js).
+    .hero-section__update.is-seen & {
+      background: var(--text-muted);
+      opacity: 0.5;
+
+      &::after {
+        animation: none;
+      }
+    }
+  }
+
+  &__update-text {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &__update-arrow {
+    flex: 0 0 auto;
+    color: var(--accent);
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
   }
 
   &__lockup {
