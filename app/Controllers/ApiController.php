@@ -830,12 +830,9 @@ class ApiController extends BaseController
    */
   public function reportQuestion(): void
   {
-    $this->ensurePostRequest();
-
-    if (!(new \App\Services\CsrfService())->validate($_SERVER['HTTP_X_CSRF_TOKEN'] ?? null)) {
-      $this->sendJsonResponse(['success' => false, 'message' => 'Sesja wygasła. Odśwież stronę i spróbuj ponownie.'], 403);
-      return;
-    }
+    // Wspólna ochrona endpointów zapisujących (POST + CSRF + limit na minutę);
+    // niżej dodatkowy limit 10 zgłoszeń na 10 minut i jedno zgłoszenie pytania na sesję.
+    $this->guardWriteRequest('report_question', 20);
 
     $rawInput = file_get_contents('php://input');
     if (!is_string($rawInput) || strlen($rawInput) > 8192) {
